@@ -65,8 +65,10 @@ def fetch_server(nodes):
 async def install_nodes(request):
     post_params = await request.json()
     print('postparams',post_params)
-    resp = fetch_server(post_params['nodes'])
-    web.json_response(resp)
+    resp = fetch_server(post_params['nodes']) # [{'authorName': 'Fannovel16', 'gitHtmlUrl': 'https://github.com/Fannovel16/comfyui_controlnet_aux', 'totalInstalls': 1, 'description': None, 'id': 'TilePreprocessor'}]
+    print('resp', resp)
+    return web.json_response(resp, content_type='application/json')
+
 
 
 
