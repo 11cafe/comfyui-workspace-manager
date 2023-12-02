@@ -1,7 +1,7 @@
 import server
 from aiohttp import web
 import aiohttp
-import shutil
+import requests
 import folder_paths
 import os
 import sys
@@ -45,28 +45,28 @@ def setup_js():
     #     shutil.copy(js_src_path, js_dest_path)
 setup_js()
 
-def search_github(node_name):
-    url = f"https://api.github.com/search/repositories"
+def fetch_server(nodes):
+    print('fetch_server search_github', nodes)
+    url = 'https://jox4fzk7ppi4glx56ohupt27su0ilcmv.lambda-url.us-west-1.on.aws/'
     params = {
-        'q': query,
-        'per_page': per_page,
-        'page': page
+        'nodes': nodes,
     }
-    headers = {
-        'Accept': 'application/vnd.github.v3+json'
-    }
-    response = requests.get(url, params=params, headers=headers)
-    
+    response = requests.get(url, json=params)
+    print('response', response.json())
     if response.status_code == 200:
         return response.json()
     else:
-        return response.json()
+        return {
+            'error': 'Failed to find custom nodes'
+        }
 
 
-@server.PromptServer.instance.routes.get("/workspace/install_nodes")
+@server.PromptServer.instance.routes.post("/workspace/install_nodes")
 async def install_nodes(request):
-    nodes_to_install = request.rel_url.query["nodes"]
-
+    post_params = await request.json()
+    print('postparams',post_params)
+    resp = fetch_server(post_params['nodes'])
+    web.json_response(resp)
 
 
 

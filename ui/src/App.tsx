@@ -98,7 +98,7 @@ function App() {
     graphAppSetup();
     setInterval(() => {
       const graphJson = localStorage.getItem("workflow");
-      localStorage.setItem("wf-" + flowName, graphJson ?? "");
+      // localStorage.setItem("wf-" + flowName, graphJson ?? "");
       localStorage.setItem("latestWorkflow", flowName);
       // console.log("cur app", app);
     }, 3000);
@@ -115,9 +115,11 @@ function App() {
     >
       <Tabs
         variant="unstyled"
-        style={{
-          backgroundColor: "white",
-        }}
+        style={
+          {
+            // backgroundColor: "white",
+          }
+        }
       >
         <TabList
           defaultValue={"ComfyUI"}
@@ -129,6 +131,7 @@ function App() {
             <Input
               variant="unstyled"
               placeholder="Workflow name"
+              color={"white"}
               value={flowName}
               onChange={(e) => {
                 setFlowName(e.target.value);
@@ -136,10 +139,9 @@ function App() {
             />
           </HStack>
           <HStack>
-            {/* <Tab _selected={selectStyle}>Template</Tab>
-            <Tab _selected={selectStyle}>Outline</Tab> */}
-            <Tab _selected={selectStyle}>111</Tab>
+            {/* <Tab _selected={selectStyle}>111</Tab> */}
             <Button
+              colorScheme="gray"
               onClick={() => {
                 setRoute("customNodes");
               }}
@@ -183,7 +185,7 @@ function CustomNodesDrawer({
   }, [missingNodes]);
   const handleInstall = (toInstall: string[]) => {
     fetch("/workspace/install_nodes", {
-      // method: "POST",
+      method: "POST",
       body: JSON.stringify({ nodes: toInstall }),
     })
       .then((res) => res.json())
@@ -205,8 +207,22 @@ function CustomNodesDrawer({
           <DrawerHeader>Custom Nodes</DrawerHeader>
           <DrawerBody>
             <HStack mb={6}>
+              <Checkbox
+                mr={6}
+                isChecked={toInstall.length === missingNodes.length}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setToInstall([...missingNodes]);
+                  } else {
+                    setToInstall([]);
+                  }
+                }}
+              >
+                Select All
+              </Checkbox>
               <Button
                 onClick={() => {
+                  console.log("onclick install missing nodes", toInstall);
                   handleInstall(toInstall);
                 }}
               >
