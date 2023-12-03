@@ -27,12 +27,12 @@ __all__ = ['NODE_CLASS_MAPPINGS']
 version = "V1.0.0"
 
 print(f"### Loading: Workspace Manager ({version})")
-comfy_path = os.path.join(os.path.dirname(__file__))
-
+workspace_path = os.path.join(os.path.dirname(__file__))
+comfy_path = os.path.dirname(folder_paths.__file__)
 
 # Function to install dependencies from requirements.txt
 def install_dependencies(): 
-    requirements_path = os.path.join(comfy_path, "requirements.txt")
+    requirements_path = os.path.join(workspace_path, "requirements.txt")
     print('requirements_path', requirements_path)
     # subprocess.run(['pip', 'install', '-r', requirements_path])
     subprocess.run([sys.executable, '-m', 'pip', 'install', '-r', requirements_path])
@@ -46,13 +46,11 @@ def setup_js():
 setup_js()
 
 def fetch_server(nodes):
-    print('fetch_server search_github', nodes)
     url = 'https://jox4fzk7ppi4glx56ohupt27su0ilcmv.lambda-url.us-west-1.on.aws/'
     params = {
         'nodes': nodes,
     }
     response = requests.get(url, json=params)
-    print('response', response.json())
     if response.status_code == 200:
         return response.json()
     else:
@@ -67,16 +65,22 @@ async def install_nodes(request):
     resp = fetch_server(post_params['nodes']) # [{'authorName': 'Fannovel16', 'gitHtmlUrl': 'https://github.com/Fannovel16/comfyui_controlnet_aux', 'totalInstalls': 1, 'description': None, 'id': 'TilePreprocessor'}]
     return web.json_response(resp, content_type='application/json')
 
-async def install_node(gitUrl, comfy_path):
+async def install_node(gitUrl):
+    print(f"Installing custom node from git '{gitUrl}'")
     try:
         if gitUrl.endswith("/"):
             gitUrl = gitUrl[:-1]
         repo_name = os.path.splitext(os.path.basename(gitUrl))[0]
         repo_path = os.path.join(comfy_path, 'custom_nodes', repo_name)
-        Repo.clone_from(gitUrl+'.git', repo_path)
-        return f"✅ Installed custom node from git '{gitUrl}'\n"
+        print('repo_path', repo_path)
+        try:
+            Repo.clone_from(gitUrl+'.git', repo_path)
+        except Exception as e:
+            print(f"Error cloning repo: {e}")
+            return f"Error cloning repo: {e}\n"
+        return f"Installed custom node from git '{gitUrl}'\n"
     except Exception as e:
-        return f"❌ Error installing custom node from git '{gitUrl}': {e}\n"
+        return f"Error installing custom node from git '{gitUrl}': {e}\n"
 
 @server.PromptServer.instance.routes.post("/workspace/install_nodes")
 async def install_nodes(request):
@@ -88,12 +92,15 @@ async def install_nodes(request):
     nodes = post_params['nodes']
 
     tasks = []
+    print(f"Installing custom nodes", nodes)
     for custom_node in nodes:
         gitUrl = custom_node['gitHtmlUrl']
+        print('gitUrl', gitUrl)
+        await response.write(f"Instaling custom node: '{custom_node}'\n".encode())
         if not gitUrl:
             await response.write(f"Github url is null: '{custom_node}'\n".encode())
             continue
-        task = asyncio.create_task(install_node(gitUrl, comfy_path))
+        task = asyncio.create_task(install_node(gitUrl))
         tasks.append(task)
 
     for task in asyncio.as_completed(tasks):

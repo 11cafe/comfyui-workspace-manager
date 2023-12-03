@@ -106,12 +106,12 @@ export default function App() {
   };
   useEffect(() => {
     graphAppSetup();
-    setInterval(() => {
-      const graphJson = localStorage.getItem("workflow");
-      // localStorage.setItem("wf-" + flowName, graphJson ?? "");
-      localStorage.setItem("latestWorkflow", flowName);
-      // console.log("cur app", app);
-    }, 3000);
+    // setInterval(() => {
+    // const graphJson = localStorage.getItem("workflow");
+    // localStorage.setItem("wf-" + flowName, graphJson ?? "");
+    // localStorage.setItem("latestWorkflow", flowName);
+    // console.log("cur app", app);
+    // }, 3000);
   }, []);
   return (
     <Box
@@ -210,17 +210,40 @@ function CustomNodesDrawer({
         setToInstall(res.filter((r) => r != null).map((r) => r!.id));
       });
   }, [missingNodes]);
-  const handleInstall = (toInstall: string[]) => {
-    fetch("/workspace/install_nodes", {
-      method: "POST",
-      body: JSON.stringify({
-        nodes: searchResults.filter((r) => toInstall.includes(r.id)),
-      }),
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        console.log("install res", res);
+  const installCustomNodes = async (nodes: CustomNode[]) => {
+    setIsInstalling(true);
+    setInstallStatus("Starting installation...\n");
+
+    try {
+      const response = await fetch("/workspace/install_nodes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nodes: nodes,
+        }),
       });
+
+      const reader = response?.body?.getReader();
+      if (reader == null) {
+        console.log("reader is null", reader);
+        return;
+      }
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        console.log("value", decoder.decode(value));
+        // setInstallStatus((prev) => prev + decoder.decode(value));
+      }
+    } catch (error) {
+      console.error("Failed to install custom nodes", error);
+      setInstallStatus((prev) => prev + "\nInstallation failed.");
+    } finally {
+      setIsInstalling(false);
+    }
   };
   return (
     <div style={{ position: "absolute", top: 0, left: 0, right: 0 }}>
@@ -252,7 +275,9 @@ function CustomNodesDrawer({
               <Button
                 onClick={() => {
                   console.log("onclick install missing nodes", toInstall);
-                  handleInstall(toInstall);
+                  installCustomNodes(
+                    searchResults.filter((r) => toInstall.includes(r.id))
+                  );
                 }}
               >
                 Install Missing Nodes {toInstall.length}
