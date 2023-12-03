@@ -1,22 +1,27 @@
-import { Tabs, TabList, HStack, Tab, Input, Box } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 // @ts-ignore
 import { app } from "/scripts/app.js";
-import { LGraphNode } from "./types/litegraph";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
 import {
+  Tabs,
+  TabList,
+  HStack,
+  Tab,
+  Input,
+  Box,
   Drawer,
   DrawerBody,
   Button,
   DrawerHeader,
   DrawerOverlay,
+  Link,
+  Text,
   Checkbox,
+  Stack,
   DrawerContent,
   DrawerCloseButton,
 } from "@chakra-ui/react";
-
 type Route = "root" | "customNodes" | "recentFlows";
-// import app from "app";
 // type Workflow = {
 //   json: string;
 //   name: string;
@@ -26,6 +31,16 @@ type Route = "root" | "customNodes" | "recentFlows";
 //   [key: string]: Workflow;
 // };
 // copied from scripts/app.js
+type CustomNode = {
+  id: string;
+  nodeClassName: string;
+  gitHtmlUrl: string;
+  fileHtmlUrl: string;
+  authorName: string;
+  authorAvatarUrl: string;
+  description: string;
+  totalInstalls: string;
+};
 function sanitizeNodeName(string: string): string {
   let entityMap: Record<string, string> = {
     "&": "",
@@ -41,11 +56,7 @@ function sanitizeNodeName(string: string): string {
   });
 }
 
-function App() {
-  const selectStyle = {
-    color: "white",
-    bg: "#333",
-  };
+export default function App() {
   // const [activeFlows, setActiveFlows] = useState<Workflow[]>([]);
   // const [allFlows, setAllFlows] = useState<Set<string>>();
   const [missingNodeTypes, setMissingNodeTypes] = useState<string[]>([]);
@@ -68,7 +79,6 @@ function App() {
         missing.add(n.type);
       }
     }
-    console.log("missing", missing);
     setMissingNodeTypes(Array.from(missing));
   };
   const graphAppSetup = () => {
@@ -168,7 +178,6 @@ function App() {
   );
 }
 
-export default App;
 type CustomNodesDrawerProps = {
   missingNodes: string[];
   onclose: () => void;
@@ -180,13 +189,33 @@ function CustomNodesDrawer({
   onclose,
 }: CustomNodesDrawerProps) {
   const [toInstall, setToInstall] = useState<string[]>(missingNodes);
+  const [searchResults, setSearchResults] = useState<CustomNode[]>([]);
+  const [installStatus, setInstallStatus] = useState("");
+  const [isInstalling, setIsInstalling] = useState(false);
+
   useEffect(() => {
     setToInstall(missingNodes);
+    const nodeIDs = missingNodes.map((n) => n.replace(" ", "_"));
+    console.log("nodeIDs", nodeIDs);
+    fetch("/workspace/find_nodes", {
+      method: "POST",
+      body: JSON.stringify({
+        nodes: nodeIDs,
+      }),
+    })
+      .then((res) => res.json())
+      .then((res: (CustomNode | null)[]) => {
+        console.log("search_nodes res", res);
+        setSearchResults(res.filter((r) => r != null) as CustomNode[]);
+        setToInstall(res.filter((r) => r != null).map((r) => r!.id));
+      });
   }, [missingNodes]);
   const handleInstall = (toInstall: string[]) => {
     fetch("/workspace/install_nodes", {
       method: "POST",
-      body: JSON.stringify({ nodes: toInstall }),
+      body: JSON.stringify({
+        nodes: searchResults.filter((r) => toInstall.includes(r.id)),
+      }),
     })
       .then((res) => res.json())
       .then((res) => {
@@ -206,13 +235,13 @@ function CustomNodesDrawer({
           <DrawerCloseButton />
           <DrawerHeader>Custom Nodes</DrawerHeader>
           <DrawerBody>
-            <HStack mb={6}>
+            <HStack mb={3}>
               <Checkbox
                 mr={6}
-                isChecked={toInstall.length === missingNodes.length}
+                isChecked={toInstall.length === searchResults.length}
                 onChange={(e) => {
                   if (e.target.checked) {
-                    setToInstall([...missingNodes]);
+                    setToInstall([...searchResults.map((r) => r!.id)]);
                   } else {
                     setToInstall([]);
                   }
@@ -229,21 +258,41 @@ function CustomNodesDrawer({
                 Install Missing Nodes {toInstall.length}
               </Button>
             </HStack>
+            <Text mb={3} color={"GrayText"} fontSize={"small"}>
+              Unselectable nodes are not found in Github, they may be private
+              repos
+            </Text>
             {missingNodes.map((n) => {
+              const node = searchResults.find((r) => r?.id === n);
               return (
-                <HStack>
-                  <Checkbox
-                    isChecked={toInstall.includes(n)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setToInstall([...toInstall, n]);
-                      } else {
-                        setToInstall(toInstall.filter((i) => i !== n));
-                      }
-                    }}
-                  ></Checkbox>
-                  <span>{n}</span>
-                </HStack>
+                <Stack gap={0} mb={2}>
+                  <HStack>
+                    <Checkbox
+                      isChecked={toInstall.includes(n)}
+                      disabled={node == null}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setToInstall([...toInstall, n]);
+                        } else {
+                          setToInstall(toInstall.filter((i) => i !== n));
+                        }
+                      }}
+                    ></Checkbox>
+                    <span>{n}</span>
+                  </HStack>
+                  {node != null ? (
+                    <Link
+                      color="teal.500"
+                      href={node.gitHtmlUrl}
+                      noOfLines={1}
+                      ml={6}
+                    >
+                      {node.gitHtmlUrl}
+                    </Link>
+                  ) : (
+                    <Text></Text>
+                  )}
+                </Stack>
               );
             })}
           </DrawerBody>
