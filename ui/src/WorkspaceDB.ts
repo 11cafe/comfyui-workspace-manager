@@ -47,3 +47,8 @@ export function createFlow(json: string, name?: string): Workflow {
 export function listWorkflows(): Workflow[] {
   return Object.values(workspace).sort((a, b) => b.updateTime - a.updateTime);
 }
+
+export function deleteFlow(id: string) {
+  delete workspace[id];
+  localStorage.setItem("workspace", JSON.stringify(workspace));
+}

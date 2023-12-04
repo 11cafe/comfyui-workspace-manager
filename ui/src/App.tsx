@@ -110,7 +110,13 @@ export default function App() {
     throttle(onRenameCurFlow, 700),
     []
   );
-
+  const loadWorkflowID = (id: string) => {
+    curFlowID.current = id;
+    const flow = workspace[id];
+    setCurFlowName(flow.name);
+    app.loadGraphData(JSON.parse(flow.json));
+    setRoute("root");
+  };
   return (
     <Box
       style={{
@@ -182,7 +188,10 @@ export default function App() {
         </TabList>
       </Tabs>
       {route === "recentFlows" && (
-        <RecentFilesDrawer isOpen={true} onclose={() => setRoute("root")} />
+        <RecentFilesDrawer
+          onclose={() => setRoute("root")}
+          loadWorkflowID={loadWorkflowID}
+        />
       )}
 
       <CustomNodesDrawer
