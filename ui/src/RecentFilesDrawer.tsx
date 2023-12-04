@@ -25,8 +25,13 @@ import { IconPlus, IconTrash } from "@tabler/icons-react";
 type Props = {
   onclose: () => void;
   loadWorkflowID: (id: string) => void;
+  onClickNewFlow: () => void;
 };
-export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
+export default function RecentFilesDrawer({
+  onclose,
+  loadWorkflowID,
+  onClickNewFlow,
+}: Props) {
   const [recentFlows, setRecentFlow] = useState<Workflow[]>([]);
 
   useEffect(() => {
@@ -57,6 +62,7 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
               size={"sm"}
               colorScheme="teal"
               mb={6}
+              onClick={onClickNewFlow}
             >
               New
             </Button>
@@ -121,7 +127,6 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
 }
 
 function formatTimestamp(unixTimestamp: number) {
-  console.log(unixTimestamp);
   // Create a new Date object from the UNIX timestamp
   const date = new Date(unixTimestamp);
 

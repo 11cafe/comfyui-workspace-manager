@@ -58,10 +58,8 @@ export default function App() {
       name: "WorkspaceManager",
       async setup(app) {
         // Any setup to run after the app is createdjj
-        console.log("ext.setup", app);
       },
       async addCustomNodeDefs(defs) {
-        console.log("addCustomNodeDefs in workspace manager", defs);
         nodeDefs.current = defs;
       },
       // async loadedGraphNode(node: LGraphNode, app: ComfyApp) {},
@@ -69,13 +67,11 @@ export default function App() {
     app.registerExtension(ext);
 
     const latest = localStorage.getItem("curFlowID");
-    console.log("latest", latest);
     if (latest) {
       curFlowID.current = latest;
     } else {
       const graphJson = localStorage.getItem("workflow");
       const flow = createFlow(graphJson ?? "");
-      console.log("created new flow", flow);
       curFlowID.current = flow.id;
     }
     setCurFlowName(workspace[curFlowID.current]?.name ?? "");
@@ -88,7 +84,6 @@ export default function App() {
   useEffect(() => {
     graphAppSetup();
     setInterval(() => {
-      console.log("interval curflowid", curFlowID.current);
       if (curFlowID.current != null) {
         const graphJson = localStorage.getItem("workflow");
         localStorage.setItem("curFlowID", curFlowID.current);
@@ -116,6 +111,13 @@ export default function App() {
     setCurFlowName(flow.name);
     app.loadGraphData(JSON.parse(flow.json));
     setRoute("root");
+  };
+  const onClickNewFlow = () => {
+    const defaultObj = defaultGraph;
+    const flow = createFlow(JSON.stringify(defaultObj));
+    curFlowID.current = flow.id;
+    setCurFlowName(flow.name);
+    app.loadGraphData(defaultObj);
   };
   return (
     <Box
@@ -145,6 +147,20 @@ export default function App() {
                 <IconTriangleInvertedFilled size={8} />
               </HStack>
             </Button>
+            <Button
+              size={"sm"}
+              variant={"outline"}
+              colorScheme="teal"
+              aria-label="workspace folder"
+              onClick={() => onClickNewFlow()}
+            >
+              <HStack gap={1} px={3}>
+                <IconPlus size={16} color={"white"} />
+                <Text color={"white"} fontSize={"sm"}>
+                  New
+                </Text>
+              </HStack>
+            </Button>
             <Input
               variant="unstyled"
               placeholder="Workflow name"
@@ -155,22 +171,6 @@ export default function App() {
                 throttledOnRenameCurFlow(e.target.value);
               }}
             />
-            <Button
-              leftIcon={<IconPlus size={16} />}
-              // variant="outline"
-              size={"sm"}
-              onClick={() => {
-                const defaultObj = defaultGraph;
-                const flow = createFlow(JSON.stringify(defaultObj));
-                console.log("created new flow", flow);
-                curFlowID.current = flow.id;
-                setCurFlowName(flow.name);
-                app.loadGraphData(defaultObj);
-              }}
-              // colorScheme="teal"
-            >
-              New
-            </Button>
           </HStack>
           <HStack>
             {/* <Tab _selected={selectStyle}>111</Tab> */}
@@ -191,6 +191,7 @@ export default function App() {
         <RecentFilesDrawer
           onclose={() => setRoute("root")}
           loadWorkflowID={loadWorkflowID}
+          onClickNewFlow={onClickNewFlow}
         />
       )}
 
@@ -223,7 +224,6 @@ function CustomNodesDrawer({
   useEffect(() => {
     setToInstall(missingNodes);
     const nodeIDs = missingNodes.map((n) => n.replace(" ", "_"));
-    console.log("nodeIDs", nodeIDs);
     fetch("/workspace/find_nodes", {
       method: "POST",
       body: JSON.stringify({
@@ -232,7 +232,6 @@ function CustomNodesDrawer({
     })
       .then((res) => res.json())
       .then((res: (CustomNode | null)[]) => {
-        console.log("search_nodes res", res);
         setSearchResults(res.filter((r) => r != null) as CustomNode[]);
         setToInstall(res.filter((r) => r != null).map((r) => r!.id));
       });
@@ -254,7 +253,6 @@ function CustomNodesDrawer({
 
       const reader = response?.body?.getReader();
       if (reader == null) {
-        console.log("reader is null", reader);
         return;
       }
       const decoder = new TextDecoder();
@@ -262,7 +260,6 @@ function CustomNodesDrawer({
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        console.log("value", decoder.decode(value));
         // setInstallStatus((prev) => prev + decoder.decode(value));
       }
     } catch (error) {
@@ -301,7 +298,6 @@ function CustomNodesDrawer({
               </Checkbox>
               <Button
                 onClick={() => {
-                  console.log("onclick install missing nodes", toInstall);
                   installCustomNodes(
                     searchResults.filter((r) => toInstall.includes(r.id))
                   );
