@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 // @ts-ignore
 import { app } from "/scripts/app.js";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
+// @ts-ignore
+import throttle from "lodash.throttle";
 import {
   Tabs,
   TabList,
   HStack,
-  Tab,
   Input,
   Box,
   Drawer,
@@ -21,16 +22,17 @@ import {
   DrawerContent,
   DrawerCloseButton,
 } from "@chakra-ui/react";
+import {
+  IconFolder,
+  IconPlus,
+  IconTriangleInvertedFilled,
+} from "@tabler/icons-react";
+import RecentFilesDrawer from "./RecentFilesDrawer";
+import { Workflow, createFlow, updateFlow, workspace } from "./WorkspaceDB";
+import { findMissingNodes } from "./utils";
+import { defaultGraph } from "./defaultGraph";
 type Route = "root" | "customNodes" | "recentFlows";
-// type Workflow = {
-//   json: string;
-//   name: string;
-//   img: string;
-// };
-// type RecentFlows = {
-//   [key: string]: Workflow;
-// };
-// copied from scripts/app.js
+
 type CustomNode = {
   id: string;
   nodeClassName: string;
@@ -41,46 +43,15 @@ type CustomNode = {
   description: string;
   totalInstalls: string;
 };
-function sanitizeNodeName(string: string): string {
-  let entityMap: Record<string, string> = {
-    "&": "",
-    "<": "",
-    ">": "",
-    '"': "",
-    "'": "",
-    "`": "",
-    "=": "",
-  };
-  return String(string).replace(/[&<>"'`=]/g, function fromEntityMap(s) {
-    return entityMap[s];
-  });
-}
 
 export default function App() {
-  // const [activeFlows, setActiveFlows] = useState<Workflow[]>([]);
-  // const [allFlows, setAllFlows] = useState<Set<string>>();
   const [missingNodeTypes, setMissingNodeTypes] = useState<string[]>([]);
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
-  const [flowName, setFlowName] = useState<string>(
-    "workflow-" + new Date().getTime()
-  );
+  const curFlowID = useRef<string | null>(null);
+  const [curFlowName, setCurFlowName] = useState<string | null>(null);
+  // const curFlow = curFlowID != null ? workspace[curFlowID] : null;
   const [route, setRoute] = useState<Route>("root");
-  const findMissingNodes = () => {
-    const missing = new Set<string>();
-    for (let n of app.graph._nodes) {
-      // Patch T2IAdapterLoader to ControlNetLoader since they are the same node now
-      if (n.type == "T2IAdapterLoader") n.type = "ControlNetLoader";
-      if (n.type == "ConditioningAverage ") n.type = "ConditioningAverage"; //typo fix
-      if (n.type == "SDV_img2vid_Conditioning")
-        n.type = "SVD_img2vid_Conditioning"; //typo fix
-      // Find missing node types
-      if (!(n.type in nodeDefs.current)) {
-        n.type = sanitizeNodeName(n.type);
-        missing.add(n.type);
-      }
-    }
-    setMissingNodeTypes(Array.from(missing));
-  };
+
   const graphAppSetup = () => {
     const ext: ComfyExtension = {
       // Unique name for the extension
@@ -97,22 +68,49 @@ export default function App() {
     };
     app.registerExtension(ext);
 
-    // const flow = localStorage.getItem("allFlows") ?? "[]";
-    // setAllFlows(new Set(JSON.parse(flow)));
+    const latest = localStorage.getItem("curFlowID");
+    console.log("latest", latest);
+    if (latest) {
+      curFlowID.current = latest;
+    } else {
+      const graphJson = localStorage.getItem("workflow");
+      const flow = createFlow(graphJson ?? "");
+      console.log("created new flow", flow);
+      curFlowID.current = flow.id;
+    }
+    setCurFlowName(workspace[curFlowID.current]?.name ?? "");
     // hacky fetch missing nodes defer until i find a way to get callback when graph fully loaded
     setTimeout(() => {
-      findMissingNodes();
-    }, 500);
+      const missing = findMissingNodes();
+      setMissingNodeTypes(missing);
+    }, 1000);
   };
   useEffect(() => {
     graphAppSetup();
-    // setInterval(() => {
-    // const graphJson = localStorage.getItem("workflow");
-    // localStorage.setItem("wf-" + flowName, graphJson ?? "");
-    // localStorage.setItem("latestWorkflow", flowName);
-    // console.log("cur app", app);
-    // }, 3000);
+    setInterval(() => {
+      console.log("interval curflowid", curFlowID.current);
+      if (curFlowID.current != null) {
+        const graphJson = localStorage.getItem("workflow");
+        localStorage.setItem("curFlowID", curFlowID.current);
+        graphJson != null &&
+          updateFlow(curFlowID.current, {
+            json: graphJson,
+          });
+      }
+    }, 1000);
   }, []);
+  const onRenameCurFlow = (newName: string) => {
+    if (curFlowID.current != null) {
+      updateFlow(curFlowID.current, {
+        name: newName,
+      });
+    }
+  };
+  const throttledOnRenameCurFlow: (name: string) => void = useCallback(
+    throttle(onRenameCurFlow, 700),
+    []
+  );
+
   return (
     <Box
       style={{
@@ -123,14 +121,7 @@ export default function App() {
         right: 0,
       }}
     >
-      <Tabs
-        variant="unstyled"
-        style={
-          {
-            // backgroundColor: "white",
-          }
-        }
-      >
+      <Tabs variant="unstyled">
         <TabList
           defaultValue={"ComfyUI"}
           style={{ padding: 8, marginLeft: 16 }}
@@ -138,15 +129,42 @@ export default function App() {
           gap={4}
         >
           <HStack>
+            <Button
+              size={"sm"}
+              aria-label="workspace folder"
+              onClick={() => setRoute("recentFlows")}
+            >
+              <HStack gap={1}>
+                <IconFolder size={20} />
+                <IconTriangleInvertedFilled size={8} />
+              </HStack>
+            </Button>
             <Input
               variant="unstyled"
               placeholder="Workflow name"
               color={"white"}
-              value={flowName}
+              value={curFlowName ?? ""}
               onChange={(e) => {
-                setFlowName(e.target.value);
+                setCurFlowName(e.target.value);
+                throttledOnRenameCurFlow(e.target.value);
               }}
             />
+            <Button
+              leftIcon={<IconPlus size={16} />}
+              // variant="outline"
+              size={"sm"}
+              onClick={() => {
+                const defaultObj = defaultGraph;
+                const flow = createFlow(JSON.stringify(defaultObj));
+                console.log("created new flow", flow);
+                curFlowID.current = flow.id;
+                setCurFlowName(flow.name);
+                app.loadGraphData(defaultObj);
+              }}
+              // colorScheme="teal"
+            >
+              New
+            </Button>
           </HStack>
           <HStack>
             {/* <Tab _selected={selectStyle}>111</Tab> */}
@@ -163,17 +181,17 @@ export default function App() {
           </HStack>
         </TabList>
       </Tabs>
+      {route === "recentFlows" && (
+        <RecentFilesDrawer isOpen={true} onclose={() => setRoute("root")} />
+      )}
 
       <CustomNodesDrawer
         missingNodes={missingNodeTypes}
         isOpen={route === "customNodes"}
         onclose={() => {
           setRoute("root");
-          console.log("close");
         }}
       />
-
-      {/* <CustomNodesDrawer missingNodes={missingNodeTypes} /> */}
     </Box>
   );
 }
