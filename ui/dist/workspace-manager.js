@@ -23817,9 +23817,7 @@ const b8 = {
 function x8() {
   const [e, t] = b.useState([]), r = b.useRef({}), [n, o] = b.useState(null), [i, a] = b.useState("root"), [s, l] = b.useState(null), u = b.useRef(null), c = (x) => {
     u.current = x, l(x);
-  };
-  b.useState("");
-  const d = () => {
+  }, d = () => {
     const x = {
       // Unique name for the extension
       name: "WorkspaceManager",

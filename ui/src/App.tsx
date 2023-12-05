@@ -57,9 +57,6 @@ export default function App() {
     setFlowID(id);
   };
 
-  const [value, setValue] = useState("");
-  const handleChange = (event) => setValue(event.target.value);
-
   const graphAppSetup = () => {
     const ext: ComfyExtension = {
       // Unique name for the extension
