@@ -52,12 +52,13 @@ export default function App() {
 
   const [flowID, setFlowID] = useState<string | null>(null);
   const curFlowID = useRef<string | null>(null);
+  const setCurFlowID = (id: string) => {
+    curFlowID.current = id;
+    setFlowID(id);
+  };
 
-  useEffect(() => {
-    curFlowID.current = flowID;
-    // Perform actions here whenever flowID changes
-    console.log("flowID changed:", flowID);
-  }, [flowID]);
+  const [value, setValue] = useState("");
+  const handleChange = (event) => setValue(event.target.value);
 
   const graphAppSetup = () => {
     const ext: ComfyExtension = {
@@ -75,15 +76,14 @@ export default function App() {
 
     const latest = localStorage.getItem("curFlowID");
     if (latest) {
-      curFlowID.current = latest;
-      setFlowID(latest);
+      setCurFlowID(latest);
+      setCurFlowName(workspace[latest].name ?? "");
     } else {
       const graphJson = localStorage.getItem("workflow");
       const flow = createFlow(graphJson ?? "");
-      curFlowID.current = flow.id;
-      setFlowID(flow.id);
+      setCurFlowID(flow.id);
+      setCurFlowName(flow.name ?? "");
     }
-    setCurFlowName(workspace[curFlowID.current]?.name ?? "");
     // hacky fetch missing nodes defer until i find a way to get callback when graph fully loaded
     setTimeout(() => {
       const missing = findMissingNodes();
@@ -115,7 +115,7 @@ export default function App() {
     []
   );
   const loadWorkflowID = (id: string) => {
-    curFlowID.current = id;
+    setCurFlowID(id);
     const flow = workspace[id];
     setCurFlowName(flow.name);
     app.loadGraphData(JSON.parse(flow.json));
@@ -124,7 +124,7 @@ export default function App() {
   const onClickNewFlow = () => {
     const defaultObj = defaultGraph;
     const flow = createFlow(JSON.stringify(defaultObj));
-    curFlowID.current = flow.id;
+    setCurFlowID(flow.id);
     setCurFlowName(flow.name);
     app.loadGraphData(defaultObj);
   };
@@ -138,63 +138,61 @@ export default function App() {
         right: 0,
       }}
     >
-      <Tabs variant="unstyled">
-        <TabList
-          defaultValue={"ComfyUI"}
-          style={{ padding: 8, marginLeft: 16 }}
-          justifyContent={"space-between"}
-          gap={4}
-        >
-          <HStack>
-            <Button
-              size={"sm"}
-              aria-label="workspace folder"
-              onClick={() => setRoute("recentFlows")}
-            >
-              <HStack gap={1}>
-                <IconFolder size={20} />
-                <IconTriangleInvertedFilled size={8} />
-              </HStack>
-            </Button>
-            <Button
-              size={"sm"}
-              variant={"outline"}
-              colorScheme="teal"
-              aria-label="workspace folder"
-              onClick={() => onClickNewFlow()}
-            >
-              <HStack gap={1} px={3}>
-                <IconPlus size={16} color={"white"} />
-                <Text color={"white"} fontSize={"sm"}>
-                  New
-                </Text>
-              </HStack>
-            </Button>
-            <Input
-              variant="unstyled"
-              placeholder="Workflow name"
-              color={"white"}
-              value={curFlowName ?? ""}
-              onChange={(e) => {
-                setCurFlowName(e.target.value);
-                throttledOnRenameCurFlow(e.target.value);
-              }}
-            />
-          </HStack>
-          <HStack>
-            <Button
-              colorScheme="gray"
-              onClick={() => {
-                setRoute("customNodes");
-              }}
-            >
-              {missingNodeTypes.length === 0
-                ? "Custom Nodes"
-                : "Install Missing Nodes " + missingNodeTypes.length}
-            </Button>
-          </HStack>
-        </TabList>
-      </Tabs>
+      <HStack
+        style={{ padding: 8, marginLeft: 16 }}
+        justifyContent={"space-between"}
+        gap={4}
+      >
+        <HStack>
+          <Button
+            size={"sm"}
+            aria-label="workspace folder"
+            onClick={() => setRoute("recentFlows")}
+          >
+            <HStack gap={1}>
+              <IconFolder size={20} />
+              <IconTriangleInvertedFilled size={8} />
+            </HStack>
+          </Button>
+          <Button
+            size={"sm"}
+            variant={"outline"}
+            colorScheme="teal"
+            aria-label="workspace folder"
+            onClick={() => onClickNewFlow()}
+          >
+            <HStack gap={1} px={3}>
+              <IconPlus size={16} color={"white"} />
+              <Text color={"white"} fontSize={"sm"}>
+                New
+              </Text>
+            </HStack>
+          </Button>
+          <Input
+            variant="unstyled"
+            placeholder="Workflow name"
+            color={"white"}
+            value={curFlowName ?? ""}
+            onChange={(e) => {
+              setCurFlowName(e.target.value);
+              throttledOnRenameCurFlow(e.target.value);
+            }}
+          />
+        </HStack>
+        <HStack>
+          <Button
+            colorScheme="gray"
+            onClick={() => {
+              setRoute("customNodes");
+            }}
+          >
+            {missingNodeTypes.length === 0
+              ? "Custom Nodes"
+              : "Install Missing Nodes " + missingNodeTypes.length}
+          </Button>
+        </HStack>
+      </HStack>
+
       {route === "recentFlows" && (
         <RecentFilesDrawer
           onclose={() => setRoute("root")}
