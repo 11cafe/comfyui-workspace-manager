@@ -4,6 +4,7 @@ import io
 import os
 import shutil
 import tempfile
+import subprocess
 
 def get_remote_version(url):
     try:
@@ -46,6 +47,22 @@ def download_and_extract_repo(url, extract_to):
     except Exception as e:
         print(f"[Workspace Manager] Error occurred during download and extraction: {e}")
 
+def fetch_and_merge_main():
+    try:
+        # Fetch the latest changes from the remote
+        subprocess.run(["git", "fetch"], check=True)
+
+        # Checkout the local main branch
+        subprocess.run(["git", "checkout", "main"], check=True)
+
+        # Merge the remote main branch into the local main branch
+        subprocess.run(["git", "merge", "origin/main"], check=True)
+
+        print("Local main branch updated successfully.")
+
+    except subprocess.CalledProcessError as e:
+        print(f"An error occurred: {e}")
+
 #main function
 def update_version_if_outdated():
     # URLs and file paths
@@ -56,5 +73,6 @@ def update_version_if_outdated():
     # Check if update is needed
     if is_update_needed(version_file_local, version_file_remote):
         print("[Workspace Manager] Update is needed. Downloading latest version...")
-        download_and_extract_repo(repo_url, os.path.dirname(__file__))
+        fetch_and_merge_main()
+        # download_and_extract_repo(repo_url, os.path.dirname(__file__))
 
