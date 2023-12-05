@@ -51,17 +51,14 @@ def fetch_and_merge_main():
     try:
         # Fetch the latest changes from the remote
         subprocess.run(["git", "fetch"], check=True)
-
         # Checkout the local main branch
         subprocess.run(["git", "checkout", "main"], check=True)
-
         # Merge the remote main branch into the local main branch
         subprocess.run(["git", "merge", "origin/main"], check=True)
-
-        print("Local main branch updated successfully.")
+        print("[Workspace Manager] main branch updated successfully.")
 
     except subprocess.CalledProcessError as e:
-        print(f"An error occurred: {e}")
+        print(f"[Workspace Manager] An error occurred: {e}")
 
 #main function
 def update_version_if_outdated():

@@ -47,10 +47,17 @@ type CustomNode = {
 export default function App() {
   const [missingNodeTypes, setMissingNodeTypes] = useState<string[]>([]);
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
-  const curFlowID = useRef<string | null>(null);
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
-  // const curFlow = curFlowID != null ? workspace[curFlowID] : null;
   const [route, setRoute] = useState<Route>("root");
+
+  const [flowID, setFlowID] = useState<string | null>(null);
+  const curFlowID = useRef<string | null>(null);
+
+  useEffect(() => {
+    curFlowID.current = flowID;
+    // Perform actions here whenever flowID changes
+    console.log("flowID changed:", flowID);
+  }, [flowID]);
 
   const graphAppSetup = () => {
     const ext: ComfyExtension = {
@@ -69,10 +76,12 @@ export default function App() {
     const latest = localStorage.getItem("curFlowID");
     if (latest) {
       curFlowID.current = latest;
+      setFlowID(latest);
     } else {
       const graphJson = localStorage.getItem("workflow");
       const flow = createFlow(graphJson ?? "");
       curFlowID.current = flow.id;
+      setFlowID(flow.id);
     }
     setCurFlowName(workspace[curFlowID.current]?.name ?? "");
     // hacky fetch missing nodes defer until i find a way to get callback when graph fully loaded
@@ -172,7 +181,7 @@ export default function App() {
               }}
             />
           </HStack>
-          {/* <HStack>
+          <HStack>
             <Button
               colorScheme="gray"
               onClick={() => {
@@ -183,7 +192,7 @@ export default function App() {
                 ? "Custom Nodes"
                 : "Install Missing Nodes " + missingNodeTypes.length}
             </Button>
-          </HStack> */}
+          </HStack>
         </TabList>
       </Tabs>
       {route === "recentFlows" && (
