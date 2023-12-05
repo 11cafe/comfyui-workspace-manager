@@ -172,8 +172,7 @@ export default function App() {
               }}
             />
           </HStack>
-          <HStack>
-            {/* <Tab _selected={selectStyle}>111</Tab> */}
+          {/* <HStack>
             <Button
               colorScheme="gray"
               onClick={() => {
@@ -184,14 +183,17 @@ export default function App() {
                 ? "Custom Nodes"
                 : "Install Missing Nodes " + missingNodeTypes.length}
             </Button>
-          </HStack>
+          </HStack> */}
         </TabList>
       </Tabs>
       {route === "recentFlows" && (
         <RecentFilesDrawer
           onclose={() => setRoute("root")}
           loadWorkflowID={loadWorkflowID}
-          onClickNewFlow={onClickNewFlow}
+          onClickNewFlow={() => {
+            onClickNewFlow();
+            setRoute("root");
+          }}
         />
       )}
 
