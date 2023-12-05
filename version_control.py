@@ -2,6 +2,8 @@ import urllib.request
 import zipfile
 import io
 import os
+import shutil
+import tempfile
 
 def get_remote_version(url):
     try:
@@ -25,11 +27,22 @@ def is_update_needed(local_version_file, remote_version_url):
     else:
         return False  # No update needed
 
-def download_and_extract_repo(url, extract_to='.'):
+def download_and_extract_repo(url, extract_to):
+    print(f"[Workspace Manager] Downloading from {url} to {extract_to}")
     try:
-        with urllib.request.urlopen(url) as response:
-            with zipfile.ZipFile(io.BytesIO(response.read())) as zip_ref:
-                zip_ref.extractall(extract_to)
+        # Create a temporary directory to extract the zip file
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            with urllib.request.urlopen(url) as response:
+                with zipfile.ZipFile(io.BytesIO(response.read())) as zip_ref:
+                    # Extract to the temporary directory
+                    zip_ref.extractall(tmp_dir)
+                    # Assuming the first directory in the zip is the one we want
+                    extracted_folder = os.path.join(tmp_dir, os.listdir(tmp_dir)[0])
+
+                    # Move contents to the desired location
+                    for filename in os.listdir(extracted_folder):
+                        shutil.move(os.path.join(extracted_folder, filename), os.path.join(extract_to, filename))
+
     except Exception as e:
         print(f"[Workspace Manager] Error occurred during download and extraction: {e}")
 
@@ -43,5 +56,5 @@ def update_version_if_outdated():
     # Check if update is needed
     if is_update_needed(version_file_local, version_file_remote):
         print("[Workspace Manager] Update is needed. Downloading latest version...")
-        download_and_extract_repo(repo_url, 'path_to_extract_to')
+        download_and_extract_repo(repo_url, os.path.dirname(__file__))
 
