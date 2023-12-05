@@ -20,6 +20,7 @@ import asyncio
 import subprocess
 import os
 from git import Repo
+from .version_control import update_version_if_outdated
 
 WEB_DIRECTORY = "ui/dist"
 NODE_CLASS_MAPPINGS = {}
@@ -38,6 +39,7 @@ def install_dependencies():
     subprocess.run([sys.executable, '-m', 'pip', 'install', '-r', requirements_path])
 
 install_dependencies()
+update_version_if_outdated()
 
 def setup_js():
     import nodes

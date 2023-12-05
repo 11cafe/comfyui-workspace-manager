@@ -33,13 +33,15 @@ def download_and_extract_repo(url, extract_to='.'):
     except Exception as e:
         print(f"[Workspace Manager] Error occurred during download and extraction: {e}")
 
-# URLs and file paths
-repo_url = 'https://github.com/11cafe/comfyui-workspace-manager/archive/refs/heads/main.zip'
-version_file_local =os.path.join(os.path.dirname(__file__),'version.txt')
-version_file_remote = 'https://raw.githubusercontent.com/11cafe/comfyui-workspace-manager/main/version.txt'
+#main function
+def update_version_if_outdated():
+    # URLs and file paths
+    repo_url = 'https://github.com/11cafe/comfyui-workspace-manager/archive/refs/heads/main.zip'
+    version_file_local =os.path.join(os.path.dirname(__file__),'version.txt')
+    version_file_remote = 'https://raw.githubusercontent.com/11cafe/comfyui-workspace-manager/main/version.txt'
 
-# Check if update is needed
-if is_update_needed(version_file_local, version_file_remote):
-    print("[Workspace Manager] Update is needed. Downloading latest version...")
-    download_and_extract_repo(repo_url, 'path_to_extract_to')
+    # Check if update is needed
+    if is_update_needed(version_file_local, version_file_remote):
+        print("[Workspace Manager] Update is needed. Downloading latest version...")
+        download_and_extract_repo(repo_url, 'path_to_extract_to')
 
