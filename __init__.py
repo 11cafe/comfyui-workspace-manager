@@ -5,21 +5,11 @@ import requests
 import folder_paths
 import os
 import sys
-from git import Repo
 import threading
-import re
-import locale
 import subprocess  # don't remove this
-from tqdm.auto import tqdm
-import concurrent
-import ssl
 from urllib.parse import urlparse
-import http.client
-import re
-import asyncio
 import subprocess
 import os
-from git import Repo
 from .version_control import update_version_if_outdated
 
 WEB_DIRECTORY = "ui/dist"
@@ -39,7 +29,6 @@ def install_dependencies():
     subprocess.run([sys.executable, '-m', 'pip', 'install', '-r', requirements_path])
 
 install_dependencies()
-update_version_if_outdated()
 
 def setup_js():
     import nodes
@@ -60,6 +49,9 @@ def fetch_server(nodes):
             'error': 'Failed to find custom nodes'
         }
 
+@server.PromptServer.instance.routes.post("/workspace/update_version")
+async def update_version(request):
+    update_version_if_outdated()
 
 @server.PromptServer.instance.routes.post("/workspace/find_nodes")
 async def install_nodes(request):
@@ -95,23 +87,21 @@ async def install_nodes(request):
 
     tasks = []
     print(f"Installing custom nodes", nodes)
+    custom_node_path = os.path.join(comfy_path, 'custom_nodes')
     for custom_node in nodes:
         gitUrl = custom_node['gitHtmlUrl']
-        print('gitUrl', gitUrl)
-        await response.write(f"Instaling custom node: '{custom_node}'\n".encode())
-        if not gitUrl:
-            await response.write(f"Github url is null: '{custom_node}'\n".encode())
-            continue
-        task = asyncio.create_task(install_node(gitUrl))
-        tasks.append(task)
+        print(f"Cloning repository: {gitUrl}")
+        run_script(["git", "clone", gitUrl+'.git'], custom_node_path)
 
-    for task in asyncio.as_completed(tasks):
-        result = await task
-        await response.write(result.encode())
+import subprocess
+import threading
 
-    await response.write_eof()
-    return response
+# Assuming handle_stream is defined to handle and print the stream
+def handle_stream(stream, prefix):
+    for line in stream:
+        print(prefix + line, end='')
 
+# Modified run_script function
 def run_script(cmd, cwd='.'):
     if len(cmd) > 0 and cmd[0].startswith("#"):
         print(f"[ComfyUI-Manager] Unexpected behavior: `{cmd}`")

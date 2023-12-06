@@ -89,6 +89,9 @@ export default function App() {
   };
   useEffect(() => {
     graphAppSetup();
+    fetch("/workspace/update_version", {
+      method: "POST",
+    }).then((_res) => {});
     setInterval(() => {
       if (curFlowID.current != null) {
         const graphJson = localStorage.getItem("workflow");
@@ -183,7 +186,7 @@ export default function App() {
           />
         </HStack>
         <HStack>
-          {missingNodeTypes.length > 0 && (
+          {/* {missingNodeTypes.length > 0 && (
             <Button
               colorScheme="gray"
               onClick={() => {
@@ -194,7 +197,7 @@ export default function App() {
                 ? "Custom Nodes"
                 : "Install Missing Nodes " + missingNodeTypes.length}
             </Button>
-          )}
+          )} */}
         </HStack>
       </HStack>
 

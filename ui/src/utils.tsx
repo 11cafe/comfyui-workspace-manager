@@ -16,11 +16,6 @@ function sanitizeNodeName(string: string): string {
   });
 }
 export function findMissingNodes(): string[] {
-  console.log("find missing!!");
-  console.log(
-    "LiteGraph.registered_node_types",
-    LiteGraph.registered_node_types
-  );
   const missingNodeTypes = [];
   for (let n of app.graph._nodes) {
     // Patch T2IAdapterLoader to ControlNetLoader since they are the same node now
