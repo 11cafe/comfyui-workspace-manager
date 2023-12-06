@@ -55,6 +55,11 @@ export default function App() {
   const setCurFlowID = (id: string) => {
     curFlowID.current = id;
     setFlowID(id);
+    // hacky fetch missing nodes defer until i find a way to get callback when graph fully loaded
+    setTimeout(() => {
+      const missing = findMissingNodes();
+      setMissingNodeTypes(missing);
+    }, 1000);
   };
 
   const graphAppSetup = () => {
@@ -81,11 +86,6 @@ export default function App() {
       setCurFlowID(flow.id);
       setCurFlowName(flow.name ?? "");
     }
-    // hacky fetch missing nodes defer until i find a way to get callback when graph fully loaded
-    setTimeout(() => {
-      const missing = findMissingNodes();
-      setMissingNodeTypes(missing);
-    }, 1000);
   };
   useEffect(() => {
     graphAppSetup();
@@ -177,16 +177,18 @@ export default function App() {
           />
         </HStack>
         <HStack>
-          <Button
-            colorScheme="gray"
-            onClick={() => {
-              setRoute("customNodes");
-            }}
-          >
-            {missingNodeTypes.length === 0
-              ? "Custom Nodes"
-              : "Install Missing Nodes " + missingNodeTypes.length}
-          </Button>
+          {missingNodeTypes.length > 0 && (
+            <Button
+              colorScheme="gray"
+              onClick={() => {
+                setRoute("customNodes");
+              }}
+            >
+              {missingNodeTypes.length === 0
+                ? "Custom Nodes"
+                : "Install Missing Nodes " + missingNodeTypes.length}
+            </Button>
+          )}
         </HStack>
       </HStack>
 

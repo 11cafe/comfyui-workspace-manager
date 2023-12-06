@@ -23816,7 +23816,10 @@ const b8 = {
 };
 function x8() {
   const [e, t] = b.useState([]), r = b.useRef({}), [n, o] = b.useState(null), [i, a] = b.useState("root"), [s, l] = b.useState(null), u = b.useRef(null), c = (x) => {
-    u.current = x, l(x);
+    u.current = x, l(x), setTimeout(() => {
+      const m = y8();
+      t(m);
+    }, 1e3);
   }, d = () => {
     const x = {
       // Unique name for the extension
@@ -23836,10 +23839,6 @@ function x8() {
       const h = localStorage.getItem("workflow"), y = j1(h ?? "");
       c(y.id), o(y.name ?? "");
     }
-    setTimeout(() => {
-      const h = y8();
-      t(h);
-    }, 1e3);
   };
   b.useEffect(() => {
     d(), setInterval(() => {
@@ -23924,7 +23923,7 @@ function x8() {
                   }
                 )
               ] }),
-              /* @__PURE__ */ C.jsx(Ur, { children: /* @__PURE__ */ C.jsx(
+              /* @__PURE__ */ C.jsx(Ur, { children: e.length > 0 && /* @__PURE__ */ C.jsx(
                 vo,
                 {
                   colorScheme: "gray",
