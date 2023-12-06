@@ -8,7 +8,7 @@ import { ChakraProvider } from "@chakra-ui/react";
 import { extendTheme, type ThemeConfig } from "@chakra-ui/react";
 
 const topbar = document.createElement("div");
-document.body.prepend(topbar);
+document.body.append(topbar);
 
 const config: ThemeConfig = {
   // initialColorMode: "light",

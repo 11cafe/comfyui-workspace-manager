@@ -23869,7 +23869,7 @@ function x8() {
     av,
     {
       style: {
-        width: "100%",
+        width: "100vh",
         position: "absolute",
         top: 0,
         left: 0,
@@ -23881,8 +23881,7 @@ function x8() {
           {
             style: {
               padding: 8,
-              marginLeft: 16,
-              position: "absolute",
+              position: "fixed",
               top: 0,
               left: 0,
               right: 0
@@ -24090,7 +24089,7 @@ Installation failed.`);
   ) });
 }
 const ZC = document.createElement("div");
-document.body.prepend(ZC);
+document.body.append(ZC);
 const w8 = {
   // initialColorMode: "light",
   // useSystemColorMode: false,

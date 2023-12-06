@@ -128,7 +128,7 @@ export default function App() {
   return (
     <Box
       style={{
-        width: "100%",
+        width: "100vh",
         position: "absolute",
         top: 0,
         left: 0,
@@ -138,8 +138,7 @@ export default function App() {
       <HStack
         style={{
           padding: 8,
-          marginLeft: 16,
-          position: "absolute",
+          position: "fixed",
           top: 0,
           left: 0,
           right: 0,
