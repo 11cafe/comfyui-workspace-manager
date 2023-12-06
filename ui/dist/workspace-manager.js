@@ -23879,7 +23879,14 @@ function x8() {
         /* @__PURE__ */ C.jsxs(
           Ur,
           {
-            style: { padding: 8, marginLeft: 16 },
+            style: {
+              padding: 8,
+              marginLeft: 16,
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0
+            },
             justifyContent: "space-between",
             gap: 4,
             children: [
