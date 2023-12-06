@@ -1,8 +1,8 @@
-# ☕️ ComfyUI Workspace Manager
+# ☕️ ComfyUI Workspace Manager - Comfyspace
 
-A ComfyUI custom node extension to manage all your workflows in one place, seamlessly switch between workflows. Create, update, delete workflows in one workspace.
+A ComfyUI custom node extension to centralize the management of all your workflows in one place. Seamlessly switch between workflows, as well as create, update, and delete them within a single workspace.
 
-**Looking for colaborators and coworkers to develop this ComfyUI project management tool**. If you know React, Python or ML model deployment, please reach out to me (weixuanfu01@gmail.com) if you're interested! We want to make it easy to **manage, share and deploy** ComfyUI project.
+**Looking for colaborators and coworkers to develop this ComfyUI project management tool**. If you know React, Python or ML model deployment, please reach out to weixuanfu01@gmail.com if you're interested! We want to make it easy to **manage, share and deploy** ComfyUI project.
 
 If you have questions or suggestions, please join our Discord: https://discord.gg/bN9E8MnMT5
 
@@ -18,8 +18,8 @@ cd custom_nodes && git clone https://github.com/11cafe/comfyui-workspace-manager
 
 demo video: https://youtu.be/II7Xxpz4TVw
 
-- Switch between workflows in your workspace
-- Create and rename workflows
+- Effortlessly switch between different workflows in your workspace.
+- Create new workflows and rename existing ones.
 - One-click install models (Upcoming!)
 - One-click share workflow (Upcoming!)
 
