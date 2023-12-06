@@ -24,6 +24,8 @@ demo video: https://youtu.be/II7Xxpz4TVw
 - One-click share workflow (Upcoming!)
 
 ![switch between flows demo](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/ad3495ee-b4c5-4747-a149-0ba69c2f1630)
+<img width="1053" alt="recent workflows list" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/52355940-b7ac-41b2-843e-5c7bd19438d8">
+<img width="948" alt="workflow name topbar" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/9aaf4d76-a44e-45f2-ab24-9ef5cf36d4a9">
 
 ## Upcoming Features
 
