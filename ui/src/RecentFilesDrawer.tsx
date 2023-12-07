@@ -73,7 +73,6 @@ export default function RecentFilesDrawer({
                     borderRadius={6}
                     p={2}
                     mb={2}
-                    backgroundColor={"#EEF2F6"}
                     cursor={"pointer"}
                     onClick={() => {
                       loadWorkflowID(n.id);

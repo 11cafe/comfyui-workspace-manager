@@ -21,10 +21,13 @@ import {
   Stack,
   DrawerContent,
   DrawerCloseButton,
+  useColorMode,
 } from "@chakra-ui/react";
 import {
   IconFolder,
+  IconMoon,
   IconPlus,
+  IconSun,
   IconTriangleInvertedFilled,
 } from "@tabler/icons-react";
 import RecentFilesDrawer from "./RecentFilesDrawer";
@@ -58,6 +61,8 @@ export default function App() {
   const [loadingDB, setLoadingDB] = useState(true);
   const [flowID, setFlowID] = useState<string | null>(null);
   const curFlowID = useRef<string | null>(null);
+  const { colorMode, toggleColorMode } = useColorMode();
+
   const setCurFlowID = (id: string) => {
     curFlowID.current = id;
     setFlowID(id);
@@ -161,6 +166,7 @@ export default function App() {
           right: 0,
         }}
         justifyContent={"space-between"}
+        alignItems={"center"}
         gap={4}
       >
         <HStack>
@@ -170,7 +176,7 @@ export default function App() {
             onClick={() => setRoute("recentFlows")}
           >
             <HStack gap={1}>
-              <IconFolder size={20} />
+              <IconFolder size={21} />
               <IconTriangleInvertedFilled size={8} />
             </HStack>
           </Button>
@@ -200,6 +206,13 @@ export default function App() {
           />
         </HStack>
         <HStack>
+          <Button onClick={toggleColorMode} variant="link">
+            {colorMode === "light" ? (
+              <IconMoon size={20} />
+            ) : (
+              <IconSun size={20} />
+            )}
+          </Button>
           {/* {missingNodeTypes.length > 0 && (
             <Button
               colorScheme="gray"
