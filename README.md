@@ -1,6 +1,6 @@
 # ☕️ ComfyUI Workspace Manager - Comfyspace
 
-A ComfyUI custom node extension to centralize the management of all your workflows in one place. Seamlessly switch between workflows, as well as create, update, and delete them within a single workspace.
+A ComfyUI custom node extension to **centralize the management of all your workflows in one place. Seamlessly switch between workflows, create and update them within a single workspace**, like using Google Docs.
 
 **Looking for colaborators and coworkers to develop this ComfyUI project management tool**. If you know React, Python or ML model deployment, please reach out to weixuanfu01@gmail.com if you're interested! We want to make it easy to **manage, share and deploy** ComfyUI project.
 
@@ -33,7 +33,7 @@ demo video: https://youtu.be/II7Xxpz4TVw
 
 ### Where are my workflow and workspace data stored?
 
-Right now we are storing in your browser's [local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage), we can later migrate to store it in your disk or sync to cloud if you're logged in.
+Right now we are storing in your browser's [local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage), so if you switch browser, you will not see your workspace data anymore. We can later migrate to store it in your disk or sync to cloud if you're logged in.
 
 ## Upcoming Features
 
