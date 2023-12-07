@@ -199,14 +199,14 @@ export default function App() {
                 : "Install Missing Nodes " + missingNodeTypes.length}
             </Button>
           )} */}
-          <Button
+          {/* <Button
             colorScheme="gray"
             onClick={() => {
               setRoute("models");
             }}
           >
             Models
-          </Button>
+          </Button> */}
         </HStack>
       </HStack>
 
