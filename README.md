@@ -4,15 +4,17 @@ A ComfyUI custom node extension to centralize the management of all your workflo
 
 **Looking for colaborators and coworkers to develop this ComfyUI project management tool**. If you know React, Python or ML model deployment, please reach out to weixuanfu01@gmail.com if you're interested! We want to make it easy to **manage, share and deploy** ComfyUI project.
 
-If you have questions or suggestions, please join our Discord: https://discord.gg/bN9E8MnMT5
+If you have questions or suggestions, please join our [Discord](https://discord.gg/bN9E8MnMT5)
 
 ## Install
 
-in your ComfyUI root folder
+Like any other custom node installation, in your ComfyUI root folder
 
 ```
 cd custom_nodes && git clone https://github.com/11cafe/comfyui-workspace-manager.git
 ```
+
+and restart your ComfyUI
 
 ## Features
 
@@ -26,6 +28,12 @@ demo video: https://youtu.be/II7Xxpz4TVw
 ![switch between flows demo](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/ad3495ee-b4c5-4747-a149-0ba69c2f1630)
 <img width="1053" alt="recent workflows list" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/52355940-b7ac-41b2-843e-5c7bd19438d8">
 <img width="948" alt="workflow name topbar" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/9aaf4d76-a44e-45f2-ab24-9ef5cf36d4a9">
+
+## FAQ
+
+### Where are my workflow and workspace data stored?
+
+Right now we are storing in your browser's [local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage), we can later migrate to store it in your disk or sync to cloud if you're logged in.
 
 ## Upcoming Features
 

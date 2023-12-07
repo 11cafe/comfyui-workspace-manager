@@ -18,6 +18,8 @@ export default defineConfig({
     watch: {
       include: ["src/**"],
     },
+    outDir: "../../dist",
+    emptyOutDir: true,
     rollupOptions: {
       // make sure to externalize deps that shouldn't be bundled
       // into your library
@@ -29,6 +31,7 @@ export default defineConfig({
           app: "app",
           Litegraph: "LiteGraph",
         },
+        dir: "../dist",
       },
     },
   },

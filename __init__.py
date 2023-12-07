@@ -12,7 +12,7 @@ import subprocess
 import os
 from .version_control import update_version_if_outdated
 
-WEB_DIRECTORY = "ui/dist"
+WEB_DIRECTORY = "dist"
 NODE_CLASS_MAPPINGS = {}
 __all__ = ['NODE_CLASS_MAPPINGS']
 version = "V1.0.0"
