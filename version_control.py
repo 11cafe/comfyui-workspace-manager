@@ -71,5 +71,7 @@ def update_version_if_outdated():
     if is_update_needed(version_file_local, version_file_remote):
         print("[Workspace Manager] Update is needed. Downloading latest version...")
         fetch_and_merge_main()
+        return True
         # download_and_extract_repo(repo_url, os.path.dirname(__file__))
+    return False
 

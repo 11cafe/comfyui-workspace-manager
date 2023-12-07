@@ -36,7 +36,6 @@ export async function loadDBs() {
     //   console.log("workflowsStr from local storage", workflowsStr);
     // }
     workspace = JSON.parse(workflowsStr ?? "{}");
-    console.log("workflowsStr from server", workspace);
   };
   const loadTags = async () => {
     let tagsStr = await getDB("tags");
@@ -101,7 +100,6 @@ async function saveDB(table: Table, jsonData: string) {
     }
 
     const result = await response.text();
-    console.log("saveDB", result);
     return result;
   } catch (error) {
     console.error("Error saving workspace:", error);

@@ -51,7 +51,8 @@ def fetch_server(nodes):
 
 @server.PromptServer.instance.routes.post("/workspace/update_version")
 async def update_version(request):
-    update_version_if_outdated()
+    updated = update_version_if_outdated()
+    return web.Response(status=200, text="Version updated" if updated else "Version is up to date")
 
 @server.PromptServer.instance.routes.post("/workspace/find_nodes")
 async def install_nodes(request):

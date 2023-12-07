@@ -107,7 +107,7 @@ export default function App() {
     graphAppSetup();
     fetch("/workspace/update_version", {
       method: "POST",
-    }).then((_res) => {});
+    });
     setInterval(() => {
       if (curFlowID.current != null) {
         const graphJson = localStorage.getItem("workflow");
