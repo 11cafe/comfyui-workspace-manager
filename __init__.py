@@ -28,7 +28,7 @@ def install_dependencies():
     # subprocess.run(['pip', 'install', '-r', requirements_path])
     subprocess.run([sys.executable, '-m', 'pip', 'install', '-r', requirements_path])
 
-install_dependencies()
+# install_dependencies()
 
 def setup_js():
     import nodes
