@@ -1,6 +1,8 @@
 // @ts-ignore
 import { v4 as uuidv4 } from "uuid";
 
+type Tables = "workflows" | "tags";
+
 export type Workflow = {
   id: string;
   json: string;
@@ -43,6 +45,7 @@ export function updateFlow(
     updateTime: Date.now(),
   };
   localStorage.setItem("workspace", JSON.stringify(workspace));
+  saveDB("workflows", JSON.stringify(workspace));
 }
 export function createFlow(json: string, name?: string): Workflow {
   const uuid = uuidv4(); // ⇨ '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
@@ -64,4 +67,42 @@ export function listWorkflows(): Workflow[] {
 export function deleteFlow(id: string) {
   delete workspace[id];
   localStorage.setItem("workspace", JSON.stringify(workspace));
+}
+
+async function saveDB(table: Tables, jsonData: string) {
+  try {
+    const response = await fetch("/workspace/save_db", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ table, json: jsonData }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const result = await response.text();
+    console.log("saveDB", result);
+    return result;
+  } catch (error) {
+    console.error("Error saving workspace:", error);
+  }
+}
+
+async function getDB(table: Tables) {
+  try {
+    const response = await fetch(`/workspace/get_db?table=${table}`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("getDB", data);
+    return data;
+  } catch (error) {
+    console.error("Error fetching workspace:", error);
+  }
 }
