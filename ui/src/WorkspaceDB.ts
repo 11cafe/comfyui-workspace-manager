@@ -1,7 +1,7 @@
 // @ts-ignore
 import { v4 as uuidv4 } from "uuid";
 
-type Tables = "workflows" | "tags";
+type Table = "workflows" | "tags";
 
 export type Workflow = {
   id: string;
@@ -25,9 +25,26 @@ type Tag = {
   updatedAt: number;
 };
 
-const workflowsStr = localStorage.getItem("workspace");
-export const workspace: Workflows =
-  workflowsStr != null ? JSON.parse(workflowsStr) : {};
+export let workspace: Workflows = {};
+export let tags: Tags = {};
+
+export async function loadDBs() {
+  const loadWorkflows = async () => {
+    let workflowsStr = await getDB("workflows");
+    // if (workflowsStr == null) {
+    //   workflowsStr = localStorage.getItem("workspace");
+    //   console.log("workflowsStr from local storage", workflowsStr);
+    // }
+    workspace = JSON.parse(workflowsStr ?? "{}");
+    console.log("workflowsStr from server", workspace);
+  };
+  const loadTags = async () => {
+    let tagsStr = await getDB("tags");
+    tags = JSON.parse(tagsStr ?? "{}");
+  };
+  await Promise.all([loadWorkflows(), loadTags()]);
+}
+
 export function getFlow(id: string): Workflow {
   return workspace[id];
 }
@@ -69,7 +86,7 @@ export function deleteFlow(id: string) {
   localStorage.setItem("workspace", JSON.stringify(workspace));
 }
 
-async function saveDB(table: Tables, jsonData: string) {
+async function saveDB(table: Table, jsonData: string) {
   try {
     const response = await fetch("/workspace/save_db", {
       method: "POST",
@@ -91,18 +108,13 @@ async function saveDB(table: Tables, jsonData: string) {
   }
 }
 
-async function getDB(table: Tables) {
+async function getDB(table: Table) {
   try {
     const response = await fetch(`/workspace/get_db?table=${table}`);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
     const data = await response.json();
-    console.log("getDB", data);
     return data;
   } catch (error) {
     console.error("Error fetching workspace:", error);
+    return null;
   }
 }

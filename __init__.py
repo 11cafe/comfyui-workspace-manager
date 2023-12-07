@@ -140,22 +140,20 @@ async def save_db(request):
 
     return web.Response(text=f"JSON saved to {file_name}")
 
-@server.PromptServer.instance.routes.post("/workspace/get_db")
+@server.PromptServer.instance.routes.get("/workspace/get_db")
 async def get_workspace(request):
     # Extract the table parameter from the query string
     table = request.query.get('table')
-    print('get_db table', table)
     if not table:
         return web.Response(status=400, text="Table parameter is missing")
 
     file_name = f'{db_dir_path}/{table}.json'
-
     if not os.path.exists(file_name):
         return web.Response(status=404, text=f"{file_name} not found")
 
     with open(file_name, 'r') as file:
         data = json.load(file)
-
+    
     return web.json_response(data)
 
 

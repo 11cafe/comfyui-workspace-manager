@@ -28,7 +28,13 @@ import {
   IconTriangleInvertedFilled,
 } from "@tabler/icons-react";
 import RecentFilesDrawer from "./RecentFilesDrawer";
-import { Workflow, createFlow, updateFlow, workspace } from "./WorkspaceDB";
+import {
+  Workflow,
+  createFlow,
+  loadDBs,
+  updateFlow,
+  workspace,
+} from "./WorkspaceDB";
 import { findMissingNodes } from "./utils";
 import { defaultGraph } from "./defaultGraph";
 type Route = "root" | "customNodes" | "recentFlows";
@@ -49,7 +55,7 @@ export default function App() {
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
   const [route, setRoute] = useState<Route>("root");
-
+  const [loadingDB, setLoadingDB] = useState(true);
   const [flowID, setFlowID] = useState<string | null>(null);
   const curFlowID = useRef<string | null>(null);
   const setCurFlowID = (id: string) => {
@@ -62,7 +68,7 @@ export default function App() {
     }, 1000);
   };
 
-  const graphAppSetup = () => {
+  const graphAppSetup = async () => {
     const ext: ComfyExtension = {
       // Unique name for the extension
       name: "WorkspaceManager",
@@ -75,11 +81,13 @@ export default function App() {
       // async loadedGraphNode(node: LGraphNode, app: ComfyApp) {},
     };
     app.registerExtension(ext);
-
+    await loadDBs();
+    setLoadingDB(false);
     const latest = localStorage.getItem("curFlowID");
+    console.log("latest", latest);
     if (latest) {
       setCurFlowID(latest);
-      setCurFlowName(workspace[latest].name ?? "");
+      setCurFlowName(workspace[latest]?.name ?? "");
     } else {
       const graphJson = localStorage.getItem("workflow");
       const flow = createFlow(graphJson ?? "");
@@ -129,6 +137,9 @@ export default function App() {
     app.loadGraphData(defaultObj);
   };
 
+  if (loadingDB) {
+    return null;
+  }
   return (
     <Box
       style={{
