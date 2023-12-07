@@ -7,13 +7,25 @@ export type Workflow = {
   name: string;
   img?: string;
   updateTime: number;
+  // autoCates?: string[]; // categories that will be auto added to the workflow
+  tags?: string[];
 };
 
-export type Worksapce = {
+export type Workflows = {
   [id: string]: Workflow;
 };
-const db = localStorage.getItem("workspace");
-export const workspace: Worksapce = db != null ? JSON.parse(db) : {};
+export type Tags = {
+  [id: string]: Tag;
+};
+type Tag = {
+  name: string; //id
+  workflowIDs: string[];
+  updatedAt: number;
+};
+
+const workflowsStr = localStorage.getItem("workspace");
+export const workspace: Workflows =
+  workflowsStr != null ? JSON.parse(workflowsStr) : {};
 export function getFlow(id: string): Workflow {
   return workspace[id];
 }
@@ -39,6 +51,7 @@ export function createFlow(json: string, name?: string): Workflow {
     name: name ?? "Untitled Flow",
     json,
     updateTime: Date.now(),
+    tags: [],
   };
   localStorage.setItem("workspace", JSON.stringify(workspace));
   return workspace[uuid];

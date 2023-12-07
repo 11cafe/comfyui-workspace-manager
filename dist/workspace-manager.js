@@ -23567,7 +23567,8 @@ function j1(e, t) {
     id: r,
     name: t ?? "Untitled Flow",
     json: e,
-    updateTime: Date.now()
+    updateTime: Date.now(),
+    tags: []
   }, localStorage.setItem("workspace", JSON.stringify(gr)), gr[r];
 }
 function L1() {
