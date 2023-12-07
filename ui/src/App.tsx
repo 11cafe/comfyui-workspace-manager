@@ -73,7 +73,7 @@ export default function App() {
       // Unique name for the extension
       name: "WorkspaceManager",
       async setup(app) {
-        // Any setup to run after the app is createdjj
+        // Any setup to run after the app is created
       },
       async addCustomNodeDefs(defs) {
         nodeDefs.current = defs;
@@ -81,7 +81,9 @@ export default function App() {
       // async loadedGraphNode(node: LGraphNode, app: ComfyApp) {},
     };
     app.registerExtension(ext);
-    await loadDBs();
+    try {
+      await loadDBs();
+    } catch (error) {}
     setLoadingDB(false);
     const latest = localStorage.getItem("curFlowID");
     console.log("latest", latest);

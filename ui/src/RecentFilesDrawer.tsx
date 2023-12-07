@@ -9,12 +9,10 @@ import {
   Stack,
   Button,
   HStack,
-  IconButton,
   PopoverTrigger,
   PopoverContent,
   PopoverArrow,
   PopoverCloseButton,
-  PopoverHeader,
   PopoverBody,
   Popover,
 } from "@chakra-ui/react";

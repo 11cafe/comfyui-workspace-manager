@@ -2,9 +2,7 @@
 
 A ComfyUI custom node for project management to **centralize the management of all your workflows in one place**. Seamlessly switch between workflows, create and update them within a single workspace, like Google Docs.
 
-**Looking for colaborators and coworkers** to develop this ComfyUI project management tool. If you know React, Python or ML model deployment, please reach out to weixuanfu01@gmail.com We want to make it easy to **manage, share and deploy** ComfyUI project.
-
-If you have questions or suggestions, please join our [Discord](https://discord.gg/bN9E8MnMT5)
+If you have questions or suggestions, please join our [Discord Channel](https://discord.gg/bN9E8MnMT5)
 
 ## Install
 
@@ -14,7 +12,9 @@ Like any other custom node installation, in your ComfyUI root folder
 cd custom_nodes && git clone https://github.com/11cafe/comfyui-workspace-manager.git
 ```
 
-and restart your ComfyUI
+and restart your ComfyUI.
+
+It is recommended to do git clone than downloading zip folder, because you can get latest updates by `git pull`!
 
 ## Features
 
@@ -28,6 +28,8 @@ demo video: https://youtu.be/II7Xxpz4TVw
 ![switch between flows demo](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/ad3495ee-b4c5-4747-a149-0ba69c2f1630)
 <img width="1053" alt="recent workflows list" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/52355940-b7ac-41b2-843e-5c7bd19438d8">
 <img width="948" alt="workflow name topbar" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/9aaf4d76-a44e-45f2-ab24-9ef5cf36d4a9">
+
+**Looking for colaborators and coworkers** to develop this ComfyUI project management tool. If you know React, Python or ML model deployment, please reach out to weixuanfu01@gmail.com We want to make it easy to **manage, share and deploy** ComfyUI project.
 
 ## FAQ
 

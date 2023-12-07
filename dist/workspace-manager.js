@@ -23863,7 +23863,12 @@ function w8() {
       }
       // async loadedGraphNode(node: LGraphNode, app: ComfyApp) {},
     };
-    Ll.registerExtension(h), await h8(), l(!1);
+    Ll.registerExtension(h);
+    try {
+      await h8();
+    } catch {
+    }
+    l(!1);
     const g = localStorage.getItem("curFlowID");
     if (console.log("latest", g), g)
       f(g), o(((w = _t[g]) == null ? void 0 : w.name) ?? "");
