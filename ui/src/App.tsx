@@ -40,6 +40,7 @@ import {
 } from "./WorkspaceDB";
 import { findMissingNodes } from "./utils";
 import { defaultGraph } from "./defaultGraph";
+import { WorkspaceContext } from "./WorkspaceContext";
 type Route = "root" | "customNodes" | "recentFlows";
 
 type CustomNode = {
@@ -148,113 +149,95 @@ export default function App() {
     return null;
   }
   return (
-    <Box
-      style={{
-        width: "100vh",
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-      }}
-    >
-      <HStack
+    <WorkspaceContext.Provider value={{ curFlowID: flowID }}>
+      <Box
         style={{
-          padding: 8,
-          position: "fixed",
+          width: "100vh",
+          position: "absolute",
           top: 0,
           left: 0,
           right: 0,
         }}
-        justifyContent={"space-between"}
-        alignItems={"center"}
-        gap={4}
       >
-        <HStack>
-          <Button
-            size={"sm"}
-            aria-label="workspace folder"
-            onClick={() => setRoute("recentFlows")}
-          >
-            <HStack gap={1}>
-              <IconFolder size={21} />
-              <IconTriangleInvertedFilled size={8} />
-            </HStack>
-          </Button>
-          <Button
-            size={"sm"}
-            variant={"outline"}
-            colorScheme="teal"
-            aria-label="workspace folder"
-            onClick={() => onClickNewFlow()}
-          >
-            <HStack gap={1} px={3}>
-              <IconPlus size={16} color={"white"} />
-              <Text color={"white"} fontSize={"sm"}>
-                New
-              </Text>
-            </HStack>
-          </Button>
-          <Input
-            variant="unstyled"
-            placeholder="Workflow name"
-            color={"white"}
-            value={curFlowName ?? ""}
-            onChange={(e) => {
-              setCurFlowName(e.target.value);
-              throttledOnRenameCurFlow(e.target.value);
+        <HStack
+          style={{
+            padding: 8,
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+          }}
+          justifyContent={"space-between"}
+          alignItems={"center"}
+          gap={4}
+        >
+          <HStack>
+            <Button
+              size={"sm"}
+              aria-label="workspace folder"
+              onClick={() => setRoute("recentFlows")}
+            >
+              <HStack gap={1}>
+                <IconFolder size={21} />
+                <IconTriangleInvertedFilled size={8} />
+              </HStack>
+            </Button>
+            <Button
+              size={"sm"}
+              variant={"outline"}
+              colorScheme="teal"
+              aria-label="workspace folder"
+              onClick={() => onClickNewFlow()}
+            >
+              <HStack gap={1} px={3}>
+                <IconPlus size={16} color={"white"} />
+                <Text color={"white"} fontSize={"sm"}>
+                  New
+                </Text>
+              </HStack>
+            </Button>
+            <Input
+              variant="unstyled"
+              placeholder="Workflow name"
+              color={"white"}
+              value={curFlowName ?? ""}
+              onChange={(e) => {
+                setCurFlowName(e.target.value);
+                throttledOnRenameCurFlow(e.target.value);
+              }}
+            />
+          </HStack>
+          <HStack>
+            <Button onClick={toggleColorMode} variant="link">
+              {colorMode === "light" ? (
+                <IconMoon size={20} />
+              ) : (
+                <IconSun size={20} />
+              )}
+            </Button>
+          </HStack>
+        </HStack>
+
+        {route === "recentFlows" && (
+          <RecentFilesDrawer
+            onclose={() => setRoute("root")}
+            loadWorkflowID={loadWorkflowID}
+            onClickNewFlow={() => {
+              onClickNewFlow();
+              setRoute("root");
             }}
           />
-        </HStack>
-        <HStack>
-          <Button onClick={toggleColorMode} variant="link">
-            {colorMode === "light" ? (
-              <IconMoon size={20} />
-            ) : (
-              <IconSun size={20} />
-            )}
-          </Button>
-          {/* {missingNodeTypes.length > 0 && (
-            <Button
-              colorScheme="gray"
-              onClick={() => {
-                setRoute("customNodes");
-              }}
-            >
-              {missingNodeTypes.length === 0
-                ? "Custom Nodes"
-                : "Install Missing Nodes " + missingNodeTypes.length}
-            </Button>
-          )} */}
-          {/* <Button
-            colorScheme="gray"
-            onClick={() => {
-              setRoute("models");
-            }}
-          >
-            Models
-          </Button> */}
-        </HStack>
-      </HStack>
+        )}
 
-      {route === "recentFlows" && (
-        <RecentFilesDrawer
-          onclose={() => setRoute("root")}
-          loadWorkflowID={loadWorkflowID}
-          onClickNewFlow={() => {
-            onClickNewFlow();
+        <CustomNodesDrawer
+          missingNodes={missingNodeTypes}
+          isOpen={route === "customNodes"}
+          onclose={() => {
             setRoute("root");
           }}
         />
-      )}
-
-      <CustomNodesDrawer
-        missingNodes={missingNodeTypes}
-        isOpen={route === "customNodes"}
-        onclose={() => {
-          setRoute("root");
-        }}
-      />
-    </Box>
+      </Box>
+    </WorkspaceContext.Provider>
   );
 }
 
