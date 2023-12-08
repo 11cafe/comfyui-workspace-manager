@@ -20,8 +20,9 @@ import {
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState } from "react";
 import { Workflow, deleteFlow, listWorkflows, workspace } from "./WorkspaceDB";
-import { IconPlus, IconTrash } from "@tabler/icons-react";
+import { IconPlus, IconTag, IconTrash } from "@tabler/icons-react";
 import { WorkspaceContext } from "./WorkspaceContext";
+import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 
 type Props = {
   onclose: () => void;
@@ -56,18 +57,33 @@ export default function RecentFilesDrawer({
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
-          <DrawerHeader>Recent Workflows</DrawerHeader>
+          <DrawerHeader>
+            <HStack alignItems={"center"}>
+              <Text mr={6}>Recent Workflows</Text>
+              <Button
+                leftIcon={<IconPlus />}
+                variant="outline"
+                size={"sm"}
+                colorScheme="teal"
+                onClick={onClickNewFlow}
+              >
+                New
+              </Button>
+            </HStack>
+          </DrawerHeader>
           <DrawerBody>
-            <Button
-              leftIcon={<IconPlus />}
-              variant="outline"
-              size={"sm"}
-              colorScheme="teal"
-              mb={6}
-              onClick={onClickNewFlow}
-            >
-              New
-            </Button>
+            <HStack spacing={4} mb={6}>
+              <Button
+                leftIcon={<IconTag />}
+                colorScheme="gray"
+                variant="solid"
+                size={"sm"}
+                px={3}
+                borderRadius={16}
+              >
+                New Tag
+              </Button>
+            </HStack>
             {recentFlows.map((n) => {
               const selected = n.id === curFlowID;
               return (
@@ -100,6 +116,7 @@ export default function RecentFilesDrawer({
                     </Text>
                     {/* </Stack> */}
                   </Box>
+                  <AddTagToWorkflowPopover workflow={n} />
                   <Popover>
                     {({ isOpen, onClose }) => (
                       <>

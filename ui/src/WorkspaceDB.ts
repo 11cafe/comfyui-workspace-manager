@@ -17,16 +17,22 @@ export type Workflows = {
   [id: string]: Workflow;
 };
 export type Tags = {
-  [id: string]: Tag;
+  [name: string]: Tag;
 };
 export type Tag = {
-  name: string; //id
+  name: string;
   workflowIDs: string[];
   updateTime: number;
 };
+type TagsTable = {
+  tags: Tags;
+  listAll(): Tag[];
+  upsert(name: string): Tag;
+  delete(tagId: number): void;
+};
 
 export let workspace: Workflows = {};
-export let tags: Tags = {};
+export let tagsTable: TagsTable | null = null;
 
 export async function loadDBs() {
   const loadWorkflows = async () => {
@@ -37,8 +43,7 @@ export async function loadDBs() {
     workspace = JSON.parse(workflowsStr ?? "{}");
   };
   const loadTags = async () => {
-    let tagsStr = await getDB("tags");
-    tags = JSON.parse(tagsStr ?? "{}") ?? {};
+    tagsTable = await loadTagsTable();
   };
   await Promise.all([loadWorkflows(), loadTags()]);
 }
@@ -81,9 +86,6 @@ export function createFlow(json: string, name?: string): Workflow {
 export function listWorkflows(): Workflow[] {
   return Object.values(workspace).sort((a, b) => b.updateTime - a.updateTime);
 }
-export function listTags(): Tag[] {
-  return Object.values(tags).sort((a, b) => b.updateTime - a.updateTime);
-}
 
 export function deleteFlow(id: string) {
   delete workspace[id];
@@ -117,4 +119,29 @@ async function getDB(table: Table) {
     console.error("Error fetching workspace:", error);
     return null;
   }
+}
+
+async function loadTagsTable() {
+  let tagsStr = await getDB("tags");
+  let tags: Tags = JSON.parse(tagsStr ?? "{}") ?? {};
+  return {
+    tags, // Expose the tags array publicly
+    listAll() {
+      return Object.values(tags).sort((a, b) => b.updateTime - a.updateTime);
+    },
+    upsert(name: string) {
+      if (tags[name] == null) {
+        tags[name] = {
+          name,
+          workflowIDs: [],
+          updateTime: Date.now(),
+        };
+      }
+      tags[name].updateTime = Date.now();
+      return tags[name];
+    },
+    delete(tagId: number) {
+      delete tags[tagId];
+    },
+  };
 }
