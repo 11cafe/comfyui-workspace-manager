@@ -19,10 +19,10 @@ export type Workflows = {
 export type Tags = {
   [id: string]: Tag;
 };
-type Tag = {
+export type Tag = {
   name: string; //id
   workflowIDs: string[];
-  updatedAt: number;
+  updateTime: number;
 };
 
 export let workspace: Workflows = {};
@@ -31,15 +31,14 @@ export let tags: Tags = {};
 export async function loadDBs() {
   const loadWorkflows = async () => {
     let workflowsStr = await getDB("workflows");
-    // if (workflowsStr == null) {
-    //   workflowsStr = localStorage.getItem("workspace");
-    //   console.log("workflowsStr from local storage", workflowsStr);
-    // }
+    if (workflowsStr == null) {
+      workflowsStr = localStorage.getItem("workspace");
+    }
     workspace = JSON.parse(workflowsStr ?? "{}");
   };
   const loadTags = async () => {
     let tagsStr = await getDB("tags");
-    tags = JSON.parse(tagsStr ?? "{}");
+    tags = JSON.parse(tagsStr ?? "{}") ?? {};
   };
   await Promise.all([loadWorkflows(), loadTags()]);
 }
@@ -60,6 +59,7 @@ export function updateFlow(
     id,
     updateTime: Date.now(),
   };
+  // TODO: delete localStorage.setItem once fully migrate to disk
   localStorage.setItem("workspace", JSON.stringify(workspace));
   saveDB("workflows", JSON.stringify(workspace));
 }
@@ -72,17 +72,24 @@ export function createFlow(json: string, name?: string): Workflow {
     updateTime: Date.now(),
     tags: [],
   };
+  // TODO: delete localStorage.setItem once fully migrate to disk
   localStorage.setItem("workspace", JSON.stringify(workspace));
+  saveDB("workflows", JSON.stringify(workspace));
   return workspace[uuid];
 }
 
 export function listWorkflows(): Workflow[] {
   return Object.values(workspace).sort((a, b) => b.updateTime - a.updateTime);
 }
+export function listTags(): Tag[] {
+  return Object.values(tags).sort((a, b) => b.updateTime - a.updateTime);
+}
 
 export function deleteFlow(id: string) {
   delete workspace[id];
+  // TODO: delete localStorage.setItem once fully migrate to disk
   localStorage.setItem("workspace", JSON.stringify(workspace));
+  saveDB("workflows", JSON.stringify(workspace));
 }
 
 async function saveDB(table: Table, jsonData: string) {
