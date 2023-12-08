@@ -39,7 +39,9 @@ Demo video: https://youtu.be/II7Xxpz4TVw
 
 ### Where are my workflow and workspace data stored?
 
-Right now we are storing in your browser's [local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage), so if you switch browser, you will not see your workspace data anymore. We can later migrate to store it in your disk or sync to cloud if you're logged in.
+We are now storing your workflow data in your disk under /ComfyUI/custom_nodes/comfyui-workspace-manager/db/
+we will enable export dir to store all the json files.
+~~Right now we are storing in your browser's [local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)~~
 
 ## Upcoming Features
 
