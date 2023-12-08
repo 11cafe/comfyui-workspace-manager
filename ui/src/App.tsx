@@ -94,7 +94,6 @@ export default function App() {
     }
     setLoadingDB(false);
     const latest = localStorage.getItem("curFlowID");
-    console.log("latest", latest);
     if (latest) {
       setCurFlowID(latest);
       setCurFlowName(workspace[latest]?.name ?? "");

@@ -23899,7 +23899,7 @@ function _8() {
     }
     l(!1);
     const k = localStorage.getItem("curFlowID");
-    if (console.log("latest", k), k)
+    if (k)
       v(k), o(((E = gt[k]) == null ? void 0 : E.name) ?? "");
     else {
       const _ = localStorage.getItem("workflow"), $ = j1(_ ?? "");
