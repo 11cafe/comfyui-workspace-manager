@@ -89,7 +89,9 @@ export default function App() {
     app.registerExtension(ext);
     try {
       await loadDBs();
-    } catch (error) {}
+    } catch (error) {
+      console.error("error loading db", error);
+    }
     setLoadingDB(false);
     const latest = localStorage.getItem("curFlowID");
     console.log("latest", latest);

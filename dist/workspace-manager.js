@@ -23606,16 +23606,13 @@ function b8(e) {
 }
 async function bv(e, t) {
   try {
-    const r = await fetch("/workspace/save_db", {
+    return await (await fetch("/workspace/save_db", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({ table: e, json: t })
-    });
-    if (!r.ok)
-      throw new Error(`HTTP error! Status: ${r.status}`);
-    return await r.text();
+    })).text();
   } catch (r) {
     console.error("Error saving workspace:", r);
   }
@@ -23897,7 +23894,8 @@ function _8() {
     Nl.registerExtension(w);
     try {
       await y8();
-    } catch {
+    } catch (_) {
+      console.error("error loading db", _);
     }
     l(!1);
     const k = localStorage.getItem("curFlowID");

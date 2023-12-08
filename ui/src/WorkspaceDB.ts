@@ -101,11 +101,6 @@ async function saveDB(table: Table, jsonData: string) {
       },
       body: JSON.stringify({ table, json: jsonData }),
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
     const result = await response.text();
     return result;
   } catch (error) {
