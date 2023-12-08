@@ -4,9 +4,9 @@ A ComfyUI custom node for project management to **centralize the management of a
 
 If you have questions or suggestions, please join our [Discord Channel](https://discord.gg/bN9E8MnMT5)
 
-## Installation
+## Installation & maintenance
 
-### Manual via git
+### Manual (via git)
 Like any other custom node installation, in your ComfyUI root folder
 
 ```
@@ -17,7 +17,7 @@ and restart your ComfyUI.
 
 It is recommended to do git clone than downloading zip folder, because you can get latest updates by `git pull`!
 
-### Automatic via ComfyUI Manager
+### Automated (via ComfyUI Manager)
 Simply search for “ComfyUI Workspace Manager”, install, and restart ComfyUI.
 
 ## Features
