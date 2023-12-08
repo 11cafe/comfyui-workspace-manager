@@ -9,18 +9,19 @@ import {
   Stack,
   Button,
   HStack,
-  IconButton,
   PopoverTrigger,
   PopoverContent,
   PopoverArrow,
   PopoverCloseButton,
-  PopoverHeader,
   PopoverBody,
   Popover,
+  Box,
+  useColorMode,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Workflow, deleteFlow, listWorkflows, workspace } from "./WorkspaceDB";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
+import { WorkspaceContext } from "./WorkspaceContext";
 
 type Props = {
   onclose: () => void;
@@ -33,7 +34,8 @@ export default function RecentFilesDrawer({
   onClickNewFlow,
 }: Props) {
   const [recentFlows, setRecentFlow] = useState<Workflow[]>([]);
-
+  const { colorMode } = useColorMode();
+  const { curFlowID } = useContext(WorkspaceContext);
   useEffect(() => {
     const all = listWorkflows();
     setRecentFlow(all);
@@ -67,25 +69,37 @@ export default function RecentFilesDrawer({
               New
             </Button>
             {recentFlows.map((n) => {
+              const selected = n.id === curFlowID;
               return (
                 <HStack w={"100%"} justify={"space-between"}>
-                  <Stack
-                    gap={0}
+                  <Box
+                    as="button"
+                    textAlign={"left"}
+                    backgroundColor={selected ? "teal.200" : undefined}
+                    color={selected ? "#333" : undefined}
                     w={"90%"}
                     borderRadius={6}
                     p={2}
                     mb={2}
-                    backgroundColor={"#EEF2F6"}
-                    cursor={"pointer"}
                     onClick={() => {
                       loadWorkflowID(n.id);
                     }}
+                    _hover={{
+                      bg: colorMode === "light" ? "gray.200" : "#4A5568",
+                    }}
+                    _active={{
+                      bg: "#dddfe2",
+                      transform: "scale(0.98)",
+                      borderColor: "#bec3c9",
+                    }}
                   >
+                    {/* <Stack gap={0} cursor={"pointer"}> */}
                     <Text fontWeight={"500"}>{n.name ?? "untitled"}</Text>
                     <Text color={"GrayText"} ml={2} fontSize={"sm"}>
                       Updated: {formatTimestamp(n.updateTime)}
                     </Text>
-                  </Stack>
+                    {/* </Stack> */}
+                  </Box>
                   <Popover>
                     {({ isOpen, onClose }) => (
                       <>

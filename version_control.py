@@ -22,7 +22,7 @@ def is_update_needed(local_version_file, remote_version_url):
         local_version = file.read().strip()
 
     remote_version = get_remote_version(remote_version_url)
-    print(f"[Workspace Manager] Current version: {local_version}, latest version: {remote_version}")
+    # print(f"[Workspace Manager] Current version: {local_version}, latest version: {remote_version}")
     if remote_version and local_version != remote_version:
         return True  # Versions are different
     else:
@@ -71,5 +71,7 @@ def update_version_if_outdated():
     if is_update_needed(version_file_local, version_file_remote):
         print("[Workspace Manager] Update is needed. Downloading latest version...")
         fetch_and_merge_main()
+        return True
         # download_and_extract_repo(repo_url, os.path.dirname(__file__))
+    return False
 

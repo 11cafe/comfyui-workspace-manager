@@ -10,6 +10,7 @@ import subprocess  # don't remove this
 from urllib.parse import urlparse
 import subprocess
 import os
+import json
 from .version_control import update_version_if_outdated
 
 WEB_DIRECTORY = "dist"
@@ -27,7 +28,6 @@ def install_dependencies():
     print('requirements_path', requirements_path)
     # subprocess.run(['pip', 'install', '-r', requirements_path])
     subprocess.run([sys.executable, '-m', 'pip', 'install', '-r', requirements_path])
-
 # install_dependencies()
 
 def setup_js():
@@ -51,7 +51,8 @@ def fetch_server(nodes):
 
 @server.PromptServer.instance.routes.post("/workspace/update_version")
 async def update_version(request):
-    update_version_if_outdated()
+    updated = update_version_if_outdated()
+    return web.Response(status=200, text="Version updated" if updated else "Version is up to date")
 
 @server.PromptServer.instance.routes.post("/workspace/find_nodes")
 async def install_nodes(request):
@@ -122,5 +123,38 @@ def run_script(cmd, cwd='.'):
 
 
 
+db_dir_path = os.path.join(workspace_path, "db")
+@server.PromptServer.instance.routes.post("/workspace/save_db")
+async def save_db(request):
+    # Extract parameters from the request
+    data = await request.json()
+    table = data['table']
+    json_data = data['json']
+
+    file_name = f'{db_dir_path}/{table}.json'
+    if not os.path.exists(db_dir_path):
+        os.makedirs(db_dir_path)
+
+    # Write the JSON data to the specified file
+    with open(file_name, 'w') as file:
+        file.write(json.dumps(json_data, indent=4))
+
+    return web.Response(text=f"JSON saved to {file_name}")
+
+@server.PromptServer.instance.routes.get("/workspace/get_db")
+async def get_workspace(request):
+    # Extract the table parameter from the query string
+    table = request.query.get('table')
+    if not table:
+        return web.Response(status=400, text="Table parameter is missing")
+
+    file_name = f'{db_dir_path}/{table}.json'
+    if not os.path.exists(file_name):
+        return web.Response(status=404, text=f"{file_name} not found")
+
+    with open(file_name, 'r') as file:
+        data = json.load(file)
+    
+    return web.json_response(data)
 
 

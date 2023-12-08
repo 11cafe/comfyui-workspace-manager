@@ -11,8 +11,8 @@ const topbar = document.createElement("div");
 document.body.append(topbar);
 
 const config: ThemeConfig = {
-  // initialColorMode: "light",
-  // useSystemColorMode: false,
+  initialColorMode: "dark",
+  useSystemColorMode: false,
 };
 const theme = extendTheme({ config });
 
