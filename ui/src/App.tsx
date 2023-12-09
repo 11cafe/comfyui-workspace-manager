@@ -85,7 +85,7 @@ export default function App() {
     const latest = localStorage.getItem("curFlowID");
     if (latest) {
       setCurFlowID(latest);
-      setCurFlowName(workspace[latest]?.name ?? "");
+      workspace && setCurFlowName(workspace[latest]?.name ?? "");
     } else {
       const graphJson = localStorage.getItem("workflow");
       const flow = createFlow(graphJson ?? "");
@@ -121,8 +121,16 @@ export default function App() {
     []
   );
   const loadWorkflowID = (id: string) => {
+    if (workspace == null) {
+      alert("Error: Workspace not loaded!");
+      return;
+    }
     setCurFlowID(id);
     const flow = workspace[id];
+    if (flow == null) {
+      alert("Error: Workflow not found! id: " + id);
+      return;
+    }
     setCurFlowName(flow.name);
     app.loadGraphData(JSON.parse(flow.json));
     setRoute("root");

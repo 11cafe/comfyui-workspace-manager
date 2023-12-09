@@ -31,14 +31,14 @@ type TagsTable = {
   delete(tagId: number): void;
 };
 
-export let workspace: Workflows = {};
+export let workspace: Workflows | undefined = undefined;
 export let tagsTable: TagsTable | null = null;
 
 export async function loadDBs() {
   const loadWorkflows = async () => {
     let workflowsStr = await getDB("workflows");
     if (workflowsStr == null) {
-      workflowsStr = localStorage.getItem("workspace");
+      workflowsStr = localStorage.getItem("workspace") ?? "{}";
     }
     workspace = JSON.parse(workflowsStr ?? "{}");
   };
@@ -48,7 +48,10 @@ export async function loadDBs() {
   await Promise.all([loadWorkflows(), loadTags()]);
 }
 
-export function getFlow(id: string): Workflow {
+export function getFlow(id: string): Workflow | undefined {
+  if (workspace == null) {
+    return undefined;
+  }
   return workspace[id];
 }
 export function updateFlow(
@@ -58,6 +61,9 @@ export function updateFlow(
     json?: string;
   }
 ) {
+  if (workspace == null) {
+    return;
+  }
   workspace[id] = {
     ...workspace[id],
     ...input,
@@ -69,6 +75,9 @@ export function updateFlow(
   saveDB("workflows", JSON.stringify(workspace));
 }
 export function createFlow(json: string, name?: string): Workflow {
+  if (workspace == null) {
+    throw new Error("workspace is not loaded");
+  }
   const uuid = uuidv4(); // ⇨ '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
   workspace[uuid] = {
     id: uuid,
@@ -84,10 +93,16 @@ export function createFlow(json: string, name?: string): Workflow {
 }
 
 export function listWorkflows(): Workflow[] {
+  if (workspace == null) {
+    throw new Error("workspace is not loaded");
+  }
   return Object.values(workspace).sort((a, b) => b.updateTime - a.updateTime);
 }
 
 export function deleteFlow(id: string) {
+  if (workspace == null) {
+    throw new Error("workspace is not loaded");
+  }
   delete workspace[id];
   // TODO: delete localStorage.setItem once fully migrate to disk
   localStorage.setItem("workspace", JSON.stringify(workspace));
@@ -110,14 +125,17 @@ async function saveDB(table: Table, jsonData: string) {
   }
 }
 
-async function getDB(table: Table) {
+async function getDB(table: Table): Promise<string | undefined> {
   try {
     const response = await fetch(`/workspace/get_db?table=${table}`);
+    if (!response.ok) {
+      return undefined;
+    }
     const data = await response.json();
     return data;
   } catch (error) {
     console.error("Error fetching workspace:", error);
-    return null;
+    return undefined;
   }
 }
 
