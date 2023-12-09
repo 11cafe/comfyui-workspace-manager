@@ -18817,7 +18817,7 @@ function Xj(e = {}) {
   const { render: t, toastComponent: r = qj } = e;
   return (o) => typeof t == "function" ? t({ ...o, ...e }) : /* @__PURE__ */ C.jsx(r, { ...o, ...e });
 }
-var [Qj, t8] = Wt({
+var [Qj, r8] = Wt({
   name: "ToastOptionsContext",
   strict: !1
 }), Zj = (e) => {
@@ -19083,7 +19083,7 @@ function aL(e) {
     (t) => b.isValidElement(t)
   );
 }
-var [r8, sL] = Wt({
+var [n8, sL] = Wt({
   strict: !1,
   name: "ButtonGroupContext"
 });
@@ -23077,13 +23077,45 @@ function BV(e, t, r) {
   }
   return jV(n);
 }
+async function pv(e, t) {
+  const r = e + "/" + Date.now() + ".json";
+  NV(r, t);
+  try {
+    return await (await fetch("/workspace/save_db", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ table: e, json: t })
+    })).text();
+  } catch (n) {
+    console.error("Error saving workspace:", n);
+  }
+}
+async function NV(e, t) {
+  try {
+    const n = await (await fetch("/workspace/save_backup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        file_path: e,
+        json_str: t
+      })
+    })).text();
+    return console.log(n), n;
+  } catch (r) {
+    console.error("Error saving workspace backup:", r);
+  }
+}
 let Ie, br = null;
-async function NV() {
+async function VV() {
   const e = async () => {
     let r = await BC("workflows");
     r == null && (r = localStorage.getItem("workspace") ?? "{}"), Ie = JSON.parse(r ?? "{}");
   }, t = async () => {
-    br = await WV();
+    br = await HV();
   };
   await Promise.all([e(), t()]);
 }
@@ -23100,7 +23132,7 @@ function E1(e, t) {
     ...t,
     id: e
   }, o = JSON.stringify(r), i = JSON.stringify(n);
-  o !== i && (console.log("updateFlow haschange", e, t), Ie[e] = {
+  o !== i && (Ie[e] = {
     ...Ie[e],
     ...t,
     id: e,
@@ -23124,23 +23156,10 @@ function A1() {
     throw new Error("workspace is not loaded");
   return Object.values(Ie).sort((e, t) => t.updateTime - e.updateTime);
 }
-function VV(e) {
+function WV(e) {
   if (Ie == null)
     throw new Error("workspace is not loaded");
   delete Ie[e], localStorage.setItem("workspace", JSON.stringify(Ie)), pv("workflows", JSON.stringify(Ie));
-}
-async function pv(e, t) {
-  try {
-    return await (await fetch("/workspace/save_db", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ table: e, json: t })
-    })).text();
-  } catch (r) {
-    console.error("Error saving workspace:", r);
-  }
 }
 async function BC(e) {
   try {
@@ -23151,7 +23170,7 @@ async function BC(e) {
     return;
   }
 }
-async function WV() {
+async function HV() {
   let e = await BC("tags"), t = JSON.parse(e ?? "{}") ?? {};
   return {
     tags: t,
@@ -23174,7 +23193,7 @@ async function WV() {
 const NC = b.createContext({
   curFlowID: null
 });
-function HV({ workflow: e }) {
+function UV({ workflow: e }) {
   const [t, r] = b.useState([]), [n, o] = b.useState("");
   return b.useEffect(() => {
     br && r(br.listAll() ?? []);
@@ -23222,7 +23241,7 @@ function HV({ workflow: e }) {
     ] })
   ] }) });
 }
-function UV({
+function GV({
   onclose: e,
   loadWorkflowID: t,
   onClickNewFlow: r
@@ -23233,7 +23252,7 @@ function UV({
     o(l);
   }, []);
   const s = (l) => {
-    VV(l);
+    WV(l);
     const u = A1();
     o(u);
   };
@@ -23304,12 +23323,12 @@ function UV({
                       /* @__PURE__ */ C.jsx(co, { fontWeight: "500", children: l.name ?? "untitled" }),
                       /* @__PURE__ */ C.jsxs(co, { color: "GrayText", ml: 2, fontSize: "sm", children: [
                         "Updated: ",
-                        GV(l.updateTime)
+                        KV(l.updateTime)
                       ] })
                     ]
                   }
                 ),
-                /* @__PURE__ */ C.jsx(HV, { workflow: l }),
+                /* @__PURE__ */ C.jsx(UV, { workflow: l }),
                 /* @__PURE__ */ C.jsx(sv, { children: ({ isOpen: c, onClose: d }) => /* @__PURE__ */ C.jsxs(C.Fragment, { children: [
                   /* @__PURE__ */ C.jsx(av, { children: /* @__PURE__ */ C.jsx(zV, { color: "#F56565", cursor: "pointer" }) }),
                   /* @__PURE__ */ C.jsxs(dv, { children: [
@@ -23339,11 +23358,11 @@ function UV({
     }
   ) });
 }
-function GV(e) {
+function KV(e) {
   const t = new Date(e), r = String(t.getDate()).padStart(2, "0"), n = String(t.getMonth() + 1).padStart(2, "0"), o = t.getFullYear(), i = String(t.getHours()).padStart(2, "0"), a = String(t.getMinutes()).padStart(2, "0");
   return `${n}-${r}-${o} ${i}:${a}`;
 }
-function KV(e) {
+function YV(e) {
   let t = {
     "&": "",
     "<": "",
@@ -23357,13 +23376,13 @@ function KV(e) {
     return t[n];
   });
 }
-function YV() {
+function qV() {
   const e = [];
   for (let t of jl.graph._nodes)
-    t.type == "T2IAdapterLoader" && (t.type = "ControlNetLoader"), t.type == "ConditioningAverage " && (t.type = "ConditioningAverage"), t.type == "SDV_img2vid_Conditioning" && (t.type = "SVD_img2vid_Conditioning"), t.type in LiteGraph.registered_node_types || (t.type = KV(t.type), e.push(t.type));
+    t.type == "T2IAdapterLoader" && (t.type = "ControlNetLoader"), t.type == "ConditioningAverage " && (t.type = "ConditioningAverage"), t.type == "SDV_img2vid_Conditioning" && (t.type = "SVD_img2vid_Conditioning"), t.type in LiteGraph.registered_node_types || (t.type = YV(t.type), e.push(t.type));
   return e;
 }
-const qV = {
+const XV = {
   last_node_id: 9,
   last_link_id: 9,
   nodes: [
@@ -23482,10 +23501,10 @@ const qV = {
   extra: {},
   version: 0.4
 };
-function XV() {
+function QV() {
   const [e, t] = b.useState([]), r = b.useRef({}), [n, o] = b.useState(null), [i, a] = b.useState("root"), [s, l] = b.useState(!0), [u, c] = b.useState(null), d = b.useRef(null), { colorMode: f, toggleColorMode: p } = zs(), g = (w) => {
     d.current = w, c(w), setTimeout(() => {
-      const k = YV();
+      const k = qV();
       t(k);
     }, 1e3);
   }, y = async () => {
@@ -23502,7 +23521,7 @@ function XV() {
     };
     jl.registerExtension(w);
     try {
-      await NV();
+      await VV();
     } catch (_) {
       console.error("error loading db", _);
     }
@@ -23545,7 +23564,7 @@ function XV() {
     }
     o(k.name), jl.loadGraphData(JSON.parse(k.json)), a("root");
   }, v = () => {
-    const w = qV, k = $1(JSON.stringify(w));
+    const w = XV, k = $1(JSON.stringify(w));
     g(k.id), o(k.name), jl.loadGraphData(w);
   };
   return s ? null : /* @__PURE__ */ C.jsx(NC.Provider, { value: { curFlowID: u }, children: /* @__PURE__ */ C.jsxs(
@@ -23618,7 +23637,7 @@ function XV() {
           }
         ),
         i === "recentFlows" && /* @__PURE__ */ C.jsx(
-          UV,
+          GV,
           {
             onclose: () => a("root"),
             loadWorkflowID: h,
@@ -23633,13 +23652,13 @@ function XV() {
 }
 const VC = document.createElement("div");
 document.body.append(VC);
-const QV = {
+const ZV = {
   initialColorMode: "dark",
   useSystemColorMode: !1
-}, ZV = B3({ config: QV });
+}, JV = B3({ config: ZV });
 $f.createRoot(VC).render(
   /* @__PURE__ */ C.jsx(yo.StrictMode, { children: /* @__PURE__ */ C.jsxs(eL, { children: [
-    /* @__PURE__ */ C.jsx(QE, { initialColorMode: ZV.config.initialColorMode }),
-    /* @__PURE__ */ C.jsx(XV, {})
+    /* @__PURE__ */ C.jsx(QE, { initialColorMode: JV.config.initialColorMode }),
+    /* @__PURE__ */ C.jsx(QV, {})
   ] }) })
 );

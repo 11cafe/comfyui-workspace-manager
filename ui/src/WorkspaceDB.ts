@@ -1,7 +1,8 @@
 // @ts-ignore
 import { v4 as uuidv4 } from "uuid";
+import { saveDB } from "./Api";
 
-type Table = "workflows" | "tags";
+export type Table = "workflows" | "tags";
 
 export type Workflow = {
   id: string;
@@ -80,7 +81,6 @@ export function updateFlow(
     // no change detected
     return;
   }
-  console.log("updateFlow haschange", id, input);
   workspace[id] = {
     ...workspace[id],
     ...input,
@@ -124,22 +124,6 @@ export function deleteFlow(id: string) {
   // TODO: delete localStorage.setItem once fully migrate to disk
   localStorage.setItem("workspace", JSON.stringify(workspace));
   saveDB("workflows", JSON.stringify(workspace));
-}
-
-async function saveDB(table: Table, jsonData: string) {
-  try {
-    const response = await fetch("/workspace/save_db", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ table, json: jsonData }),
-    });
-    const result = await response.text();
-    return result;
-  } catch (error) {
-    console.error("Error saving workspace:", error);
-  }
 }
 
 async function getDB(table: Table): Promise<string | undefined> {

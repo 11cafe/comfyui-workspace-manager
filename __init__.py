@@ -157,4 +157,48 @@ async def get_workspace(request):
     
     return web.json_response(data)
 
+BACKUP_DIR = os.path.join(workspace_path, "backup")
+@server.PromptServer.instance.routes.post("/workspace/save_backup")
+async def save_backup(request):
+    try:
+        data = await request.json()
+        file_path = data.get('file_path')
+        json_str = data.get('json_str')
+        print(f"Saving backup to {file_path}")
 
+        file_path = os.path.join(BACKUP_DIR, file_path)
+        if not file_path or not json_str:
+            return web.Response(text=json.dumps({"error": "file_path and json_str are required"}), status=400)
+
+        # Create the directory if it does not exist
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+        with open(file_path, 'w') as file:
+            file.write(json_str)
+
+        return web.Response(text=json.dumps({"message": "File saved successfully"}), status=200)
+    except Exception as e:
+        return web.Response(text=json.dumps({"error": str(e)}), status=500)
+
+@server.PromptServer.instance.routes.post("/workspace/list_backup")
+async def list_backup(request):
+    try:
+        data = await request.json()
+        dir_path = data.get('dir')
+        # List all files in the directory
+        files = os.listdir(directory)
+
+        # Filter out .json files and sort them by filename (which starts with Unix timestamp)
+        json_files = sorted(
+            [file for file in files if file.endswith('.json')],
+            key=lambda x: x,  # Assuming the format is 'timestamp_filename.json'
+            reverse=True
+        )
+
+        # Select the 10 most recent files
+        recent_json_files = json_files[:10]
+        print(f"Found {len(recent_json_files)} recent json files: {recent_json_files}")
+
+        return web.Response(text=json.dumps(recent_json_files), content_type='application/json')
+    except Exception as e:
+        return web.Response(text=json.dumps({"error": str(e)}), status=500)
