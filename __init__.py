@@ -158,6 +158,7 @@ async def get_workspace(request):
     return web.json_response(data)
 
 BACKUP_DIR = os.path.join(workspace_path, "backup")
+MAX_BACKUP_FILES = 25
 @server.PromptServer.instance.routes.post("/workspace/save_backup")
 async def save_backup(request):
     try:
@@ -169,12 +170,20 @@ async def save_backup(request):
         file_path = os.path.join(BACKUP_DIR, file_path)
         if not file_path or not json_str:
             return web.Response(text=json.dumps({"error": "file_path and json_str are required"}), status=400)
-
+        directory = os.path.dirname(file_path)
         # Create the directory if it does not exist
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        os.makedirs(directory, exist_ok=True)
 
         with open(file_path, 'w') as file:
             file.write(json_str)
+        
+        # Check the number of files in the directory after writing the new file
+        files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
+        if len(files) > MAX_BACKUP_FILES:
+            # Find the oldest file (smallest filename)
+            oldest_file = min(files, key=lambda x: x)
+            # Delete the oldest file
+            os.remove(os.path.join(directory, oldest_file))
 
         return web.Response(text=json.dumps({"message": "File saved successfully"}), status=200)
     except Exception as e:

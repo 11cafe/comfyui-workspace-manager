@@ -23,6 +23,7 @@ import { Workflow, deleteFlow, listWorkflows, workspace } from "./WorkspaceDB";
 import { IconPlus, IconTag, IconTrash } from "@tabler/icons-react";
 import { WorkspaceContext } from "./WorkspaceContext";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
+import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
 
 type Props = {
   onclose: () => void;
@@ -69,6 +70,7 @@ export default function RecentFilesDrawer({
               >
                 New
               </Button>
+              <RecentFilesDrawerMenu />
             </HStack>
           </DrawerHeader>
           <DrawerBody>
