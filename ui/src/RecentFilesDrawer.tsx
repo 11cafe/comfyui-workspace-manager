@@ -71,7 +71,7 @@ export default function RecentFilesDrawer({
               >
                 New
               </Button>
-              <RecentFilesDrawerMenu />
+              {/* <RecentFilesDrawerMenu /> */}
             </HStack>
           </DrawerHeader>
           <DrawerBody>

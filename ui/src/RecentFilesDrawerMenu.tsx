@@ -16,7 +16,7 @@ export default function RecentFilesDrawerMenu({}: Props) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
-      <Menu>
+      <Menu isLazy>
         <MenuButton
           as={IconButton}
           aria-label="Options"
