@@ -23907,9 +23907,7 @@ function _8() {
     }
   };
   b.useEffect(() => {
-    g(), fetch("/workspace/update_version", {
-      method: "POST"
-    }), setInterval(() => {
+    g(), setInterval(() => {
       if (d.current != null) {
         const w = localStorage.getItem("workflow");
         localStorage.setItem("curFlowID", d.current), w != null && D1(d.current, {

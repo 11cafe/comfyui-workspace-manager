@@ -106,9 +106,9 @@ export default function App() {
   };
   useEffect(() => {
     graphAppSetup();
-    fetch("/workspace/update_version", {
-      method: "POST",
-    });
+    // fetch("/workspace/update_version", {
+    //   method: "POST",
+    // });
     setInterval(() => {
       if (curFlowID.current != null) {
         const graphJson = localStorage.getItem("workflow");
