@@ -64,6 +64,23 @@ export function updateFlow(
   if (workspace == null) {
     return;
   }
+  const before = workspace[id];
+  if (before == null) {
+    console.error("updateFlow: workflow not found", id);
+    return;
+  }
+  const after = {
+    ...before,
+    ...input,
+    id,
+  };
+  const beforeStr = JSON.stringify(before);
+  const afterStr = JSON.stringify(after);
+  if (beforeStr === afterStr) {
+    // no change detected
+    return;
+  }
+  console.log("updateFlow haschange", id, input);
   workspace[id] = {
     ...workspace[id],
     ...input,

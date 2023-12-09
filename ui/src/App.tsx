@@ -76,6 +76,10 @@ export default function App() {
       // async loadedGraphNode(node: LGraphNode, app: ComfyApp) {},
     };
     app.registerExtension(ext);
+    // app.canvasEl.addEventListener("click", function () {
+    //   console.log("canvasEl click");
+    // });
+
     try {
       await loadDBs();
     } catch (error) {
