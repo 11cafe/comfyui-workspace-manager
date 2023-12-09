@@ -11,11 +11,14 @@ import {
   PopoverHeader,
   Input,
   HStack,
+  Wrap,
+  WrapItem,
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState } from "react";
 import { Tag, Workflow, tagsTable } from "./WorkspaceDB";
 import { IconPlus, IconTag, IconTrash } from "@tabler/icons-react";
 import { WorkspaceContext } from "./WorkspaceContext";
+import { Select } from "chakra-react-select";
 
 type Props = {
   workflow: Workflow;
@@ -27,8 +30,14 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
     tagsTable && setAllTags(tagsTable.listAll() ?? []);
   }, []);
   if (tagsTable == null) {
+    alert("Error: TagsTable is not loaded");
     return null;
   }
+  const tagOptions = allTags.map((t) => ({
+    value: t.name,
+    label: t.name,
+  }));
+  const maxTagMenuHeight = 37 * 5;
   return (
     <Popover>
       {({}) => (
@@ -42,13 +51,41 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
             <PopoverArrow />
             <PopoverCloseButton />
             <PopoverHeader>
-              Add Tags to <b>{workflow.name}</b>
+              <b>{workflow.name}</b>
             </PopoverHeader>
             <PopoverBody>
-              <HStack>
+              <Select
+                // colorScheme="teal"
+                isMulti
+                name="tags"
+                options={tagOptions}
+                menuIsOpen={true}
+                chakraStyles={{
+                  dropdownIndicator: (provided, state) => ({
+                    ...provided,
+                    p: 0,
+                    w: "30px",
+                  }),
+                  menuList: (provided, state) => ({
+                    ...provided,
+                    shadow: "none",
+                    pt: 0,
+                  }),
+                }}
+                placeholder="Select tags"
+                closeMenuOnSelect={false}
+                maxMenuHeight={maxTagMenuHeight}
+              />
+              <HStack
+                gap={4}
+                mt={Math.min(maxTagMenuHeight, allTags.length * 37)}
+              >
                 <Input
                   placeholder="New tag name"
                   size="sm"
+                  mt={6}
+                  mb={6}
+                  variant={"flushed"}
                   value={newTagName}
                   onChange={(e) => {
                     setNewTagName(e.target.value);
@@ -71,14 +108,6 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
                   New Tag
                 </Button>
               </HStack>
-
-              {allTags.map((t) => {
-                return (
-                  <Text mb={4} fontWeight={600}>
-                    {t.name}
-                  </Text>
-                );
-              })}
             </PopoverBody>
           </PopoverContent>
         </>

@@ -158,7 +158,7 @@ async def get_workspace(request):
     return web.json_response(data)
 
 BACKUP_DIR = os.path.join(workspace_path, "backup")
-MAX_BACKUP_FILES = 30
+MAX_BACKUP_FILES = 20
 @server.PromptServer.instance.routes.post("/workspace/save_backup")
 async def save_backup(request):
     try:

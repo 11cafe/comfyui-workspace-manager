@@ -140,7 +140,7 @@ async function getDB(table: Table): Promise<string | undefined> {
   }
 }
 
-async function loadTagsTable() {
+async function loadTagsTable(): Promise<TagsTable> {
   let tagsStr = await getDB("tags");
   let tags: Tags = JSON.parse(tagsStr ?? "{}") ?? {};
   return {
@@ -157,10 +157,12 @@ async function loadTagsTable() {
         };
       }
       tags[name].updateTime = Date.now();
+      saveDB("tags", JSON.stringify(tags));
       return tags[name];
     },
     delete(tagId: number) {
       delete tags[tagId];
+      saveDB("tags", JSON.stringify(tags));
     },
   };
 }

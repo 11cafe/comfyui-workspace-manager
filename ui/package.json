@@ -14,6 +14,7 @@
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@tabler/icons-react": "^2.42.0",
+    "chakra-react-select": "^4.7.6",
     "framer-motion": "^10.16.12",
     "lodash.throttle": "^4.1.1",
     "react": "^18.2.0",
