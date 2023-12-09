@@ -158,7 +158,7 @@ async def get_workspace(request):
     return web.json_response(data)
 
 BACKUP_DIR = os.path.join(workspace_path, "backup")
-MAX_BACKUP_FILES = 25
+MAX_BACKUP_FILES = 30
 @server.PromptServer.instance.routes.post("/workspace/save_backup")
 async def save_backup(request):
     try:
@@ -193,9 +193,9 @@ async def save_backup(request):
 async def list_backup(request):
     try:
         data = await request.json()
-        dir_path = data.get('dir')
+        dir_path = os.path.join(BACKUP_DIR, data.get('dir'))
         # List all files in the directory
-        files = os.listdir(directory)
+        files = os.listdir(dir_path)
 
         # Filter out .json files and sort them by filename (which starts with Unix timestamp)
         json_files = sorted(
@@ -206,8 +206,14 @@ async def list_backup(request):
 
         # Select the 10 most recent files
         recent_json_files = json_files[:10]
-        print(f"Found {len(recent_json_files)} recent json files: {recent_json_files}")
 
-        return web.Response(text=json.dumps(recent_json_files), content_type='application/json')
+        # Read the contents of each JSON file
+        file_contents = []
+        for file in recent_json_files:
+            with open(os.path.join(dir_path, file), 'r') as f:
+                content = json.load(f)
+                file_contents.append({"fileName": file, "jsonStr": content})
+
+        return web.Response(text=json.dumps(file_contents), content_type='application/json')
     except Exception as e:
         return web.Response(text=json.dumps({"error": str(e)}), status=500)

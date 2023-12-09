@@ -24,6 +24,7 @@ import { IconPlus, IconTag, IconTrash } from "@tabler/icons-react";
 import { WorkspaceContext } from "./WorkspaceContext";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
+import { formatTimestamp } from "./utils";
 
 type Props = {
   onclose: () => void;
@@ -157,19 +158,4 @@ export default function RecentFilesDrawer({
       </Drawer>
     </div>
   );
-}
-
-function formatTimestamp(unixTimestamp: number) {
-  // Create a new Date object from the UNIX timestamp
-  const date = new Date(unixTimestamp);
-
-  // Get the day, month, year, hours, and minutes from the Date object
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0"); // Month is 0-indexed
-  const year = date.getFullYear();
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-
-  // Format the date and time string
-  return `${month}-${day}-${year} ${hours}:${minutes}`;
 }
