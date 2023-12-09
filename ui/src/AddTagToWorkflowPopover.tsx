@@ -15,10 +15,10 @@ import {
   WrapItem,
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState } from "react";
-import { Tag, Workflow, tagsTable } from "./WorkspaceDB";
+import { Tag, Workflow, tagsTable, updateFlow } from "./WorkspaceDB";
 import { IconPlus, IconTag, IconTrash } from "@tabler/icons-react";
 import { WorkspaceContext } from "./WorkspaceContext";
-import { Select } from "chakra-react-select";
+import { MultiValue, Select } from "chakra-react-select";
 
 type Props = {
   workflow: Workflow;
@@ -26,6 +26,13 @@ type Props = {
 export default function AddTagToWorkflowPopover({ workflow }: Props) {
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [newTagName, setNewTagName] = useState("");
+  const initialTags =
+    workflow.tags?.map((t) => ({
+      value: t,
+      label: t,
+    })) ?? [];
+  const [selectedTags, setSelectedTags] =
+    useState<MultiValue<{ value: string; label: string }>>(initialTags);
   useEffect(() => {
     tagsTable && setAllTags(tagsTable.listAll() ?? []);
   }, []);
@@ -38,6 +45,7 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
     label: t.name,
   }));
   const maxTagMenuHeight = 37 * 5;
+
   return (
     <Popover>
       {({}) => (
@@ -55,11 +63,19 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
             </PopoverHeader>
             <PopoverBody>
               <Select
-                // colorScheme="teal"
                 isMulti
                 name="tags"
                 options={tagOptions}
                 menuIsOpen={true}
+                value={selectedTags}
+                defaultValue={initialTags}
+                onChange={(selected) => {
+                  console.log(selected);
+                  setSelectedTags(selected);
+                  updateFlow(workflow.id, {
+                    tags: selected.map((s) => s.value),
+                  });
+                }}
                 chakraStyles={{
                   dropdownIndicator: (provided, state) => ({
                     ...provided,

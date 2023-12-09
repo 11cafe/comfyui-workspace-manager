@@ -60,6 +60,7 @@ export function updateFlow(
   input: {
     name?: string;
     json?: string;
+    tags?: string[];
   }
 ) {
   if (workspace == null) {

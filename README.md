@@ -7,6 +7,7 @@ If you have questions or suggestions, please join our [Discord Channel](https://
 ## Installation & maintenance
 
 ### Manual (via git)
+
 Like any other custom node installation, in your ComfyUI root folder
 
 ```
@@ -18,11 +19,13 @@ and restart your ComfyUI.
 It is recommended to do git clone than downloading zip folder, because you can get latest updates by `git pull`!
 
 ### Automated (via ComfyUI Manager)
+
 Simply search for “ComfyUI Workspace Manager”, install, and restart ComfyUI.
 
 ## Features
 
 Demo video: https://youtu.be/II7Xxpz4TVw
+walkthrough tutorial: https://www.youtube.com/watch?v=QbtSkiZ9F58
 
 - Effortlessly switch between different workflows in your workspace.
 - Create new workflows and rename existing ones.
