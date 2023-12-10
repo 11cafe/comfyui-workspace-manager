@@ -128,46 +128,8 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
               New Tag
             </Button>
           </HStack>
-          <ManageTagsModal />
         </PopoverBody>
       </PopoverContent>
     </Popover>
-  );
-}
-
-function ManageTagsModal() {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [allTags, setAllTags] = useState<Tag[]>(tagsTable?.listAll() ?? []);
-  return (
-    <>
-      <Button size={"sm"} onClick={onOpen} leftIcon={<IconSettings />}>
-        Manage Tags
-      </Button>
-
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>My Tags</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            {allTags.map((tag) => (
-              <HStack>
-                <ChakraTag>{tag.name}</ChakraTag>
-                <IconButton
-                  onClick={() => {
-                    tagsTable?.delete(tag.name);
-                    setAllTags(tagsTable?.listAll() ?? []);
-                  }}
-                  aria-label="delete-tag"
-                  colorScheme="red"
-                  variant={"ghost"}
-                  icon={<IconTrash />}
-                />
-              </HStack>
-            ))}
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-    </>
   );
 }

@@ -6,14 +6,22 @@ import {
   MenuItem,
   useDisclosure,
 } from "@chakra-ui/react";
-import { IconBurger, IconHistory, IconMenu2 } from "@tabler/icons-react";
+import {
+  IconBurger,
+  IconHistory,
+  IconMenu2,
+  IconSettings,
+} from "@tabler/icons-react";
 import ViewBackupsModal from "./ViewBackupsModal";
+import ManageTagsModal from "./ManageTagsModal";
+import { useState } from "react";
 
 type Props = {
   //   onclose: () => void;
 };
 export default function RecentFilesDrawerMenu({}: Props) {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isManageTagsOpen, setIsManageTagsOpen] = useState(false);
   return (
     <>
       <Menu isLazy>
@@ -27,6 +35,20 @@ export default function RecentFilesDrawerMenu({}: Props) {
         <MenuList>
           <MenuItem
             onClick={onOpen}
+            icon={<IconSettings size={16} />}
+            fontSize={16}
+          >
+            Settings
+          </MenuItem>
+          <MenuItem
+            onClick={() => setIsManageTagsOpen(true)}
+            icon={<IconHistory size={16} />}
+            fontSize={16}
+          >
+            Manage Tags
+          </MenuItem>
+          <MenuItem
+            onClick={onOpen}
             icon={<IconHistory size={16} />}
             fontSize={16}
           >
@@ -34,6 +56,9 @@ export default function RecentFilesDrawerMenu({}: Props) {
           </MenuItem>
         </MenuList>
       </Menu>
+      {isManageTagsOpen && (
+        <ManageTagsModal onclose={() => setIsManageTagsOpen(false)} />
+      )}
       {isOpen && <ViewBackupsModal onclose={onClose} />}
     </>
   );

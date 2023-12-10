@@ -1,7 +1,6 @@
 import {
   Drawer,
   DrawerBody,
-  DrawerCloseButton,
   DrawerContent,
   DrawerHeader,
   DrawerOverlay,
@@ -19,18 +18,11 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState } from "react";
-import {
-  Workflow,
-  deleteFlow,
-  listWorkflows,
-  tagsTable,
-  workspace,
-} from "./WorkspaceDB";
+import { Workflow, deleteFlow, listWorkflows, tagsTable } from "./WorkspaceDB";
 import {
   IconChevronDown,
   IconChevronUp,
   IconPlus,
-  IconTag,
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
