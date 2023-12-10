@@ -4,8 +4,9 @@ A ComfyUI custom node for project management to **centralize the management of a
 
 If you have questions or suggestions, please join our [Discord Channel](https://discord.gg/bN9E8MnMT5)
 
-## Install
+## Installation & maintenance
 
+### Manual (via git)
 Like any other custom node installation, in your ComfyUI root folder
 
 ```
@@ -16,9 +17,12 @@ and restart your ComfyUI.
 
 It is recommended to do git clone than downloading zip folder, because you can get latest updates by `git pull`!
 
+### Automated (via ComfyUI Manager)
+Simply search for “ComfyUI Workspace Manager”, install, and restart ComfyUI.
+
 ## Features
 
-demo video: https://youtu.be/II7Xxpz4TVw
+Demo video: https://youtu.be/II7Xxpz4TVw
 
 - Effortlessly switch between different workflows in your workspace.
 - Create new workflows and rename existing ones.
