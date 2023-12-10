@@ -9,24 +9,10 @@ import {
   PopoverHeader,
   Input,
   HStack,
-  useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
-  Tag as ChakraTag,
-  IconButton,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { Tag, Workflow, tagsTable, updateFlow } from "./WorkspaceDB";
-import {
-  IconPlus,
-  IconSettings,
-  IconTag,
-  IconTrash,
-} from "@tabler/icons-react";
+import { IconPlus, IconTag } from "@tabler/icons-react";
 import { MultiValue, Select } from "chakra-react-select";
 
 type Props = {
@@ -45,6 +31,14 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
   useEffect(() => {
     tagsTable && setAllTags(tagsTable.listAll() ?? []);
   }, []);
+  useEffect(() => {
+    setSelectedTags(
+      workflow.tags?.map((t) => ({
+        value: t,
+        label: t,
+      })) ?? []
+    );
+  }, [workflow.tags]);
   if (tagsTable == null) {
     alert("Error: TagsTable is not loaded");
     return null;
@@ -75,7 +69,6 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
             options={tagOptions}
             menuIsOpen={true}
             value={selectedTags}
-            defaultValue={initialTags}
             onChange={(selected) => {
               console.log(selected);
               setSelectedTags(selected);

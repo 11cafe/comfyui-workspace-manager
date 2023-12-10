@@ -57,13 +57,9 @@ export default function RecentFilesDrawer({
   };
   const onClickTag = (name: string) => {
     setSelectedTag(name);
+    setRecentFlow(listWorkflows().filter((n) => n.tags?.includes(name)));
   };
-  const filtered = recentFlows.filter((n) => {
-    if (selectedTag == null) {
-      return true;
-    }
-    return n.tags?.includes(selectedTag);
-  });
+
   return (
     <div style={{ position: "absolute", top: 0, left: 0, right: 0 }}>
       <Drawer
@@ -113,7 +109,10 @@ export default function RecentFilesDrawer({
                   aria-label="Close"
                   size={"sm"}
                   icon={<IconX />}
-                  onClick={() => setSelectedTag(undefined)}
+                  onClick={() => {
+                    setSelectedTag(undefined);
+                    setRecentFlow(listWorkflows());
+                  }}
                 />
               )}
               {tagsTable
@@ -139,7 +138,7 @@ export default function RecentFilesDrawer({
                 onClick={() => setShowAllTags(!showAllTags)}
               />
             </HStack>
-            {filtered.map((n) => {
+            {recentFlows.map((n) => {
               const selected = n.id === curFlowID;
               return (
                 <HStack w={"100%"} justify={"space-between"}>
