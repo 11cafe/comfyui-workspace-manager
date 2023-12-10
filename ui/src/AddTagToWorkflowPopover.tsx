@@ -9,10 +9,24 @@ import {
   PopoverHeader,
   Input,
   HStack,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  Tag as ChakraTag,
+  IconButton,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { Tag, Workflow, tagsTable, updateFlow } from "./WorkspaceDB";
-import { IconPlus, IconTag } from "@tabler/icons-react";
+import {
+  IconPlus,
+  IconSettings,
+  IconTag,
+  IconTrash,
+} from "@tabler/icons-react";
 import { MultiValue, Select } from "chakra-react-select";
 
 type Props = {
@@ -43,86 +57,117 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
 
   return (
     <Popover>
-      {({}) => (
-        <>
-          <PopoverTrigger>
-            <Button variant={"ghost"} size={"sm"} colorScheme="teal">
-              <IconTag color={"#718096"} />
+      <PopoverTrigger>
+        <Button variant={"ghost"} size={"sm"} colorScheme="teal">
+          <IconTag color={"#718096"} />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent>
+        <PopoverArrow />
+        <PopoverCloseButton />
+        <PopoverHeader>
+          <b>{workflow.name}</b>
+        </PopoverHeader>
+        <PopoverBody>
+          <Select
+            isMulti
+            name="tags"
+            options={tagOptions}
+            menuIsOpen={true}
+            value={selectedTags}
+            defaultValue={initialTags}
+            onChange={(selected) => {
+              console.log(selected);
+              setSelectedTags(selected);
+              updateFlow(workflow.id, {
+                tags: selected.map((s) => s.value),
+              });
+            }}
+            chakraStyles={{
+              dropdownIndicator: (provided, state) => ({
+                ...provided,
+                p: 0,
+                w: "30px",
+              }),
+              menuList: (provided, state) => ({
+                ...provided,
+                shadow: "none",
+                pt: 0,
+              }),
+            }}
+            placeholder="Select tags"
+            closeMenuOnSelect={false}
+            maxMenuHeight={maxTagMenuHeight}
+          />
+          <HStack gap={4} mt={Math.min(maxTagMenuHeight, allTags.length * 37)}>
+            <Input
+              placeholder="New tag name"
+              size="sm"
+              mt={6}
+              mb={6}
+              variant={"flushed"}
+              value={newTagName}
+              onChange={(e) => {
+                setNewTagName(e.target.value);
+              }}
+            />
+            <Button
+              iconSpacing={1}
+              leftIcon={<IconPlus size={16} />}
+              colorScheme="teal"
+              variant="solid"
+              size={"xs"}
+              px={5}
+              isDisabled={newTagName.length === 0}
+              onClick={() => {
+                tagsTable?.upsert(newTagName);
+                setAllTags(tagsTable?.listAll() ?? []);
+                setNewTagName("");
+              }}
+            >
+              New Tag
             </Button>
-          </PopoverTrigger>
-          <PopoverContent>
-            <PopoverArrow />
-            <PopoverCloseButton />
-            <PopoverHeader>
-              <b>{workflow.name}</b>
-            </PopoverHeader>
-            <PopoverBody>
-              <Select
-                isMulti
-                name="tags"
-                options={tagOptions}
-                menuIsOpen={true}
-                value={selectedTags}
-                defaultValue={initialTags}
-                onChange={(selected) => {
-                  console.log(selected);
-                  setSelectedTags(selected);
-                  updateFlow(workflow.id, {
-                    tags: selected.map((s) => s.value),
-                  });
-                }}
-                chakraStyles={{
-                  dropdownIndicator: (provided, state) => ({
-                    ...provided,
-                    p: 0,
-                    w: "30px",
-                  }),
-                  menuList: (provided, state) => ({
-                    ...provided,
-                    shadow: "none",
-                    pt: 0,
-                  }),
-                }}
-                placeholder="Select tags"
-                closeMenuOnSelect={false}
-                maxMenuHeight={maxTagMenuHeight}
-              />
-              <HStack
-                gap={4}
-                mt={Math.min(maxTagMenuHeight, allTags.length * 37)}
-              >
-                <Input
-                  placeholder="New tag name"
-                  size="sm"
-                  mt={6}
-                  mb={6}
-                  variant={"flushed"}
-                  value={newTagName}
-                  onChange={(e) => {
-                    setNewTagName(e.target.value);
-                  }}
-                />
-                <Button
-                  iconSpacing={1}
-                  leftIcon={<IconPlus size={16} />}
-                  colorScheme="teal"
-                  variant="solid"
-                  size={"xs"}
-                  px={5}
-                  isDisabled={newTagName.length === 0}
-                  onClick={() => {
-                    tagsTable?.upsert(newTagName);
-                    setAllTags(tagsTable?.listAll() ?? []);
-                    setNewTagName("");
-                  }}
-                >
-                  New Tag
-                </Button>
-              </HStack>
-            </PopoverBody>
-          </PopoverContent>
-        </>
-      )}
+          </HStack>
+          <ManageTagsModal />
+        </PopoverBody>
+      </PopoverContent>
     </Popover>
+  );
+}
+
+function ManageTagsModal() {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [allTags, setAllTags] = useState<Tag[]>(tagsTable?.listAll() ?? []);
+  return (
+    <>
+      <Button size={"sm"} onClick={onOpen} leftIcon={<IconSettings />}>
+        Manage Tags
+      </Button>
+
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>My Tags</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {allTags.map((tag) => (
+              <HStack>
+                <ChakraTag>{tag.name}</ChakraTag>
+                <IconButton
+                  onClick={() => {
+                    tagsTable?.delete(tag.name);
+                    setAllTags(tagsTable?.listAll() ?? []);
+                  }}
+                  aria-label="delete-tag"
+                  colorScheme="red"
+                  variant={"ghost"}
+                  icon={<IconTrash />}
+                />
+              </HStack>
+            ))}
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    </>
   );
 }
