@@ -11,6 +11,7 @@ ui/node_modules
 db
 dist-ssr
 *.local
+backup
 
 # Editor directories and files
 .vscode/*

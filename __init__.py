@@ -157,4 +157,63 @@ async def get_workspace(request):
     
     return web.json_response(data)
 
+BACKUP_DIR = os.path.join(workspace_path, "backup")
+MAX_BACKUP_FILES = 20
+@server.PromptServer.instance.routes.post("/workspace/save_backup")
+async def save_backup(request):
+    try:
+        data = await request.json()
+        file_path = data.get('file_path')
+        json_str = data.get('json_str')
+        print(f"Saving backup to {file_path}")
 
+        file_path = os.path.join(BACKUP_DIR, file_path)
+        if not file_path or not json_str:
+            return web.Response(text=json.dumps({"error": "file_path and json_str are required"}), status=400)
+        directory = os.path.dirname(file_path)
+        # Create the directory if it does not exist
+        os.makedirs(directory, exist_ok=True)
+
+        with open(file_path, 'w') as file:
+            file.write(json_str)
+        
+        # Check the number of files in the directory after writing the new file
+        files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
+        if len(files) > MAX_BACKUP_FILES:
+            # Find the oldest file (smallest filename)
+            oldest_file = min(files, key=lambda x: x)
+            # Delete the oldest file
+            os.remove(os.path.join(directory, oldest_file))
+
+        return web.Response(text=json.dumps({"message": "File saved successfully"}), status=200)
+    except Exception as e:
+        return web.Response(text=json.dumps({"error": str(e)}), status=500)
+
+@server.PromptServer.instance.routes.post("/workspace/list_backup")
+async def list_backup(request):
+    try:
+        data = await request.json()
+        dir_path = os.path.join(BACKUP_DIR, data.get('dir'))
+        # List all files in the directory
+        files = os.listdir(dir_path)
+
+        # Filter out .json files and sort them by filename (which starts with Unix timestamp)
+        json_files = sorted(
+            [file for file in files if file.endswith('.json')],
+            key=lambda x: x,  # Assuming the format is 'timestamp_filename.json'
+            reverse=True
+        )
+
+        # Select the 10 most recent files
+        recent_json_files = json_files[:10]
+
+        # Read the contents of each JSON file
+        file_contents = []
+        for file in recent_json_files:
+            with open(os.path.join(dir_path, file), 'r') as f:
+                content = json.load(f)
+                file_contents.append({"fileName": file, "jsonStr": content})
+
+        return web.Response(text=json.dumps(file_contents), content_type='application/json')
+    except Exception as e:
+        return web.Response(text=json.dumps({"error": str(e)}), status=500)

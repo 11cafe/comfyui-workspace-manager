@@ -5,22 +5,11 @@ import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
 // @ts-ignore
 import throttle from "lodash.throttle";
 import {
-  Tabs,
-  TabList,
   HStack,
   Input,
   Box,
-  Drawer,
-  DrawerBody,
   Button,
-  DrawerHeader,
-  DrawerOverlay,
-  Link,
   Text,
-  Checkbox,
-  Stack,
-  DrawerContent,
-  DrawerCloseButton,
   useColorMode,
 } from "@chakra-ui/react";
 import {
@@ -67,11 +56,6 @@ export default function App() {
   const setCurFlowID = (id: string) => {
     curFlowID.current = id;
     setFlowID(id);
-    // hacky fetch missing nodes defer until i find a way to get callback when graph fully loaded
-    setTimeout(() => {
-      const missing = findMissingNodes();
-      setMissingNodeTypes(missing);
-    }, 1000);
   };
 
   const graphAppSetup = async () => {
@@ -87,6 +71,10 @@ export default function App() {
       // async loadedGraphNode(node: LGraphNode, app: ComfyApp) {},
     };
     app.registerExtension(ext);
+    // app.canvasEl.addEventListener("click", function () {
+    //   console.log("canvasEl click");
+    // });
+
     try {
       await loadDBs();
     } catch (error) {
@@ -96,7 +84,7 @@ export default function App() {
     const latest = localStorage.getItem("curFlowID");
     if (latest) {
       setCurFlowID(latest);
-      setCurFlowName(workspace[latest]?.name ?? "");
+      workspace && setCurFlowName(workspace[latest]?.name ?? "");
     } else {
       const graphJson = localStorage.getItem("workflow");
       const flow = createFlow(graphJson ?? "");
@@ -106,12 +94,9 @@ export default function App() {
   };
   useEffect(() => {
     graphAppSetup();
-    // fetch("/workspace/update_version", {
-    //   method: "POST",
-    // });
     setInterval(() => {
       if (curFlowID.current != null) {
-        const graphJson = localStorage.getItem("workflow");
+        const graphJson = JSON.stringify(app.graph.serialize());
         localStorage.setItem("curFlowID", curFlowID.current);
         graphJson != null &&
           updateFlow(curFlowID.current, {
@@ -132,10 +117,18 @@ export default function App() {
     []
   );
   const loadWorkflowID = (id: string) => {
+    if (workspace == null) {
+      alert("Error: Workspace not loaded!");
+      return;
+    }
     setCurFlowID(id);
     const flow = workspace[id];
-    setCurFlowName(flow.name);
+    if (flow == null) {
+      alert("Error: Workflow not found! id: " + id);
+      return;
+    }
     app.loadGraphData(JSON.parse(flow.json));
+    setCurFlowName(flow.name);
     setRoute("root");
   };
   const onClickNewFlow = () => {
@@ -229,159 +222,7 @@ export default function App() {
             }}
           />
         )}
-
-        <CustomNodesDrawer
-          missingNodes={missingNodeTypes}
-          isOpen={route === "customNodes"}
-          onclose={() => {
-            setRoute("root");
-          }}
-        />
       </Box>
     </WorkspaceContext.Provider>
-  );
-}
-
-type CustomNodesDrawerProps = {
-  missingNodes: string[];
-  onclose: () => void;
-  isOpen: boolean;
-};
-function CustomNodesDrawer({
-  missingNodes,
-  isOpen,
-  onclose,
-}: CustomNodesDrawerProps) {
-  const [toInstall, setToInstall] = useState<string[]>(missingNodes);
-  const [searchResults, setSearchResults] = useState<CustomNode[]>([]);
-  const [installStatus, setInstallStatus] = useState("");
-  const [isInstalling, setIsInstalling] = useState(false);
-
-  useEffect(() => {
-    setToInstall(missingNodes);
-    const nodeIDs = missingNodes.map((n) => n.replace(" ", "_"));
-    fetch("/workspace/find_nodes", {
-      method: "POST",
-      body: JSON.stringify({
-        nodes: nodeIDs,
-      }),
-    })
-      .then((res) => res.json())
-      .then((res: (CustomNode | null)[]) => {
-        setSearchResults(res.filter((r) => r != null) as CustomNode[]);
-        setToInstall(res.filter((r) => r != null).map((r) => r!.id));
-      });
-  }, [missingNodes]);
-  const installCustomNodes = async (nodes: CustomNode[]) => {
-    setIsInstalling(true);
-    setInstallStatus("Starting installation...\n");
-
-    try {
-      const response = await fetch("/workspace/install_nodes", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          nodes: nodes,
-        }),
-      });
-
-      const reader = response?.body?.getReader();
-      if (reader == null) {
-        return;
-      }
-      const decoder = new TextDecoder();
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        // setInstallStatus((prev) => prev + decoder.decode(value));
-      }
-    } catch (error) {
-      console.error("Failed to install custom nodes", error);
-      setInstallStatus((prev) => prev + "\nInstallation failed.");
-    } finally {
-      setIsInstalling(false);
-    }
-  };
-  return (
-    <div style={{ position: "absolute", top: 0, left: 0, right: 0 }}>
-      <Drawer
-        isOpen={isOpen}
-        placement="right"
-        onClose={() => onclose()}
-        size={"sm"}
-      >
-        <DrawerOverlay />
-        <DrawerContent>
-          <DrawerCloseButton />
-          <DrawerHeader>Custom Nodes</DrawerHeader>
-          <DrawerBody>
-            <HStack mb={3}>
-              <Checkbox
-                mr={6}
-                isChecked={toInstall.length === searchResults.length}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setToInstall([...searchResults.map((r) => r!.id)]);
-                  } else {
-                    setToInstall([]);
-                  }
-                }}
-              >
-                Select All
-              </Checkbox>
-              <Button
-                onClick={() => {
-                  installCustomNodes(
-                    searchResults.filter((r) => toInstall.includes(r.id))
-                  );
-                }}
-              >
-                Install Missing Nodes {toInstall.length}
-              </Button>
-            </HStack>
-            <Text mb={3} color={"GrayText"} fontSize={"small"}>
-              Unselectable nodes are not found in Github, they may be private
-              repos
-            </Text>
-            {missingNodes.map((n) => {
-              const node = searchResults.find((r) => r?.id === n);
-              return (
-                <Stack gap={0} mb={2}>
-                  <HStack>
-                    <Checkbox
-                      isChecked={toInstall.includes(n)}
-                      disabled={node == null}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setToInstall([...toInstall, n]);
-                        } else {
-                          setToInstall(toInstall.filter((i) => i !== n));
-                        }
-                      }}
-                    ></Checkbox>
-                    <span>{n}</span>
-                  </HStack>
-                  {node != null ? (
-                    <Link
-                      color="teal.500"
-                      href={node.gitHtmlUrl}
-                      noOfLines={1}
-                      ml={6}
-                    >
-                      {node.gitHtmlUrl}
-                    </Link>
-                  ) : (
-                    <Text></Text>
-                  )}
-                </Stack>
-              );
-            })}
-          </DrawerBody>
-        </DrawerContent>
-      </Drawer>
-    </div>
   );
 }

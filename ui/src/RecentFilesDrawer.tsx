@@ -20,8 +20,11 @@ import {
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState } from "react";
 import { Workflow, deleteFlow, listWorkflows, workspace } from "./WorkspaceDB";
-import { IconPlus, IconTrash } from "@tabler/icons-react";
+import { IconPlus, IconTag, IconTrash } from "@tabler/icons-react";
 import { WorkspaceContext } from "./WorkspaceContext";
+import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
+import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
+import { formatTimestamp } from "./utils";
 
 type Props = {
   onclose: () => void;
@@ -56,18 +59,34 @@ export default function RecentFilesDrawer({
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
-          <DrawerHeader>Recent Workflows</DrawerHeader>
+          <DrawerHeader>
+            <HStack alignItems={"center"}>
+              <Text mr={6}>Recent Workflows</Text>
+              <Button
+                leftIcon={<IconPlus />}
+                variant="outline"
+                size={"sm"}
+                colorScheme="teal"
+                onClick={onClickNewFlow}
+              >
+                New
+              </Button>
+              {/* <RecentFilesDrawerMenu /> */}
+            </HStack>
+          </DrawerHeader>
           <DrawerBody>
-            <Button
-              leftIcon={<IconPlus />}
-              variant="outline"
-              size={"sm"}
-              colorScheme="teal"
-              mb={6}
-              onClick={onClickNewFlow}
-            >
-              New
-            </Button>
+            {/* <HStack spacing={4} mb={6}>
+              <Button
+                leftIcon={<IconTag />}
+                colorScheme="gray"
+                variant="solid"
+                size={"sm"}
+                px={3}
+                borderRadius={16}
+              >
+                New Tag
+              </Button>
+            </HStack> */}
             {recentFlows.map((n) => {
               const selected = n.id === curFlowID;
               return (
@@ -100,6 +119,7 @@ export default function RecentFilesDrawer({
                     </Text>
                     {/* </Stack> */}
                   </Box>
+                  <AddTagToWorkflowPopover workflow={n} />
                   <Popover>
                     {({ isOpen, onClose }) => (
                       <>
@@ -138,19 +158,4 @@ export default function RecentFilesDrawer({
       </Drawer>
     </div>
   );
-}
-
-function formatTimestamp(unixTimestamp: number) {
-  // Create a new Date object from the UNIX timestamp
-  const date = new Date(unixTimestamp);
-
-  // Get the day, month, year, hours, and minutes from the Date object
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0"); // Month is 0-indexed
-  const year = date.getFullYear();
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-
-  // Format the date and time string
-  return `${month}-${day}-${year} ${hours}:${minutes}`;
 }
