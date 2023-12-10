@@ -1,5 +1,4 @@
 import {
-  Stack,
   Button,
   PopoverTrigger,
   PopoverContent,
@@ -7,17 +6,13 @@ import {
   PopoverCloseButton,
   PopoverBody,
   Popover,
-  Text,
   PopoverHeader,
   Input,
   HStack,
-  Wrap,
-  WrapItem,
 } from "@chakra-ui/react";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Tag, Workflow, tagsTable, updateFlow } from "./WorkspaceDB";
-import { IconPlus, IconTag, IconTrash } from "@tabler/icons-react";
-import { WorkspaceContext } from "./WorkspaceContext";
+import { IconPlus, IconTag } from "@tabler/icons-react";
 import { MultiValue, Select } from "chakra-react-select";
 
 type Props = {

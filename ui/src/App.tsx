@@ -56,11 +56,6 @@ export default function App() {
   const setCurFlowID = (id: string) => {
     curFlowID.current = id;
     setFlowID(id);
-    // hacky fetch missing nodes defer until i find a way to get callback when graph fully loaded
-    setTimeout(() => {
-      const missing = findMissingNodes();
-      setMissingNodeTypes(missing);
-    }, 1000);
   };
 
   const graphAppSetup = async () => {
@@ -99,12 +94,9 @@ export default function App() {
   };
   useEffect(() => {
     graphAppSetup();
-    // fetch("/workspace/update_version", {
-    //   method: "POST",
-    // });
     setInterval(() => {
       if (curFlowID.current != null) {
-        const graphJson = localStorage.getItem("workflow");
+        const graphJson = JSON.stringify(app.graph.serialize());
         localStorage.setItem("curFlowID", curFlowID.current);
         graphJson != null &&
           updateFlow(curFlowID.current, {
@@ -135,8 +127,8 @@ export default function App() {
       alert("Error: Workflow not found! id: " + id);
       return;
     }
-    setCurFlowName(flow.name);
     app.loadGraphData(JSON.parse(flow.json));
+    setCurFlowName(flow.name);
     setRoute("root");
   };
   const onClickNewFlow = () => {

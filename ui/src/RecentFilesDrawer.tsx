@@ -75,7 +75,7 @@ export default function RecentFilesDrawer({
             </HStack>
           </DrawerHeader>
           <DrawerBody>
-            <HStack spacing={4} mb={6}>
+            {/* <HStack spacing={4} mb={6}>
               <Button
                 leftIcon={<IconTag />}
                 colorScheme="gray"
@@ -86,7 +86,7 @@ export default function RecentFilesDrawer({
               >
                 New Tag
               </Button>
-            </HStack>
+            </HStack> */}
             {recentFlows.map((n) => {
               const selected = n.id === curFlowID;
               return (
