@@ -56,7 +56,7 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
   const maxTagMenuHeight = 37 * 5;
 
   return (
-    <Popover>
+    <Popover isLazy={true}>
       <PopoverTrigger>
         <Button variant={"ghost"} size={"sm"} colorScheme="teal">
           <IconTag color={"#718096"} />

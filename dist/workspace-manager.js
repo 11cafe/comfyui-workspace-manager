@@ -28700,7 +28700,7 @@ function WK({ workflow: e }) {
     value: d.name,
     label: d.name
   })), u = 37 * 5;
-  return /* @__PURE__ */ w.jsxs(Eg, { children: [
+  return /* @__PURE__ */ w.jsxs(Eg, { isLazy: !0, children: [
     /* @__PURE__ */ w.jsx(_g, { children: /* @__PURE__ */ w.jsx(Fn, { variant: "ghost", size: "sm", colorScheme: "teal", children: /* @__PURE__ */ w.jsx(HW, { color: "#718096" }) }) }),
     /* @__PURE__ */ w.jsxs(Rg, { children: [
       /* @__PURE__ */ w.jsx(Og, {}),

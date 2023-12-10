@@ -179,6 +179,7 @@ export default function RecentFilesDrawer({
                     </Text>
                     {/* </Stack> */}
                   </Box>
+
                   <AddTagToWorkflowPopover workflow={n} />
                   <Popover>
                     {({ isOpen, onClose }) => (
