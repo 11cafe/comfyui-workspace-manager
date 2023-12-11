@@ -63,7 +63,6 @@ export function updateFlow(
   }
   const before = workspace[id];
   if (before == null) {
-    console.error("updateFlow: workflow not found", id);
     return;
   }
   const after = {
@@ -140,9 +139,13 @@ export function deleteFlow(id: string) {
   if (workspace == null) {
     throw new Error("workspace is not loaded");
   }
+  const filePath = workspace[id]?.filePath;
   delete workspace[id];
   localStorage.setItem("workspace", JSON.stringify(workspace));
   saveDB("workflows", JSON.stringify(workspace));
+  if (filePath != null) {
+    deleteFile(filePath);
+  }
 }
 
 async function loadTagsTable(): Promise<TagsTable> {

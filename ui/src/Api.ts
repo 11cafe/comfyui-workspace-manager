@@ -33,7 +33,6 @@ export async function saveDB(table: Table, jsonData: string) {
 }
 
 export async function updateFile(file_path: string, jsonData: string) {
-  console.log("updateFile", file_path, jsonData);
   try {
     const response = await fetch("/workspace/update_file", {
       method: "POST",
@@ -46,7 +45,6 @@ export async function updateFile(file_path: string, jsonData: string) {
       }),
     });
     const result = await response.text();
-    console.log(result);
     return result;
   } catch (error) {
     alert("Error saving workflow .json file: " + error);
@@ -85,7 +83,6 @@ export async function saveBackup(file_path: string, jsonData: string) {
       }),
     });
     const result = await response.text();
-    console.log(result);
     return result;
   } catch (error) {
     console.error("Error saving workspace backup:", error);
@@ -104,7 +101,6 @@ export async function listBackup(dir: string) {
       }),
     });
     const result = await response.text();
-    console.log(result);
     return result;
   } catch (error) {
     console.error("Error saving workspace:", error);
