@@ -30,7 +30,7 @@ import { WorkspaceContext } from "./WorkspaceContext";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
 import { formatTimestamp } from "./utils";
-
+const MAX_TAGS_TO_SHOW = 6;
 type Props = {
   onclose: () => void;
   loadWorkflowID: (id: string) => void;
@@ -117,7 +117,7 @@ export default function RecentFilesDrawer({
               )}
               {tagsTable
                 ?.listAll()
-                .slice(0, showAllTags ? undefined : 6)
+                .slice(0, showAllTags ? undefined : MAX_TAGS_TO_SHOW)
                 .map((tag) => (
                   <Button
                     variant="solid"
@@ -131,12 +131,14 @@ export default function RecentFilesDrawer({
                     {tag.name}
                   </Button>
                 ))}
-              <IconButton
-                aria-label="Show-all-tags"
-                size={"sm"}
-                icon={showAllTags ? <IconChevronUp /> : <IconChevronDown />}
-                onClick={() => setShowAllTags(!showAllTags)}
-              />
+              {(tagsTable?.listAll().length ?? 0) > MAX_TAGS_TO_SHOW && (
+                <IconButton
+                  aria-label="Show-all-tags"
+                  size={"sm"}
+                  icon={showAllTags ? <IconChevronUp /> : <IconChevronDown />}
+                  onClick={() => setShowAllTags(!showAllTags)}
+                />
+              )}
             </HStack>
             {recentFlows.map((n) => {
               const selected = n.id === curFlowID;

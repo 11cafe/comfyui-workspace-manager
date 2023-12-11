@@ -92,7 +92,10 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
             closeMenuOnSelect={false}
             maxMenuHeight={maxTagMenuHeight}
           />
-          <HStack gap={4} mt={Math.min(maxTagMenuHeight, allTags.length * 37)}>
+          <HStack
+            gap={4}
+            mt={Math.min(maxTagMenuHeight, Math.max(allTags.length, 3) * 37)}
+          >
             <Input
               placeholder="New tag name"
               size="sm"
