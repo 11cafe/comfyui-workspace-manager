@@ -29,7 +29,7 @@ type TagsTable = {
   tags: Tags;
   listAll(): Tag[];
   upsert(name: string): Tag;
-  delete(tagId: number): void;
+  delete(name: string): void;
 };
 
 export let workspace: Workflows | undefined = undefined;
@@ -161,8 +161,8 @@ async function loadTagsTable(): Promise<TagsTable> {
       saveDB("tags", JSON.stringify(tags));
       return tags[name];
     },
-    delete(tagId: number) {
-      delete tags[tagId];
+    delete(name: string) {
+      delete tags[name];
       saveDB("tags", JSON.stringify(tags));
     },
   };

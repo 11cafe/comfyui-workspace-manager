@@ -6,7 +6,11 @@ If you have questions or suggestions, please join our [Discord Channel](https://
 
 ## Installation & maintenance
 
-### Manual (via git)
+### [Option 1] Via ComfyUI Manager (Preferred)
+
+Simply search for “ComfyUI Workspace Manager”, install, and restart ComfyUI.
+
+### [Option 2] Via git
 
 Like any other custom node installation, in your ComfyUI root folder
 
@@ -18,18 +22,18 @@ and restart your ComfyUI.
 
 It is recommended to do git clone than downloading zip folder, because you can get latest updates by `git pull`!
 
-### Automated (via ComfyUI Manager)
-
-Simply search for “ComfyUI Workspace Manager”, install, and restart ComfyUI.
-
 ## Features
 
 Demo video: https://youtu.be/II7Xxpz4TVw
+
 walkthrough tutorial: https://www.youtube.com/watch?v=QbtSkiZ9F58
 
 - Effortlessly switch between different workflows in your workspace.
 - Create new workflows and rename existing ones.
-- One-click install models (Upcoming!)
+- [beta] organize workflows with **tags**
+- [beta] auto backup workspace locally
+- auto export all workflows in your selected local directory (Upcoming!)
+- cloud sync & backup workspace so you will never lose your data (Upcoming!)
 - One-click share workflow (Upcoming!)
 
 ![switch between flows demo](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/ad3495ee-b4c5-4747-a149-0ba69c2f1630)

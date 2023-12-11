@@ -31,6 +31,14 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
   useEffect(() => {
     tagsTable && setAllTags(tagsTable.listAll() ?? []);
   }, []);
+  useEffect(() => {
+    setSelectedTags(
+      workflow.tags?.map((t) => ({
+        value: t,
+        label: t,
+      })) ?? []
+    );
+  }, [workflow.tags]);
   if (tagsTable == null) {
     alert("Error: TagsTable is not loaded");
     return null;
@@ -42,87 +50,82 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
   const maxTagMenuHeight = 37 * 5;
 
   return (
-    <Popover>
-      {({}) => (
-        <>
-          <PopoverTrigger>
-            <Button variant={"ghost"} size={"sm"} colorScheme="teal">
-              <IconTag color={"#718096"} />
+    <Popover isLazy={true}>
+      <PopoverTrigger>
+        <Button variant={"ghost"} size={"sm"} colorScheme="teal">
+          <IconTag color={"#718096"} />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent>
+        <PopoverArrow />
+        <PopoverCloseButton />
+        <PopoverHeader>
+          <b>{workflow.name}</b>
+        </PopoverHeader>
+        <PopoverBody>
+          <Select
+            isMulti
+            name="tags"
+            options={tagOptions}
+            menuIsOpen={true}
+            value={selectedTags}
+            onChange={(selected) => {
+              console.log(selected);
+              setSelectedTags(selected);
+              updateFlow(workflow.id, {
+                tags: selected.map((s) => s.value),
+              });
+            }}
+            chakraStyles={{
+              dropdownIndicator: (provided, state) => ({
+                ...provided,
+                p: 0,
+                w: "30px",
+              }),
+              menuList: (provided, state) => ({
+                ...provided,
+                shadow: "none",
+                pt: 0,
+              }),
+            }}
+            placeholder="Select tags"
+            closeMenuOnSelect={false}
+            maxMenuHeight={maxTagMenuHeight}
+          />
+          <HStack
+            gap={4}
+            mt={Math.min(maxTagMenuHeight, Math.max(allTags.length, 3) * 37)}
+          >
+            <Input
+              placeholder="New tag name"
+              size="sm"
+              mt={6}
+              mb={6}
+              variant={"flushed"}
+              value={newTagName}
+              onChange={(e) => {
+                setNewTagName(e.target.value);
+              }}
+            />
+            <Button
+              iconSpacing={1}
+              leftIcon={<IconPlus size={16} />}
+              colorScheme="teal"
+              variant="solid"
+              size={"xs"}
+              px={5}
+              isDisabled={newTagName.length === 0}
+              onClick={() => {
+                tagsTable?.upsert(newTagName);
+                setAllTags(tagsTable?.listAll() ?? []);
+                setNewTagName("");
+              }}
+            >
+              New Tag
             </Button>
-          </PopoverTrigger>
-          <PopoverContent>
-            <PopoverArrow />
-            <PopoverCloseButton />
-            <PopoverHeader>
-              <b>{workflow.name}</b>
-            </PopoverHeader>
-            <PopoverBody>
-              <Select
-                isMulti
-                name="tags"
-                options={tagOptions}
-                menuIsOpen={true}
-                value={selectedTags}
-                defaultValue={initialTags}
-                onChange={(selected) => {
-                  console.log(selected);
-                  setSelectedTags(selected);
-                  updateFlow(workflow.id, {
-                    tags: selected.map((s) => s.value),
-                  });
-                }}
-                chakraStyles={{
-                  dropdownIndicator: (provided, state) => ({
-                    ...provided,
-                    p: 0,
-                    w: "30px",
-                  }),
-                  menuList: (provided, state) => ({
-                    ...provided,
-                    shadow: "none",
-                    pt: 0,
-                  }),
-                }}
-                placeholder="Select tags"
-                closeMenuOnSelect={false}
-                maxMenuHeight={maxTagMenuHeight}
-              />
-              <HStack
-                gap={4}
-                mt={Math.min(maxTagMenuHeight, allTags.length * 37)}
-              >
-                <Input
-                  placeholder="New tag name"
-                  size="sm"
-                  mt={6}
-                  mb={6}
-                  variant={"flushed"}
-                  value={newTagName}
-                  onChange={(e) => {
-                    setNewTagName(e.target.value);
-                  }}
-                />
-                <Button
-                  iconSpacing={1}
-                  leftIcon={<IconPlus size={16} />}
-                  colorScheme="teal"
-                  variant="solid"
-                  size={"xs"}
-                  px={5}
-                  isDisabled={newTagName.length === 0}
-                  onClick={() => {
-                    tagsTable?.upsert(newTagName);
-                    setAllTags(tagsTable?.listAll() ?? []);
-                    setNewTagName("");
-                  }}
-                >
-                  New Tag
-                </Button>
-              </HStack>
-            </PopoverBody>
-          </PopoverContent>
-        </>
-      )}
+          </HStack>
+        </PopoverBody>
+      </PopoverContent>
     </Popover>
   );
 }
