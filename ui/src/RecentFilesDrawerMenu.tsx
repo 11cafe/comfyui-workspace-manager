@@ -11,6 +11,7 @@ import {
   IconHistory,
   IconMenu2,
   IconSettings,
+  IconTag,
 } from "@tabler/icons-react";
 import ViewBackupsModal from "./ViewBackupsModal";
 import ManageTagsModal from "./ManageTagsModal";
@@ -34,7 +35,7 @@ export default function RecentFilesDrawerMenu({}: Props) {
         />
         <MenuList>
           <MenuItem
-            onClick={onOpen}
+            // onClick={onOpen}
             icon={<IconSettings size={16} />}
             fontSize={16}
           >
@@ -42,7 +43,7 @@ export default function RecentFilesDrawerMenu({}: Props) {
           </MenuItem>
           <MenuItem
             onClick={() => setIsManageTagsOpen(true)}
-            icon={<IconHistory size={16} />}
+            icon={<IconTag size={16} />}
             fontSize={16}
           >
             Manage Tags
@@ -52,7 +53,7 @@ export default function RecentFilesDrawerMenu({}: Props) {
             icon={<IconHistory size={16} />}
             fontSize={16}
           >
-            Backups
+            Backups (Experimental)
           </MenuItem>
         </MenuList>
       </Menu>
