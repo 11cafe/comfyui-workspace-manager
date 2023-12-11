@@ -54,6 +54,24 @@ export async function updateFile(file_path: string, jsonData: string) {
   }
 }
 
+export async function deleteFile(file_path: string) {
+  try {
+    const response = await fetch("/workspace/delete_file", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        file_path: file_path,
+      }),
+    });
+    const result = await response.text();
+    return result;
+  } catch (error) {
+    console.error("Error deleting file:", error);
+  }
+}
+
 export async function saveBackup(file_path: string, jsonData: string) {
   try {
     const response = await fetch("/workspace/save_backup", {

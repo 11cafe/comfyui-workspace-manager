@@ -165,7 +165,6 @@ async def save_backup(request):
         data = await request.json()
         file_path = data.get('file_path')
         json_str = data.get('json_str')
-        print(f"Saving backup to {file_path}")
 
         file_path = os.path.join(BACKUP_DIR, file_path)
         if not file_path or not json_str:
@@ -236,9 +235,10 @@ async def update_file(request):
 async def delete_file(request):
     data = await request.json()
     file_path = data['file_path']
+    full_path = os.path.join(DEFAULT_MY_WORKFLOWS_DIR, file_path)
 
-    if os.path.exists(file_path):
-        os.remove(file_path)
+    if os.path.exists(full_path):
+        os.remove(full_path)
         return web.Response(text="File deleted successfully")
     else:
         return web.Response(text="File not found", status=404)

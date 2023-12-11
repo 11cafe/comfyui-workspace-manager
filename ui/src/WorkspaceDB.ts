@@ -1,6 +1,6 @@
 // @ts-ignore
 import { v4 as uuidv4 } from "uuid";
-import { getDB, saveDB, updateFile } from "./Api";
+import { deleteFile, getDB, saveDB, updateFile } from "./Api";
 import { toFileNameFriendly } from "./utils";
 
 export type Table = "workflows" | "tags";
@@ -85,12 +85,29 @@ export function updateFlow(
   localStorage.setItem("workspace", JSON.stringify(workspace));
   saveDB("workflows", JSON.stringify(workspace));
   // save to my_workflows/
-  let file_path = after.filePath;
-  if (file_path == null) {
-    file_path = toFileNameFriendly(after.name) + ".json";
-    workspace[id].filePath = file_path;
+  if (input.name != null) {
+    // renamed file
+    before.filePath && deleteFile(before.filePath);
+    saveToMyWorkflowsUpdateJson(id);
+    return;
   }
-  updateFile(file_path, after.json);
+  if (input.json != null) {
+    saveToMyWorkflowsUpdateJson(id);
+  }
+}
+
+function saveToMyWorkflowsUpdateJson(id: string) {
+  if (workspace == null) {
+    return;
+  }
+  const workflow = workspace[id];
+  if (workflow == null) {
+    console.error("saveToMyWorkflowsUpdateJson: workflow not found", id);
+    return;
+  }
+  const file_path = toFileNameFriendly(workflow.name) + ".json";
+  workspace[id].filePath = file_path;
+  updateFile(file_path, workflow.json);
 }
 
 export function createFlow(json: string): Workflow {
@@ -99,18 +116,16 @@ export function createFlow(json: string): Workflow {
   }
   const uuid = uuidv4(); // ⇨ '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
   const title = "Untitled Flow";
-  const fileName = toFileNameFriendly(title);
   workspace[uuid] = {
     id: uuid,
     name: title,
     json,
-    filePath: fileName + ".json",
     updateTime: Date.now(),
     tags: [],
   };
   localStorage.setItem("workspace", JSON.stringify(workspace));
   saveDB("workflows", JSON.stringify(workspace));
-  updateFile(fileName + ".json", json);
+  saveToMyWorkflowsUpdateJson(uuid);
   return workspace[uuid];
 }
 
