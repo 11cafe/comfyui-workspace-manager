@@ -32,6 +32,16 @@ export function findMissingNodes(): string[] {
   }
   return missingNodeTypes;
 }
+
+export function toFileNameFriendly(str: string) {
+  // Keep only alphanumeric characters (including characters from other languages), underscores, and hyphens
+  // The \w character class in JavaScript's regex includes [A-Za-z0-9_] and Unicode characters (like Chinese, Japanese)
+  // str = str.replace(/[^\w-]/g, "");
+  str = str.replace(/[\\/:*?"<>|]/g, "_");
+
+  return str.trim();
+}
+
 export function formatTimestamp(unixTimestamp: number) {
   // Create a new Date object from the UNIX timestamp
   const date = new Date(unixTimestamp);
