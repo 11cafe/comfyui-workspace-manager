@@ -109,15 +109,20 @@ function saveToMyWorkflowsUpdateJson(id: string) {
   updateFile(file_path, workflow.json);
 }
 
-export function createFlow(json: string): Workflow {
+export function createFlow({
+  json,
+  name,
+}: {
+  json: string;
+  name?: string;
+}): Workflow {
   if (workspace == null) {
     throw new Error("workspace is not loaded");
   }
   const uuid = uuidv4(); // ⇨ '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
-  const title = "Untitled Flow";
   workspace[uuid] = {
     id: uuid,
-    name: title,
+    name: name ?? "Untitled Flow",
     json,
     updateTime: Date.now(),
     tags: [],
