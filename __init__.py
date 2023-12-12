@@ -231,6 +231,17 @@ async def update_file(request):
         file.write(json_str)
     return web.Response(text="File updated successfully")
 
+@server.PromptServer.instance.routes.post("/workspace/update_file")
+async def get_my_workflows_dir(request):
+    
+    full_path = os.path.join(DEFAULT_MY_WORKFLOWS_DIR)
+    # Create the directory if it doesn't exist
+    os.makedirs(os.path.dirname(full_path), exist_ok=True)
+
+    with open(full_path, 'w') as file:
+        file.write(json_str)
+    return web.Response(text="File updated successfully")
+
 @server.PromptServer.instance.routes.post("/workspace/delete_file")
 async def delete_file(request):
     data = await request.json()

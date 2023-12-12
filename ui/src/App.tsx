@@ -19,7 +19,7 @@ import {
   IconSun,
   IconTriangleInvertedFilled,
 } from "@tabler/icons-react";
-import RecentFilesDrawer from "./RecentFilesDrawer";
+import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
 import {
   Workflow,
   createFlow,
