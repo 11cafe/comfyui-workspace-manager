@@ -36,13 +36,13 @@ export default function RecentFilesDrawerMenu({}: Props) {
           variant="outline"
         />
         <MenuList>
-          {/* <MenuItem
+          <MenuItem
             onClick={() => setIsSettingsOpen(true)}
             icon={<IconSettings size={16} />}
             fontSize={16}
           >
             Settings
-          </MenuItem> */}
+          </MenuItem>
           <MenuItem
             onClick={() => setIsManageTagsOpen(true)}
             icon={<IconTag size={16} />}

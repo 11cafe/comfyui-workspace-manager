@@ -4,7 +4,7 @@ import { deleteFile, getDB, saveDB, updateFile } from "./Api";
 import { sortFlows, toFileNameFriendly } from "./utils";
 import { ESortTypes } from "./RecentFilesDrawer/types";
 
-export type Table = "workflows" | "tags";
+export type Table = "workflows" | "tags" | "userSettings";
 
 export type Workflow = {
   id: string;
@@ -36,6 +36,7 @@ type TagsTable = {
 
 export let workspace: Workflows | undefined = undefined;
 export let tagsTable: TagsTable | null = null;
+export let userSettingsTable: UserSettingsTable | null = null;
 
 export async function loadDBs() {
   const loadWorkflows = async () => {
@@ -48,7 +49,10 @@ export async function loadDBs() {
   const loadTags = async () => {
     tagsTable = await loadTagsTable();
   };
-  await Promise.all([loadWorkflows(), loadTags()]);
+  const loadUserSettings = async () => {
+    userSettingsTable = await UserSettingsTable.load();
+  };
+  await Promise.all([loadWorkflows(), loadTags(), loadUserSettings()]);
 }
 
 export function updateFlow(
@@ -180,4 +184,52 @@ async function loadTagsTable(): Promise<TagsTable> {
       saveDB("tags", JSON.stringify(tags));
     },
   };
+}
+
+function curComfyspaceJson(): string {
+  return JSON.stringify({
+    [UserSettingsTable.TABLE_NAME]: userSettingsTable?.records,
+    ["tags"]: tagsTable?.tags,
+    ["workflows"]: workspace,
+  });
+}
+
+type UserSettings = {
+  myWorkflowsDir?: string;
+  topbarLocation?: {
+    top: number;
+    left: number;
+    right: number;
+  };
+};
+class UserSettingsTable {
+  public records: UserSettings;
+  static readonly TABLE_NAME = "userSettings";
+  private constructor() {
+    this.records = {};
+  }
+  public upsert(newPairs: UserSettings) {
+    this.records = {
+      ...this.records,
+      ...newPairs,
+    };
+    saveDB(UserSettingsTable.TABLE_NAME, JSON.stringify(this.records));
+    localStorage.setItem("comfyspace", curComfyspaceJson());
+  }
+
+  static async load(): Promise<UserSettingsTable> {
+    const instance = new UserSettingsTable();
+    let jsonStr = await getDB(UserSettingsTable.TABLE_NAME);
+    let json = jsonStr != null ? JSON.parse(jsonStr) : null;
+    if (json == null) {
+      const comfyspace = localStorage.getItem("comfyspace") ?? "{}";
+      const comfyspaceData = JSON.parse(comfyspace);
+      json = comfyspaceData[UserSettingsTable.TABLE_NAME];
+      console.log("userSettings", comfyspaceData["userSettings"]);
+    }
+    if (json != null) {
+      instance.records = json;
+    }
+    return instance;
+  }
 }
