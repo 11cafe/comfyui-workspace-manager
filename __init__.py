@@ -141,20 +141,26 @@ async def save_db(request):
 
     return web.Response(text=f"JSON saved to {file_name}")
 
-@server.PromptServer.instance.routes.get("/workspace/get_db")
-async def get_workspace(request):
-    # Extract the table parameter from the query string
-    table = request.query.get('table')
+async def read_table(table):
     if not table:
         return web.Response(status=400, text="Table parameter is missing")
 
     file_name = f'{db_dir_path}/{table}.json'
     if not os.path.exists(file_name):
-        return web.Response(status=404, text=f"{file_name} not found")
+        return None
 
     with open(file_name, 'r') as file:
         data = json.load(file)
     
+    return data
+
+@server.PromptServer.instance.routes.get("/workspace/get_db")
+async def get_workspace(request):
+    # Extract the table parameter from the query string
+    table = request.query.get('table')
+    data = read_table(table)
+    if not data:
+        return web.Response(status=400, text=f"table not found - {table}")
     return web.json_response(data)
 
 BACKUP_DIR = os.path.join(workspace_path, "backup")
@@ -232,15 +238,32 @@ async def update_file(request):
     return web.Response(text="File updated successfully")
 
 @server.PromptServer.instance.routes.post("/workspace/get_my_workflows_dir")
-async def get_my_workflows_dir(request):
-    
-    full_path = os.path.join(DEFAULT_MY_WORKFLOWS_DIR)
-    # Create the directory if it doesn't exist
-    os.makedirs(os.path.dirname(full_path), exist_ok=True)
+async def get_my_workflows_dir_endpoint(request):
+    absolute_path = get_my_workflows_dir
+    return web.Response(text=absolute_path)
 
-    with open(full_path, 'w') as file:
-        file.write(json_str)
-    return web.Response(text="File updated successfully")
+async def get_my_workflows_dir(request):
+    data = read_table('userSettings')
+    print('get_my_workflows_dir data', data)
+    if(data):
+        records = json.loads(data)
+        curDir = records['myWorkflowsDir'] if records else None
+        print('get_my_workflows_dir', curDir)
+        if curDir:
+            return curDir
+    return DEFAULT_MY_WORKFLOWS_DIR
+
+@server.PromptServer.instance.routes.post("/workspace/get_system_dir")
+async def get_system_dir(request):
+    try:
+        dir_path = request.query.get('path', '/')
+        if not os.path.isdir(dir_path):
+            raise ValueError("Not a directory")
+
+        dir_contents = os.listdir(dir_path)
+        return web.Response(text=json.dumps(dir_contents), content_type='application/json')
+    except Exception as e:
+        return web.Response(text=str(e), status=500)
 
 @server.PromptServer.instance.routes.post("/workspace/delete_file")
 async def delete_file(request):
