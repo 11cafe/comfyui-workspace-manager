@@ -18,7 +18,7 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState } from "react";
-import { Workflow, deleteFlow, listWorkflows, tagsTable } from "./WorkspaceDB";
+import { Workflow, deleteFlow, listWorkflows, tagsTable } from "../WorkspaceDB";
 import {
   IconChevronDown,
   IconChevronUp,
@@ -26,10 +26,11 @@ import {
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
-import { WorkspaceContext } from "./WorkspaceContext";
+import { WorkspaceContext } from "../WorkspaceContext";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
-import { formatTimestamp } from "./utils";
+import { formatTimestamp } from "../utils";
+import WorkflowListItem from "./WorkflowListItem";
 const MAX_TAGS_TO_SHOW = 6;
 type Props = {
   onclose: () => void;
@@ -42,7 +43,6 @@ export default function RecentFilesDrawer({
   onClickNewFlow,
 }: Props) {
   const [recentFlows, setRecentFlow] = useState<Workflow[]>([]);
-  const { colorMode } = useColorMode();
   const { curFlowID } = useContext(WorkspaceContext);
   const [selectedTag, setSelectedTag] = useState<string>();
   const [showAllTags, setShowAllTags] = useState(false);
@@ -50,11 +50,7 @@ export default function RecentFilesDrawer({
     const all = listWorkflows();
     setRecentFlow(all);
   }, []);
-  const onClickDelete = (id: string) => {
-    deleteFlow(id);
-    const all = listWorkflows();
-    setRecentFlow(all);
-  };
+
   const onClickTag = (name: string) => {
     setSelectedTag(name);
     setRecentFlow(listWorkflows().filter((n) => n.tags?.includes(name)));
@@ -140,73 +136,14 @@ export default function RecentFilesDrawer({
                 />
               )}
             </HStack>
-            {recentFlows.map((n) => {
-              const selected = n.id === curFlowID;
-              return (
-                <HStack w={"100%"} justify={"space-between"}>
-                  <Box
-                    as="button"
-                    textAlign={"left"}
-                    backgroundColor={selected ? "teal.200" : undefined}
-                    color={selected ? "#333" : undefined}
-                    w={"90%"}
-                    borderRadius={6}
-                    p={2}
-                    mb={2}
-                    onClick={() => {
-                      loadWorkflowID(n.id);
-                    }}
-                    _hover={{
-                      bg: colorMode === "light" ? "gray.200" : "#4A5568",
-                    }}
-                    _active={{
-                      bg: "#dddfe2",
-                      transform: "scale(0.98)",
-                      borderColor: "#bec3c9",
-                    }}
-                  >
-                    {/* <Stack gap={0} cursor={"pointer"}> */}
-                    <Text fontWeight={"500"}>{n.name ?? "untitled"}</Text>
-                    <Text color={"GrayText"} ml={2} fontSize={"sm"}>
-                      Updated: {formatTimestamp(n.updateTime)}
-                    </Text>
-                    {/* </Stack> */}
-                  </Box>
-
-                  <AddTagToWorkflowPopover workflow={n} />
-                  <Popover>
-                    {({ isOpen, onClose }) => (
-                      <>
-                        <PopoverTrigger>
-                          {/* <Button>Trigger</Button> */}
-                          <IconTrash color="#F56565" cursor={"pointer"} />
-                        </PopoverTrigger>
-                        <PopoverContent>
-                          <PopoverArrow />
-                          <PopoverCloseButton />
-                          {/* <PopoverHeader>Confirmation!</PopoverHeader> */}
-                          <PopoverBody>
-                            <Text mb={4} fontWeight={600}>
-                              Are you sure you want to delete this workflow?
-                            </Text>
-                            <Button
-                              colorScheme="red"
-                              size={"sm"}
-                              onClick={() => {
-                                onClickDelete(n.id);
-                                onClose();
-                              }}
-                            >
-                              Yes, delete
-                            </Button>
-                          </PopoverBody>
-                        </PopoverContent>
-                      </>
-                    )}
-                  </Popover>
-                </HStack>
-              );
-            })}
+            {recentFlows.map((n) => (
+              <WorkflowListItem
+                isSelected={n.id === curFlowID}
+                workflow={n}
+                loadWorkflowID={loadWorkflowID}
+                setRecentFlow={setRecentFlow}
+              />
+            ))}
           </DrawerBody>
         </DrawerContent>
       </Drawer>

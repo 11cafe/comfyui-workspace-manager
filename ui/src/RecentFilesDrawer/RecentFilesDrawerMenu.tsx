@@ -13,9 +13,10 @@ import {
   IconSettings,
   IconTag,
 } from "@tabler/icons-react";
-import ViewBackupsModal from "./ViewBackupsModal";
+import ViewBackupsModal from "../ViewBackupsModal";
 import ManageTagsModal from "./ManageTagsModal";
 import { useState } from "react";
+import WorkspaceSettingsModal from "./WorkspaceSettingsModal";
 
 type Props = {
   //   onclose: () => void;
@@ -23,6 +24,7 @@ type Props = {
 export default function RecentFilesDrawerMenu({}: Props) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isManageTagsOpen, setIsManageTagsOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   return (
     <>
       <Menu isLazy>
@@ -34,13 +36,13 @@ export default function RecentFilesDrawerMenu({}: Props) {
           variant="outline"
         />
         <MenuList>
-          <MenuItem
-            // onClick={onOpen}
+          {/* <MenuItem
+            onClick={() => setIsSettingsOpen(true)}
             icon={<IconSettings size={16} />}
             fontSize={16}
           >
             Settings
-          </MenuItem>
+          </MenuItem> */}
           <MenuItem
             onClick={() => setIsManageTagsOpen(true)}
             icon={<IconTag size={16} />}
@@ -59,6 +61,9 @@ export default function RecentFilesDrawerMenu({}: Props) {
       </Menu>
       {isManageTagsOpen && (
         <ManageTagsModal onclose={() => setIsManageTagsOpen(false)} />
+      )}
+      {isSettingsOpen && (
+        <WorkspaceSettingsModal onclose={() => setIsSettingsOpen(false)} />
       )}
       {isOpen && <ViewBackupsModal onclose={onClose} />}
     </>

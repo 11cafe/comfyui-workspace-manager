@@ -30,7 +30,6 @@ export default function ViewBackupsModal({ onclose }: Props) {
   >([]); // {fileName: string, jsonStr: string}[]
   const fetchBackups = async () => {
     const res = await listBackup("workflows");
-    console.log(res);
     if (res == null) {
       return;
     }

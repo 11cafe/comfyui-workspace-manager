@@ -11,7 +11,7 @@ import {
   HStack,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { Tag, Workflow, tagsTable, updateFlow } from "./WorkspaceDB";
+import { Tag, Workflow, tagsTable, updateFlow } from "../WorkspaceDB";
 import { IconPlus, IconTag } from "@tabler/icons-react";
 import { MultiValue, Select } from "chakra-react-select";
 
@@ -70,7 +70,6 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
             menuIsOpen={true}
             value={selectedTags}
             onChange={(selected) => {
-              console.log(selected);
               setSelectedTags(selected);
               updateFlow(workflow.id, {
                 tags: selected.map((s) => s.value),

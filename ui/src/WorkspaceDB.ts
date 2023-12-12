@@ -1,6 +1,7 @@
 // @ts-ignore
 import { v4 as uuidv4 } from "uuid";
-import { saveDB } from "./Api";
+import { deleteFile, getDB, saveDB, updateFile } from "./Api";
+import { toFileNameFriendly } from "./utils";
 
 export type Table = "workflows" | "tags";
 
@@ -8,8 +9,8 @@ export type Workflow = {
   id: string;
   json: string;
   name: string;
-  img?: string;
   updateTime: number;
+  filePath?: string;
   // autoCates?: string[]; // categories that will be auto added to the workflow
   tags?: string[];
 };
@@ -49,12 +50,6 @@ export async function loadDBs() {
   await Promise.all([loadWorkflows(), loadTags()]);
 }
 
-export function getFlow(id: string): Workflow | undefined {
-  if (workspace == null) {
-    return undefined;
-  }
-  return workspace[id];
-}
 export function updateFlow(
   id: string,
   input: {
@@ -68,7 +63,6 @@ export function updateFlow(
   }
   const before = workspace[id];
   if (before == null) {
-    console.error("updateFlow: workflow not found", id);
     return;
   }
   const after = {
@@ -85,28 +79,52 @@ export function updateFlow(
   workspace[id] = {
     ...workspace[id],
     ...input,
-    id,
     updateTime: Date.now(),
   };
-  // TODO: delete localStorage.setItem once fully migrate to disk
   localStorage.setItem("workspace", JSON.stringify(workspace));
   saveDB("workflows", JSON.stringify(workspace));
+  // save to my_workflows/
+  if (input.name != null) {
+    // renamed file
+    before.filePath && deleteFile(before.filePath);
+    saveToMyWorkflowsUpdateJson(id);
+    return;
+  }
+  if (input.json != null) {
+    saveToMyWorkflowsUpdateJson(id);
+  }
 }
-export function createFlow(json: string, name?: string): Workflow {
+
+function saveToMyWorkflowsUpdateJson(id: string) {
+  if (workspace == null) {
+    return;
+  }
+  const workflow = workspace[id];
+  if (workflow == null) {
+    console.error("saveToMyWorkflowsUpdateJson: workflow not found", id);
+    return;
+  }
+  const file_path = toFileNameFriendly(workflow.name) + ".json";
+  workspace[id].filePath = file_path;
+  updateFile(file_path, workflow.json);
+}
+
+export function createFlow(json: string): Workflow {
   if (workspace == null) {
     throw new Error("workspace is not loaded");
   }
   const uuid = uuidv4(); // ⇨ '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
+  const title = "Untitled Flow";
   workspace[uuid] = {
     id: uuid,
-    name: name ?? "Untitled Flow",
+    name: title,
     json,
     updateTime: Date.now(),
     tags: [],
   };
-  // TODO: delete localStorage.setItem once fully migrate to disk
   localStorage.setItem("workspace", JSON.stringify(workspace));
   saveDB("workflows", JSON.stringify(workspace));
+  saveToMyWorkflowsUpdateJson(uuid);
   return workspace[uuid];
 }
 
@@ -121,23 +139,12 @@ export function deleteFlow(id: string) {
   if (workspace == null) {
     throw new Error("workspace is not loaded");
   }
+  const filePath = workspace[id]?.filePath;
   delete workspace[id];
-  // TODO: delete localStorage.setItem once fully migrate to disk
   localStorage.setItem("workspace", JSON.stringify(workspace));
   saveDB("workflows", JSON.stringify(workspace));
-}
-
-async function getDB(table: Table): Promise<string | undefined> {
-  try {
-    const response = await fetch(`/workspace/get_db?table=${table}`);
-    if (!response.ok) {
-      return undefined;
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error fetching workspace:", error);
-    return undefined;
+  if (filePath != null) {
+    deleteFile(filePath);
   }
 }
 

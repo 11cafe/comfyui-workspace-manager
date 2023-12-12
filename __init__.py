@@ -165,7 +165,6 @@ async def save_backup(request):
         data = await request.json()
         file_path = data.get('file_path')
         json_str = data.get('json_str')
-        print(f"Saving backup to {file_path}")
 
         file_path = os.path.join(BACKUP_DIR, file_path)
         if not file_path or not json_str:
@@ -217,3 +216,52 @@ async def list_backup(request):
         return web.Response(text=json.dumps(file_contents), content_type='application/json')
     except Exception as e:
         return web.Response(text=json.dumps({"error": str(e)}), status=500)
+
+DEFAULT_MY_WORKFLOWS_DIR = os.path.join(comfy_path,'my_workflows')
+@server.PromptServer.instance.routes.post("/workspace/update_file")
+async def update_file(request):
+    data = await request.json()
+    file_path = data['file_path']
+    json_str = data['json_str']
+    full_path = os.path.join(DEFAULT_MY_WORKFLOWS_DIR, file_path)
+    # Create the directory if it doesn't exist
+    os.makedirs(os.path.dirname(full_path), exist_ok=True)
+
+    with open(full_path, 'w') as file:
+        file.write(json_str)
+    return web.Response(text="File updated successfully")
+
+@server.PromptServer.instance.routes.post("/workspace/update_file")
+async def get_my_workflows_dir(request):
+    
+    full_path = os.path.join(DEFAULT_MY_WORKFLOWS_DIR)
+    # Create the directory if it doesn't exist
+    os.makedirs(os.path.dirname(full_path), exist_ok=True)
+
+    with open(full_path, 'w') as file:
+        file.write(json_str)
+    return web.Response(text="File updated successfully")
+
+@server.PromptServer.instance.routes.post("/workspace/delete_file")
+async def delete_file(request):
+    data = await request.json()
+    file_path = data['file_path']
+    full_path = os.path.join(DEFAULT_MY_WORKFLOWS_DIR, file_path)
+
+    if os.path.exists(full_path):
+        os.remove(full_path)
+        return web.Response(text="File deleted successfully")
+    else:
+        return web.Response(text="File not found", status=404)
+    
+@server.PromptServer.instance.routes.post("/workspace/rename_file")
+async def rename_file(request):
+    data = await request.json()
+    file_path = data['file_path']
+    new_name = data['new_file_path']
+
+    if os.path.exists(file_path):
+        os.rename(file_path, new_name)
+        return web.Response(text="File renamed successfully")
+    else:
+        return web.Response(text="File not found", status=404)
