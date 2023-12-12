@@ -87,7 +87,7 @@ export default function App() {
       workspace && setCurFlowName(workspace[latest]?.name ?? "");
     } else {
       const graphJson = localStorage.getItem("workflow");
-      const flow = createFlow(graphJson ?? "");
+      const flow = createFlow({ json: graphJson ?? "" });
       setCurFlowID(flow.id);
       setCurFlowName(flow.name ?? "");
     }
@@ -133,7 +133,7 @@ export default function App() {
   };
   const onClickNewFlow = () => {
     const defaultObj = defaultGraph;
-    const flow = createFlow(JSON.stringify(defaultObj));
+    const flow = createFlow({ json: JSON.stringify(defaultObj) });
     setCurFlowID(flow.id);
     setCurFlowName(flow.name);
     app.loadGraphData(defaultObj);

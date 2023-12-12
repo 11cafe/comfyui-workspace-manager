@@ -22,15 +22,17 @@ import { Workflow, deleteFlow, listWorkflows, tagsTable } from "../WorkspaceDB";
 import {
   IconChevronDown,
   IconChevronUp,
+  IconFileImport,
   IconPlus,
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
-import { WorkspaceContext } from "../WorkspaceContext";
+import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
 import { formatTimestamp } from "../utils";
 import WorkflowListItem from "./WorkflowListItem";
+import ImportJsonFlows from "./ImportJsonFlows";
 const MAX_TAGS_TO_SHOW = 6;
 type Props = {
   onclose: () => void;
@@ -57,37 +59,39 @@ export default function RecentFilesDrawer({
   };
 
   return (
-    <div style={{ position: "absolute", top: 0, left: 0, right: 0 }}>
-      <Drawer
-        isOpen={true}
-        placement="left"
-        onClose={() => onclose()}
-        size={"sm"}
-      >
-        <DrawerOverlay />
-        <DrawerContent>
-          <DrawerHeader>
-            <HStack alignItems={"center"} justifyContent={"space-between"}>
-              <HStack>
-                <Text mr={6}>Workflows</Text>
-                <Button
-                  leftIcon={<IconPlus />}
-                  variant="outline"
-                  size={"sm"}
-                  colorScheme="teal"
-                  onClick={onClickNewFlow}
-                >
-                  New
-                </Button>
+    <RecentFilesContext.Provider value={{ setRecentFiles: setRecentFlow }}>
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0 }}>
+        <Drawer
+          isOpen={true}
+          placement="left"
+          onClose={() => onclose()}
+          size={"sm"}
+        >
+          <DrawerOverlay />
+          <DrawerContent>
+            <DrawerHeader>
+              <HStack alignItems={"center"} justifyContent={"space-between"}>
+                <HStack gap={4}>
+                  <Text mr={6}>Workflows</Text>
+                  <Button
+                    leftIcon={<IconPlus />}
+                    variant="outline"
+                    size={"sm"}
+                    colorScheme="teal"
+                    onClick={onClickNewFlow}
+                  >
+                    New
+                  </Button>
+                  <ImportJsonFlows />
+                </HStack>
+                <HStack alignItems={"center"}>
+                  <RecentFilesDrawerMenu />
+                  {/* <DrawerCloseButton position={"relative"} /> */}
+                </HStack>
               </HStack>
-              <HStack alignItems={"center"}>
-                <RecentFilesDrawerMenu />
-                {/* <DrawerCloseButton position={"relative"} /> */}
-              </HStack>
-            </HStack>
-          </DrawerHeader>
-          <DrawerBody>
-            {/* <HStack spacing={4} mb={6}>
+            </DrawerHeader>
+            <DrawerBody>
+              {/* <HStack spacing={4} mb={6}>
               <Button
                 leftIcon={<IconTag />}
                 colorScheme="gray"
@@ -99,54 +103,55 @@ export default function RecentFilesDrawer({
                 New Tag
               </Button>
             </HStack> */}
-            <HStack spacing={2} wrap={"wrap"} mb={6}>
-              {selectedTag != null && (
-                <IconButton
-                  aria-label="Close"
-                  size={"sm"}
-                  icon={<IconX />}
-                  onClick={() => {
-                    setSelectedTag(undefined);
-                    setRecentFlow(listWorkflows());
-                  }}
-                />
-              )}
-              {tagsTable
-                ?.listAll()
-                .slice(0, showAllTags ? undefined : MAX_TAGS_TO_SHOW)
-                .map((tag) => (
-                  <Button
-                    variant="solid"
-                    width={"auto"}
-                    flexShrink={0}
+              <HStack spacing={2} wrap={"wrap"} mb={6}>
+                {selectedTag != null && (
+                  <IconButton
+                    aria-label="Close"
                     size={"sm"}
-                    py={4}
-                    onClick={() => onClickTag(tag.name)}
-                    isActive={selectedTag === tag.name}
-                  >
-                    {tag.name}
-                  </Button>
-                ))}
-              {(tagsTable?.listAll().length ?? 0) > MAX_TAGS_TO_SHOW && (
-                <IconButton
-                  aria-label="Show-all-tags"
-                  size={"sm"}
-                  icon={showAllTags ? <IconChevronUp /> : <IconChevronDown />}
-                  onClick={() => setShowAllTags(!showAllTags)}
+                    icon={<IconX />}
+                    onClick={() => {
+                      setSelectedTag(undefined);
+                      setRecentFlow(listWorkflows());
+                    }}
+                  />
+                )}
+                {tagsTable
+                  ?.listAll()
+                  .slice(0, showAllTags ? undefined : MAX_TAGS_TO_SHOW)
+                  .map((tag) => (
+                    <Button
+                      variant="solid"
+                      width={"auto"}
+                      flexShrink={0}
+                      size={"sm"}
+                      py={4}
+                      onClick={() => onClickTag(tag.name)}
+                      isActive={selectedTag === tag.name}
+                    >
+                      {tag.name}
+                    </Button>
+                  ))}
+                {(tagsTable?.listAll().length ?? 0) > MAX_TAGS_TO_SHOW && (
+                  <IconButton
+                    aria-label="Show-all-tags"
+                    size={"sm"}
+                    icon={showAllTags ? <IconChevronUp /> : <IconChevronDown />}
+                    onClick={() => setShowAllTags(!showAllTags)}
+                  />
+                )}
+              </HStack>
+              {recentFlows.map((n) => (
+                <WorkflowListItem
+                  isSelected={n.id === curFlowID}
+                  workflow={n}
+                  loadWorkflowID={loadWorkflowID}
+                  setRecentFlow={setRecentFlow}
                 />
-              )}
-            </HStack>
-            {recentFlows.map((n) => (
-              <WorkflowListItem
-                isSelected={n.id === curFlowID}
-                workflow={n}
-                loadWorkflowID={loadWorkflowID}
-                setRecentFlow={setRecentFlow}
-              />
-            ))}
-          </DrawerBody>
-        </DrawerContent>
-      </Drawer>
-    </div>
+              ))}
+            </DrawerBody>
+          </DrawerContent>
+        </Drawer>
+      </div>
+    </RecentFilesContext.Provider>
   );
 }

@@ -22,7 +22,7 @@ export default function WorkspaceSettingsModal({
 }) {
   const [selectedFolder, setSelectedFolder] = useState(null);
 
-  const handleFolderChange = (event) => {
+  const handleFolderChange = (event: any) => {
     if (event.target.files.length) {
       const folderPath = event.target.files[0].webkitRelativePath.split("/")[0];
       setSelectedFolder(folderPath);
