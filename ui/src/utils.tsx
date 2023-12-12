@@ -1,4 +1,6 @@
 // @ts-ignore
+import { ESortTypes } from "./RecentFilesDrawer/types";
+import { Workflow } from "./WorkspaceDB";
 import { app } from "/scripts/app.js";
 // copied from app.js
 function sanitizeNodeName(string: string): string {
@@ -55,4 +57,29 @@ export function formatTimestamp(unixTimestamp: number) {
 
   // Format the date and time string
   return `${month}-${day}-${year} ${hours}:${minutes}`;
+}
+
+/**
+ * Sort workspace list data
+ * @param flows Data that needs to be sorted
+ * @param sortType The type of sorting
+ * @returns sorted data
+ */
+export function sortFlows(flows: Workflow[], sortType: ESortTypes) {
+  const copyFlows = [...flows];
+  switch (sortType) {
+    case ESortTypes.AZ:
+      copyFlows.sort((a, b) => a.name.localeCompare(b.name));
+      break;
+    case ESortTypes.ZA:
+      copyFlows.sort((a, b) => b.name.localeCompare(a.name));
+      break;
+    case ESortTypes.RECENTLY_MODIFIED:
+      copyFlows.sort((a, b) => b.updateTime - a.updateTime);
+      break;
+    case ESortTypes.OLDEST_MODIFIED:
+      copyFlows.sort((a, b) => a.updateTime - b.updateTime);
+      break;
+  }
+  return copyFlows;
 }
