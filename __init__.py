@@ -231,7 +231,7 @@ async def update_file(request):
         file.write(json_str)
     return web.Response(text="File updated successfully")
 
-@server.PromptServer.instance.routes.post("/workspace/update_file")
+@server.PromptServer.instance.routes.post("/workspace/get_my_workflows_dir")
 async def get_my_workflows_dir(request):
     
     full_path = os.path.join(DEFAULT_MY_WORKFLOWS_DIR)
