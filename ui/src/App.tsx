@@ -165,7 +165,7 @@ export default function App() {
               aria-label="workspace folder"
               onClick={() => onClickNewFlow()}
             >
-              <HStack gap={1} px={3}>
+              <HStack gap={1}>
                 <IconPlus size={16} color={"white"} />
                 <Text color={"white"} fontSize={"sm"}>
                   New
@@ -177,6 +177,7 @@ export default function App() {
               placeholder="Workflow name"
               color={"white"}
               value={curFlowName ?? ""}
+              maxWidth={470}
               onChange={(e) => {
                 setCurFlowName(e.target.value);
                 throttledOnRenameCurFlow(e.target.value);
