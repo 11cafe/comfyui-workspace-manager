@@ -62,8 +62,8 @@ export default function RecentFilesDrawer({
   };
 
   const loadLatestWorkflows = () => {
-    const all = listWorkflows();
-    setRecentFlow(sortFlows(all, sortTypeRef.current));
+    const all = listWorkflows(sortTypeRef.current);
+    setRecentFlow(all);
   }
 
   const onSort = (type: ESortTypes) => {

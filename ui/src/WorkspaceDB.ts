@@ -1,7 +1,8 @@
 // @ts-ignore
 import { v4 as uuidv4 } from "uuid";
 import { deleteFile, getDB, saveDB, updateFile } from "./Api";
-import { toFileNameFriendly } from "./utils";
+import { sortFlows, toFileNameFriendly } from "./utils";
+import { ESortTypes } from "./RecentFilesDrawer/types";
 
 export type Table = "workflows" | "tags";
 
@@ -133,11 +134,12 @@ export function createFlow({
   return workspace[uuid];
 }
 
-export function listWorkflows(): Workflow[] {
+export function listWorkflows(sortBy?: ESortTypes): Workflow[] {
   if (workspace == null) {
     throw new Error("workspace is not loaded");
   }
-  return Object.values(workspace);
+  const workflows = Object.values(workspace);
+  return sortBy ? sortFlows(workflows, sortBy) : workflows;
 }
 
 export function deleteFlow(id: string) {
