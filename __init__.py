@@ -266,9 +266,11 @@ async def get_system_dir(request):
         if not os.path.isdir(dir_path):
             raise ValueError("[workspace] get_system_dir Not a directory")
 
-        dir_contents = [folder for folder in os.listdir(dir_path) if os.path.isdir(os.path.join(dir_path, folder))]
+        dir_contents = [folder for folder in os.listdir(dir_path) 
+                        if os.path.isdir(os.path.join(dir_path, folder)) and not folder.startswith('.')]
 
-        return web.Response(text=json.dumps(dir_contents), content_type='application/json')
+
+        return web.Response(text=json.dumps({"dir_path":dir_path, "dir_contents":dir_contents}), content_type='application/json')
     except Exception as e:
         return web.Response(text=str(e), status=500)
 
