@@ -30,15 +30,17 @@ walkthrough tutorial: https://www.youtube.com/watch?v=QbtSkiZ9F58
 
 - Effortlessly switch between different workflows in your workspace.
 - Create new workflows and rename existing ones.
-- [beta] organize workflows with **tags**
+- organize workflows with **tags**
+- auto exports all workflows in a single folder (right it's under /ComfyUI/my_workflows)
 - [beta] auto backup workspace locally
-- auto export all workflows in your selected local directory (Upcoming!)
 - cloud sync & backup workspace so you will never lose your data (Upcoming!)
 - One-click share workflow (Upcoming!)
 
-![switch between flows demo](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/ad3495ee-b4c5-4747-a149-0ba69c2f1630)
-<img width="1053" alt="recent workflows list" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/52355940-b7ac-41b2-843e-5c7bd19438d8">
-<img width="948" alt="workflow name topbar" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/9aaf4d76-a44e-45f2-ab24-9ef5cf36d4a9">
+![switch flow (1)](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/79cbc1b5-9b1a-44c5-835a-8c6645409d9d)
+![import flows](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/884c8852-73c7-41d6-9179-7fb1fcea9d04)
+<img width="500" alt="Screenshot 2023-12-13 at 1 51 59 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/63a110ac-fc61-4f64-98f4-af3d588fdd03">
+<img width="500" alt="Screenshot 2023-12-13 at 1 54 04 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/6bf4d22b-f52a-4d23-8882-4a31162616f3">
+<img width="800" alt="workflow name topbar" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/9aaf4d76-a44e-45f2-ab24-9ef5cf36d4a9">
 
 **Looking for colaborators and coworkers** to develop this ComfyUI project management tool. If you know React, Python or ML model deployment, please reach out to weixuanfu01@gmail.com We want to make it easy to **manage, share and deploy** ComfyUI project.
 
@@ -46,9 +48,9 @@ walkthrough tutorial: https://www.youtube.com/watch?v=QbtSkiZ9F58
 
 ### Where are my workflow and workspace data stored?
 
-We are now storing your workflow data in your disk under /ComfyUI/custom_nodes/comfyui-workspace-manager/db/
-we will enable export dir to store all the json files.
-~~Right now we are storing in your browser's [local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)~~
+🍺 All your workflows are now output to a folder in /ComfyUI/my_workflows we will enable customize this directory to any dir you like in your computer.
+
+Our internal db data is stored in your disk under /ComfyUI/custom_nodes/comfyui-workspace-manager/db/
 
 ## Upcoming Features
 
