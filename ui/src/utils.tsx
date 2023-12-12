@@ -65,21 +65,24 @@ export function formatTimestamp(unixTimestamp: number) {
  * @param sortType The type of sorting
  * @returns sorted data
  */
-export function sortFlows(flows: Workflow[], sortType: ESortTypes) {
+export function sortFlows(flows: Workflow[] = [], sortType: ESortTypes = ESortTypes.RECENTLY_MODIFIED) {
   const copyFlows = [...flows];
-  switch (sortType) {
-    case ESortTypes.AZ:
-      copyFlows.sort((a, b) => a.name.localeCompare(b.name));
-      break;
-    case ESortTypes.ZA:
-      copyFlows.sort((a, b) => b.name.localeCompare(a.name));
-      break;
-    case ESortTypes.RECENTLY_MODIFIED:
-      copyFlows.sort((a, b) => b.updateTime - a.updateTime);
-      break;
-    case ESortTypes.OLDEST_MODIFIED:
-      copyFlows.sort((a, b) => a.updateTime - b.updateTime);
-      break;
+  if (copyFlows.length) {
+    switch (sortType) {
+      case ESortTypes.AZ:
+        copyFlows.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case ESortTypes.ZA:
+        copyFlows.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case ESortTypes.RECENTLY_MODIFIED:
+        copyFlows.sort((a, b) => b.updateTime - a.updateTime);
+        break;
+      case ESortTypes.OLDEST_MODIFIED:
+        copyFlows.sort((a, b) => a.updateTime - b.updateTime);
+        break;
+    }
   }
+  
   return copyFlows;
 }
