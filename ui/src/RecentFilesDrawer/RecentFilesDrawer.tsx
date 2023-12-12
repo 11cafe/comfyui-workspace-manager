@@ -72,8 +72,8 @@ export default function RecentFilesDrawer({
             <DrawerHeader>
               <HStack alignItems={"center"} justifyContent={"space-between"}>
                 <HStack gap={4}>
-                  <Text mr={6}>Workflows</Text>
-                  <Button
+                  <Text mr={4}>Workflows</Text>
+                  {/* <Button
                     leftIcon={<IconPlus />}
                     variant="outline"
                     size={"sm"}
@@ -81,7 +81,7 @@ export default function RecentFilesDrawer({
                     onClick={onClickNewFlow}
                   >
                     New
-                  </Button>
+                  </Button> */}
                   <ImportJsonFlows />
                 </HStack>
                 <HStack alignItems={"center"}>
@@ -91,18 +91,6 @@ export default function RecentFilesDrawer({
               </HStack>
             </DrawerHeader>
             <DrawerBody>
-              {/* <HStack spacing={4} mb={6}>
-              <Button
-                leftIcon={<IconTag />}
-                colorScheme="gray"
-                variant="solid"
-                size={"sm"}
-                px={3}
-                borderRadius={16}
-              >
-                New Tag
-              </Button>
-            </HStack> */}
               <HStack spacing={2} wrap={"wrap"} mb={6}>
                 {selectedTag != null && (
                   <IconButton
