@@ -20,28 +20,10 @@ import {
   IconTriangleInvertedFilled,
 } from "@tabler/icons-react";
 import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
-import {
-  Workflow,
-  createFlow,
-  loadDBs,
-  updateFlow,
-  workspace,
-} from "./WorkspaceDB";
-import { findMissingNodes } from "./utils";
+import { createFlow, loadDBs, updateFlow, workspace } from "./WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
 type Route = "root" | "customNodes" | "recentFlows";
-
-type CustomNode = {
-  id: string;
-  nodeClassName: string;
-  gitHtmlUrl: string;
-  fileHtmlUrl: string;
-  authorName: string;
-  authorAvatarUrl: string;
-  description: string;
-  totalInstalls: string;
-};
 
 export default function App() {
   const [missingNodeTypes, setMissingNodeTypes] = useState<string[]>([]);
@@ -199,6 +181,7 @@ export default function App() {
                 setCurFlowName(e.target.value);
                 throttledOnRenameCurFlow(e.target.value);
               }}
+              style={{ width: `${curFlowName?.length ?? 20}ch` }}
             />
           </HStack>
           <HStack>
