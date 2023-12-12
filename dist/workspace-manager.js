@@ -29419,7 +29419,8 @@ function oY() {
                     value: t ?? "",
                     onChange: (h) => {
                       n(h.target.value), g(h.target.value);
-                    }
+                    },
+                    style: { width: `${(t == null ? void 0 : t.length) ?? 20}ch` }
                   }
                 )
               ] }),
