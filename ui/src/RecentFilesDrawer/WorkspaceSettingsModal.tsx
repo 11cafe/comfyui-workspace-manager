@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { IconFolder, IconSettings, IconTrash } from "@tabler/icons-react";
-import { getMyWorkflowsDir } from "../Api";
+import { getMyWorkflowsDir, getSystemDir } from "../Api";
 
 export default function WorkspaceSettingsModal({
   onclose,
@@ -46,11 +46,11 @@ export default function WorkspaceSettingsModal({
               disabled={true}
               color={"gray.500"}
             /> */}
-            <Text color={"gray.500"}>{selectedFolder}</Text>
+            <Text>{selectedFolder}</Text>
 
-            {/* <Button
+            <Button
               onClick={() => {
-                alert("Not implemented yet");
+                getSystemDir();
               }}
               paddingLeft={10}
               paddingRight={10}
@@ -58,8 +58,7 @@ export default function WorkspaceSettingsModal({
               colorScheme={"teal"}
             >
               Choose Folder
-
-            </Button> */}
+            </Button>
           </HStack>
         </ModalBody>
       </ModalContent>
