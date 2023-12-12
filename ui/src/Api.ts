@@ -106,3 +106,13 @@ export async function listBackup(dir: string) {
     console.error("Error saving workspace:", error);
   }
 }
+
+export async function getMyWorkflowsDir() {
+  try {
+    const response = await fetch("/workspace/get_my_workflows_dir");
+    const result = await response.text();
+    return result;
+  } catch (error) {
+    console.error("Error getting workflows dir:", error);
+  }
+}

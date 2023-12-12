@@ -164,6 +164,7 @@ export default function App() {
               colorScheme="teal"
               aria-label="workspace folder"
               onClick={() => onClickNewFlow()}
+              px={2.5}
             >
               <HStack gap={1}>
                 <IconPlus size={16} color={"white"} />

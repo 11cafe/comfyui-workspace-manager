@@ -14,20 +14,22 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { IconFolder, IconSettings, IconTrash } from "@tabler/icons-react";
+import { getMyWorkflowsDir } from "../Api";
 
 export default function WorkspaceSettingsModal({
   onclose,
 }: {
   onclose: () => void;
 }) {
-  const [selectedFolder, setSelectedFolder] = useState(null);
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
 
-  const handleFolderChange = (event: any) => {
-    if (event.target.files.length) {
-      const folderPath = event.target.files[0].webkitRelativePath.split("/")[0];
-      setSelectedFolder(folderPath);
-    }
+  const getDir = async (event: any) => {
+    const dir = await getMyWorkflowsDir();
+    setSelectedFolder(dir ?? null);
   };
+  useEffect(() => {
+    getDir(null);
+  });
   return (
     <Modal isOpen={true} onClose={onclose} size={"2xl"}>
       <ModalOverlay />

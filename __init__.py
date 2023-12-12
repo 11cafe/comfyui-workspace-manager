@@ -141,17 +141,19 @@ async def save_db(request):
 
     return web.Response(text=f"JSON saved to {file_name}")
 
-async def read_table(table):
+def read_table(table):
+    print('inside read table')
     if not table:
-        return web.Response(status=400, text="Table parameter is missing")
-
+        print('no table')
+        return None
     file_name = f'{db_dir_path}/{table}.json'
+    print('readtable filename', file_name)
     if not os.path.exists(file_name):
         return None
 
     with open(file_name, 'r') as file:
         data = json.load(file)
-    
+    print('readtable data', data)
     return data
 
 @server.PromptServer.instance.routes.get("/workspace/get_db")
@@ -237,12 +239,14 @@ async def update_file(request):
         file.write(json_str)
     return web.Response(text="File updated successfully")
 
-@server.PromptServer.instance.routes.post("/workspace/get_my_workflows_dir")
+@server.PromptServer.instance.routes.get("/workspace/get_my_workflows_dir")
 async def get_my_workflows_dir_endpoint(request):
-    absolute_path = get_my_workflows_dir
+    print('get_my_workflows_dir_endpoint')
+    absolute_path = get_my_workflows_dir()
     return web.Response(text=absolute_path)
 
-async def get_my_workflows_dir(request):
+def get_my_workflows_dir():
+    print('get_my_workflows_dir')
     data = read_table('userSettings')
     print('get_my_workflows_dir data', data)
     if(data):
