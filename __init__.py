@@ -260,11 +260,14 @@ def get_my_workflows_dir():
 @server.PromptServer.instance.routes.post("/workspace/get_system_dir")
 async def get_system_dir(request):
     try:
-        dir_path = request.query.get('path', '/')
+        dir_path = request.query.get('absolute_dir')
+        if not dir_path:
+            dir_path = comfy_path
         if not os.path.isdir(dir_path):
-            raise ValueError("Not a directory")
+            raise ValueError("[workspace] get_system_dir Not a directory")
 
-        dir_contents = os.listdir(dir_path)
+        dir_contents = [folder for folder in os.listdir(dir_path) if os.path.isdir(os.path.join(dir_path, folder))]
+
         return web.Response(text=json.dumps(dir_contents), content_type='application/json')
     except Exception as e:
         return web.Response(text=str(e), status=500)

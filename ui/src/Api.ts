@@ -116,3 +116,22 @@ export async function getMyWorkflowsDir() {
     console.error("Error getting workflows dir:", error);
   }
 }
+
+export async function getSystemDir(root?: string) {
+  try {
+    const response = await fetch("/workspace/get_system_dir", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        absolute_dir: root,
+      }),
+    });
+    const result = await response.json();
+    console.log("getSystemDir", result);
+    return result;
+  } catch (error) {
+    console.error("Error getting workflows dir:", error);
+  }
+}
