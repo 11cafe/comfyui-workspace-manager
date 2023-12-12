@@ -137,7 +137,7 @@ export function listWorkflows(): Workflow[] {
   if (workspace == null) {
     throw new Error("workspace is not loaded");
   }
-  return Object.values(workspace).sort((a, b) => b.updateTime - a.updateTime);
+  return Object.values(workspace);
 }
 
 export function deleteFlow(id: string) {
