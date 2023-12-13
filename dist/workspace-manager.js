@@ -25294,7 +25294,7 @@ function IH({
       /* @__PURE__ */ S.jsxs(Rl, { children: [
         /* @__PURE__ */ S.jsx(nr, { fontWeight: 600, mb: 3, children: "Workspace Save Directory (🚧 Under development, not working)" }),
         /* @__PURE__ */ S.jsxs(_t, { children: [
-          /* @__PURE__ */ S.jsx(nr, { children: t }),
+          /* @__PURE__ */ S.jsx(nr, { mr: 5, children: t }),
           /* @__PURE__ */ S.jsx(
             jn,
             {
@@ -25306,6 +25306,7 @@ function IH({
               size: "sm",
               leftIcon: /* @__PURE__ */ S.jsx(C_, {}),
               colorScheme: "teal",
+              size: "sm",
               children: "Choose Folder"
             }
           )
