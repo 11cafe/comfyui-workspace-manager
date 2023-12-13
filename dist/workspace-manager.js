@@ -25292,7 +25292,7 @@ function IH({
       /* @__PURE__ */ w.jsx(El, { children: "Settings" }),
       /* @__PURE__ */ w.jsx(sf, {}),
       /* @__PURE__ */ w.jsxs(Ml, { children: [
-        /* @__PURE__ */ w.jsx(nr, { fontWeight: 600, mb: 3, children: "Workspace Save Directory" }),
+        /* @__PURE__ */ w.jsx(nr, { fontWeight: 600, mb: 3, children: "Workspace Save Directory (🚧 Under development, not working)" }),
         /* @__PURE__ */ w.jsxs(_t, { children: [
           /* @__PURE__ */ w.jsx(nr, { children: t }),
           /* @__PURE__ */ w.jsx(
@@ -25303,6 +25303,7 @@ function IH({
               },
               paddingLeft: 10,
               paddingRight: 10,
+              size: "sm",
               leftIcon: /* @__PURE__ */ w.jsx(w_, {}),
               colorScheme: "teal",
               children: "Choose Folder"

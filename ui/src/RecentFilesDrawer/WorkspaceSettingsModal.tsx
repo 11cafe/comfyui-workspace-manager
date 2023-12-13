@@ -38,7 +38,7 @@ export default function WorkspaceSettingsModal({
         <ModalCloseButton />
         <ModalBody>
           <Text fontWeight={600} mb={3}>
-            Workspace Save Directory
+            Workspace Save Directory (🚧 Under development, not working)
           </Text>
           <HStack>
             {/* <Input
@@ -54,6 +54,7 @@ export default function WorkspaceSettingsModal({
               }}
               paddingLeft={10}
               paddingRight={10}
+              size={"sm"}
               leftIcon={<IconFolder />}
               colorScheme={"teal"}
             >
