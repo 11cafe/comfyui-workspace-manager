@@ -10,11 +10,13 @@ import {
   PopoverArrow,
   Button,
   PopoverBody,
+  Portal
 } from "@chakra-ui/react";
 import { Workflow } from "../WorkspaceDB";
 import { formatTimestamp } from "../utils";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
-import { IconTrash, IconCopy  } from "@tabler/icons-react";
+import { IconTrash } from "@tabler/icons-react";
+import { useState, MouseEvent } from "react";
 
 type Props = {
   isSelected: boolean;
@@ -22,6 +24,8 @@ type Props = {
   loadWorkflowID: (id: string) => void;
   onDelete: (id: string) => void;
   handleCopyFlow: (json: string, name: string) => void;
+  setActiveContextMenu: (name: string | null) => void;
+  activeContextMenu: string | null;
 };
 export default function WorkflowListItem({
   isSelected,
@@ -29,15 +33,29 @@ export default function WorkflowListItem({
   loadWorkflowID,
   onDelete,
   handleCopyFlow,
+  setActiveContextMenu,
+  activeContextMenu
 }: Props) {
   const { colorMode } = useColorMode();
+  const [contextMenuPosition, setContextMenuPosition] = useState({ top: 0, left: 0 });
+
+  const handleContextMenu = (event: MouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setContextMenuPosition({ top: event.clientY, left: event.clientX });
+    setActiveContextMenu(workflow.id);
+  };
 
   const handleCopyItem = () => {
     handleCopyFlow(workflow.json, `${workflow.name}_1`);
+    setActiveContextMenu(null);
   }
 
   return (
-    <HStack w={"100%"} justify={"space-between"}>
+    <HStack 
+      w={"100%"} 
+      justify={"space-between"}
+      onContextMenu={handleContextMenu}
+    >
       <Box
         as="button"
         textAlign={"left"}
@@ -67,7 +85,23 @@ export default function WorkflowListItem({
         {/* </Stack> */}
       </Box>
 
-      <IconCopy cursor={"pointer"} onClick={handleCopyItem} />
+      {activeContextMenu === workflow.id && (
+        <Portal>
+          <Box
+            position="fixed"
+            top={contextMenuPosition.top}
+            left={contextMenuPosition.left}
+            backgroundColor="white"
+            boxShadow="md"
+            p={2}
+            zIndex={9999}
+          >
+            <Text cursor="pointer" onClick={handleCopyItem}>
+              Duplicate
+            </Text>
+          </Box>
+        </Portal>
+      )}
       <AddTagToWorkflowPopover workflow={workflow} />
       <Popover isLazy={true}>
         {({ isOpen, onClose }) => (

@@ -43,6 +43,7 @@ export default function RecentFilesDrawer({
   const { curFlowID } = useContext(WorkspaceContext);
   const [selectedTag, setSelectedTag] = useState<string>();
   const [showAllTags, setShowAllTags] = useState(false);
+  const [activeContextMenu, setActiveContextMenu] = useState<string | null>(null);
   const sortTypeRef = useRef<ESortTypes>(
     (window.localStorage.getItem(sortTypeLocalStorageKey) as ESortTypes) ??
       ESortTypes.RECENTLY_MODIFIED
@@ -83,7 +84,7 @@ export default function RecentFilesDrawer({
           size={"sm"}
         >
           <DrawerOverlay />
-          <DrawerContent>
+          <DrawerContent onClick={() => setActiveContextMenu(null)}>
             <DrawerHeader>
               <HStack alignItems={"center"} justifyContent={"space-between"}>
                 <HStack gap={4}>
@@ -170,6 +171,8 @@ export default function RecentFilesDrawer({
                   loadWorkflowID={loadWorkflowID}
                   onDelete={onDelete}
                   handleCopyFlow={handleCopyFlow}
+                  setActiveContextMenu={setActiveContextMenu}
+                  activeContextMenu={activeContextMenu}
                 />
               ))}
             </DrawerBody>
