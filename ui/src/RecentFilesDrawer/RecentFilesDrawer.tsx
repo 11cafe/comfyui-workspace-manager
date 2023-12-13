@@ -245,9 +245,7 @@ export default function RecentFilesDrawer({
           height={"100vh"}
           px={4}
           pt={4}
-          overflowY={"auto"}
-          overflowX={"hidden"}
-          gap={6}
+          gap={4}
           position={"absolute"}
           top={0}
           left={0}
@@ -255,16 +253,7 @@ export default function RecentFilesDrawer({
           zIndex={10}
           // boxShadow={"rgba(255, 255, 255, 0.4) 1px 4px 8px 1px"}
         >
-          <Card
-            alignItems={"center"}
-            justifyContent={"space-between"}
-            position={"sticky"}
-            top={0}
-            left={0}
-            right={0}
-            shadow={"none"}
-            direction={"row"}
-          >
+          <Flex alignItems={"center"} justifyContent={"space-between"}>
             <HStack gap={4}>
               <Text fontSize={20} fontWeight={600} mr={4}>
                 Workflows
@@ -273,10 +262,10 @@ export default function RecentFilesDrawer({
             </HStack>
             <HStack alignItems={"center"}>
               <RecentFilesDrawerMenu />
-              <Button onClick={onclose}>CLOSE</Button>
+              {/* <Button onClick={onclose}>CLOSE</Button> */}
             </HStack>
-          </Card>
-          <Flex direction="column">
+          </Flex>
+          <Flex direction="column" overflowY={"auto"} overflowX={"hidden"}>
             <HStack spacing={2} wrap={"wrap"} mb={0}>
               {selectedTag != null && (
                 <IconButton
