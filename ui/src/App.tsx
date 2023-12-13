@@ -189,16 +189,15 @@ export default function App() {
           </HStack>
         </HStack>
 
-        {route === "recentFlows" && (
-          <RecentFilesDrawer
-            onclose={() => setRoute("root")}
-            loadWorkflowID={loadWorkflowID}
-            onClickNewFlow={() => {
-              onClickNewFlow();
-              setRoute("root");
-            }}
-          />
-        )}
+        <RecentFilesDrawer
+          isOpen={route === "recentFlows"}
+          onclose={() => setRoute("root")}
+          loadWorkflowID={loadWorkflowID}
+          onClickNewFlow={() => {
+            onClickNewFlow();
+            setRoute("root");
+          }}
+        />
       </Box>
     </WorkspaceContext.Provider>
   );
