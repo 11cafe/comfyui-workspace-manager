@@ -14,21 +14,28 @@ import {
 import { Workflow } from "../WorkspaceDB";
 import { formatTimestamp } from "../utils";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
-import { IconTrash } from "@tabler/icons-react";
+import { IconTrash, IconCopy  } from "@tabler/icons-react";
 
 type Props = {
   isSelected: boolean;
   workflow: Workflow;
   loadWorkflowID: (id: string) => void;
   onDelete: (id: string) => void;
+  handleCopyFlow: (json: string, name: string) => void;
 };
 export default function WorkflowListItem({
   isSelected,
   workflow,
   loadWorkflowID,
   onDelete,
+  handleCopyFlow,
 }: Props) {
   const { colorMode } = useColorMode();
+
+  const handleCopyItem = () => {
+    handleCopyFlow(workflow.json, `${workflow.name}_1`);
+  }
+
   return (
     <HStack w={"100%"} justify={"space-between"}>
       <Box
@@ -60,6 +67,7 @@ export default function WorkflowListItem({
         {/* </Stack> */}
       </Box>
 
+      <IconCopy cursor={"pointer"} onClick={handleCopyItem} />
       <AddTagToWorkflowPopover workflow={workflow} />
       <Popover isLazy={true}>
         {({ isOpen, onClose }) => (

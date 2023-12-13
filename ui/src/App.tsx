@@ -105,6 +105,14 @@ export default function App() {
     app.loadGraphData(defaultObj);
   };
 
+  const handleCopyFlow = (json: string, name: string) => {
+    const flow = createFlow({json, name});
+
+    setCurFlowID(flow.id);
+    setCurFlowName(flow.name);
+    app.loadGraphData(JSON.parse(json));
+  };
+
   if (loadingDB) {
     return null;
   }
@@ -178,6 +186,8 @@ export default function App() {
               onClickNewFlow();
               setRoute("root");
             }}
+            handleCopyFlow={handleCopyFlow}
+            flowID={flowID}
           />
         )}
       </Box>
