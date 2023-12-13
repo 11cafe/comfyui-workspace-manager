@@ -1,26 +1,5 @@
-import {
-  Box,
-  HStack,
-  useColorMode,
-  Text,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverCloseButton,
-  PopoverArrow,
-  Button,
-  PopoverBody,
-  Portal,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-} from "@chakra-ui/react";
-import { Workflow } from "../WorkspaceDB";
-import { formatTimestamp } from "../utils";
-import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
-import { IconTrash } from "@tabler/icons-react";
-import { useState, MouseEvent, useContext } from "react";
+import { Box, Menu, MenuList, MenuItem } from "@chakra-ui/react";
+import { useContext } from "react";
 import { WorkspaceContext } from "../WorkspaceContext";
 
 type Props = {
@@ -36,24 +15,19 @@ export default function WorkflowListItemRightClickMenu({
   const { onDuplicateWorkflow } = useContext(WorkspaceContext);
   return (
     <>
-      <Menu isOpen={true} onClose={onClose}>
-        <MenuButton
-          position="absolute"
-          top={menuPosition.y}
-          left={menuPosition.x}
-          as={Button}
-          hidden
-        ></MenuButton>
-        <MenuList>
-          <MenuItem
-            onClick={() =>
-              onDuplicateWorkflow && onDuplicateWorkflow(workflowID)
-            }
-          >
-            Duplicate
-          </MenuItem>
-        </MenuList>
-      </Menu>
+      <Box position="absolute" top={menuPosition.y} left={menuPosition.x}>
+        <Menu isOpen={true} onClose={onClose}>
+          <MenuList>
+            <MenuItem
+              onClick={() =>
+                onDuplicateWorkflow && onDuplicateWorkflow(workflowID)
+              }
+            >
+              Duplicate
+            </MenuItem>
+          </MenuList>
+        </Menu>
+      </Box>
     </>
   );
 }

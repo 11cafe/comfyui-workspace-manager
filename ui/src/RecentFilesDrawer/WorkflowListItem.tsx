@@ -10,13 +10,12 @@ import {
   PopoverArrow,
   Button,
   PopoverBody,
-  Portal,
 } from "@chakra-ui/react";
 import { Workflow } from "../WorkspaceDB";
 import { formatTimestamp } from "../utils";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import { IconTrash } from "@tabler/icons-react";
-import { useState, MouseEvent } from "react";
+import { useState } from "react";
 import WorkflowListItemRightClickMenu from "./WorkflowListItemRightClickMenu";
 
 type Props = {
@@ -32,25 +31,13 @@ export default function WorkflowListItem({
   workflow,
   loadWorkflowID,
   onDelete,
-  setActiveContextMenu,
-  activeContextMenu,
 }: Props) {
   const { colorMode } = useColorMode();
-  // const [contextMenuPosition, setContextMenuPosition] = useState({
-  //   top: 0,
-  //   left: 0,
-  // });
-
-  // const handleContextMenu = (event: MouseEvent<HTMLDivElement>) => {
-  //   event.preventDefault();
-  //   setContextMenuPosition({ top: event.clientY, left: event.clientX });
-  //   setActiveContextMenu(workflow.id);
-  // };
 
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const handleContextMenu = (event) => {
+  const handleContextMenu = (event: any) => {
     event.preventDefault();
     setMenuPosition({ x: event.clientX, y: event.clientY });
     setIsMenuOpen(true);
@@ -86,12 +73,10 @@ export default function WorkflowListItem({
           borderColor: "#bec3c9",
         }}
       >
-        {/* <Stack gap={0} cursor={"pointer"}> */}
         <Text fontWeight={"500"}>{workflow.name ?? "untitled"}</Text>
         <Text color={"GrayText"} ml={2} fontSize={"sm"}>
           Updated: {formatTimestamp(workflow.updateTime)}
         </Text>
-        {/* </Stack> */}
       </Box>
       {isMenuOpen && (
         <WorkflowListItemRightClickMenu
