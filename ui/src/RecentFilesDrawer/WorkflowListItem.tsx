@@ -23,12 +23,14 @@ type Props = {
   workflow: Workflow;
   loadWorkflowID: (id: string) => void;
   onDelete: (id: string) => void;
+  onDraggingWorkflowID: (id: string) => void;
 };
 export default function WorkflowListItem({
   isSelected,
   workflow,
   loadWorkflowID,
   onDelete,
+  onDraggingWorkflowID,
 }: Props) {
   const { colorMode } = useColorMode();
 
@@ -56,6 +58,12 @@ export default function WorkflowListItem({
         backgroundColor={isSelected ? "teal.200" : undefined}
         color={isSelected ? "#333" : undefined}
         w={"90%"}
+        draggable
+        onDragStart={(e) => {
+          console.log("dragging", workflow.name);
+          console.log("dragging id", workflow.id);
+          workflow.id && onDraggingWorkflowID(workflow.id);
+        }}
         borderRadius={6}
         p={2}
         mb={2}
@@ -66,7 +74,6 @@ export default function WorkflowListItem({
           bg: colorMode === "light" ? "gray.200" : "#4A5568",
         }}
         _active={{
-          bg: "#dddfe2",
           transform: "scale(0.98)",
           borderColor: "#bec3c9",
         }}
