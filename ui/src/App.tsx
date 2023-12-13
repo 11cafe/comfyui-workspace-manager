@@ -33,7 +33,6 @@ export default function App() {
   const [loadingDB, setLoadingDB] = useState(true);
   const [flowID, setFlowID] = useState<string | null>(null);
   const curFlowID = useRef<string | null>(null);
-  const { colorMode, toggleColorMode } = useColorMode();
 
   const setCurFlowID = (id: string) => {
     curFlowID.current = id;
@@ -132,7 +131,6 @@ export default function App() {
           position: "absolute",
           top: 0,
           left: 0,
-          right: 0,
         }}
       >
         <HStack
@@ -141,7 +139,6 @@ export default function App() {
             position: "fixed",
             top: 0,
             left: 0,
-            right: 0,
           }}
           justifyContent={"space-between"}
           alignItems={"center"}
@@ -185,15 +182,6 @@ export default function App() {
               }}
               style={{ width: `${curFlowName?.length ?? 20}ch` }}
             />
-          </HStack>
-          <HStack>
-            <Button onClick={toggleColorMode} variant="link">
-              {colorMode === "light" ? (
-                <IconMoon size={20} />
-              ) : (
-                <IconSun size={20} />
-              )}
-            </Button>
           </HStack>
         </HStack>
 

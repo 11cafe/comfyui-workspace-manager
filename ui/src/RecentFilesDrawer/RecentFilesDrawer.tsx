@@ -7,14 +7,6 @@ import {
   Text,
   Button,
   HStack,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverArrow,
-  PopoverCloseButton,
-  PopoverBody,
-  Popover,
-  Box,
-  useColorMode,
   IconButton,
   Menu,
   MenuButton,
@@ -24,14 +16,7 @@ import {
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState, useRef } from "react";
 import { Workflow, deleteFlow, listWorkflows, tagsTable } from "../WorkspaceDB";
-import {
-  IconChevronDown,
-  IconChevronUp,
-  IconFileImport,
-  IconPlus,
-  IconTrash,
-  IconX,
-} from "@tabler/icons-react";
+import { IconChevronDown, IconChevronUp, IconX } from "@tabler/icons-react";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
@@ -55,8 +40,8 @@ export default function RecentFilesDrawer({
   const [selectedTag, setSelectedTag] = useState<string>();
   const [showAllTags, setShowAllTags] = useState(false);
   const sortTypeRef = useRef<ESortTypes>(
-    // (window.localStorage.getItem(sortTypeLocalStorageKey) as ESortTypes) ??
-    ESortTypes.RECENTLY_MODIFIED
+    (window.localStorage.getItem(sortTypeLocalStorageKey) as ESortTypes) ??
+      ESortTypes.RECENTLY_MODIFIED
   );
 
   const onClickTag = (name: string) => {
