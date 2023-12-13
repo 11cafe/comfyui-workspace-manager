@@ -25159,7 +25159,7 @@ function oc(e) {
   if (_e == null)
     throw new Error("workspace is not loaded");
   const t = Object.values(_e);
-  return e ? E_(t, e) : t;
+  return e ? E_(t, e) : t.sort((n, r) => r.updateTime - n.updateTime);
 }
 function _H(e) {
   var n;

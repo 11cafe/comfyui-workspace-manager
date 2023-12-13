@@ -143,7 +143,9 @@ export function listWorkflows(sortBy?: ESortTypes): Workflow[] {
     throw new Error("workspace is not loaded");
   }
   const workflows = Object.values(workspace);
-  return sortBy ? sortFlows(workflows, sortBy) : workflows;
+  return sortBy
+    ? sortFlows(workflows, sortBy)
+    : workflows.sort((a, b) => b.updateTime - a.updateTime);
 }
 
 export function deleteFlow(id: string) {
