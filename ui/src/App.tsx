@@ -197,7 +197,6 @@ export default function App() {
               onClickNewFlow();
               setRoute("root");
             }}
-            flowID={flowID}
           />
         )}
       </Box>

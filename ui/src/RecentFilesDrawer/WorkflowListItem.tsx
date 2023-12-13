@@ -23,8 +23,6 @@ type Props = {
   workflow: Workflow;
   loadWorkflowID: (id: string) => void;
   onDelete: (id: string) => void;
-  setActiveContextMenu: (name: string | null) => void;
-  activeContextMenu: string | null;
 };
 export default function WorkflowListItem({
   isSelected,
