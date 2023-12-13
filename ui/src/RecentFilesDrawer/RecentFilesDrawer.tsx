@@ -18,9 +18,8 @@ import { useContext, useEffect, useState, useRef } from "react";
 import { Workflow, deleteFlow, listWorkflows, tagsTable } from "../WorkspaceDB";
 import { IconChevronDown, IconChevronUp, IconX } from "@tabler/icons-react";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
-import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
-import { formatTimestamp, sortFlows } from "../utils";
+import { sortFlows } from "../utils";
 import WorkflowListItem from "./WorkflowListItem";
 import ImportJsonFlows from "./ImportJsonFlows";
 import { ESortTypes, sortTypeLocalStorageKey } from "./types";
@@ -29,21 +28,17 @@ type Props = {
   onclose: () => void;
   loadWorkflowID: (id: string) => void;
   onClickNewFlow: () => void;
-  flowID: string | null;
 };
 export default function RecentFilesDrawer({
   onclose,
   loadWorkflowID,
   onClickNewFlow,
-  flowID,
 }: Props) {
   const [recentFlows, setRecentFlow] = useState<Workflow[]>([]);
   const { curFlowID } = useContext(WorkspaceContext);
   const [selectedTag, setSelectedTag] = useState<string>();
   const [showAllTags, setShowAllTags] = useState(false);
-  const [activeContextMenu, setActiveContextMenu] = useState<string | null>(
-    null
-  );
+
   const sortTypeRef = useRef<ESortTypes>(
     (window.localStorage.getItem(sortTypeLocalStorageKey) as ESortTypes) ??
       ESortTypes.RECENTLY_MODIFIED
@@ -72,7 +67,7 @@ export default function RecentFilesDrawer({
 
   useEffect(() => {
     loadLatestWorkflows();
-  }, [flowID]);
+  }, [curFlowID]);
 
   return (
     <RecentFilesContext.Provider
@@ -88,7 +83,7 @@ export default function RecentFilesDrawer({
           size={"sm"}
         >
           <DrawerOverlay />
-          <DrawerContent onClick={() => setActiveContextMenu(null)}>
+          <DrawerContent>
             <DrawerHeader>
               <HStack alignItems={"center"} justifyContent={"space-between"}>
                 <HStack gap={4}>
@@ -174,8 +169,6 @@ export default function RecentFilesDrawer({
                   workflow={n}
                   loadWorkflowID={loadWorkflowID}
                   onDelete={onDelete}
-                  setActiveContextMenu={setActiveContextMenu}
-                  activeContextMenu={activeContextMenu}
                 />
               ))}
             </DrawerBody>
