@@ -264,11 +264,7 @@ export default function RecentFilesDrawer({
             right={0}
             shadow={"none"}
             direction={"row"}
-            >
-            >
-              {/* <Card > */}
           >
-              {/* <Card > */}
             <HStack gap={4}>
               <Text fontSize={20} fontWeight={600} mr={4}>
                 Workflows
