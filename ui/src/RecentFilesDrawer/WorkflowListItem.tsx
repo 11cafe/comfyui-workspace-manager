@@ -11,7 +11,7 @@ import {
   Button,
   PopoverBody,
 } from "@chakra-ui/react";
-import { Workflow, deleteFlow, listWorkflows } from "../WorkspaceDB";
+import { Workflow } from "../WorkspaceDB";
 import { formatTimestamp } from "../utils";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import { IconTrash } from "@tabler/icons-react";
@@ -20,20 +20,15 @@ type Props = {
   isSelected: boolean;
   workflow: Workflow;
   loadWorkflowID: (id: string) => void;
-  setRecentFlow: (flows: Workflow[]) => void;
+  onDelete: (id: string) => void;
 };
 export default function WorkflowListItem({
   isSelected,
   workflow,
   loadWorkflowID,
-  setRecentFlow,
+  onDelete,
 }: Props) {
   const { colorMode } = useColorMode();
-  const onClickDelete = (id: string) => {
-    deleteFlow(id);
-    const all = listWorkflows();
-    setRecentFlow(all);
-  };
   return (
     <HStack w={"100%"} justify={"space-between"}>
       <Box
@@ -84,7 +79,7 @@ export default function WorkflowListItem({
                   colorScheme="red"
                   size={"sm"}
                   onClick={() => {
-                    onClickDelete(workflow.id);
+                    onDelete(workflow.id);
                     onClose();
                   }}
                 >

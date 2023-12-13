@@ -31,7 +31,7 @@ walkthrough tutorial: https://www.youtube.com/watch?v=QbtSkiZ9F58
 - Effortlessly switch between different workflows in your workspace.
 - Create new workflows and rename existing ones.
 - organize workflows with **tags**
-- auto exports all workflows in a single folder (now it's under /ComfyUI/my_workflows)
+- auto exports all workflows in a single folder (now it's under `/ComfyUI/my_workflows`)
 - [beta] auto backup workspace locally
 - cloud sync & backup workspace so you will never lose your data (Upcoming!)
 - One-click share workflow (Upcoming!)
@@ -68,3 +68,27 @@ Our internal db data is stored in your disk under /ComfyUI/custom_nodes/comfyui-
 4. Cloud running / easy deployment
    Right now you need to have python and GPU server up to run ComfyUI or Automatic111, that’s really painful for people who do not own a GPU. You should be able to run UI independently without paying for GPU💰.
    ➡️ Share and deploy your workflow to cloud in 1click and other people can easily run in browser using cloud GPU with no setup. It should be as easy as running Google Docs or Figma.
+
+## Dev
+
+1. Clone ComfyUI
+   `git clone https://github.com/comfyanonymous/ComfyUI`
+   follow the install and setup instructions of ComfyUI README
+2. Clone Workspace Manager
+   in /ComfyUI folder
+
+```
+cd custom_nodes && git clone https://github.com/11cafe/comfyui-workspace-manager.git
+```
+
+3. npm install
+   inside `/ComfyUI/custom_nodes/comfyui-workspace-manager`
+   do `cd ui && npm install`
+   this will install all node dependencies
+4. build and run
+   inside `/ComfyUI/custom_nodes/comfyui-workspace-manager/ui`
+   `npm run build --watch`
+   this command will watch for your file changes and automatically rebuild, you just need to refresh to see your changes in browser everyting you change some code
+5. run ComfyUI server
+   inside `/ComfyUI`
+   do `python main.py` or `python3 main.py` depending on your version

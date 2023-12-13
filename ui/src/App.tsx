@@ -4,54 +4,25 @@ import { app } from "/scripts/app.js";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
 // @ts-ignore
 import throttle from "lodash.throttle";
-import {
-  HStack,
-  Input,
-  Box,
-  Button,
-  Text,
-  useColorMode,
-} from "@chakra-ui/react";
+import { HStack, Input, Box, Button, Text } from "@chakra-ui/react";
 import {
   IconFolder,
-  IconMoon,
   IconPlus,
-  IconSun,
   IconTriangleInvertedFilled,
 } from "@tabler/icons-react";
 import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
-import {
-  Workflow,
-  createFlow,
-  loadDBs,
-  updateFlow,
-  workspace,
-} from "./WorkspaceDB";
-import { findMissingNodes } from "./utils";
+import { createFlow, loadDBs, updateFlow, workspace } from "./WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
 type Route = "root" | "customNodes" | "recentFlows";
 
-type CustomNode = {
-  id: string;
-  nodeClassName: string;
-  gitHtmlUrl: string;
-  fileHtmlUrl: string;
-  authorName: string;
-  authorAvatarUrl: string;
-  description: string;
-  totalInstalls: string;
-};
-
 export default function App() {
-  const [missingNodeTypes, setMissingNodeTypes] = useState<string[]>([]);
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
   const [route, setRoute] = useState<Route>("root");
   const [loadingDB, setLoadingDB] = useState(true);
   const [flowID, setFlowID] = useState<string | null>(null);
   const curFlowID = useRef<string | null>(null);
-  const { colorMode, toggleColorMode } = useColorMode();
 
   const setCurFlowID = (id: string) => {
     curFlowID.current = id;
@@ -68,13 +39,8 @@ export default function App() {
       async addCustomNodeDefs(defs) {
         nodeDefs.current = defs;
       },
-      // async loadedGraphNode(node: LGraphNode, app: ComfyApp) {},
     };
     app.registerExtension(ext);
-    // app.canvasEl.addEventListener("click", function () {
-    //   console.log("canvasEl click");
-    // });
-
     try {
       await loadDBs();
     } catch (error) {
@@ -150,7 +116,6 @@ export default function App() {
           position: "absolute",
           top: 0,
           left: 0,
-          right: 0,
         }}
       >
         <HStack
@@ -159,7 +124,6 @@ export default function App() {
             position: "fixed",
             top: 0,
             left: 0,
-            right: 0,
           }}
           justifyContent={"space-between"}
           alignItems={"center"}
@@ -182,8 +146,9 @@ export default function App() {
               colorScheme="teal"
               aria-label="workspace folder"
               onClick={() => onClickNewFlow()}
+              px={2.5}
             >
-              <HStack gap={1} px={3}>
+              <HStack gap={1}>
                 <IconPlus size={16} color={"white"} />
                 <Text color={"white"} fontSize={"sm"}>
                   New
@@ -195,20 +160,13 @@ export default function App() {
               placeholder="Workflow name"
               color={"white"}
               value={curFlowName ?? ""}
+              maxWidth={470}
               onChange={(e) => {
                 setCurFlowName(e.target.value);
                 throttledOnRenameCurFlow(e.target.value);
               }}
+              style={{ width: `${curFlowName?.length ?? 20}ch` }}
             />
-          </HStack>
-          <HStack>
-            <Button onClick={toggleColorMode} variant="link">
-              {colorMode === "light" ? (
-                <IconMoon size={20} />
-              ) : (
-                <IconSun size={20} />
-              )}
-            </Button>
           </HStack>
         </HStack>
 

@@ -7,32 +7,23 @@ import {
   Text,
   Button,
   HStack,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverArrow,
-  PopoverCloseButton,
-  PopoverBody,
-  Popover,
-  Box,
-  useColorMode,
   IconButton,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItemOption,
+  MenuOptionGroup,
 } from "@chakra-ui/react";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import { Workflow, deleteFlow, listWorkflows, tagsTable } from "../WorkspaceDB";
-import {
-  IconChevronDown,
-  IconChevronUp,
-  IconFileImport,
-  IconPlus,
-  IconTrash,
-  IconX,
-} from "@tabler/icons-react";
+import { IconChevronDown, IconChevronUp, IconX } from "@tabler/icons-react";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
-import { formatTimestamp } from "../utils";
+import { formatTimestamp, sortFlows } from "../utils";
 import WorkflowListItem from "./WorkflowListItem";
 import ImportJsonFlows from "./ImportJsonFlows";
+import { ESortTypes, sortTypeLocalStorageKey } from "./types";
 const MAX_TAGS_TO_SHOW = 6;
 type Props = {
   onclose: () => void;
@@ -48,15 +39,35 @@ export default function RecentFilesDrawer({
   const { curFlowID } = useContext(WorkspaceContext);
   const [selectedTag, setSelectedTag] = useState<string>();
   const [showAllTags, setShowAllTags] = useState(false);
-  useEffect(() => {
-    const all = listWorkflows();
-    setRecentFlow(all);
-  }, []);
+  const sortTypeRef = useRef<ESortTypes>(
+    (window.localStorage.getItem(sortTypeLocalStorageKey) as ESortTypes) ??
+      ESortTypes.RECENTLY_MODIFIED
+  );
 
   const onClickTag = (name: string) => {
     setSelectedTag(name);
     setRecentFlow(listWorkflows().filter((n) => n.tags?.includes(name)));
   };
+
+  const loadLatestWorkflows = () => {
+    const all = listWorkflows(sortTypeRef.current);
+    setRecentFlow(all);
+  };
+
+  const onSort = (type: ESortTypes) => {
+    setRecentFlow(sortFlows(recentFlows, type));
+    sortTypeRef.current = type;
+    window.localStorage.setItem(sortTypeLocalStorageKey, type);
+  };
+
+  const onDelete = (id: string) => {
+    deleteFlow(id);
+    loadLatestWorkflows();
+  };
+
+  useEffect(() => {
+    loadLatestWorkflows();
+  }, []);
 
   return (
     <RecentFilesContext.Provider value={{ setRecentFiles: setRecentFlow }}>
@@ -72,16 +83,7 @@ export default function RecentFilesDrawer({
             <DrawerHeader>
               <HStack alignItems={"center"} justifyContent={"space-between"}>
                 <HStack gap={4}>
-                  <Text mr={6}>Workflows</Text>
-                  <Button
-                    leftIcon={<IconPlus />}
-                    variant="outline"
-                    size={"sm"}
-                    colorScheme="teal"
-                    onClick={onClickNewFlow}
-                  >
-                    New
-                  </Button>
+                  <Text mr={4}>Workflows</Text>
                   <ImportJsonFlows />
                 </HStack>
                 <HStack alignItems={"center"}>
@@ -91,19 +93,7 @@ export default function RecentFilesDrawer({
               </HStack>
             </DrawerHeader>
             <DrawerBody>
-              {/* <HStack spacing={4} mb={6}>
-              <Button
-                leftIcon={<IconTag />}
-                colorScheme="gray"
-                variant="solid"
-                size={"sm"}
-                px={3}
-                borderRadius={16}
-              >
-                New Tag
-              </Button>
-            </HStack> */}
-              <HStack spacing={2} wrap={"wrap"} mb={6}>
+              <HStack spacing={2} wrap={"wrap"} mb={0}>
                 {selectedTag != null && (
                   <IconButton
                     aria-label="Close"
@@ -140,12 +130,41 @@ export default function RecentFilesDrawer({
                   />
                 )}
               </HStack>
+              <HStack mb={2} p={0} justifyContent="end">
+                <Menu closeOnSelect={true}>
+                  <MenuButton
+                    as={Button}
+                    variant={"ghost"}
+                    size="xs"
+                    pr={0}
+                    rightIcon={<IconChevronDown size="16" />}
+                  >
+                    <HStack>
+                      <Text>Sort by:</Text>
+                      <Text display="inline-block">{sortTypeRef.current}</Text>
+                    </HStack>
+                  </MenuButton>
+                  <MenuList>
+                    <MenuOptionGroup
+                      value={sortTypeRef.current}
+                      type="radio"
+                      onChange={(type) => onSort(type as ESortTypes)}
+                    >
+                      {Object.values(ESortTypes).map((sortType, index) => (
+                        <MenuItemOption key={index} value={sortType}>
+                          {sortType}
+                        </MenuItemOption>
+                      ))}
+                    </MenuOptionGroup>
+                  </MenuList>
+                </Menu>
+              </HStack>
               {recentFlows.map((n) => (
                 <WorkflowListItem
                   isSelected={n.id === curFlowID}
                   workflow={n}
                   loadWorkflowID={loadWorkflowID}
-                  setRecentFlow={setRecentFlow}
+                  onDelete={onDelete}
                 />
               ))}
             </DrawerBody>
