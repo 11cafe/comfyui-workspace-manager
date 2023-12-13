@@ -7,17 +7,17 @@ export enum ESortTypes {
   /**
    * Sort by update time, most recently modified first
    */
-  RECENTLY_MODIFIED = "Recently modified",
+  RECENTLY_MODIFIED = "newst",
   /**
    * Sort by update time, latest modified last
    */
-  OLDEST_MODIFIED = "Oldest modified",
+  OLDEST_MODIFIED = "oldest",
   /**
    * Sort alphabetically, from A to Z
    */
-  AZ = "Alphabetical A-Z",
+  AZ = "name A-Z",
   /**
    * Sort alphabetically, from Z to A
    */
-  ZA = "Alphabetical Z-A",
+  ZA = "name Z-A",
 }

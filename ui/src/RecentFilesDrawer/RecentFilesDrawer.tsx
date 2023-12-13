@@ -54,7 +54,10 @@ export default function RecentFilesDrawer({
   const { curFlowID } = useContext(WorkspaceContext);
   const [selectedTag, setSelectedTag] = useState<string>();
   const [showAllTags, setShowAllTags] = useState(false);
-  const sortTypeRef = useRef<ESortTypes>(window.localStorage.getItem(sortTypeLocalStorageKey) as ESortTypes ?? ESortTypes.RECENTLY_MODIFIED)
+  const sortTypeRef = useRef<ESortTypes>(
+    // (window.localStorage.getItem(sortTypeLocalStorageKey) as ESortTypes) ??
+    ESortTypes.RECENTLY_MODIFIED
+  );
 
   const onClickTag = (name: string) => {
     setSelectedTag(name);
@@ -64,7 +67,7 @@ export default function RecentFilesDrawer({
   const loadLatestWorkflows = () => {
     const all = listWorkflows(sortTypeRef.current);
     setRecentFlow(all);
-  }
+  };
 
   const onSort = (type: ESortTypes) => {
     setRecentFlow(sortFlows(recentFlows, type));
@@ -96,15 +99,6 @@ export default function RecentFilesDrawer({
               <HStack alignItems={"center"} justifyContent={"space-between"}>
                 <HStack gap={4}>
                   <Text mr={4}>Workflows</Text>
-                  {/* <Button
-                    leftIcon={<IconPlus />}
-                    variant="outline"
-                    size={"sm"}
-                    colorScheme="teal"
-                    onClick={onClickNewFlow}
-                  >
-                    New
-                  </Button> */}
                   <ImportJsonFlows />
                 </HStack>
                 <HStack alignItems={"center"}>
@@ -114,7 +108,7 @@ export default function RecentFilesDrawer({
               </HStack>
             </DrawerHeader>
             <DrawerBody>
-              <HStack spacing={2} wrap={"wrap"} mb={6}>
+              <HStack spacing={2} wrap={"wrap"} mb={0}>
                 {selectedTag != null && (
                   <IconButton
                     aria-label="Close"
@@ -151,21 +145,21 @@ export default function RecentFilesDrawer({
                   />
                 )}
               </HStack>
-              <HStack mb={4} justifyContent="end">
+              <HStack mb={2} p={0} justifyContent="end">
                 <Menu closeOnSelect={true}>
                   <MenuButton
                     as={Button}
+                    variant={"ghost"}
                     size="xs"
+                    pr={0}
                     rightIcon={<IconChevronDown size="16" />}
                   >
                     <HStack>
                       <Text>Sort by:</Text>
-                      <Text fontWeight={800} display="inline-block">
-                        {sortTypeRef.current}
-                      </Text>
+                      <Text display="inline-block">{sortTypeRef.current}</Text>
                     </HStack>
                   </MenuButton>
-                  <MenuList minWidth="240px">
+                  <MenuList>
                     <MenuOptionGroup
                       value={sortTypeRef.current}
                       type="radio"
