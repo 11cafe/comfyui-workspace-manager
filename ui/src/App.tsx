@@ -4,19 +4,10 @@ import { app } from "/scripts/app.js";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
 // @ts-ignore
 import throttle from "lodash.throttle";
-import {
-  HStack,
-  Input,
-  Box,
-  Button,
-  Text,
-  useColorMode,
-} from "@chakra-ui/react";
+import { HStack, Input, Box, Button, Text } from "@chakra-ui/react";
 import {
   IconFolder,
-  IconMoon,
   IconPlus,
-  IconSun,
   IconTriangleInvertedFilled,
 } from "@tabler/icons-react";
 import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
@@ -26,7 +17,6 @@ import { WorkspaceContext } from "./WorkspaceContext";
 type Route = "root" | "customNodes" | "recentFlows";
 
 export default function App() {
-  const [missingNodeTypes, setMissingNodeTypes] = useState<string[]>([]);
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
   const [route, setRoute] = useState<Route>("root");
@@ -49,13 +39,8 @@ export default function App() {
       async addCustomNodeDefs(defs) {
         nodeDefs.current = defs;
       },
-      // async loadedGraphNode(node: LGraphNode, app: ComfyApp) {},
     };
     app.registerExtension(ext);
-    // app.canvasEl.addEventListener("click", function () {
-    //   console.log("canvasEl click");
-    // });
-
     try {
       await loadDBs();
     } catch (error) {

@@ -29540,7 +29540,6 @@ const CY = {
   version: 0.4
 };
 function kY() {
-  v.useState([]);
   const e = v.useRef({}), [t, n] = v.useState(null), [r, o] = v.useState("root"), [i, a] = v.useState(!0), [s, l] = v.useState(null), u = v.useRef(null), c = (b) => {
     u.current = b, l(b);
   }, d = async () => {
@@ -29553,7 +29552,6 @@ function kY() {
       async addCustomNodeDefs(S) {
         e.current = S;
       }
-      // async loadedGraphNode(node: LGraphNode, app: ComfyApp) {},
     };
     zl.registerExtension(b);
     try {
