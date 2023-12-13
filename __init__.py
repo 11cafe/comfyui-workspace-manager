@@ -97,12 +97,10 @@ async def install_nodes(request):
 import subprocess
 import threading
 
-# Assuming handle_stream is defined to handle and print the stream
 def handle_stream(stream, prefix):
     for line in stream:
         print(prefix + line, end='')
 
-# Modified run_script function
 def run_script(cmd, cwd='.'):
     if len(cmd) > 0 and cmd[0].startswith("#"):
         print(f"[ComfyUI-Manager] Unexpected behavior: `{cmd}`")
@@ -142,18 +140,14 @@ async def save_db(request):
     return web.Response(text=f"JSON saved to {file_name}")
 
 def read_table(table):
-    print('inside read table')
     if not table:
-        print('no table')
         return None
     file_name = f'{db_dir_path}/{table}.json'
-    print('readtable filename', file_name)
     if not os.path.exists(file_name):
         return None
 
     with open(file_name, 'r') as file:
         data = json.load(file)
-    print('readtable data', data)
     return data
 
 @server.PromptServer.instance.routes.get("/workspace/get_db")
@@ -241,18 +235,14 @@ async def update_file(request):
 
 @server.PromptServer.instance.routes.get("/workspace/get_my_workflows_dir")
 async def get_my_workflows_dir_endpoint(request):
-    print('get_my_workflows_dir_endpoint')
     absolute_path = get_my_workflows_dir()
     return web.Response(text=absolute_path)
 
 def get_my_workflows_dir():
-    print('get_my_workflows_dir')
     data = read_table('userSettings')
-    print('get_my_workflows_dir data', data)
     if(data):
         records = json.loads(data)
         curDir = records['myWorkflowsDir'] if records else None
-        print('get_my_workflows_dir', curDir)
         if curDir:
             return curDir
     return DEFAULT_MY_WORKFLOWS_DIR
