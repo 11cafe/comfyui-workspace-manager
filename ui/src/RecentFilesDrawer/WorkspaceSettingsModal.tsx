@@ -52,7 +52,6 @@ export default function WorkspaceSettingsModal({
               size={"sm"}
               leftIcon={<IconFolder />}
               colorScheme={"teal"}
-              size={"sm"}
             >
               Choose Folder
             </Button>

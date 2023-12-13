@@ -25306,7 +25306,6 @@ function IH({
               size: "sm",
               leftIcon: /* @__PURE__ */ S.jsx(C_, {}),
               colorScheme: "teal",
-              size: "sm",
               children: "Choose Folder"
             }
           )
