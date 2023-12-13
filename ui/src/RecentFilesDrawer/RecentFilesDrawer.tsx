@@ -29,11 +29,15 @@ type Props = {
   onclose: () => void;
   loadWorkflowID: (id: string) => void;
   onClickNewFlow: () => void;
+  handleCopyFlow: (json: string, name: string) => void;
+  flowID: string | null;
 };
 export default function RecentFilesDrawer({
   onclose,
   loadWorkflowID,
   onClickNewFlow,
+  handleCopyFlow,
+  flowID
 }: Props) {
   const [recentFlows, setRecentFlow] = useState<Workflow[]>([]);
   const { curFlowID } = useContext(WorkspaceContext);
@@ -67,7 +71,7 @@ export default function RecentFilesDrawer({
 
   useEffect(() => {
     loadLatestWorkflows();
-  }, []);
+  }, [flowID]);
 
   return (
     <RecentFilesContext.Provider value={{ setRecentFiles: setRecentFlow }}>
@@ -165,6 +169,7 @@ export default function RecentFilesDrawer({
                   workflow={n}
                   loadWorkflowID={loadWorkflowID}
                   onDelete={onDelete}
+                  handleCopyFlow={handleCopyFlow}
                 />
               ))}
             </DrawerBody>
