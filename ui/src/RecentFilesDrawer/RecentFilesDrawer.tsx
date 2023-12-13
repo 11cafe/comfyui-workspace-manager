@@ -29,21 +29,21 @@ type Props = {
   onclose: () => void;
   loadWorkflowID: (id: string) => void;
   onClickNewFlow: () => void;
-  handleCopyFlow: (json: string, name: string) => void;
   flowID: string | null;
 };
 export default function RecentFilesDrawer({
   onclose,
   loadWorkflowID,
   onClickNewFlow,
-  handleCopyFlow,
-  flowID
+  flowID,
 }: Props) {
   const [recentFlows, setRecentFlow] = useState<Workflow[]>([]);
   const { curFlowID } = useContext(WorkspaceContext);
   const [selectedTag, setSelectedTag] = useState<string>();
   const [showAllTags, setShowAllTags] = useState(false);
-  const [activeContextMenu, setActiveContextMenu] = useState<string | null>(null);
+  const [activeContextMenu, setActiveContextMenu] = useState<string | null>(
+    null
+  );
   const sortTypeRef = useRef<ESortTypes>(
     (window.localStorage.getItem(sortTypeLocalStorageKey) as ESortTypes) ??
       ESortTypes.RECENTLY_MODIFIED
@@ -75,7 +75,11 @@ export default function RecentFilesDrawer({
   }, [flowID]);
 
   return (
-    <RecentFilesContext.Provider value={{ setRecentFiles: setRecentFlow }}>
+    <RecentFilesContext.Provider
+      value={{
+        setRecentFiles: setRecentFlow,
+      }}
+    >
       <div style={{ position: "absolute", top: 0, left: 0, right: 0 }}>
         <Drawer
           isOpen={true}
@@ -170,7 +174,6 @@ export default function RecentFilesDrawer({
                   workflow={n}
                   loadWorkflowID={loadWorkflowID}
                   onDelete={onDelete}
-                  handleCopyFlow={handleCopyFlow}
                   setActiveContextMenu={setActiveContextMenu}
                   activeContextMenu={activeContextMenu}
                 />

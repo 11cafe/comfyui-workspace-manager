@@ -102,22 +102,33 @@ export default function App() {
     const flow = createFlow({ json: JSON.stringify(defaultObj) });
     setCurFlowID(flow.id);
     setCurFlowName(flow.name);
-    app.loadGraphData(defaultObj);
+    app.loadGraphData(flow.json);
   };
 
-  const handleCopyFlow = (json: string, name: string) => {
-    const flow = createFlow({json, name});
-
+  const onDuplicateWorkflow = (workflowID: string) => {
+    if (workspace == null) {
+      return;
+    }
+    const workflow = workspace[workflowID];
+    if (workflow == null) {
+      return;
+    }
+    const flow = createFlow({
+      json: workflow.json,
+      name: workflow.name + " 1",
+    });
     setCurFlowID(flow.id);
     setCurFlowName(flow.name);
-    app.loadGraphData(JSON.parse(json));
+    app.loadGraphData(JSON.parse(flow.json));
   };
 
   if (loadingDB) {
     return null;
   }
   return (
-    <WorkspaceContext.Provider value={{ curFlowID: flowID }}>
+    <WorkspaceContext.Provider
+      value={{ curFlowID: flowID, onDuplicateWorkflow: onDuplicateWorkflow }}
+    >
       <Box
         style={{
           width: "100vh",
@@ -186,7 +197,6 @@ export default function App() {
               onClickNewFlow();
               setRoute("root");
             }}
-            handleCopyFlow={handleCopyFlow}
             flowID={flowID}
           />
         )}
