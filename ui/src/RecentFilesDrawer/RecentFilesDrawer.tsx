@@ -38,20 +38,25 @@ type Props = {
   onclose: () => void;
   loadWorkflowID: (id: string) => void;
   onClickNewFlow: () => void;
+  handleCopyFlow: (json: string, name: string) => void;
+  flowID: string | null;
 };
 export default function RecentFilesDrawer({
   onclose,
   loadWorkflowID,
   onClickNewFlow,
+  handleCopyFlow,
+  flowID
 }: Props) {
   const [recentFlows, setRecentFlow] = useState<Workflow[]>([]);
   const { curFlowID } = useContext(WorkspaceContext);
   const [selectedTag, setSelectedTag] = useState<string>();
   const [showAllTags, setShowAllTags] = useState(false);
+
   useEffect(() => {
     const all = listWorkflows();
     setRecentFlow(all);
-  }, []);
+  }, [flowID]);
 
   const onClickTag = (name: string) => {
     setSelectedTag(name);
@@ -146,6 +151,7 @@ export default function RecentFilesDrawer({
                   workflow={n}
                   loadWorkflowID={loadWorkflowID}
                   setRecentFlow={setRecentFlow}
+                  handleCopyFlow={handleCopyFlow}
                 />
               ))}
             </DrawerBody>

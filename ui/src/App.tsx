@@ -134,9 +134,18 @@ export default function App() {
   const onClickNewFlow = () => {
     const defaultObj = defaultGraph;
     const flow = createFlow({ json: JSON.stringify(defaultObj) });
+
     setCurFlowID(flow.id);
     setCurFlowName(flow.name);
     app.loadGraphData(defaultObj);
+  };
+
+  const handleCopyFlow = (json: string, name: string) => {
+    const flow = createFlow({json, name});
+
+    setCurFlowID(flow.id);
+    setCurFlowName(flow.name);
+    app.loadGraphData(JSON.parse(json));
   };
 
   if (loadingDB) {
@@ -220,6 +229,8 @@ export default function App() {
               onClickNewFlow();
               setRoute("root");
             }}
+            handleCopyFlow={handleCopyFlow}
+            flowID={flowID}
           />
         )}
       </Box>
