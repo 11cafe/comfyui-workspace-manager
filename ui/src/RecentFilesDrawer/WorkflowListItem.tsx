@@ -60,8 +60,6 @@ export default function WorkflowListItem({
         w={"90%"}
         draggable
         onDragStart={(e) => {
-          console.log("dragging", workflow.name);
-          console.log("dragging id", workflow.id);
           workflow.id && onDraggingWorkflowID(workflow.id);
         }}
         borderRadius={6}

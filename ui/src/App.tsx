@@ -190,7 +190,6 @@ export default function App() {
         </HStack>
         {route === "recentFlows" && (
           <RecentFilesDrawer
-            isOpen={true}
             onclose={() => setRoute("root")}
             loadWorkflowID={loadWorkflowID}
             onClickNewFlow={() => {

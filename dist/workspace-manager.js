@@ -29085,7 +29085,7 @@ function hY({
             w: "90%",
             draggable: !0,
             onDragStart: (f) => {
-              console.log("dragging", t.name), console.log("dragging id", t.id), t.id && o(t.id);
+              t.id && o(t.id);
             },
             borderRadius: 6,
             p: 2,
@@ -29202,39 +29202,35 @@ function mY() {
   );
 }
 const jS = 6;
-function vY({
-  onclose: e,
-  loadWorkflowID: t,
-  isOpen: n
-}) {
-  const [r, o] = v.useState([]), { curFlowID: i } = v.useContext(Gg), [a, s] = v.useState(), [l, u] = v.useState(!1), c = v.useRef(null), d = v.useRef(
+function vY({ onclose: e, loadWorkflowID: t }) {
+  const [n, r] = v.useState([]), { curFlowID: o } = v.useContext(Gg), [i, a] = v.useState(), [s, l] = v.useState(!1), u = v.useRef(null), c = v.useRef(
     window.localStorage.getItem(gS) ?? Gr.RECENTLY_MODIFIED
-  ), f = (x) => {
-    s(x), o(tc().filter((k) => {
-      var P;
-      return (P = k.tags) == null ? void 0 : P.includes(x);
+  ), d = (b) => {
+    a(b), r(tc().filter((x) => {
+      var k;
+      return (k = x.tags) == null ? void 0 : k.includes(b);
     }));
-  }, p = () => {
-    const x = tc(d.current);
-    o(x);
-  }, g = (x) => {
-    o(PE(r, x)), d.current = x, window.localStorage.setItem(gS, x);
-  }, y = (x) => {
-    bH(x), p();
-  }, S = (x) => {
-  }, h = (x) => {
-    Se && c.current && gH(Se[c.current].json);
-  }, m = (x) => {
+  }, f = () => {
+    const b = tc(c.current);
+    r(b);
+  }, p = (b) => {
+    r(PE(n, b)), c.current = b, window.localStorage.setItem(gS, b);
+  }, g = (b) => {
+    bH(b), f();
+  }, y = (b) => {
+  }, S = (b) => {
+    Se && u.current && gH(Se[u.current].json);
+  }, h = (b) => {
     e();
   };
-  v.useEffect(() => (p(), pn.canvasEl.addEventListener("dragover", S), pn.canvasEl.addEventListener("drop", h), pn.canvasEl.addEventListener("click", m), () => {
-    pn.canvasEl.removeEventListener("dragover", S), pn.canvasEl.removeEventListener("drop", h), pn.canvasEl.removeEventListener("click", m);
-  }), [i]);
-  const b = 440;
-  return /* @__PURE__ */ w.jsx(EE.Provider, { value: { setRecentFiles: o }, children: /* @__PURE__ */ w.jsx(Oe, { style: { width: b }, children: /* @__PURE__ */ w.jsxs(
+  v.useEffect(() => (f(), pn.canvasEl.addEventListener("dragover", y), pn.canvasEl.addEventListener("drop", S), pn.canvasEl.addEventListener("click", h), () => {
+    pn.canvasEl.removeEventListener("dragover", y), pn.canvasEl.removeEventListener("drop", S), pn.canvasEl.removeEventListener("click", h);
+  }), [o]);
+  const m = 440;
+  return /* @__PURE__ */ w.jsx(EE.Provider, { value: { setRecentFiles: r }, children: /* @__PURE__ */ w.jsx(Oe, { style: { width: m }, children: /* @__PURE__ */ w.jsxs(
     t6,
     {
-      width: b,
+      width: m,
       height: "100vh",
       pl: 4,
       pr: 5,
@@ -29255,18 +29251,18 @@ function vY({
         ] }),
         /* @__PURE__ */ w.jsxs(mm, { direction: "column", overflowY: "auto", overflowX: "hidden", children: [
           /* @__PURE__ */ w.jsxs($t, { spacing: 2, wrap: "wrap", mb: 0, children: [
-            a != null && /* @__PURE__ */ w.jsx(
+            i != null && /* @__PURE__ */ w.jsx(
               rl,
               {
                 "aria-label": "Close",
                 size: "sm",
                 icon: /* @__PURE__ */ w.jsx(iH, {}),
                 onClick: () => {
-                  s(void 0), o(tc());
+                  a(void 0), r(tc());
                 }
               }
             ),
-            ke == null ? void 0 : ke.listAll().slice(0, l ? void 0 : jS).map((x) => /* @__PURE__ */ w.jsx(
+            ke == null ? void 0 : ke.listAll().slice(0, s ? void 0 : jS).map((b) => /* @__PURE__ */ w.jsx(
               jn,
               {
                 variant: "solid",
@@ -29274,9 +29270,9 @@ function vY({
                 flexShrink: 0,
                 size: "sm",
                 py: 4,
-                onClick: () => f(x.name),
-                isActive: a === x.name,
-                children: x.name
+                onClick: () => d(b.name),
+                isActive: i === b.name,
+                children: b.name
               }
             )),
             ((ke == null ? void 0 : ke.listAll().length) ?? 0) > jS && /* @__PURE__ */ w.jsx(
@@ -29284,8 +29280,8 @@ function vY({
               {
                 "aria-label": "Show-all-tags",
                 size: "sm",
-                icon: l ? /* @__PURE__ */ w.jsx(QW, {}) : /* @__PURE__ */ w.jsx(mS, {}),
-                onClick: () => u(!l)
+                icon: s ? /* @__PURE__ */ w.jsx(QW, {}) : /* @__PURE__ */ w.jsx(mS, {}),
+                onClick: () => l(!s)
               }
             )
           ] }),
@@ -29300,29 +29296,29 @@ function vY({
                 rightIcon: /* @__PURE__ */ w.jsx(mS, { size: "16" }),
                 children: /* @__PURE__ */ w.jsxs($t, { children: [
                   /* @__PURE__ */ w.jsx(nr, { children: "Sort by:" }),
-                  /* @__PURE__ */ w.jsx(nr, { display: "inline-block", children: d.current })
+                  /* @__PURE__ */ w.jsx(nr, { display: "inline-block", children: c.current })
                 ] })
               }
             ),
             /* @__PURE__ */ w.jsx(ef, { children: /* @__PURE__ */ w.jsx(
               nE,
               {
-                value: d.current,
+                value: c.current,
                 type: "radio",
-                onChange: (x) => g(x),
-                children: Object.values(Gr).map((x, k) => /* @__PURE__ */ w.jsx(jg, { value: x, children: x }, k))
+                onChange: (b) => p(b),
+                children: Object.values(Gr).map((b, x) => /* @__PURE__ */ w.jsx(jg, { value: b, children: b }, x))
               }
             ) })
           ] }) }),
-          r.map((x) => /* @__PURE__ */ w.jsx(
+          n.map((b) => /* @__PURE__ */ w.jsx(
             hY,
             {
-              isSelected: x.id === i,
-              workflow: x,
+              isSelected: b.id === o,
+              workflow: b,
               loadWorkflowID: t,
-              onDelete: y,
-              onDraggingWorkflowID: (k) => {
-                c.current = k;
+              onDelete: g,
+              onDraggingWorkflowID: (x) => {
+                u.current = x;
               }
             }
           ))
@@ -29597,7 +29593,6 @@ function yY() {
             r === "recentFlows" && /* @__PURE__ */ w.jsx(
               vY,
               {
-                isOpen: !0,
                 onclose: () => o("root"),
                 loadWorkflowID: g,
                 onClickNewFlow: () => {

@@ -33,16 +33,11 @@ import { app } from "/scripts/app.js";
 
 const MAX_TAGS_TO_SHOW = 6;
 type Props = {
-  isOpen: boolean;
   onclose: () => void;
   loadWorkflowID: (id: string) => void;
   onClickNewFlow: () => void;
 };
-export default function RecentFilesDrawer({
-  onclose,
-  loadWorkflowID,
-  isOpen,
-}: Props) {
+export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
   const [recentFlows, setRecentFlow] = useState<Workflow[]>([]);
   const { curFlowID } = useContext(WorkspaceContext);
   const [selectedTag, setSelectedTag] = useState<string>();
