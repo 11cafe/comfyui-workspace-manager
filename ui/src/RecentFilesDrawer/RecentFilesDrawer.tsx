@@ -79,15 +79,9 @@ export default function RecentFilesDrawer({
   };
 
   const handleDrop = (e) => {
-    console.log("app.canvasEl.eventlistener drop", workspace);
-    console.log(
-      "app.canvasEl.eventlistener drop draggingWorkflowID",
-      draggingWorkflowID
-    );
     workspace &&
       draggingWorkflowID.current &&
       insertWorkflowToCanvas(workspace[draggingWorkflowID.current].json);
-    console.log("app.canvasEl.eventlistener drop");
   };
 
   const handleClick = (e) => {
