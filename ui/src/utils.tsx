@@ -1,6 +1,7 @@
 // @ts-ignore
 import { ESortTypes } from "./RecentFilesDrawer/types";
 import { Workflow } from "./WorkspaceDB";
+// @ts-ignore
 import { app } from "/scripts/app.js";
 // copied from app.js
 function sanitizeNodeName(string: string): string {
@@ -65,7 +66,10 @@ export function formatTimestamp(unixTimestamp: number) {
  * @param sortType The type of sorting
  * @returns sorted data
  */
-export function sortFlows(flows: Workflow[] = [], sortType: ESortTypes = ESortTypes.RECENTLY_MODIFIED) {
+export function sortFlows(
+  flows: Workflow[] = [],
+  sortType: ESortTypes = ESortTypes.RECENTLY_MODIFIED
+) {
   const copyFlows = [...flows];
   if (copyFlows.length) {
     switch (sortType) {
@@ -83,6 +87,6 @@ export function sortFlows(flows: Workflow[] = [], sortType: ESortTypes = ESortTy
         break;
     }
   }
-  
+
   return copyFlows;
 }

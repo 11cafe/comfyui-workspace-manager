@@ -15,6 +15,8 @@ import { Workflow } from "../WorkspaceDB";
 import { formatTimestamp } from "../utils";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import { IconTrash } from "@tabler/icons-react";
+import { useState } from "react";
+import WorkflowListItemRightClickMenu from "./WorkflowListItemRightClickMenu";
 
 type Props = {
   isSelected: boolean;
@@ -29,8 +31,25 @@ export default function WorkflowListItem({
   onDelete,
 }: Props) {
   const { colorMode } = useColorMode();
+
+  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const handleContextMenu = (event: any) => {
+    event.preventDefault();
+    setMenuPosition({ x: event.clientX, y: event.clientY });
+    setIsMenuOpen(true);
+  };
+  const handleClose = () => {
+    setIsMenuOpen(false);
+  };
+
   return (
-    <HStack w={"100%"} justify={"space-between"}>
+    <HStack
+      w={"100%"}
+      justify={"space-between"}
+      onContextMenu={handleContextMenu}
+    >
       <Box
         as="button"
         textAlign={"left"}
@@ -52,14 +71,18 @@ export default function WorkflowListItem({
           borderColor: "#bec3c9",
         }}
       >
-        {/* <Stack gap={0} cursor={"pointer"}> */}
         <Text fontWeight={"500"}>{workflow.name ?? "untitled"}</Text>
         <Text color={"GrayText"} ml={2} fontSize={"sm"}>
           Updated: {formatTimestamp(workflow.updateTime)}
         </Text>
-        {/* </Stack> */}
       </Box>
-
+      {isMenuOpen && (
+        <WorkflowListItemRightClickMenu
+          menuPosition={menuPosition}
+          onClose={handleClose}
+          workflowID={workflow.id}
+        />
+      )}
       <AddTagToWorkflowPopover workflow={workflow} />
       <Popover isLazy={true}>
         {({ isOpen, onClose }) => (

@@ -105,11 +105,30 @@ export default function App() {
     app.loadGraphData(defaultObj);
   };
 
+  const onDuplicateWorkflow = (workflowID: string) => {
+    if (workspace == null) {
+      return;
+    }
+    const workflow = workspace[workflowID];
+    if (workflow == null) {
+      return;
+    }
+    const flow = createFlow({
+      json: workflow.json,
+      name: workflow.name + " 1",
+    });
+    setCurFlowID(flow.id);
+    setCurFlowName(flow.name);
+    app.loadGraphData(JSON.parse(flow.json));
+  };
+
   if (loadingDB) {
     return null;
   }
   return (
-    <WorkspaceContext.Provider value={{ curFlowID: flowID }}>
+    <WorkspaceContext.Provider
+      value={{ curFlowID: flowID, onDuplicateWorkflow: onDuplicateWorkflow }}
+    >
       <Box
         style={{
           width: "100vh",

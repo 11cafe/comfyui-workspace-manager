@@ -18,9 +18,8 @@ import { useContext, useEffect, useState, useRef } from "react";
 import { Workflow, deleteFlow, listWorkflows, tagsTable } from "../WorkspaceDB";
 import { IconChevronDown, IconChevronUp, IconX } from "@tabler/icons-react";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
-import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
-import { formatTimestamp, sortFlows } from "../utils";
+import { sortFlows } from "../utils";
 import WorkflowListItem from "./WorkflowListItem";
 import ImportJsonFlows from "./ImportJsonFlows";
 import { ESortTypes, sortTypeLocalStorageKey } from "./types";
@@ -39,6 +38,7 @@ export default function RecentFilesDrawer({
   const { curFlowID } = useContext(WorkspaceContext);
   const [selectedTag, setSelectedTag] = useState<string>();
   const [showAllTags, setShowAllTags] = useState(false);
+
   const sortTypeRef = useRef<ESortTypes>(
     (window.localStorage.getItem(sortTypeLocalStorageKey) as ESortTypes) ??
       ESortTypes.RECENTLY_MODIFIED
@@ -67,10 +67,14 @@ export default function RecentFilesDrawer({
 
   useEffect(() => {
     loadLatestWorkflows();
-  }, []);
+  }, [curFlowID]);
 
   return (
-    <RecentFilesContext.Provider value={{ setRecentFiles: setRecentFlow }}>
+    <RecentFilesContext.Provider
+      value={{
+        setRecentFiles: setRecentFlow,
+      }}
+    >
       <div style={{ position: "absolute", top: 0, left: 0, right: 0 }}>
         <Drawer
           isOpen={true}

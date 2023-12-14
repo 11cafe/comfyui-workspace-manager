@@ -3,6 +3,7 @@ import { Workflow } from "./WorkspaceDB";
 
 export const WorkspaceContext = createContext<{
   curFlowID: string | null;
+  onDuplicateWorkflow?: (flowID: string) => void;
 }>({
   curFlowID: null,
 });
