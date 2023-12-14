@@ -99,16 +99,21 @@ export function insertWorkflowToCanvas(json: string) {
   } else {
     graphData = structuredClone(graphData);
   }
-  var graph11 = new LGraph();
-  graph11.configure(graphData);
+
+  var tempgraph = new LGraph();
+  tempgraph.configure(graphData);
   const prevClipboard = localStorage.getItem("litegrapheditor_clipboard");
 
   const mainCanvas = document.createElement("canvas");
-  const canvas = new LGraphCanvas(mainCanvas, graph11);
-  canvas.selectNodes(graph11._nodes);
-  canvas.copyToClipboard(graph11._nodes);
-  // app.graph.add(json)
+  let canvas = new LGraphCanvas(mainCanvas, tempgraph);
+  canvas.selectNodes(tempgraph._nodes);
+  canvas.copyToClipboard(tempgraph._nodes);
   app.canvas.pasteFromClipboard();
-  prevClipboard &&
+
+  if (prevClipboard) {
     localStorage.setItem("litegrapheditor_clipboard", prevClipboard);
+  }
+  // Nullify the references to help with garbage collection
+  tempgraph = null;
+  canvas = null;
 }
