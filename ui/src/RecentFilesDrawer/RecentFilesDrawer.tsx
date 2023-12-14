@@ -243,7 +243,8 @@ export default function RecentFilesDrawer({
         <Card
           width={DRAWER_WIDTH}
           height={"100vh"}
-          px={4}
+          pl={4}
+          pr={5}
           pt={4}
           gap={4}
           position={"absolute"}
