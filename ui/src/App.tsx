@@ -25,7 +25,6 @@ export default function App() {
   const curFlowID = useRef<string | null>(null);
 
   const setCurFlowID = (id: string) => {
-    console.log("workflow josn", workspace && JSON.parse(workspace[id].json));
     curFlowID.current = id;
     setFlowID(id);
   };
