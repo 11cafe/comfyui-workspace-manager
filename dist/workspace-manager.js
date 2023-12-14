@@ -29222,7 +29222,6 @@ function vY({
   }, y = (x) => {
     bH(x), p();
   }, S = (x) => {
-    console.log("app.canvasEl.eventlistener dragover");
   }, h = (x) => {
     Se && c.current && gH(Se[c.current].json);
   }, m = (x) => {

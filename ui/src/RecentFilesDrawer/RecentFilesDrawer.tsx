@@ -28,6 +28,7 @@ import { insertWorkflowToCanvas, sortFlows } from "../utils";
 import WorkflowListItem from "./WorkflowListItem";
 import ImportJsonFlows from "./ImportJsonFlows";
 import { ESortTypes, sortTypeLocalStorageKey } from "./types";
+// @ts-ignore
 import { app } from "/scripts/app.js";
 
 const MAX_TAGS_TO_SHOW = 6;
@@ -74,9 +75,7 @@ export default function RecentFilesDrawer({
   };
 
   // Define the event handlers
-  const handleDragOver = (e) => {
-    console.log("app.canvasEl.eventlistener dragover");
-  };
+  const handleDragOver = (e) => {};
 
   const handleDrop = (e) => {
     workspace &&
