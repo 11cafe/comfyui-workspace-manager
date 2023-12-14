@@ -30,9 +30,8 @@ walkthrough tutorial: https://www.youtube.com/watch?v=QbtSkiZ9F58
 
 - Effortlessly switch between different workflows in your workspace.
 - Create new workflows and rename existing ones.
-- **Auto saves** all workflows in a single folder (now it's under `/ComfyUI/my_workflows`)
-- **Bulk import** workflows into your workspace
-- Organize workflows with **tags**
+- organize workflows with **tags**
+- auto exports all workflows in a single folder (now it's under `/ComfyUI/my_workflows`)
 - [beta] auto backup workspace locally
 - cloud sync & backup workspace so you will never lose your data (Upcoming!)
 - One-click share workflow (Upcoming!)
@@ -49,7 +48,8 @@ walkthrough tutorial: https://www.youtube.com/watch?v=QbtSkiZ9F58
 
 ### Where are my workflow and workspace data stored?
 
-🍺 All your workflows are now output to a folder in `/ComfyUI/my_workflows`
+🍺 All your workflows are now output to a folder in /ComfyUI/my_workflows we will enable customize this directory to any dir you like in your computer.
+
 Our internal db data is stored in your disk under /ComfyUI/custom_nodes/comfyui-workspace-manager/db/
 
 ## Upcoming Features
