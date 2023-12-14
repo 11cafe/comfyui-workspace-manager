@@ -7,7 +7,7 @@ export enum ESortTypes {
   /**
    * Sort by update time, most recently modified first
    */
-  RECENTLY_MODIFIED = "newst",
+  RECENTLY_MODIFIED = "newest",
   /**
    * Sort by update time, latest modified last
    */

@@ -25067,7 +25067,7 @@ async function CH(e) {
   }
 }
 const bx = "CWM_WORKFLOWS_SORT_TYPE";
-var Ur = /* @__PURE__ */ ((e) => (e.RECENTLY_MODIFIED = "newst", e.OLDEST_MODIFIED = "oldest", e.AZ = "name A-Z", e.ZA = "name Z-A", e))(Ur || {});
+var Ur = /* @__PURE__ */ ((e) => (e.RECENTLY_MODIFIED = "newest", e.OLDEST_MODIFIED = "oldest", e.AZ = "name A-Z", e.ZA = "name Z-A", e))(Ur || {});
 function kH(e) {
   return e = e.replace(/[\\/:*?"<>|]/g, "_"), e.trim();
 }
