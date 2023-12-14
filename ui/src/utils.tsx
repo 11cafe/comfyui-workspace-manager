@@ -1,8 +1,9 @@
 // @ts-ignore
 import { ESortTypes } from "./RecentFilesDrawer/types";
 import { Workflow } from "./WorkspaceDB";
+// import { LGraph } from "./types/litegraph";
 // @ts-ignore
-import { app } from "/scripts/app.js";
+import { app, ComfyApp } from "/scripts/app.js";
 // copied from app.js
 function sanitizeNodeName(string: string): string {
   let entityMap: Record<string, string> = {
@@ -89,4 +90,31 @@ export function sortFlows(
   }
 
   return copyFlows;
+}
+
+export function insertWorkflowToCanvas(json: string) {
+  let graphData = JSON.parse(json);
+  if (typeof structuredClone === "undefined") {
+    graphData = JSON.parse(JSON.stringify(graphData));
+  } else {
+    graphData = structuredClone(graphData);
+  }
+  // @ts-ignore
+  var tempGraph = new LGraph();
+  tempGraph.configure(graphData);
+  const prevClipboard = localStorage.getItem("litegrapheditor_clipboard");
+
+  const tempCanvas = document.createElement("canvas");
+  // @ts-ignore
+  let canvas = new LGraphCanvas(tempCanvas, tempGraph);
+  canvas.selectNodes(tempGraph._nodes);
+  canvas.copyToClipboard(tempGraph._nodes);
+  app.canvas.pasteFromClipboard();
+
+  if (prevClipboard) {
+    localStorage.setItem("litegrapheditor_clipboard", prevClipboard);
+  }
+  // Nullify the references to help with garbage collection
+  tempGraph = null;
+  canvas = null;
 }
