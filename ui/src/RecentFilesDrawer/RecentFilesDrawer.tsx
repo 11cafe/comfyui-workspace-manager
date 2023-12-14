@@ -69,8 +69,7 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
     loadLatestWorkflows();
   };
 
-  // Define the event handlers
-  const handleDragOver = (e) => {};
+  // const handleDragOver = (e) => {};
 
   const handleDrop = (e) => {
     workspace &&
@@ -83,15 +82,13 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
   };
   useEffect(() => {
     loadLatestWorkflows();
-
-    // Add event listeners
-    app.canvasEl.addEventListener("dragover", handleDragOver);
+    // app.canvasEl.addEventListener("dragover", handleDragOver);
     app.canvasEl.addEventListener("drop", handleDrop);
     app.canvasEl.addEventListener("click", handleClick);
 
     // Cleanup function to remove event listeners
     return () => {
-      app.canvasEl.removeEventListener("dragover", handleDragOver);
+      // app.canvasEl.removeEventListener("dragover", handleDragOver);
       app.canvasEl.removeEventListener("drop", handleDrop);
       app.canvasEl.removeEventListener("click", handleClick);
     };
