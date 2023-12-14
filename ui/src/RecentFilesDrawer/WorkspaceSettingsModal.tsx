@@ -41,12 +41,7 @@ export default function WorkspaceSettingsModal({
             Workspace Save Directory (🚧 Under development, not working)
           </Text>
           <HStack>
-            {/* <Input
-              value={"C:\\Users\\joshu\\Documents\\ComfyUI"}
-              disabled={true}
-              color={"gray.500"}
-            /> */}
-            <Text>{selectedFolder}</Text>
+            <Text mr={5}>{selectedFolder}</Text>
 
             <Button
               onClick={() => {
