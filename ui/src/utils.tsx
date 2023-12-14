@@ -93,26 +93,78 @@ export function sortFlows(
 }
 
 export function insertWorkflowToCanvas(json: string) {
+  copyPasteNodeFromWorkflowJson(json);
   // console.log("insertWorkflowToCanvas app", app);
-  let graphData = JSON.parse(json);
-  if (typeof structuredClone === "undefined") {
-    console.log("structuredClone is undefined");
-    graphData = JSON.parse(JSON.stringify(graphData));
-  } else {
-    console.log("structuredClone is undefined");
-    graphData = structuredClone(graphData);
-  }
-  var graph11 = new LGraph();
-  graph11.configure(graphData);
+  // let graphData = JSON.parse(json);
+  // if (typeof structuredClone === "undefined") {
+  //   console.log("structuredClone is undefined");
+  //   graphData = JSON.parse(JSON.stringify(graphData));
+  // } else {
+  //   console.log("structuredClone is undefined");
+  //   graphData = structuredClone(graphData);
+  // }
+  // var graph11 = new LGraph();
+  // graph11.configure(graphData);
 
-  const mainCanvas = document.createElement("canvas");
-  const canvas = new LGraphCanvas(mainCanvas, graph11);
-  canvas.selectNodes(graph11._nodes);
-  console.log("1111111graph._nodes", graph11._nodes);
-  console.log("11111111canvas", canvas);
-  canvas.copyToClipboard(graph11._nodes);
-  // const prevClipboard = localStorage.getItem("litegrapheditor_clipboard");
-  // app.graph.add(json);
-  // localStorage.setItem("litegrapheditor_clipboard", json);
-  app.canvas.pasteFromClipboard();
+  // const mainCanvas = document.createElement("canvas");
+  // const canvas = new LGraphCanvas(mainCanvas, graph11);
+  // canvas.selectNodes(graph11._nodes);
+  // console.log("1111111graph._nodes", graph11._nodes);
+  // console.log("11111111canvas", canvas);
+  // canvas.copyToClipboard(graph11._nodes);
+  // // const prevClipboard = localStorage.getItem("litegrapheditor_clipboard");
+  // // app.graph.add(json);
+  // // localStorage.setItem("litegrapheditor_clipboard", json);
+  // app.canvas.pasteFromClipboard();
+}
+
+function copyPasteNodeFromWorkflowJson(json: string) {
+  const clipboard_info = JSON.parse(json);
+  const nodes = clipboard_info.nodes;
+  let pos = [10, 10];
+  var copy_nodes = {};
+  for (var i = 0; i < nodes.length; ++i) {
+    var node_data = nodes[i];
+    var newnode = LiteGraph.createNode(node_data.type);
+    if (newnode) {
+      newnode.configure(node_data);
+
+      //paste in last known mouse position
+      newnode.pos[0] += pos[0] + 5;
+      newnode.pos[1] += pos[1] + 5;
+      pos = newnode.pos;
+
+      app.graph.add(newnode, { doProcessChange: false });
+
+      copy_nodes[node_data.id] = newnode;
+    }
+  }
+  console.log("22222 workflow json", clipboard_info);
+  console.log("22222 copied nodes", copy_nodes);
+  console.log("app.graph", app.graph);
+  //create links
+  for (var i = 0; i < clipboard_info.links.length; ++i) {
+    var link_info = clipboard_info.links[i];
+    const origin_node_slot = link_info[2];
+    const target_node_slot = link_info[4];
+    let target_node = copy_nodes[link_info[3]];
+    let origin_node = copy_nodes[link_info[1]];
+
+    if (origin_node && target_node)
+      origin_node.connect(origin_node_slot, target_node, target_node_slot);
+    else {
+      console.log(
+        "origin_node",
+        origin_node,
+        "origin_node_slot",
+        origin_node_slot
+      );
+      console.log(
+        "target_node",
+        target_node,
+        "target_node_slot",
+        target_node_slot
+      );
+    }
+  }
 }
