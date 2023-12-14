@@ -102,7 +102,7 @@ export default function App() {
     const flow = createFlow({ json: JSON.stringify(defaultObj) });
     setCurFlowID(flow.id);
     setCurFlowName(flow.name);
-    app.loadGraphData(flow.json);
+    app.loadGraphData(defaultObj);
   };
 
   const onDuplicateWorkflow = (workflowID: string) => {
