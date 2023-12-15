@@ -155,27 +155,6 @@ export function insertWorkflowToCanvas2(json: string) {
   // console.log("app", app);
   const LLink = LiteGraph.LLink as LLinkType;
 
-  // if (original_links && original_links.constructor === Array) {
-  //   let nextLinkId = app.graph.last_link_id;
-  //   for (var i = 0; i < original_links.length; ++i) {
-  //     nextLinkId++;
-  //     var link_data = original_links[i];
-  //     if (!link_data) {
-  //       //weird bu
-  //       console.warn("serialized graph link data contains errors, skipping.");
-  //       continue;
-  //     }
-  //     // link_data.id = nextLinkId;
-  //     link_data[0] = nextLinkId;
-  //     console.log("link_data", link_data);
-  //     var link = new LLink();
-  //     link.configure(link_data);
-  //     console.log("link", link);
-
-  //     app.graph.links[link.id] = link;
-  //   }
-  // }
-
   // calculate top-left node, could work without this processing but using diff with last node pos :: clipboard_info.nodes[clipboard_info.nodes.length-1].pos
   var posMin = false;
   var posMinIndexes = false;
@@ -246,10 +225,15 @@ export function insertWorkflowToCanvas2(json: string) {
         target_node.id,
         target_node_slot
       );
-      app.graph.links[nextLinkId] = newLink;
-      console.log("origin_node", origin_node, "target_node", target_node);
+      // app.graph.links[nextLinkId] = newLink;
+      console.log(
+        "origin_node",
+        origin_node.serialize(),
+        "target_node",
+        target_node.serialize()
+      );
       // link.configure(link_data);
-      // origin_node.connect(origin_node_slot, target_node, target_node_slot);
+      origin_node.connect(origin_node_slot, target_node, target_node_slot);
     } else {
       console.error(
         "origin_node",
@@ -264,6 +248,6 @@ export function insertWorkflowToCanvas2(json: string) {
         target_node_slot
       );
     }
-    console.log("app.graph", app.graph);
   }
+  console.log("app.graph", app.graph);
 }
