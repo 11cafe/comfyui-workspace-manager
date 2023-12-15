@@ -143,3 +143,77 @@ export function generateUniqueName(name?: string) {
   }
   return newFlowName;
 }
+
+export function insertWorkflowToCanvas2(json: string) {
+  const clipboard_info = JSON.parse(json);
+  const nodes = clipboard_info.nodes;
+  let pos = [10, 10];
+  // calculate top-left node, could work without this processing but using diff with last node pos :: clipboard_info.nodes[clipboard_info.nodes.length-1].pos
+  var posMin = false;
+  var posMinIndexes = false;
+  for (var i = 0; i < clipboard_info.nodes.length; ++i) {
+    if (posMin) {
+      if (posMin[0] > clipboard_info.nodes[i].pos[0]) {
+        posMin[0] = clipboard_info.nodes[i].pos[0];
+        posMinIndexes[0] = i;
+      }
+      if (posMin[1] > clipboard_info.nodes[i].pos[1]) {
+        posMin[1] = clipboard_info.nodes[i].pos[1];
+        posMinIndexes[1] = i;
+      }
+    } else {
+      posMin = [clipboard_info.nodes[i].pos[0], clipboard_info.nodes[i].pos[1]];
+      posMinIndexes = [i, i];
+    }
+  }
+  var copy_nodes = {};
+
+  for (var i = 0; i < nodes.length; ++i) {
+    var node_data = nodes[i];
+    var newnode = LiteGraph.createNode(node_data.type);
+    if (newnode) {
+      newnode.configure(node_data);
+
+      //paste in last known mouse position
+      // newnode.pos[0] += pos[0] + 5;
+      // newnode.pos[1] += pos[1] + 5;
+      // pos = newnode.pos;
+
+      //paste in last known mouse position
+      newnode.pos[0] += app.canvas.graph_mouse[0] - posMin[0]; //+= 5;
+      newnode.pos[1] += app.canvas.graph_mouse[1] - posMin[1]; //+= 5;
+
+      app.graph.add(newnode, { doProcessChange: false });
+
+      copy_nodes[node_data.id] = newnode;
+    }
+  }
+  console.log("22222 workflow json", clipboard_info);
+  console.log("22222 copied nodes", copy_nodes);
+  console.log("app.graph", app.graph);
+  //create links
+  for (var i = 0; i < clipboard_info.links.length; ++i) {
+    var link_info = clipboard_info.links[i];
+    const origin_node_slot = link_info[2];
+    const target_node_slot = link_info[4];
+    let target_node = copy_nodes[link_info[3]];
+    let origin_node = copy_nodes[link_info[1]];
+
+    if (origin_node && target_node)
+      origin_node.connect(origin_node_slot, target_node, target_node_slot);
+    else {
+      console.log(
+        "origin_node",
+        origin_node,
+        "origin_node_slot",
+        origin_node_slot
+      );
+      console.log(
+        "target_node",
+        target_node,
+        "target_node_slot",
+        target_node_slot
+      );
+    }
+  }
+}

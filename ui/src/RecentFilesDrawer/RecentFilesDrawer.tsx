@@ -24,7 +24,11 @@ import {
 import { IconChevronDown, IconChevronUp, IconX } from "@tabler/icons-react";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
-import { insertWorkflowToCanvas, sortFlows } from "../utils";
+import {
+  insertWorkflowToCanvas,
+  insertWorkflowToCanvas2,
+  sortFlows,
+} from "../utils";
 import WorkflowListItem from "./WorkflowListItem";
 import ImportJsonFlows from "./ImportJsonFlows";
 import { ESortTypes, sortTypeLocalStorageKey } from "./types";
@@ -74,7 +78,7 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
   const handleDrop = (e: any) => {
     workspace &&
       draggingWorkflowID.current &&
-      insertWorkflowToCanvas(workspace[draggingWorkflowID.current].json);
+      insertWorkflowToCanvas2(workspace[draggingWorkflowID.current].json);
   };
 
   const handleClick = (e: any) => {
