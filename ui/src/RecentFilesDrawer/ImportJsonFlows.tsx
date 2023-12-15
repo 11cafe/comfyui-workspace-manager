@@ -14,14 +14,17 @@ export default function ImportJsonFlows() {
     const files = event.target.files;
     if (!files) return;
     const parsedFileList: ImportWorkflow[] = [];
-    let curFileName = "";
-    let curJSON = "";
     for (const file of files) {
       if (file.type === "image/png") {
-        curFileName = file.name.replace(".png", "");
         const pngInfo = await getPngMetadata(file);
         // @ts-expect-error
-        pngInfo?.workflow && (curJSON = pngInfo.workflow);
+        const flowJson = pngInfo?.workflow;
+        if (flowJson) {
+          parsedFileList.push({
+            json: flowJson,
+            name: file.name.replace(".png", ""),
+          });
+        }
       } else if (
         file.type === "application/json" ||
         file.name?.endsWith(".json")
@@ -32,8 +35,10 @@ export default function ImportJsonFlows() {
             try {
               const result = e.target?.result;
               if (typeof result === "string") {
-                curFileName = file.name.replace(".json", "");
-                curJSON = result;
+                parsedFileList.push({
+                  json: result,
+                  name: file.name.replace(".json", ""),
+                });
                 resolve("");
               } else {
                 reject(new Error("File content is not a string"));
@@ -44,12 +49,6 @@ export default function ImportJsonFlows() {
           };
           reader.onerror = reject;
           reader.readAsText(file);
-        });
-      }
-      if (curJSON) {
-        parsedFileList.push({
-          json: curJSON,
-          name: curFileName,
         });
       }
     }
