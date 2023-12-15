@@ -1,7 +1,7 @@
 // @ts-ignore
 import { ESortTypes } from "./RecentFilesDrawer/types";
 import { listWorkflows, Workflow } from "./WorkspaceDB";
-import { LiteGraph as LiteGraphType } from "./types/litegraph";
+import { LLink as LLinkType } from "./types/litegraph";
 // import { LGraph } from "./types/litegraph";
 // @ts-ignore
 import { app, ComfyApp } from "/scripts/app.js";
@@ -152,24 +152,29 @@ export function insertWorkflowToCanvas2(json: string) {
   const original_links = clipboard_info.links;
   //decode links info (they are very verbose)
 
-  console.log("app", app);
-  const LLink = LiteGraph.LLink;
+  // console.log("app", app);
+  const LLink = LiteGraph.LLink as LLinkType;
 
-  if (original_links && original_links.constructor === Array) {
-    var links = [];
-    for (var i = 0; i < original_links.length; ++i) {
-      var link_data = original_links[i];
-      if (!link_data) {
-        //weird bug
-        console.warn("serialized graph link data contains errors, skipping.");
-        continue;
-      }
+  // if (original_links && original_links.constructor === Array) {
+  //   let nextLinkId = app.graph.last_link_id;
+  //   for (var i = 0; i < original_links.length; ++i) {
+  //     nextLinkId++;
+  //     var link_data = original_links[i];
+  //     if (!link_data) {
+  //       //weird bu
+  //       console.warn("serialized graph link data contains errors, skipping.");
+  //       continue;
+  //     }
+  //     // link_data.id = nextLinkId;
+  //     link_data[0] = nextLinkId;
+  //     console.log("link_data", link_data);
+  //     var link = new LLink();
+  //     link.configure(link_data);
+  //     console.log("link", link);
 
-      var link = new LLink();
-      link.configure(link_data);
-      app.graph.links[link.id] = link;
-    }
-  }
+  //     app.graph.links[link.id] = link;
+  //   }
+  // }
 
   // calculate top-left node, could work without this processing but using diff with last node pos :: clipboard_info.nodes[clipboard_info.nodes.length-1].pos
   var posMin = false;
@@ -217,32 +222,48 @@ export function insertWorkflowToCanvas2(json: string) {
       copy_nodes[node_data.id] = newnode;
     }
   }
-  console.log("22222 workflow json", clipboard_info);
-  console.log("22222 copied nodes", copy_nodes);
-  console.log("app.graph", app.graph);
+  // console.log("22222 workflow json", clipboard_info);
+  // console.log("22222 copied nodes", copy_nodes);
   //create links
+  let nextLinkId = app.graph.last_link_id;
   for (var i = 0; i < clipboard_info.links.length; ++i) {
     var link_info = clipboard_info.links[i];
+    const origin_node_id = link_info[1];
     const origin_node_slot = link_info[2];
+    const target_node_id = link_info[3];
     const target_node_slot = link_info[4];
-    let target_node = copy_nodes[link_info[3]];
-    let origin_node = copy_nodes[link_info[1]];
-
-    if (origin_node && target_node)
-      origin_node.connect(origin_node_slot, target_node, target_node_slot);
-    else {
-      console.log(
+    let target_node = copy_nodes[target_node_id];
+    let origin_node = copy_nodes[origin_node_id];
+    nextLinkId++;
+    // let nextLinkId = Math.ceil(Math.random() * 10000);
+    const linkType = link_info[5];
+    if (origin_node && target_node) {
+      var newLink = new LLink(
+        nextLinkId,
+        linkType,
+        origin_node.id,
+        origin_node_slot,
+        target_node.id,
+        target_node_slot
+      );
+      app.graph.links[nextLinkId] = newLink;
+      console.log("origin_node", origin_node, "target_node", target_node);
+      // link.configure(link_data);
+      // origin_node.connect(origin_node_slot, target_node, target_node_slot);
+    } else {
+      console.error(
         "origin_node",
         origin_node,
         "origin_node_slot",
         origin_node_slot
       );
-      console.log(
+      console.error(
         "target_node",
         target_node,
         "target_node_slot",
         target_node_slot
       );
     }
+    console.log("app.graph", app.graph);
   }
 }
