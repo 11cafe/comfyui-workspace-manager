@@ -171,13 +171,19 @@ export function insertWorkflowToCanvas2(json: string) {
   for (var i = 0; i < nodes.length; ++i) {
     var node_data = nodes[i];
     var newnode = LiteGraph.createNode(node_data.type);
+    if (!newnode) {
+      // missing custom node type
+      if (LiteGraph.debug) {
+        console.log("Node not found or has errors: " + node_data.type);
+      }
+
+      //in case of error we create a replacement node to avoid losing info
+      newnode = new LGraphNode();
+      newnode.last_serialization = node_data;
+      newnode.has_errors = true;
+    }
     if (newnode) {
       newnode.configure(node_data);
-
-      //paste in last known mouse position
-      // newnode.pos[0] += pos[0] + 5;
-      // newnode.pos[1] += pos[1] + 5;
-      // pos = newnode.pos;
 
       //paste in last known mouse position
       newnode.pos[0] += app.canvas.graph_mouse[0] - posMin[0]; //+= 5;
