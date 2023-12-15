@@ -143,3 +143,59 @@ export function generateUniqueName(name?: string) {
   }
   return newFlowName;
 }
+
+export function getPngMetadata(file: File) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      // Get the PNG data as a Uint8Array
+      // @ts-expect-error
+      const pngData = new Uint8Array(event.target.result);
+      const dataView = new DataView(pngData.buffer);
+
+      // Check that the PNG signature is present
+      if (dataView.getUint32(0) !== 0x89504e47) {
+        console.error("Not a valid PNG file");
+        reject();
+      }
+
+      // Start searching for chunks after the PNG signature
+      let offset = 8;
+      const txt_chunks: Record<string, string> = {};
+      // Loop through the chunks in the PNG file
+      while (offset < pngData.length) {
+        // Get the length of the chunk
+        const length = dataView.getUint32(offset);
+        // Get the chunk type
+        const type = String.fromCharCode(
+          ...pngData.slice(offset + 4, offset + 8)
+        );
+        if (type === "tEXt" || type == "comf") {
+          // Get the keyword
+          let keyword_end = offset + 8;
+          while (pngData[keyword_end] !== 0) {
+            keyword_end++;
+          }
+          const keyword = String.fromCharCode(
+            ...pngData.slice(offset + 8, keyword_end)
+          );
+          // Get the text
+          const contentArraySegment = pngData.slice(
+            keyword_end + 1,
+            offset + 8 + length
+          );
+          const contentJson = Array.from(contentArraySegment)
+            .map((s) => String.fromCharCode(s))
+            .join("");
+          txt_chunks[keyword] = contentJson;
+        }
+
+        offset += 12 + length;
+      }
+
+      resolve(txt_chunks);
+    };
+
+    reader.readAsArrayBuffer(file);
+  });
+}

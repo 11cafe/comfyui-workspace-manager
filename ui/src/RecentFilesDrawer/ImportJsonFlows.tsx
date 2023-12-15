@@ -1,63 +1,63 @@
 import { Button } from "@chakra-ui/react";
 import { IconFileImport } from "@tabler/icons-react";
 import { ChangeEvent, useContext, useRef } from "react";
-import { Workflow, createFlow, listWorkflows, workspace } from "../WorkspaceDB";
+import { batchCreateFlows, listWorkflows } from "../WorkspaceDB";
 import { RecentFilesContext } from "../WorkspaceContext";
+import { getPngMetadata } from "../utils";
+import { ImportWorkflow } from "./types";
 
 export default function ImportJsonFlows() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { setRecentFiles } = useContext(RecentFilesContext);
+
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
-    const filesArray = Array.from(files);
-    console.log("filearr", filesArray);
-    const newFlows = await Promise.all(
-      filesArray.map((file) => readJsonFile(file))
-    );
-    // const newFlows = filesArray.map((file) => {
-    //   if (file.type === "application/json") {
-    //     const reader = new FileReader();
-    //     reader.onload = (e: ProgressEvent<FileReader>) => {
-    //       // Check if result is not null and is a string
-    //       if (e.target?.result && typeof e.target.result === "string") {
-    //         console.log("res", e.target.result);
-    //         const flow = createFlow({
-    //           json: e.target?.result ?? "{}",
-    //           name: file.name.replace(".json", ""),
-    //         });
-    //         return flow;
-    //       }
-    //     };
-    //     reader.readAsText(file);
-    //   }
-    // });
-    setRecentFiles && setRecentFiles(listWorkflows());
-  };
+    const parsedFileList: ImportWorkflow[] = [];
+    let curFileName = "";
+    let curJSON = "";
+    for (const file of files) {
+      if (file.type === "image/png") {
+        curFileName = file.name.replace(".png", "");
+        const pngInfo = await getPngMetadata(file);
+        // @ts-expect-error
+        pngInfo?.workflow && (curJSON = pngInfo.workflow);
+      } else if (
+        file.type === "application/json" ||
+        file.name?.endsWith(".json")
+      ) {
+        await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const result = e.target?.result;
+              if (typeof result === "string") {
+                curFileName = file.name.replace(".json", "");
+                curJSON = result;
+                resolve("");
+              } else {
+                reject(new Error("File content is not a string"));
+              }
+            } catch (error) {
+              reject(error);
+            }
+          };
+          reader.onerror = reject;
+          reader.readAsText(file);
+        });
+      }
+      if (curJSON) {
+        parsedFileList.push({
+          json: curJSON,
+          name: curFileName,
+        });
+      }
+    }
 
-  const readJsonFile = async (file: File): Promise<Workflow> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const result = e.target?.result;
-          if (typeof result === "string") {
-            resolve(
-              createFlow({
-                json: result,
-                name: file.name.replace(".json", ""),
-              })
-            );
-          } else {
-            reject(new Error("File content is not a string"));
-          }
-        } catch (error) {
-          reject(error);
-        }
-      };
-      reader.onerror = reject;
-      reader.readAsText(file);
-    });
+    if (parsedFileList.length) {
+      await batchCreateFlows(parsedFileList);
+      setRecentFiles && setRecentFiles(listWorkflows());
+    }
   };
 
   return (
@@ -80,7 +80,7 @@ export default function ImportJsonFlows() {
         style={{ display: "none" }}
         ref={fileInputRef}
         type="file"
-        accept=".json"
+        accept=".json,image/png"
         multiple
         onChange={handleFileChange}
       />
