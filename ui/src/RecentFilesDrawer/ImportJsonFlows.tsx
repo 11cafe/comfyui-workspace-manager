@@ -62,8 +62,9 @@ export default function ImportJsonFlows() {
 
   return (
     <Button
-      leftIcon={<IconFileImport />}
+      leftIcon={<IconFileImport size={18} />}
       variant="outline"
+      iconSpacing={1}
       size={"sm"}
       colorScheme="teal"
       onClick={() => {
