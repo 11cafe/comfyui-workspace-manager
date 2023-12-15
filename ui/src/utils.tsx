@@ -1,6 +1,7 @@
 // @ts-ignore
 import { ESortTypes } from "./RecentFilesDrawer/types";
 import { listWorkflows, Workflow } from "./WorkspaceDB";
+import { LiteGraph as LiteGraphType } from "./types/litegraph";
 // import { LGraph } from "./types/litegraph";
 // @ts-ignore
 import { app, ComfyApp } from "/scripts/app.js";
@@ -144,10 +145,32 @@ export function generateUniqueName(name?: string) {
   return newFlowName;
 }
 
+// these code are extracted and combined from LGraph.prototype.configure and LGCanvas.pasteFromClipboard
 export function insertWorkflowToCanvas2(json: string) {
   const clipboard_info = JSON.parse(json);
   const nodes = clipboard_info.nodes;
-  let pos = [10, 10];
+  const original_links = clipboard_info.links;
+  //decode links info (they are very verbose)
+
+  console.log("app", app);
+  const LLink = LiteGraph.LLink;
+
+  if (original_links && original_links.constructor === Array) {
+    var links = [];
+    for (var i = 0; i < original_links.length; ++i) {
+      var link_data = original_links[i];
+      if (!link_data) {
+        //weird bug
+        console.warn("serialized graph link data contains errors, skipping.");
+        continue;
+      }
+
+      var link = new LLink();
+      link.configure(link_data);
+      app.graph.links[link.id] = link;
+    }
+  }
+
   // calculate top-left node, could work without this processing but using diff with last node pos :: clipboard_info.nodes[clipboard_info.nodes.length-1].pos
   var posMin = false;
   var posMinIndexes = false;
