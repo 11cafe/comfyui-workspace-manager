@@ -11,6 +11,7 @@ export type Workflow = {
   json: string;
   name: string;
   updateTime: number;
+  createTime: number;
   filePath?: string;
   // autoCates?: string[]; // categories that will be auto added to the workflow
   tags?: string[];
@@ -124,12 +125,37 @@ export function createFlow({
   if (workspace == null) {
     throw new Error("workspace is not loaded");
   }
+
+  /**
+   * Generate a unique name
+   * For imported scenes, the default name is the file name.
+   * For new scenes, the default name is Untitled Flow.
+   * Get the full workflow list. If the default name already exists, search incrementally starting from 2.
+   * Looks for a unique name in the format `${default name} ${number}`.
+   */
+  let newFlowName = name ?? "Untitled Flow";
+  const flowNameList = listWorkflows()?.map((flow) => flow.name);
+  if (flowNameList.includes(newFlowName)) {
+    let num = 2;
+    let flag = true;
+    while (flag) {
+      if (flowNameList.includes(`${newFlowName} ${num}`)) {
+        num++;
+      } else {
+        newFlowName = `${newFlowName} ${num}`;
+        flag = false;
+      }
+    }
+  }
+  
   const uuid = uuidv4(); // ⇨ '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
+  const time = Date.now();
   workspace[uuid] = {
     id: uuid,
-    name: name ?? "Untitled Flow",
+    name: newFlowName,
     json,
-    updateTime: Date.now(),
+    updateTime: time,
+    createTime: time,
     tags: [],
   };
   localStorage.setItem("workspace", JSON.stringify(workspace));
