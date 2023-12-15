@@ -152,6 +152,13 @@ export function listWorkflows(sortBy?: ESortTypes): Workflow[] {
     ? sortFlows(workflows, sortBy)
     : workflows.sort((a, b) => b.updateTime - a.updateTime);
 }
+export function getWorkflow(id: string): Workflow | undefined {
+  if (workspace == null) {
+    console.error("workspace is not loaded");
+    return;
+  }
+  return workspace[id];
+}
 
 export function deleteFlow(id: string) {
   if (workspace == null) {
