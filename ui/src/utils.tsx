@@ -1,6 +1,6 @@
 // @ts-ignore
 import { ESortTypes } from "./RecentFilesDrawer/types";
-import { Workflow } from "./WorkspaceDB";
+import { listWorkflows, Workflow } from "./WorkspaceDB";
 // import { LGraph } from "./types/litegraph";
 // @ts-ignore
 import { app, ComfyApp } from "/scripts/app.js";
@@ -117,4 +117,29 @@ export function insertWorkflowToCanvas(json: string) {
   // Nullify the references to help with garbage collection
   tempGraph = null;
   canvas = null;
+}
+
+export function generateUniqueName(name?: string) {
+  /**
+   * Generate a unique name
+   * For imported scenes, the default name is the file name.
+   * For new scenes, the default name is Untitled Flow.
+   * Get the full workflow list. If the default name already exists, search incrementally starting from 2.
+   * Looks for a unique name in the format `${default name} ${number}`.
+   */
+  let newFlowName = name ?? "Untitled Flow";
+  const flowNameList = listWorkflows()?.map((flow) => flow.name);
+  if (flowNameList.includes(newFlowName)) {
+    let num = 2;
+    let flag = true;
+    while (flag) {
+      if (flowNameList.includes(`${newFlowName} ${num}`)) {
+        num++;
+      } else {
+        newFlowName = `${newFlowName} ${num}`;
+        flag = false;
+      }
+    }
+  }
+  return newFlowName;
 }

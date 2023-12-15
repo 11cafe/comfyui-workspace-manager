@@ -68,7 +68,9 @@ export default function EditFlowName(props: Props) {
 
   return (
     <HStack>
-      <Text onClick={startEdit}>{displayName}</Text>
+      <Text color="white" onClick={startEdit}>
+        {displayName}
+      </Text>
       <Modal isOpen={isOpen} onClose={onCloseModal}>
         <ModalOverlay />
         <ModalContent>

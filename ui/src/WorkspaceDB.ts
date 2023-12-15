@@ -1,7 +1,7 @@
 // @ts-ignore
 import { v4 as uuidv4 } from "uuid";
 import { deleteFile, getDB, saveDB, updateFile } from "./Api";
-import { sortFlows, toFileNameFriendly } from "./utils";
+import { generateUniqueName, sortFlows, toFileNameFriendly } from "./utils";
 import { ESortTypes } from "./RecentFilesDrawer/types";
 
 export type Table = "workflows" | "tags" | "userSettings";
@@ -126,28 +126,7 @@ export function createFlow({
     throw new Error("workspace is not loaded");
   }
 
-  /**
-   * Generate a unique name
-   * For imported scenes, the default name is the file name.
-   * For new scenes, the default name is Untitled Flow.
-   * Get the full workflow list. If the default name already exists, search incrementally starting from 2.
-   * Looks for a unique name in the format `${default name} ${number}`.
-   */
-  let newFlowName = name ?? "Untitled Flow";
-  const flowNameList = listWorkflows()?.map((flow) => flow.name);
-  if (flowNameList.includes(newFlowName)) {
-    let num = 2;
-    let flag = true;
-    while (flag) {
-      if (flowNameList.includes(`${newFlowName} ${num}`)) {
-        num++;
-      } else {
-        newFlowName = `${newFlowName} ${num}`;
-        flag = false;
-      }
-    }
-  }
-  
+  const newFlowName = generateUniqueName(name);
   const uuid = uuidv4(); // ⇨ '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
   const time = Date.now();
   workspace[uuid] = {

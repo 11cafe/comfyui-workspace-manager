@@ -104,7 +104,7 @@ export default function App() {
     }
     const flow = createFlow({
       json: workflow.json,
-      name: workflow.name + " 1",
+      name: workflow.name,
     });
     setCurFlowID(flow.id);
     setCurFlowName(flow.name);
