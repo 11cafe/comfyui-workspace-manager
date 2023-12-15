@@ -110,7 +110,8 @@ export function insertWorkflowToCanvas(json: string) {
   let canvas = new LGraphCanvas(tempCanvas, tempGraph);
   canvas.selectNodes(tempGraph._nodes);
   canvas.copyToClipboard(tempGraph._nodes);
-  app.canvas.pasteFromClipboard();
+  // app.canvas.pasteFromClipboard();
+  myPasteFromClipboard();
 
   if (prevClipboard) {
     localStorage.setItem("litegrapheditor_clipboard", prevClipboard);
@@ -250,4 +251,95 @@ export function insertWorkflowToCanvas2(json: string) {
     }
   }
   console.log("app.graph", app.graph);
+}
+
+function myPasteFromClipboard(isConnectUnselected = false) {
+  // if ctrl + shift + v is off, return when isConnectUnselected is true (shift is pressed) to maintain old behavior
+  if (
+    !LiteGraph.ctrl_shift_v_paste_connect_unselected_outputs &&
+    isConnectUnselected
+  ) {
+    return;
+  }
+  var data = localStorage.getItem("litegrapheditor_clipboard");
+  if (!data) {
+    return;
+  }
+
+  app.canvas.graph.beforeChange();
+
+  //create nodes
+  var clipboard_info = JSON.parse(data);
+  // calculate top-left node, could work without this processing but using diff with last node pos :: clipboard_info.nodes[clipboard_info.nodes.length-1].pos
+  var posMin = false;
+  var posMinIndexes = false;
+  for (var i = 0; i < clipboard_info.nodes.length; ++i) {
+    if (posMin) {
+      if (posMin[0] > clipboard_info.nodes[i].pos[0]) {
+        posMin[0] = clipboard_info.nodes[i].pos[0];
+        posMinIndexes[0] = i;
+      }
+      if (posMin[1] > clipboard_info.nodes[i].pos[1]) {
+        posMin[1] = clipboard_info.nodes[i].pos[1];
+        posMinIndexes[1] = i;
+      }
+    } else {
+      posMin = [clipboard_info.nodes[i].pos[0], clipboard_info.nodes[i].pos[1]];
+      posMinIndexes = [i, i];
+    }
+  }
+  var nodes = [];
+  for (var i = 0; i < clipboard_info.nodes.length; ++i) {
+    var node_data = clipboard_info.nodes[i];
+    var node = LiteGraph.createNode(node_data.type);
+    if (node == null) {
+      // missing custom node type
+      if (LiteGraph.debug) {
+        console.log("Node not found or has errors: " + node_data.type);
+      }
+
+      //in case of error we create a replacement node to avoid losing info
+      node = new LGraphNode();
+      node.last_serialization = node_data;
+      node.has_errors = true;
+    } else {
+      node.configure(node_data);
+    }
+    if (node) {
+      //paste in last known mouse position
+      node.pos[0] += app.canvas.graph_mouse[0] - posMin[0]; //+= 5;
+      node.pos[1] += app.canvas.graph_mouse[1] - posMin[1]; //+= 5;
+
+      app.canvas.graph.add(node, { doProcessChange: false });
+
+      nodes.push(node);
+    }
+  }
+
+  //create links
+  for (var i = 0; i < clipboard_info.links.length; ++i) {
+    var link_info = clipboard_info.links[i];
+    var origin_node;
+    var origin_node_relative_id = link_info[0];
+    if (origin_node_relative_id != null) {
+      origin_node = nodes[origin_node_relative_id];
+    }
+    if (
+      LiteGraph.ctrl_shift_v_paste_connect_unselected_outputs &&
+      isConnectUnselected
+    ) {
+      var origin_node_id = link_info[4];
+      if (origin_node_id) {
+        origin_node = app.canvas.graph.getNodeById(origin_node_id);
+      }
+    }
+    var target_node = nodes[link_info[2]];
+    if (origin_node && target_node)
+      origin_node.connect(link_info[1], target_node, link_info[3]);
+    else console.warn("Warning, nodes missing on pasting");
+  }
+
+  app.canvas.selectNodes(nodes);
+
+  app.canvas.graph.afterChange();
 }
