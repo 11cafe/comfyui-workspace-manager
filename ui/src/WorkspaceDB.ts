@@ -2,7 +2,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { deleteFile, getDB, saveDB, updateFile } from "./Api";
 import { generateUniqueName, sortFlows, toFileNameFriendly } from "./utils";
-import { ESortTypes } from "./RecentFilesDrawer/types";
+import { ESortTypes, ImportWorkflow } from "./RecentFilesDrawer/types";
 
 export type Table = "workflows" | "tags" | "userSettings";
 
@@ -141,6 +141,36 @@ export function createFlow({
   saveDB("workflows", JSON.stringify(workspace));
   saveToMyWorkflowsUpdateJson(uuid);
   return workspace[uuid];
+}
+
+export async function batchCreateFlows(flowList: ImportWorkflow[]): Promise<string | undefined> {
+  if (workspace == null) {
+    throw new Error("workspace is not loaded");
+  }
+
+  const uuidList: string[] = [];
+
+  flowList.forEach((flow) => {
+    const newFlowName = generateUniqueName(flow.name);
+    const uuid = uuidv4();
+    const time = Date.now();
+    workspace && (workspace[uuid] = {
+      id: uuid,
+      name: newFlowName,
+      json: flow.json,
+      updateTime: time,
+      createTime: time,
+      tags: [],
+    });
+    uuidList.push(uuid);
+  })
+
+  uuidList.forEach(uuid => {
+    saveToMyWorkflowsUpdateJson(uuid)
+  })
+  const stringifyWorkspace = JSON.stringify(workspace);
+  localStorage.setItem("workspace", stringifyWorkspace);
+  return await saveDB("workflows", stringifyWorkspace);
 }
 
 export function listWorkflows(sortBy?: ESortTypes): Workflow[] {

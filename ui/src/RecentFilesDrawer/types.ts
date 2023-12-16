@@ -21,3 +21,8 @@ export enum ESortTypes {
    */
   ZA = "name Z-A",
 }
+
+export type ImportWorkflow = {
+  json: string;
+  name?: string;
+}
