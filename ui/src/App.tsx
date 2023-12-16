@@ -1,19 +1,25 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 // @ts-ignore
 import { app } from "/scripts/app.js";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
 // @ts-ignore
-import throttle from "lodash.throttle";
-import { HStack, Input, Box, Button, Text } from "@chakra-ui/react";
+import { HStack, Box, Button, Text } from "@chakra-ui/react";
 import {
   IconFolder,
   IconPlus,
   IconTriangleInvertedFilled,
 } from "@tabler/icons-react";
 import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
-import { createFlow, loadDBs, updateFlow, workspace } from "./WorkspaceDB";
+import {
+  createFlow,
+  getWorkflow,
+  loadDBs,
+  updateFlow,
+  workspace,
+} from "./WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
+import EditFlowName from "./components/EditFlowName";
 type Route = "root" | "customNodes" | "recentFlows";
 
 export default function App() {
@@ -48,9 +54,10 @@ export default function App() {
     }
     setLoadingDB(false);
     const latest = localStorage.getItem("curFlowID");
-    if (latest) {
-      setCurFlowID(latest);
-      workspace && setCurFlowName(workspace[latest]?.name ?? "");
+    let latestWf = latest != null ? getWorkflow(latest) : null;
+    if (latestWf) {
+      setCurFlowID(latestWf.id);
+      setCurFlowName(latestWf.name);
     } else {
       const graphJson = localStorage.getItem("workflow");
       const flow = createFlow({ json: graphJson ?? "" });
@@ -71,17 +78,6 @@ export default function App() {
       }
     }, 1000);
   }, []);
-  const onRenameCurFlow = (newName: string) => {
-    if (curFlowID.current != null) {
-      updateFlow(curFlowID.current, {
-        name: newName,
-      });
-    }
-  };
-  const throttledOnRenameCurFlow: (name: string) => void = useCallback(
-    throttle(onRenameCurFlow, 700),
-    []
-  );
   const loadWorkflowID = (id: string) => {
     if (workspace == null) {
       alert("Error: Workspace not loaded!");
@@ -115,7 +111,7 @@ export default function App() {
     }
     const flow = createFlow({
       json: workflow.json,
-      name: workflow.name + " 1",
+      name: workflow.name,
     });
     setCurFlowID(flow.id);
     setCurFlowName(flow.name);
@@ -174,17 +170,9 @@ export default function App() {
                 </Text>
               </HStack>
             </Button>
-            <Input
-              variant="unstyled"
-              placeholder="Workflow name"
-              color={"white"}
-              value={curFlowName ?? ""}
-              maxWidth={470}
-              onChange={(e) => {
-                setCurFlowName(e.target.value);
-                throttledOnRenameCurFlow(e.target.value);
-              }}
-              style={{ width: `${curFlowName?.length ?? 20}ch` }}
+            <EditFlowName
+              displayName={curFlowName ?? ""}
+              updateFlowName={setCurFlowName}
             />
           </HStack>
         </HStack>

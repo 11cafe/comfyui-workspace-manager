@@ -30,6 +30,7 @@ import ImportJsonFlows from "./ImportJsonFlows";
 import { ESortTypes, sortTypeLocalStorageKey } from "./types";
 // @ts-ignore
 import { app } from "/scripts/app.js";
+import { insertWorkflowToCanvas2 } from "./InsertWorkflowToCanvas";
 
 const MAX_TAGS_TO_SHOW = 6;
 type Props = {
@@ -69,15 +70,20 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
     loadLatestWorkflows();
   };
 
-  // const handleDragOver = (e) => {};
+  // const handleDragOver = (e) => {
+  //   console.log("dragover", e);
+  // };
 
-  const handleDrop = (e) => {
+  const handleDrop = (e: any) => {
     workspace &&
       draggingWorkflowID.current &&
-      insertWorkflowToCanvas(workspace[draggingWorkflowID.current].json);
+      insertWorkflowToCanvas2(workspace[draggingWorkflowID.current].json, [
+        e.canvasX,
+        e.canvasY,
+      ]);
   };
 
-  const handleClick = (e) => {
+  const handleClick = (e: any) => {
     onclose();
   };
   useEffect(() => {
