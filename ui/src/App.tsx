@@ -10,7 +10,13 @@ import {
   IconTriangleInvertedFilled,
 } from "@tabler/icons-react";
 import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
-import { createFlow, loadDBs, updateFlow, workspace } from "./WorkspaceDB";
+import {
+  createFlow,
+  getWorkflow,
+  loadDBs,
+  updateFlow,
+  workspace,
+} from "./WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
 import EditFlowName from "./components/EditFlowName";
@@ -48,9 +54,10 @@ export default function App() {
     }
     setLoadingDB(false);
     const latest = localStorage.getItem("curFlowID");
-    if (latest) {
-      setCurFlowID(latest);
-      workspace && setCurFlowName(workspace[latest]?.name ?? "");
+    let latestWf = latest != null ? getWorkflow(latest) : null;
+    if (latestWf) {
+      setCurFlowID(latestWf.id);
+      setCurFlowName(latestWf.name);
     } else {
       const graphJson = localStorage.getItem("workflow");
       const flow = createFlow({ json: graphJson ?? "" });

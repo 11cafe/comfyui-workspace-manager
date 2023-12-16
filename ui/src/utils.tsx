@@ -1,7 +1,6 @@
 // @ts-ignore
 import { ESortTypes } from "./RecentFilesDrawer/types";
 import { listWorkflows, Workflow } from "./WorkspaceDB";
-// import { LGraph } from "./types/litegraph";
 // @ts-ignore
 import { app, ComfyApp } from "/scripts/app.js";
 // copied from app.js
