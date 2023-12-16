@@ -28,13 +28,13 @@ Demo video: https://youtu.be/II7Xxpz4TVw
 
 walkthrough tutorial: https://www.youtube.com/watch?v=QbtSkiZ9F58
 
-- Effortlessly switch between different workflows in your workspace.
-- **Drag and drop** to insert subworkflows into current flow.
+- 🔁Effortlessly switch between different workflows in your workspace.
+- 🤏**Drag and drop** to insert subworkflows into current flow.
 - Create new workflows and rename existing ones.
-- **Auto saves** all workflows in a single folder (now it's under `/ComfyUI/my_workflows`)
-- Quickly duplicate flow in right-click menu
+- 📂**Auto saves** all workflows in a single folder (now it's under `/ComfyUI/my_workflows`)
+- 📑Quickly duplicate flow in right-click menu
 - **Bulk import** workflows into your workspace
-- Organize workflows with **tags**
+- 🏷️Organize workflows with **tags**
 - [beta] auto backup workspace locally
 - cloud sync & backup workspace so you will never lose your data (Upcoming!)
 - One-click share workflow (Upcoming!)
