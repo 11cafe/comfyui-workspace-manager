@@ -29,7 +29,7 @@ Demo video: https://youtu.be/II7Xxpz4TVw
 walkthrough tutorial: https://www.youtube.com/watch?v=QbtSkiZ9F58
 
 - Effortlessly switch between different workflows in your workspace.
-- **Drag and drop** to insert workflows into current flow.
+- **Drag and drop** to insert subworkflows into current flow.
 - Create new workflows and rename existing ones.
 - **Auto saves** all workflows in a single folder (now it's under `/ComfyUI/my_workflows`)
 - Quickly duplicate flow in right-click menu
@@ -39,11 +39,25 @@ walkthrough tutorial: https://www.youtube.com/watch?v=QbtSkiZ9F58
 - cloud sync & backup workspace so you will never lose your data (Upcoming!)
 - One-click share workflow (Upcoming!)
 
+switch between flows:
+
 ![switch flow (1)](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/79cbc1b5-9b1a-44c5-835a-8c6645409d9d)
+
+drag and drop to insert sub-workflow:
+
 ![drag drop file demo](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/4ab1949d-7fa8-403a-9d92-5d43ad568572)
+
+import flows:
+
 ![import flows](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/884c8852-73c7-41d6-9179-7fb1fcea9d04)
+
+duplicate flow by right click menu option:
 ![duplicate flow](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/69bde2d3-24df-4025-b74a-d2ff030f5aeb)
+
 <img width="500" alt="Screenshot 2023-12-13 at 1 51 59 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/63a110ac-fc61-4f64-98f4-af3d588fdd03">
+
+add tags to flow:
+
 <img width="500" alt="Screenshot 2023-12-13 at 1 54 04 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/6bf4d22b-f52a-4d23-8882-4a31162616f3">
 <img width="800" alt="workflow name topbar" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/9aaf4d76-a44e-45f2-ab24-9ef5cf36d4a9">
 
