@@ -146,7 +146,7 @@ export function generateUniqueName(name?: string) {
 }
 
 // these code are extracted and combined from LGraph.prototype.configure and LGCanvas.pasteFromClipboard
-export function insertWorkflowToCanvas2(json: string) {
+export function insertWorkflowToCanvas2(json: string, insertPos?: number[]) {
   const clipboard_info = JSON.parse(json);
   const nodes = clipboard_info.nodes;
   // LiteGraph.use_uuids = true;
@@ -188,8 +188,12 @@ export function insertWorkflowToCanvas2(json: string) {
     if (newnode) {
       newnode.configure(node_data);
       //paste in last known mouse position
-      newnode.pos[0] += app.canvas.graph_mouse[0] - posMin[0]; //+= 5;
-      newnode.pos[1] += app.canvas.graph_mouse[1] - posMin[1]; //+= 5;
+      let canvasPos = insertPos
+        ? [insertPos[0] - 11, insertPos[1] - 11]
+        : app.canvas.graph_mouse;
+      console.log("insert canvasPos", canvasPos);
+      newnode.pos[0] += canvasPos[0] - posMin[0]; //+= 5;
+      newnode.pos[1] += canvasPos[1] - posMin[1]; //+= 5;
 
       app.graph.add(newnode, { doProcessChange: false });
 
@@ -208,23 +212,16 @@ export function insertWorkflowToCanvas2(json: string) {
     target_node.inputs[target_node_slot] &&
       target_node.inputs[target_node_slot].link != null;
     let origin_node = copy_nodes[link_info[1]];
-    console.log(
-      "before connect",
-      "origin node",
-      origin_node?.serialize(),
-      "target node",
-      target_node.serialize()
-    );
 
     if (origin_node && target_node)
       origin_node.connect(origin_node_slot, target_node, target_node_slot);
-    console.log(
-      "after connect",
-      "origin node",
-      origin_node?.serialize(),
-      "target node",
-      target_node.serialize()
-    );
+    // console.log(
+    //   "after connect",
+    //   "origin node",
+    //   origin_node?.serialize(),
+    //   "target node",
+    //   target_node.serialize()
+    // );
   }
   console.log("app.graph1111", app.graph);
 }

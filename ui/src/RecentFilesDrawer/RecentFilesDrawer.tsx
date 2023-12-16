@@ -73,12 +73,18 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
     loadLatestWorkflows();
   };
 
-  // const handleDragOver = (e) => {};
+  const handleDragOver = (e) => {
+    console.log("dragover", e);
+  };
 
   const handleDrop = (e: any) => {
+    console.log("drop", e);
     workspace &&
       draggingWorkflowID.current &&
-      insertWorkflowToCanvas2(workspace[draggingWorkflowID.current].json);
+      insertWorkflowToCanvas2(workspace[draggingWorkflowID.current].json, [
+        e.canvasX,
+        e.canvasY,
+      ]);
   };
 
   const handleClick = (e: any) => {
