@@ -67,10 +67,6 @@ export default function ImportJsonFlows() {
       size={"sm"}
       colorScheme="teal"
       onClick={() => {
-        console.log(
-          "import butotn clicked, fileinputref",
-          fileInputRef.current
-        );
         fileInputRef.current?.click();
       }}
     >
