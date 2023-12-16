@@ -149,26 +149,7 @@ export function generateUniqueName(name?: string) {
 export function insertWorkflowToCanvas2(json: string) {
   const clipboard_info = JSON.parse(json);
   const nodes = clipboard_info.nodes;
-  const original_links = clipboard_info.links;
-  //decode links info (they are very verbose)
-  LiteGraph.use_uuids = true;
-  const LLink = LiteGraph.LLink;
-
-  // if (original_links && original_links.constructor === Array) {
-  //   var links = [];
-  //   for (var i = 0; i < original_links.length; ++i) {
-  //     var link_data = original_links[i];
-  //     if (!link_data) {
-  //       //weird bug
-  //       console.warn("serialized graph link data contains errors, skipping.");
-  //       continue;
-  //     }
-
-  //     var link = new LLink();
-  //     link.configure(link_data);
-  //     app.graph.links[link.id] = link;
-  //   }
-  // }
+  // LiteGraph.use_uuids = true;
 
   // calculate top-left node, could work without this processing but using diff with last node pos :: clipboard_info.nodes[clipboard_info.nodes.length-1].pos
   var posMin = false;
@@ -206,7 +187,6 @@ export function insertWorkflowToCanvas2(json: string) {
     }
     if (newnode) {
       newnode.configure(node_data);
-
       //paste in last known mouse position
       newnode.pos[0] += app.canvas.graph_mouse[0] - posMin[0]; //+= 5;
       newnode.pos[1] += app.canvas.graph_mouse[1] - posMin[1]; //+= 5;
@@ -222,24 +202,29 @@ export function insertWorkflowToCanvas2(json: string) {
     const origin_node_slot = link_info[2];
     const target_node_slot = link_info[4];
     let target_node = copy_nodes[link_info[3]];
+    // this is avoid disconnect in LGraphNode.prototype.connect (line 4295), causing insert same workflow again and it disconnects prior links:
+    // if there is something already plugged there, disconnect
+    // .... if (target_node.inputs[target_slot] && target_node.inputs[target_slot].link != null) { ....
+    target_node.inputs[target_node_slot] &&
+      target_node.inputs[target_node_slot].link != null;
     let origin_node = copy_nodes[link_info[1]];
+    console.log(
+      "before connect",
+      "origin node",
+      origin_node?.serialize(),
+      "target node",
+      target_node.serialize()
+    );
 
     if (origin_node && target_node)
       origin_node.connect(origin_node_slot, target_node, target_node_slot);
-    else {
-      console.log(
-        "origin_node",
-        origin_node,
-        "origin_node_slot",
-        origin_node_slot
-      );
-      console.log(
-        "target_node",
-        target_node,
-        "target_node_slot",
-        target_node_slot
-      );
-    }
+    console.log(
+      "after connect",
+      "origin node",
+      origin_node?.serialize(),
+      "target node",
+      target_node.serialize()
+    );
   }
   console.log("app.graph1111", app.graph);
 }
