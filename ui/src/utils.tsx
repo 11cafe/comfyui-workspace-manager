@@ -151,8 +151,7 @@ export function insertWorkflowToCanvas2(json: string) {
   const nodes = clipboard_info.nodes;
   const original_links = clipboard_info.links;
   //decode links info (they are very verbose)
-
-  console.log("app", app);
+  LiteGraph.use_uuids = true;
   const LLink = LiteGraph.LLink;
 
   // if (original_links && original_links.constructor === Array) {
@@ -217,9 +216,6 @@ export function insertWorkflowToCanvas2(json: string) {
       copy_nodes[node_data.id] = newnode;
     }
   }
-  console.log("22222 workflow json", clipboard_info);
-  console.log("22222 copied nodes", copy_nodes);
-  console.log("app.graph", app.graph);
   //create links
   for (var i = 0; i < clipboard_info.links.length; ++i) {
     var link_info = clipboard_info.links[i];
@@ -245,4 +241,5 @@ export function insertWorkflowToCanvas2(json: string) {
       );
     }
   }
+  console.log("app.graph1111", app.graph);
 }
