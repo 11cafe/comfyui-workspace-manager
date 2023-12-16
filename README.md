@@ -24,10 +24,6 @@ It is recommended to do git clone than downloading zip folder, because you can g
 
 ## Features
 
-Demo video: https://youtu.be/II7Xxpz4TVw
-
-walkthrough tutorial: https://www.youtube.com/watch?v=QbtSkiZ9F58
-
 - 🔁Effortlessly switch between different workflows in your workspace.
 - 🤏**Drag and drop** to insert subworkflows into current flow.
 - Create new workflows and rename existing ones.
