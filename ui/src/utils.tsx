@@ -91,7 +91,7 @@ export function sortFlows(
   return copyFlows;
 }
 
-export function insertWorkflowToCanvas(json: string) {
+export function insertWorkflowToCanvas(json: string, insertPos?: number[]) {
   let graphData = JSON.parse(json);
   if (typeof structuredClone === "undefined") {
     graphData = JSON.parse(JSON.stringify(graphData));
@@ -108,8 +108,14 @@ export function insertWorkflowToCanvas(json: string) {
   let canvas = new LGraphCanvas(tempCanvas, tempGraph);
   canvas.selectNodes(tempGraph._nodes);
   canvas.copyToClipboard(tempGraph._nodes);
+  const priorPos = app.canvas.graph_mouse;
+  if (insertPos) {
+    insertPos[0] -= 15;
+    insertPos[1] -= 15;
+    app.canvas.graph_mouse = insertPos;
+  }
   app.canvas.pasteFromClipboard();
-
+  app.canvas.graph_mouse = priorPos;
   if (prevClipboard) {
     localStorage.setItem("litegrapheditor_clipboard", prevClipboard);
   }
