@@ -9,6 +9,7 @@ import { formatTimestamp } from "../utils";
 type Props = {
   multipleState: boolean;
   selectedKeys: string[];
+  isSelectedAll: boolean;
   changeMultipleState: (isMultiple: boolean) => void;
   batchOperationCallback: (type: string, value?: unknown) => void;
 };
@@ -18,6 +19,7 @@ export default function MultipleSelectionOperation(props: Props) {
     multipleState,
     changeMultipleState,
     selectedKeys,
+    isSelectedAll,
     batchOperationCallback,
   } = props;
 
@@ -46,6 +48,7 @@ export default function MultipleSelectionOperation(props: Props) {
       {multipleState ? (
         <>
           <Checkbox
+            isChecked={isSelectedAll}
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
               batchOperationCallback("selectAll", e.target.checked);
             }}

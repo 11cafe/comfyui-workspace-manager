@@ -165,7 +165,7 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
               {/* <Button onClick={onclose}>CLOSE</Button> */}
             </HStack>
           </Flex>
-          <Flex direction="column" overflowY={"auto"} overflowX={"hidden"}>
+          <Flex direction="column" h="calc(100% - 64px)">
             <HStack spacing={2} wrap={"wrap"} mb={0}>
               {selectedTag != null && (
                 <IconButton
@@ -203,7 +203,7 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
                 />
               )}
             </HStack>
-            <HStack mb={2} p={0} justifyContent="space-between">
+            <HStack mb={2} mt={2} p={0} justifyContent="space-between">
               {recentFlows.length > 0 ? (
                 <MultipleSelectionOperation
                   multipleState={multipleState}
@@ -212,6 +212,7 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
                     !state && setSelectedKeys([]);
                   }}
                   selectedKeys={selectedKeys}
+                  isSelectedAll={selectedKeys.length === recentFlows.length}
                   batchOperationCallback={batchOperationCallback}
                 />
               ) : (
@@ -245,21 +246,23 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
                 </MenuList>
               </Menu>
             </HStack>
-            {recentFlows.map((n) => (
-              <WorkflowListItem
-                key={n.id}
-                isSelected={n.id === curFlowID}
-                workflow={n}
-                loadWorkflowID={loadWorkflowID}
-                onDelete={onDelete}
-                onDraggingWorkflowID={updateDraggingWorkflowID}
-                multipleState={multipleState}
-                isChecked={
-                  selectedKeys.length > 0 && selectedKeys.includes(n.id)
-                }
-                onSelect={onSelect}
-              />
-            ))}
+            <Flex overflowY={"auto"} overflowX={"hidden"} direction="column">
+              {recentFlows.map((n) => (
+                <WorkflowListItem
+                  key={n.id}
+                  isSelected={n.id === curFlowID}
+                  workflow={n}
+                  loadWorkflowID={loadWorkflowID}
+                  onDelete={onDelete}
+                  onDraggingWorkflowID={updateDraggingWorkflowID}
+                  multipleState={multipleState}
+                  isChecked={
+                    selectedKeys.length > 0 && selectedKeys.includes(n.id)
+                  }
+                  onSelect={onSelect}
+                />
+              ))}
+            </Flex>
           </Flex>
         </Card>
       </Box>

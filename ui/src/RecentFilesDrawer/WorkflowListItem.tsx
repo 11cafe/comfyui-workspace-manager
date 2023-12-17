@@ -45,7 +45,7 @@ export default memo(function WorkflowListItem({
     <Box
       textAlign={"left"}
       backgroundColor={isSelected ? "teal.200" : undefined}
-      color={isSelected ? "#333" : undefined}
+      color={isSelected && !multipleState ? "#333" : undefined}
       w={"90%"}
       draggable
       onDragStart={(e) => {
