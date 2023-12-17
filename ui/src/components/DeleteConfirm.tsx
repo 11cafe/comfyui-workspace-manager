@@ -36,7 +36,7 @@ export default function DeleteConfirm(props: Props) {
         <>
           <PopoverTrigger>
             <Box>
-              <Tooltip hasArrow label={tooltipText} placement="auto">
+              <Tooltip hasArrow label={tooltipText} placement="bottom">
                 <IconButton
                   aria-label="Delete confirm"
                   size={"sm"}

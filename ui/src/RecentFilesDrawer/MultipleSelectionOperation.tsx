@@ -92,7 +92,11 @@ export default function MultipleSelectionOperation(props: Props) {
           </Tooltip>
         </>
       ) : (
-        <Tooltip hasArrow label="Start batch operation" placement="right">
+        <Tooltip
+          hasArrow
+          label="Start batch operation"
+          placement="bottom-start"
+        >
           <IconButton
             aria-label="Start multi-select operation"
             size={"sm"}
