@@ -206,6 +206,28 @@ export function deleteFlow(id: string) {
   }
 }
 
+export function batchDeleteFlow(ids: string[]) {
+  if (workspace == null) {
+    throw new Error("workspace is not loaded");
+  }
+  const filePathList = ids.map(id => {
+    const filePath = workspace?.[id]?.filePath;
+    workspace && delete workspace[id];
+    return filePath;
+  });
+  
+  const stringifyWorkspace = JSON.stringify(workspace);
+  localStorage.setItem("workspace", stringifyWorkspace);
+  saveDB("workflows", stringifyWorkspace);
+
+  if (filePathList.length) {
+    filePathList.forEach(filePath => {
+      filePath && deleteFile(filePath);
+    })
+  }
+}
+
+
 async function loadTagsTable(): Promise<TagsTable> {
   let tagsStr = await getDB("tags");
   let tags: Tags = JSON.parse(tagsStr ?? "{}") ?? {};
