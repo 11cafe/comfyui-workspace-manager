@@ -43,6 +43,8 @@ export default function MultipleSelectionOperation(props: Props) {
     });
   };
 
+  const notChecked = selectedKeys.length === 0;
+
   return (
     <HStack spacing={2} wrap={"wrap"} mb={0}>
       {multipleState ? (
@@ -55,7 +57,7 @@ export default function MultipleSelectionOperation(props: Props) {
           />
           <Tooltip hasArrow label="Batch export" placement="bottom">
             <IconButton
-              isDisabled={!selectedKeys.length}
+              isDisabled={notChecked}
               aria-label="Batch export"
               size={"sm"}
               icon={<IconFileExport />}
@@ -64,9 +66,10 @@ export default function MultipleSelectionOperation(props: Props) {
           </Tooltip>
           <Tooltip hasArrow label="Batch deletion">
             <DeleteConfirm
-              isDisabled={!selectedKeys.length}
+              isDisabled={notChecked}
               variant="solid"
               promptMessage={`Are you sure you want to delete these ${selectedKeys.length} checked workflows?`}
+              tooltipText="Batch deletion"
               onDelete={() => {
                 batchDeleteFlow(selectedKeys);
                 batchOperationCallback("batchDelete");

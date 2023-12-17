@@ -8,6 +8,8 @@ import {
   PopoverBody,
   Text,
   IconButton,
+  Tooltip,
+  Box,
 } from "@chakra-ui/react";
 import { IconTrash } from "@tabler/icons-react";
 
@@ -15,6 +17,7 @@ type Props = {
   promptMessage: string;
   isDisabled?: boolean;
   variant?: string;
+  tooltipText?: string;
   onDelete: () => void;
 };
 
@@ -24,23 +27,29 @@ export default function DeleteConfirm(props: Props) {
     variant = "ghost",
     onDelete,
     isDisabled = false,
+    tooltipText,
   } = props;
+
   return (
-    <Popover isLazy={true} placement="auto">
+    <Popover isLazy={true} placement="bottom-start">
       {({ onClose }) => (
         <>
           <PopoverTrigger>
-            <IconButton
-              aria-label="Delete confirm"
-              size={"sm"}
-              icon={<IconTrash color="#F56565" />}
-              isDisabled={isDisabled}
-              variant={variant}
-            />
+            <Box>
+              <Tooltip hasArrow label={tooltipText} placement="auto">
+                <IconButton
+                  aria-label="Delete confirm"
+                  size={"sm"}
+                  icon={<IconTrash color="#F56565" />}
+                  isDisabled={isDisabled}
+                  variant={variant}
+                />
+              </Tooltip>
+            </Box>
           </PopoverTrigger>
           <PopoverContent>
             <PopoverArrow />
-            <PopoverCloseButton />
+            <PopoverCloseButton onClick={onClose} />
             <PopoverBody>
               <Text mb={4} pr={4} fontWeight={600}>
                 {promptMessage}
