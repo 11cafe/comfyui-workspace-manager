@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // these code are extracted and combined from LGraph.prototype.configure and LGCanvas.pasteFromClipboard
 export function insertWorkflowToCanvas2(json: string, insertPos?: number[]) {
   const clipboard_info = JSON.parse(json);
