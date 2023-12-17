@@ -143,7 +143,9 @@ export function createFlow({
   return workspace[uuid];
 }
 
-export async function batchCreateFlows(flowList: ImportWorkflow[]): Promise<string | undefined> {
+export async function batchCreateFlows(
+  flowList: ImportWorkflow[]
+): Promise<string | undefined> {
   if (workspace == null) {
     throw new Error("workspace is not loaded");
   }
@@ -154,20 +156,21 @@ export async function batchCreateFlows(flowList: ImportWorkflow[]): Promise<stri
     const newFlowName = generateUniqueName(flow.name);
     const uuid = uuidv4();
     const time = Date.now();
-    workspace && (workspace[uuid] = {
-      id: uuid,
-      name: newFlowName,
-      json: flow.json,
-      updateTime: time,
-      createTime: time,
-      tags: [],
-    });
+    workspace &&
+      (workspace[uuid] = {
+        id: uuid,
+        name: newFlowName,
+        json: flow.json,
+        updateTime: time,
+        createTime: time,
+        tags: [],
+      });
     uuidList.push(uuid);
-  })
+  });
 
-  uuidList.forEach(uuid => {
-    saveToMyWorkflowsUpdateJson(uuid)
-  })
+  uuidList.forEach((uuid) => {
+    saveToMyWorkflowsUpdateJson(uuid);
+  });
   const stringifyWorkspace = JSON.stringify(workspace);
   localStorage.setItem("workspace", stringifyWorkspace);
   return await saveDB("workflows", stringifyWorkspace);
@@ -251,6 +254,12 @@ class UserSettingsTable {
   static readonly TABLE_NAME = "userSettings";
   private constructor() {
     this.records = {};
+  }
+  public listSettings() {
+    return this.records;
+  }
+  public getSetting(key: keyof UserSettings) {
+    return this.records[key];
   }
   public upsert(newPairs: UserSettings) {
     this.records = {
