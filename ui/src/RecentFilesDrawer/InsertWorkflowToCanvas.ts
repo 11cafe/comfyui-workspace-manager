@@ -65,7 +65,12 @@ export function insertWorkflowToCanvas2(json: string, insertPos?: number[]) {
     target_node.inputs[target_node_slot] &&
       target_node.inputs[target_node_slot].link != null;
     let origin_node = copy_nodes[link_info[1]];
-
+    console.log(
+      "origin node",
+      origin_node?.serialize(),
+      "target node",
+      target_node?.serialize()
+    );
     if (origin_node && target_node)
       origin_node.connect(origin_node_slot, target_node, target_node_slot);
     else {
