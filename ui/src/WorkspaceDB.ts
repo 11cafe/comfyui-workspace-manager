@@ -278,7 +278,6 @@ class UserSettingsTable {
       const comfyspace = localStorage.getItem("comfyspace") ?? "{}";
       const comfyspaceData = JSON.parse(comfyspace);
       json = comfyspaceData[UserSettingsTable.TABLE_NAME];
-      console.log("userSettings", comfyspaceData["userSettings"]);
     }
     if (json != null) {
       instance.records = json;
