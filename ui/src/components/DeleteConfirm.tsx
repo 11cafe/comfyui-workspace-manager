@@ -31,7 +31,7 @@ export default function DeleteConfirm(props: Props) {
   } = props;
 
   return (
-    <Popover isLazy={true} placement="bottom-start">
+    <Popover isLazy={true} placement="auto">
       {({ onClose }) => (
         <>
           <PopoverTrigger>
