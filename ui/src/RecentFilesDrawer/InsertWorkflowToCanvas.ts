@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // these code are extracted and combined from LGraph.prototype.configure and LGCanvas.pasteFromClipboard
 export function insertWorkflowToCanvas2(json: string, insertPos?: number[]) {
   const clipboard_info = JSON.parse(json);
@@ -63,12 +65,6 @@ export function insertWorkflowToCanvas2(json: string, insertPos?: number[]) {
     target_node.inputs[target_node_slot] &&
       target_node.inputs[target_node_slot].link != null;
     let origin_node = copy_nodes[link_info[1]];
-    console.log(
-      "origin node",
-      origin_node?.serialize(),
-      "target node",
-      target_node?.serialize()
-    );
     if (origin_node && target_node)
       origin_node.connect(origin_node_slot, target_node, target_node_slot);
     else {
@@ -81,7 +77,6 @@ export function insertWorkflowToCanvas2(json: string, insertPos?: number[]) {
       );
     }
   }
-  // console.log("app.graph1111", app.graph);
 }
 
 export function insertWorkflowToCanvas3(json: string, insertPos?: number[]) {
@@ -90,21 +85,18 @@ export function insertWorkflowToCanvas3(json: string, insertPos?: number[]) {
   const old_links = clipboard_info.links;
   const LLink = LiteGraph.LLink;
   // LiteGraph.use_uuids = true;
-  console.log("app.graph", app.graph);
   let old_new_node_ids_map: Record<string, string> = {};
   let last_node_id = app.graph.last_node_id;
   for (let i = 0; i < old_nodes.length; i++) {
     last_node_id++;
     old_new_node_ids_map[old_nodes[i].id] = last_node_id;
   }
-  console.log("old_new_node_ids_map", old_new_node_ids_map);
   let old_new_link_ids_map: Record<string, string> = {};
   let last_link_id = app.graph.last_link_id;
   for (let i = 0; i < clipboard_info.links.length; i++) {
     last_link_id++;
     old_new_link_ids_map[clipboard_info.links[i][0]] = last_link_id;
   }
-  console.log("old_new_link_ids_map", old_new_link_ids_map);
   // decode links
   if (old_links && old_links.constructor === Array) {
     var links = [];
