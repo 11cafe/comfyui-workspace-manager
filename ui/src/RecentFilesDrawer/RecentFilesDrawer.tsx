@@ -57,6 +57,9 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
   const [multipleState, setMultipleState] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   const draggingWorkflowID = useRef<string | null>(null);
+  const [draggingFile, setDraggingFile] = useState<Workflow | Folder | null>(
+    null
+  );
   const sortTypeRef = useRef<ESortTypes>(
     (window.localStorage.getItem(sortTypeLocalStorageKey) as ESortTypes) ??
       ESortTypes.RECENTLY_MODIFIED
@@ -107,10 +110,6 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
     };
   }, [curFlowID]);
 
-  const updateDraggingWorkflowID = useCallback((id: string) => {
-    draggingWorkflowID.current = id;
-  }, []);
-
   const onSelect = useCallback((flowId: string, selected: boolean) => {
     setSelectedKeys((preState) => {
       const copyKeys = [...preState];
@@ -135,11 +134,21 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
         return;
     }
   };
+  const onDraggingFile = (file: Workflow | Folder) => {
+    setDraggingFile(file);
+    if (!isFolder(file)) {
+      draggingWorkflowID.current = file.id;
+    }
+  };
 
   const DRAWER_WIDTH = 440;
   return (
     <RecentFilesContext.Provider
-      value={{ onRefreshFilesList: loadLatestWorkflows }}
+      value={{
+        onRefreshFilesList: loadLatestWorkflows,
+        draggingFile: draggingFile ?? undefined,
+        setDraggingFile: onDraggingFile,
+      }}
     >
       <Box style={{ width: DRAWER_WIDTH }}>
         <Card
@@ -274,7 +283,6 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
                     workflow={n}
                     loadWorkflowID={loadWorkflowID}
                     onDelete={onDelete}
-                    onDraggingWorkflowID={updateDraggingWorkflowID}
                     multipleState={multipleState}
                     isChecked={
                       selectedKeys.length > 0 && selectedKeys.includes(n.id)

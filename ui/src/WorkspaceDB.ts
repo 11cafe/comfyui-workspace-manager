@@ -1,7 +1,12 @@
 // @ts-ignore
 import { v4 as uuidv4 } from "uuid";
 import { deleteFile, getDB, saveDB, updateFile } from "./Api";
-import { generateUniqueName, sortFlows, toFileNameFriendly } from "./utils";
+import {
+  generateUniqueName,
+  sortFileItem,
+  sortFlows,
+  toFileNameFriendly,
+} from "./utils";
 import { ESortTypes, ImportWorkflow } from "./RecentFilesDrawer/types";
 
 export type Table = "workflows" | "tags" | "userSettings" | "folders";
@@ -75,7 +80,8 @@ export async function loadDBs() {
 }
 
 export function listFolderContent(
-  folderID?: string // undefined if root folder
+  folderID?: string, // undefined if root folder
+  sortBy?: ESortTypes
 ): Array<Workflow | Folder> {
   if (workspace == null) {
     return [];
@@ -86,7 +92,9 @@ export function listFolderContent(
   const folders =
     foldersTable?.listAll()?.filter((f) => f.parentFolderID == folderID) ?? [];
 
-  return [...workflows, ...folders];
+  const all = [...workflows, ...folders];
+
+  return sortFileItem(all, sortBy ?? ESortTypes.RECENTLY_MODIFIED);
 }
 
 /** Class Workflow: below will be migrated to a class */
@@ -96,6 +104,7 @@ export function updateFlow(
     name?: string;
     json?: string;
     tags?: string[];
+    parentFolderID?: string;
   }
 ) {
   if (workspace == null) {

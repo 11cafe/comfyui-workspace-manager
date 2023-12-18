@@ -11,4 +11,5 @@ export const WorkspaceContext = createContext<{
 export const RecentFilesContext = createContext<{
   onRefreshFilesList?: () => void;
   draggingFile?: Workflow | Folder;
+  setDraggingFile?: (file: Workflow | Folder) => void;
 }>({});

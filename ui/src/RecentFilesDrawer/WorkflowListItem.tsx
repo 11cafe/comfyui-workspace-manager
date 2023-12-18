@@ -2,9 +2,10 @@ import { Box, HStack, useColorMode, Text, Checkbox } from "@chakra-ui/react";
 import { Workflow } from "../WorkspaceDB";
 import { formatTimestamp } from "../utils";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
-import { useState, memo, ChangeEvent } from "react";
+import { useState, memo, ChangeEvent, useContext } from "react";
 import WorkflowListItemRightClickMenu from "./WorkflowListItemRightClickMenu";
 import DeleteConfirm from "../components/DeleteConfirm";
+import { RecentFilesContext } from "../WorkspaceContext";
 
 type Props = {
   isSelected: boolean;
@@ -13,7 +14,6 @@ type Props = {
   isChecked: boolean;
   loadWorkflowID: (id: string) => void;
   onDelete: (id: string) => void;
-  onDraggingWorkflowID: (id: string) => void;
   onSelect: (id: string, selected: boolean) => void;
 };
 export default memo(function WorkflowListItem({
@@ -23,14 +23,12 @@ export default memo(function WorkflowListItem({
   isChecked,
   loadWorkflowID,
   onDelete,
-  onDraggingWorkflowID,
   onSelect,
 }: Props) {
   const { colorMode } = useColorMode();
-
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+  const { setDraggingFile } = useContext(RecentFilesContext);
   const handleContextMenu = (event: any) => {
     event.preventDefault();
     setMenuPosition({ x: event.clientX, y: event.clientY });
@@ -49,7 +47,7 @@ export default memo(function WorkflowListItem({
       w={"90%"}
       draggable={!multipleState}
       onDragStart={(e) => {
-        workflow.id && onDraggingWorkflowID(workflow.id);
+        setDraggingFile && setDraggingFile(workflow);
       }}
       borderRadius={6}
       p={2}
