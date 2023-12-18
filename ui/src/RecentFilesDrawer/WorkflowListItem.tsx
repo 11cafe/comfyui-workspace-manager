@@ -47,9 +47,9 @@ export default memo(function WorkflowListItem({
       backgroundColor={isSelected ? "teal.200" : undefined}
       color={isSelected && !multipleState ? "#333" : undefined}
       w={"90%"}
-      draggable
+      draggable={!multipleState}
       onDragStart={(e) => {
-        !multipleState && workflow.id && onDraggingWorkflowID(workflow.id);
+        workflow.id && onDraggingWorkflowID(workflow.id);
       }}
       borderRadius={6}
       p={2}

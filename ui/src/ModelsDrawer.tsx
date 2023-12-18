@@ -27,11 +27,6 @@ type Props = {
 export default function ModelsDrawer({ onclose }: Props) {
   const [recentFlows, setRecentFlow] = useState<Workflow[]>([]);
 
-  useEffect(() => {
-    const all = listWorkflows();
-    setRecentFlow(all);
-  }, []);
-
   return (
     <div style={{ position: "absolute", top: 0, left: 0, right: 0 }}>
       <Drawer

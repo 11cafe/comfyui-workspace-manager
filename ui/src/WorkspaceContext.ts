@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { Workflow } from "./WorkspaceDB";
+import { Folder, Workflow } from "./WorkspaceDB";
 
 export const WorkspaceContext = createContext<{
   curFlowID: string | null;
@@ -9,5 +9,6 @@ export const WorkspaceContext = createContext<{
 });
 
 export const RecentFilesContext = createContext<{
-  setRecentFiles?: (flows: Workflow[]) => void;
+  onRefreshFilesList?: () => void;
+  draggingFile?: Workflow | Folder;
 }>({});

@@ -1,6 +1,6 @@
 // @ts-ignore
 import { ESortTypes } from "./RecentFilesDrawer/types";
-import { listWorkflows, Workflow } from "./WorkspaceDB";
+import { Folder, listWorkflows, Workflow } from "./WorkspaceDB";
 // @ts-ignore
 import { app, ComfyApp } from "/scripts/app.js";
 // copied from app.js
@@ -90,6 +90,28 @@ export function sortFlows(
 
   return copyFlows;
 }
+
+export const sortFileItem = (
+  items: Array<Workflow | Folder>,
+  sortType: ESortTypes = ESortTypes.RECENTLY_MODIFIED
+) => {
+  const copyFlows = [...items];
+  switch (sortType) {
+    case ESortTypes.AZ:
+      copyFlows.sort((a, b) => a.name.localeCompare(b.name));
+      break;
+    case ESortTypes.ZA:
+      copyFlows.sort((a, b) => b.name.localeCompare(a.name));
+      break;
+    case ESortTypes.RECENTLY_MODIFIED:
+      copyFlows.sort((a, b) => b.updateTime - a.updateTime);
+      break;
+    case ESortTypes.OLDEST_MODIFIED:
+      copyFlows.sort((a, b) => a.updateTime - b.updateTime);
+      break;
+  }
+  return copyFlows;
+};
 
 export function insertWorkflowToCanvas(json: string, insertPos?: number[]) {
   let graphData = JSON.parse(json);

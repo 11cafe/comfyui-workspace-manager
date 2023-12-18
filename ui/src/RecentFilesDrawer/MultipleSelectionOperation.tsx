@@ -100,7 +100,8 @@ export default function MultipleSelectionOperation(props: Props) {
           <IconButton
             aria-label="Start multi-select operation"
             size={"sm"}
-            icon={<IconListCheck />}
+            // variant={"ghost"}
+            icon={<IconListCheck size={21} />}
             onClick={() => {
               changeMultipleState(true);
             }}

@@ -16,24 +16,31 @@ import { useContext, useEffect, useState, useRef, useCallback } from "react";
 import {
   Workflow,
   deleteFlow,
+  isFolder,
   listWorkflows,
+  listFolderContent,
   tagsTable,
   workspace,
+  foldersTable,
+  Folder,
 } from "../WorkspaceDB";
-import { IconChevronDown, IconChevronUp, IconX } from "@tabler/icons-react";
+import {
+  IconChevronDown,
+  IconChevronUp,
+  IconFolderPlus,
+  IconX,
+} from "@tabler/icons-react";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
-import { insertWorkflowToCanvas, sortFlows } from "../utils";
+import { sortFlows, sortFileItem } from "../utils";
 import WorkflowListItem from "./WorkflowListItem";
 import ImportJsonFlows from "./ImportJsonFlows";
 import MultipleSelectionOperation from "./MultipleSelectionOperation";
 import { ESortTypes, sortTypeLocalStorageKey } from "./types";
 // @ts-ignore
 import { app } from "/scripts/app.js";
-import {
-  insertWorkflowToCanvas2,
-  insertWorkflowToCanvas3,
-} from "./InsertWorkflowToCanvas";
+import { insertWorkflowToCanvas3 } from "./InsertWorkflowToCanvas";
+import FilesListFolderItem from "./FilesListFolderItem";
 
 const MAX_TAGS_TO_SHOW = 6;
 type Props = {
@@ -42,7 +49,8 @@ type Props = {
   onClickNewFlow: () => void;
 };
 export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
-  const [recentFlows, setRecentFlow] = useState<Workflow[]>([]);
+  const [files, setFiles] = useState<Array<Folder | Workflow>>([]);
+  const recentFlows = files.filter((n) => !isFolder(n)) as Workflow[];
   const { curFlowID } = useContext(WorkspaceContext);
   const [selectedTag, setSelectedTag] = useState<string>();
   const [showAllTags, setShowAllTags] = useState(false);
@@ -56,16 +64,16 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
 
   const onClickTag = (name: string) => {
     setSelectedTag(name);
-    setRecentFlow(listWorkflows().filter((n) => n.tags?.includes(name)));
+    setFiles(listWorkflows().filter((n) => n.tags?.includes(name)));
   };
 
   const loadLatestWorkflows = () => {
-    const all = listWorkflows(sortTypeRef.current);
-    setRecentFlow(all);
+    const all = listFolderContent();
+    setFiles(sortFileItem(all, sortTypeRef.current));
   };
 
   const onSort = (type: ESortTypes) => {
-    setRecentFlow(sortFlows(recentFlows, type));
+    setFiles(sortFileItem(recentFlows, type));
     sortTypeRef.current = type;
     window.localStorage.setItem(sortTypeLocalStorageKey, type);
   };
@@ -75,17 +83,9 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
     loadLatestWorkflows();
   }, []);
 
-  // const handleDragOver = (e) => {
-  //   console.log("dragover", e);
-  // };
-
   const handleDrop = (e: any) => {
     workspace &&
       draggingWorkflowID.current &&
-      // insertWorkflowToCanvas2(workspace[draggingWorkflowID.current].json, [
-      //   e.canvasX,
-      //   e.canvasY,
-      // ]);
       insertWorkflowToCanvas3(workspace[draggingWorkflowID.current].json, [
         e.canvasX,
         e.canvasY,
@@ -97,13 +97,11 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
   };
   useEffect(() => {
     loadLatestWorkflows();
-    // app.canvasEl.addEventListener("dragover", handleDragOver);
     app.canvasEl.addEventListener("drop", handleDrop);
     app.canvasEl.addEventListener("click", handleClick);
 
     // Cleanup function to remove event listeners
     return () => {
-      // app.canvasEl.removeEventListener("dragover", handleDragOver);
       app.canvasEl.removeEventListener("drop", handleDrop);
       app.canvasEl.removeEventListener("click", handleClick);
     };
@@ -140,7 +138,9 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
 
   const DRAWER_WIDTH = 440;
   return (
-    <RecentFilesContext.Provider value={{ setRecentFiles: setRecentFlow }}>
+    <RecentFilesContext.Provider
+      value={{ onRefreshFilesList: loadLatestWorkflows }}
+    >
       <Box style={{ width: DRAWER_WIDTH }}>
         <Card
           width={DRAWER_WIDTH}
@@ -177,7 +177,7 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
                   icon={<IconX />}
                   onClick={() => {
                     setSelectedTag(undefined);
-                    setRecentFlow(listWorkflows());
+                    loadLatestWorkflows();
                   }}
                 />
               )}
@@ -207,20 +207,33 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
               )}
             </HStack>
             <HStack mb={2} mt={2} p={0} justifyContent="space-between">
-              {recentFlows.length > 0 ? (
-                <MultipleSelectionOperation
-                  multipleState={multipleState}
-                  changeMultipleState={(state) => {
-                    setMultipleState(state);
-                    !state && setSelectedKeys([]);
+              <HStack>
+                {recentFlows.length > 0 ? (
+                  <MultipleSelectionOperation
+                    multipleState={multipleState}
+                    changeMultipleState={(state) => {
+                      setMultipleState(state);
+                      !state && setSelectedKeys([]);
+                    }}
+                    selectedKeys={selectedKeys}
+                    isSelectedAll={selectedKeys.length === recentFlows.length}
+                    batchOperationCallback={batchOperationCallback}
+                  />
+                ) : (
+                  <Box />
+                )}
+                <IconButton
+                  size={"sm"}
+                  icon={<IconFolderPlus size={21} />}
+                  onClick={() => {
+                    foldersTable?.create({
+                      name: "New Folder",
+                    });
+                    loadLatestWorkflows();
                   }}
-                  selectedKeys={selectedKeys}
-                  isSelectedAll={selectedKeys.length === recentFlows.length}
-                  batchOperationCallback={batchOperationCallback}
+                  aria-label="new folder button"
                 />
-              ) : (
-                <Box />
-              )}
+              </HStack>
               <Menu closeOnSelect={true}>
                 <MenuButton
                   as={Button}
@@ -250,21 +263,26 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
               </Menu>
             </HStack>
             <Flex overflowY={"auto"} overflowX={"hidden"} direction="column">
-              {recentFlows.map((n) => (
-                <WorkflowListItem
-                  key={n.id}
-                  isSelected={n.id === curFlowID}
-                  workflow={n}
-                  loadWorkflowID={loadWorkflowID}
-                  onDelete={onDelete}
-                  onDraggingWorkflowID={updateDraggingWorkflowID}
-                  multipleState={multipleState}
-                  isChecked={
-                    selectedKeys.length > 0 && selectedKeys.includes(n.id)
-                  }
-                  onSelect={onSelect}
-                />
-              ))}
+              {files.map((n) => {
+                if (isFolder(n)) {
+                  return <FilesListFolderItem folder={n} />;
+                }
+                return (
+                  <WorkflowListItem
+                    key={n.id}
+                    isSelected={n.id === curFlowID}
+                    workflow={n}
+                    loadWorkflowID={loadWorkflowID}
+                    onDelete={onDelete}
+                    onDraggingWorkflowID={updateDraggingWorkflowID}
+                    multipleState={multipleState}
+                    isChecked={
+                      selectedKeys.length > 0 && selectedKeys.includes(n.id)
+                    }
+                    onSelect={onSelect}
+                  />
+                );
+              })}
             </Flex>
           </Flex>
         </Card>
