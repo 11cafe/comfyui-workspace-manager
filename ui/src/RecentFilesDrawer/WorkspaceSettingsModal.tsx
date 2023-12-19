@@ -245,7 +245,7 @@ export default function WorkspaceSettingsModal({
           <ModalCloseButton />
           <ModalBody>
             <Box>
-              {navigator.userAgent.indexOf("Mac OS X") === -1 ? (
+              {navigator.userAgent.indexOf("Mac OS X") !== -1 ? (
                 <Text fontWeight={500}>
                   There is no permission to access the folder. You need to grant
                   full disk access permission to the terminal that starts the
