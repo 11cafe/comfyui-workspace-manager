@@ -1,8 +1,7 @@
-// @ts-ignore
 import { v4 as uuidv4 } from "uuid";
-import { deleteFile, getDB, saveDB, updateFile } from "./Api";
+import { deleteFile, getDB, getSystemDir, saveDB, updateFile } from "./Api";
 import { generateUniqueName, sortFlows, toFileNameFriendly } from "./utils";
-import { ESortTypes, ImportWorkflow } from "./RecentFilesDrawer/types";
+import { ESortTypes, EWorkspacePosition, ImportWorkflow } from "./RecentFilesDrawer/types";
 
 export type Table = "workflows" | "tags" | "userSettings";
 
@@ -229,8 +228,8 @@ export function batchDeleteFlow(ids: string[]) {
 
 
 async function loadTagsTable(): Promise<TagsTable> {
-  let tagsStr = await getDB("tags");
-  let tags: Tags = JSON.parse(tagsStr ?? "{}") ?? {};
+  const tagsStr = await getDB("tags");
+  const tags: Tags = JSON.parse(tagsStr ?? "{}") ?? {};
   return {
     tags, // Expose the tags array publicly
     listAll() {
@@ -264,18 +263,17 @@ function curComfyspaceJson(): string {
 }
 
 type UserSettings = {
-  myWorkflowsDir?: string;
-  topbarLocation?: {
-    top: number;
-    left: number;
-    right: number;
-  };
+  myWorkflowsDir: string;
+  topBarLocation: EWorkspacePosition;
 };
 class UserSettingsTable {
   public records: UserSettings;
   static readonly TABLE_NAME = "userSettings";
   private constructor() {
-    this.records = {};
+    this.records = {
+      topBarLocation: EWorkspacePosition.TOP_LEFT,
+      myWorkflowsDir: '',
+    };
   }
   public listSettings() {
     return this.records;
@@ -283,7 +281,7 @@ class UserSettingsTable {
   public getSetting(key: keyof UserSettings) {
     return this.records[key];
   }
-  public upsert(newPairs: UserSettings) {
+  public upsert(newPairs: Partial<UserSettings>) {
     this.records = {
       ...this.records,
       ...newPairs,
@@ -294,16 +292,18 @@ class UserSettingsTable {
 
   static async load(): Promise<UserSettingsTable> {
     const instance = new UserSettingsTable();
-    let jsonStr = await getDB(UserSettingsTable.TABLE_NAME);
+    const jsonStr = await getDB(UserSettingsTable.TABLE_NAME);
     let json = jsonStr != null ? JSON.parse(jsonStr) : null;
     if (json == null) {
       const comfyspace = localStorage.getItem("comfyspace") ?? "{}";
       const comfyspaceData = JSON.parse(comfyspace);
-      json = comfyspaceData[UserSettingsTable.TABLE_NAME];
+      json = comfyspaceData[UserSettingsTable.TABLE_NAME] || {};
     }
-    if (json != null) {
-      instance.records = json;
+    if (!json.myWorkflowsDir) {
+      const getDir = await getSystemDir();
+      json.myWorkflowsDir = `${getDir.dir_path}/my_workflows`
     }
+    instance.records = json;
     return instance;
   }
 }

@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 // @ts-ignore
 import { app } from "/scripts/app.js";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
-// @ts-ignore
 import { HStack, Box, Button, Text } from "@chakra-ui/react";
 import {
   IconFolder,
@@ -16,10 +15,12 @@ import {
   loadDBs,
   updateFlow,
   workspace,
+  userSettingsTable,
 } from "./WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
 import EditFlowName from "./components/EditFlowName";
+import { EWorkspacePosition, positionConfig } from "./RecentFilesDrawer/types";
 type Route = "root" | "customNodes" | "recentFlows";
 
 export default function App() {
@@ -29,6 +30,7 @@ export default function App() {
   const [loadingDB, setLoadingDB] = useState(true);
   const [flowID, setFlowID] = useState<string | null>(null);
   const curFlowID = useRef<string | null>(null);
+  const [position, setPosition] = useState<EWorkspacePosition>();
 
   const setCurFlowID = (id: string) => {
     curFlowID.current = id;
@@ -49,12 +51,16 @@ export default function App() {
     app.registerExtension(ext);
     try {
       await loadDBs();
+      setPosition(
+        userSettingsTable?.records?.topBarLocation ||
+          EWorkspacePosition.TOP_LEFT
+      );
     } catch (error) {
       console.error("error loading db", error);
     }
     setLoadingDB(false);
     const latest = localStorage.getItem("curFlowID");
-    let latestWf = latest != null ? getWorkflow(latest) : null;
+    const latestWf = latest != null ? getWorkflow(latest) : null;
     if (latestWf) {
       setCurFlowID(latestWf.id);
       setCurFlowName(latestWf.name);
@@ -118,12 +124,16 @@ export default function App() {
     app.loadGraphData(JSON.parse(flow.json));
   };
 
-  if (loadingDB) {
+  if (loadingDB || !position) {
     return null;
   }
   return (
     <WorkspaceContext.Provider
-      value={{ curFlowID: flowID, onDuplicateWorkflow: onDuplicateWorkflow }}
+      value={{
+        curFlowID: flowID,
+        onDuplicateWorkflow: onDuplicateWorkflow,
+        onPositionChange: setPosition,
+      }}
     >
       <Box
         style={{
@@ -137,14 +147,17 @@ export default function App() {
           style={{
             padding: 8,
             position: "fixed",
-            top: 0,
-            left: 0,
+            ...positionConfig[position],
           }}
           justifyContent={"space-between"}
           alignItems={"center"}
           gap={4}
         >
-          <HStack>
+          <HStack
+            flexDirection={
+              position.includes("Right") ? "row-reverse" : "initial"
+            }
+          >
             <Button
               size={"sm"}
               aria-label="workspace folder"
