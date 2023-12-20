@@ -1,5 +1,10 @@
 import { Checkbox, HStack, IconButton, Text, Tooltip } from "@chakra-ui/react";
-import { IconListCheck, IconX, IconFileExport } from "@tabler/icons-react";
+import {
+  IconListCheck,
+  IconX,
+  IconFileExport,
+  IconDownload,
+} from "@tabler/icons-react";
 import DeleteConfirm from "../components/DeleteConfirm";
 import { ChangeEvent } from "react";
 import { batchDeleteFlow, listWorkflows } from "../WorkspaceDB";
@@ -55,12 +60,12 @@ export default function MultipleSelectionOperation(props: Props) {
               batchOperationCallback("selectAll", e.target.checked);
             }}
           />
-          <Tooltip hasArrow label="Batch export" placement="bottom">
+          <Tooltip hasArrow label="Download Zip" placement="bottom">
             <IconButton
               isDisabled={notChecked}
               aria-label="Batch export"
               size={"sm"}
-              icon={<IconFileExport />}
+              icon={<IconDownload size={21} />}
               onClick={batchExport}
             />
           </Tooltip>
@@ -69,7 +74,7 @@ export default function MultipleSelectionOperation(props: Props) {
               isDisabled={notChecked}
               variant="solid"
               promptMessage={`Are you sure you want to delete these ${selectedKeys.length} checked workflows?`}
-              tooltipText="Batch deletion"
+              tooltipText="Delete selected"
               onDelete={() => {
                 batchDeleteFlow(selectedKeys);
                 batchOperationCallback("batchDelete");

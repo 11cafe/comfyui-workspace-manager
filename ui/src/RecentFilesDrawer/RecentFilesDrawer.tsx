@@ -45,10 +45,9 @@ import FilesListFolderItem from "./FilesListFolderItem";
 const MAX_TAGS_TO_SHOW = 6;
 type Props = {
   onclose: () => void;
-  loadWorkflowID: (id: string) => void;
   onClickNewFlow: () => void;
 };
-export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
+export default function RecentFilesDrawer({ onclose }: Props) {
   const [files, setFiles] = useState<Array<Folder | Workflow>>([]);
   const recentFlows = files.filter((n) => !isFolder(n)) as Workflow[];
   const { curFlowID } = useContext(WorkspaceContext);
@@ -148,6 +147,9 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
         onRefreshFilesList: loadLatestWorkflows,
         draggingFile: draggingFile ?? undefined,
         setDraggingFile: onDraggingFile,
+        isMultiSelecting: multipleState,
+        onMultiSelectFlow: onSelect,
+        multiSelectedFlowsID: selectedKeys,
       }}
     >
       <Box style={{ width: DRAWER_WIDTH }}>
@@ -274,20 +276,13 @@ export default function RecentFilesDrawer({ onclose, loadWorkflowID }: Props) {
             <Flex overflowY={"auto"} overflowX={"hidden"} direction="column">
               {files.map((n) => {
                 if (isFolder(n)) {
-                  return <FilesListFolderItem folder={n} />;
+                  return <FilesListFolderItem folder={n} key={n.id} />;
                 }
                 return (
                   <WorkflowListItem
                     key={n.id}
-                    isSelected={n.id === curFlowID}
                     workflow={n}
-                    loadWorkflowID={loadWorkflowID}
                     onDelete={onDelete}
-                    multipleState={multipleState}
-                    isChecked={
-                      selectedKeys.length > 0 && selectedKeys.includes(n.id)
-                    }
-                    onSelect={onSelect}
                   />
                 );
               })}

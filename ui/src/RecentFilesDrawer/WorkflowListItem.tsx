@@ -5,30 +5,29 @@ import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import { useState, memo, ChangeEvent, useContext } from "react";
 import WorkflowListItemRightClickMenu from "./WorkflowListItemRightClickMenu";
 import DeleteConfirm from "../components/DeleteConfirm";
-import { RecentFilesContext } from "../WorkspaceContext";
+import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 
 type Props = {
-  isSelected: boolean;
   workflow: Workflow;
-  multipleState: boolean;
-  isChecked: boolean;
-  loadWorkflowID: (id: string) => void;
   onDelete: (id: string) => void;
-  onSelect: (id: string, selected: boolean) => void;
 };
-export default memo(function WorkflowListItem({
-  isSelected,
-  workflow,
-  multipleState,
-  isChecked,
-  loadWorkflowID,
-  onDelete,
-  onSelect,
-}: Props) {
+export default memo(function WorkflowListItem({ workflow, onDelete }: Props) {
   const { colorMode } = useColorMode();
+
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { setDraggingFile } = useContext(RecentFilesContext);
+  const {
+    setDraggingFile,
+    isMultiSelecting,
+    onMultiSelectFlow,
+    multiSelectedFlowsID,
+  } = useContext(RecentFilesContext);
+  const isChecked =
+    multiSelectedFlowsID &&
+    multiSelectedFlowsID.length > 0 &&
+    multiSelectedFlowsID.includes(workflow.id);
+  const { curFlowID, loadWorkflowID } = useContext(WorkspaceContext);
+  const isSelected = curFlowID === workflow.id;
   const handleContextMenu = (event: any) => {
     event.preventDefault();
     setMenuPosition({ x: event.clientX, y: event.clientY });
@@ -43,9 +42,9 @@ export default memo(function WorkflowListItem({
     <Box
       textAlign={"left"}
       backgroundColor={isSelected ? "teal.200" : undefined}
-      color={isSelected && !multipleState ? "#333" : undefined}
+      color={isSelected && !isMultiSelecting ? "#333" : undefined}
       w={"90%"}
-      draggable={!multipleState}
+      draggable={!isMultiSelecting}
       onDragStart={(e) => {
         setDraggingFile && setDraggingFile(workflow);
       }}
@@ -53,7 +52,7 @@ export default memo(function WorkflowListItem({
       p={2}
       minW={320}
       onClick={() => {
-        !multipleState && loadWorkflowID(workflow.id);
+        !isMultiSelecting && loadWorkflowID(workflow.id);
       }}
       _hover={{
         bg: colorMode === "light" ? "gray.200" : "#4A5568",
@@ -77,12 +76,13 @@ export default memo(function WorkflowListItem({
       justify={"space-between"}
       onContextMenu={handleContextMenu}
     >
-      {multipleState ? (
+      {isMultiSelecting ? (
         <Checkbox
           isChecked={isChecked}
           spacing={4}
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
-            onSelect(workflow.id, e.target.checked);
+            onMultiSelectFlow &&
+              onMultiSelectFlow(workflow.id, e.target.checked);
           }}
         >
           {basicInfoComp}
