@@ -18,4 +18,9 @@ export const RecentFilesContext = createContext<{
   multiSelectedFlowsID?: string[];
   onMultiSelectFlow?: (flowId: string, selected: boolean) => void;
   onDeleteFlow?: (flowId: string) => void;
-}>({});
+  refreshFolderStamp: number;
+  setRefreshFolderStamp: (stamp: number) => void;
+}>({
+  refreshFolderStamp: 0,
+  setRefreshFolderStamp: () => {},
+});

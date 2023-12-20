@@ -14,15 +14,8 @@ import {
   listFolderContent,
   updateFlow,
 } from "../WorkspaceDB";
-import { useState, memo, ChangeEvent, useContext, useEffect } from "react";
-import {
-  IconChevronDown,
-  IconChevronRight,
-  IconFolderFilled,
-  IconTriangleFilled,
-  IconTriangleInverted,
-  IconTriangleInvertedFilled,
-} from "@tabler/icons-react";
+import { useState, memo, useContext, useEffect } from "react";
+import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 import { RecentFilesContext } from "../WorkspaceContext";
 import WorkflowListItem from "./WorkflowListItem";
 
@@ -36,12 +29,15 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
     listFolderContent(folder.id)
   );
   const { colorMode } = useColorMode();
-  const { draggingFile } = useContext(RecentFilesContext);
+  const { draggingFile, refreshFolderStamp, setRefreshFolderStamp } =
+    useContext(RecentFilesContext);
   const activeStyle =
     colorMode === "light"
-      ? { backgroundColor: "gray.200" }
+      ? { backgroundColor: "#E2E8F0" }
       : { backgroundColor: "#4A5568" };
-
+  useEffect(() => {
+    setChildren(listFolderContent(folder.id));
+  }, [folder.id, refreshFolderStamp]);
   return (
     <Stack>
       <HStack
@@ -64,8 +60,9 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
             updateFlow(draggingFile.id, {
               parentFolderID: folder.id,
             });
-            setChildren(listFolderContent(folder.id));
+            setRefreshFolderStamp(refreshFolderStamp + 1);
           }
+          setIsActive(false);
         }}
         _hover={activeStyle}
         style={isActive ? activeStyle : undefined}

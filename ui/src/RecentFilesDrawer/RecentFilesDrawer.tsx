@@ -55,6 +55,7 @@ export default function RecentFilesDrawer({ onclose }: Props) {
   const [showAllTags, setShowAllTags] = useState(false);
   const [multipleState, setMultipleState] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+  const [refreshFolderStamp, setRefreshFolderStamp] = useState(0);
   const draggingWorkflowID = useRef<string | null>(null);
   const [draggingFile, setDraggingFile] = useState<Workflow | Folder | null>(
     null
@@ -151,6 +152,8 @@ export default function RecentFilesDrawer({ onclose }: Props) {
         onMultiSelectFlow: onSelect,
         multiSelectedFlowsID: selectedKeys,
         onDeleteFlow: onDelete,
+        refreshFolderStamp: refreshFolderStamp,
+        setRefreshFolderStamp: setRefreshFolderStamp,
       }}
     >
       <Box style={{ width: DRAWER_WIDTH }}>
