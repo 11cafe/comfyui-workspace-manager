@@ -99,16 +99,17 @@ export default function RecentFilesDrawer({ onclose }: Props) {
     onclose();
   };
   useEffect(() => {
-    loadLatestWorkflows();
     app.canvasEl.addEventListener("drop", handleDrop);
     app.canvasEl.addEventListener("click", handleClick);
-
     // Cleanup function to remove event listeners
     return () => {
       app.canvasEl.removeEventListener("drop", handleDrop);
       app.canvasEl.removeEventListener("click", handleClick);
     };
-  }, [curFlowID]);
+  }, []);
+  useEffect(() => {
+    loadLatestWorkflows();
+  }, [curFlowID, refreshFolderStamp]);
 
   const onSelect = useCallback((flowId: string, selected: boolean) => {
     setSelectedKeys((preState) => {

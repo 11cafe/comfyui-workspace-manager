@@ -1,5 +1,5 @@
 import { Box, HStack, useColorMode, Text, Checkbox } from "@chakra-ui/react";
-import { Workflow } from "../WorkspaceDB";
+import { Workflow, isFolder, updateFlow } from "../WorkspaceDB";
 import { formatTimestamp } from "../utils";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import { useState, memo, ChangeEvent, useContext } from "react";
@@ -12,7 +12,7 @@ type Props = {
 };
 export default function WorkflowListItem({ workflow }: Props) {
   const { colorMode } = useColorMode();
-
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const {
@@ -21,6 +21,9 @@ export default function WorkflowListItem({ workflow }: Props) {
     onMultiSelectFlow,
     onDeleteFlow,
     multiSelectedFlowsID,
+    setRefreshFolderStamp,
+    refreshFolderStamp,
+    draggingFile,
   } = useContext(RecentFilesContext);
   const isChecked =
     multiSelectedFlowsID &&
@@ -40,6 +43,22 @@ export default function WorkflowListItem({ workflow }: Props) {
 
   const basicInfoComp = (
     <Box
+      onDragOver={(e) => {
+        e.preventDefault();
+        setIsDraggingOver(true);
+      }}
+      onDragLeave={() => {
+        setIsDraggingOver(false);
+      }}
+      onDrop={() => {
+        if (draggingFile && !isFolder(draggingFile)) {
+          updateFlow(draggingFile.id, {
+            parentFolderID: workflow.parentFolderID,
+          });
+          setRefreshFolderStamp(refreshFolderStamp + 1);
+        }
+        setIsDraggingOver(false);
+      }}
       textAlign={"left"}
       backgroundColor={isSelected ? "teal.200" : undefined}
       color={isSelected && !isMultiSelecting ? "#333" : undefined}
@@ -66,6 +85,9 @@ export default function WorkflowListItem({ workflow }: Props) {
       <Text color={"GrayText"} ml={2} fontSize={"sm"}>
         Updated: {formatTimestamp(workflow.updateTime)}
       </Text>
+      {isDraggingOver && (
+        <Box width={"100%"} mt={2} height={"2px"} backgroundColor={"#4299E1"} />
+      )}
     </Box>
   );
 
