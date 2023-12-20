@@ -9,9 +9,8 @@ import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 
 type Props = {
   workflow: Workflow;
-  onDelete: (id: string) => void;
 };
-export default memo(function WorkflowListItem({ workflow, onDelete }: Props) {
+export default function WorkflowListItem({ workflow }: Props) {
   const { colorMode } = useColorMode();
 
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
@@ -20,6 +19,7 @@ export default memo(function WorkflowListItem({ workflow, onDelete }: Props) {
     setDraggingFile,
     isMultiSelecting,
     onMultiSelectFlow,
+    onDeleteFlow,
     multiSelectedFlowsID,
   } = useContext(RecentFilesContext);
   const isChecked =
@@ -94,7 +94,7 @@ export default memo(function WorkflowListItem({ workflow, onDelete }: Props) {
           <DeleteConfirm
             promptMessage="Are you sure you want to delete this workflow?"
             onDelete={() => {
-              onDelete(workflow.id);
+              onDeleteFlow && onDeleteFlow(workflow.id);
             }}
           />
         </>
@@ -108,4 +108,4 @@ export default memo(function WorkflowListItem({ workflow, onDelete }: Props) {
       )}
     </HStack>
   );
-});
+}

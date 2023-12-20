@@ -17,4 +17,5 @@ export const RecentFilesContext = createContext<{
   isMultiSelecting?: boolean;
   multiSelectedFlowsID?: string[];
   onMultiSelectFlow?: (flowId: string, selected: boolean) => void;
+  onDeleteFlow?: (flowId: string) => void;
 }>({});

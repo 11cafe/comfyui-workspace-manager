@@ -150,6 +150,7 @@ export default function RecentFilesDrawer({ onclose }: Props) {
         isMultiSelecting: multipleState,
         onMultiSelectFlow: onSelect,
         multiSelectedFlowsID: selectedKeys,
+        onDeleteFlow: onDelete,
       }}
     >
       <Box style={{ width: DRAWER_WIDTH }}>
@@ -278,13 +279,7 @@ export default function RecentFilesDrawer({ onclose }: Props) {
                 if (isFolder(n)) {
                   return <FilesListFolderItem folder={n} key={n.id} />;
                 }
-                return (
-                  <WorkflowListItem
-                    key={n.id}
-                    workflow={n}
-                    onDelete={onDelete}
-                  />
-                );
+                return <WorkflowListItem key={n.id} workflow={n} />;
               })}
             </Flex>
           </Flex>
