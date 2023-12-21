@@ -8,7 +8,7 @@ import { ImportWorkflow } from "./types";
 
 export default function ImportJsonFlows() {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { setRecentFiles } = useContext(RecentFilesContext);
+  const { onRefreshFilesList } = useContext(RecentFilesContext);
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -55,7 +55,7 @@ export default function ImportJsonFlows() {
 
     if (parsedFileList.length) {
       await batchCreateFlows(parsedFileList);
-      setRecentFiles && setRecentFiles(listWorkflows());
+      onRefreshFilesList && onRefreshFilesList();
     }
   };
 

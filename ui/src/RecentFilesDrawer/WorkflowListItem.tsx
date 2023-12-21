@@ -1,36 +1,43 @@
-import { Box, HStack, useColorMode, Text, Checkbox } from "@chakra-ui/react";
-import { Workflow } from "../WorkspaceDB";
+import {
+  Box,
+  HStack,
+  useColorMode,
+  Text,
+  Checkbox,
+  Flex,
+} from "@chakra-ui/react";
+import { Workflow, isFolder, updateFlow } from "../WorkspaceDB";
 import { formatTimestamp } from "../utils";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
-import { useState, memo, ChangeEvent } from "react";
+import { useState, memo, ChangeEvent, useContext } from "react";
 import WorkflowListItemRightClickMenu from "./WorkflowListItemRightClickMenu";
 import DeleteConfirm from "../components/DeleteConfirm";
+import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 
 type Props = {
-  isSelected: boolean;
   workflow: Workflow;
-  multipleState: boolean;
-  isChecked: boolean;
-  loadWorkflowID: (id: string) => void;
-  onDelete: (id: string) => void;
-  onDraggingWorkflowID: (id: string) => void;
-  onSelect: (id: string, selected: boolean) => void;
 };
-export default memo(function WorkflowListItem({
-  isSelected,
-  workflow,
-  multipleState,
-  isChecked,
-  loadWorkflowID,
-  onDelete,
-  onDraggingWorkflowID,
-  onSelect,
-}: Props) {
+export default function WorkflowListItem({ workflow }: Props) {
   const { colorMode } = useColorMode();
-
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+  const {
+    setDraggingFile,
+    isMultiSelecting,
+    onMultiSelectFlow,
+    onDeleteFlow,
+    multiSelectedFlowsID,
+    setRefreshFolderStamp,
+    refreshFolderStamp,
+    draggingFile,
+  } = useContext(RecentFilesContext);
+  const isChecked =
+    multiSelectedFlowsID &&
+    multiSelectedFlowsID.length > 0 &&
+    multiSelectedFlowsID.includes(workflow.id);
+  const { curFlowID, loadWorkflowID } = useContext(WorkspaceContext);
+  const isSelected = curFlowID === workflow.id;
   const handleContextMenu = (event: any) => {
     event.preventDefault();
     setMenuPosition({ x: event.clientX, y: event.clientY });
@@ -40,51 +47,72 @@ export default memo(function WorkflowListItem({
   const handleClose = () => {
     setIsMenuOpen(false);
   };
+  const hoverBgColor = colorMode === "light" ? "gray.200" : "#4A5568";
 
   const basicInfoComp = (
     <Box
+      flexShrink={1}
+      flexGrow={1}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setIsDraggingOver(true);
+      }}
+      onDragLeave={() => {
+        setIsDraggingOver(false);
+      }}
+      onDrop={() => {
+        if (draggingFile && !isFolder(draggingFile)) {
+          updateFlow(draggingFile.id, {
+            parentFolderID: workflow.parentFolderID,
+          });
+          setRefreshFolderStamp(refreshFolderStamp + 1);
+        }
+        setIsDraggingOver(false);
+      }}
       textAlign={"left"}
-      backgroundColor={isSelected ? "teal.200" : undefined}
-      color={isSelected && !multipleState ? "#333" : undefined}
-      w={"90%"}
-      draggable
+      backgroundColor={
+        isSelected ? "teal.200" : isMenuOpen ? hoverBgColor : undefined
+      }
+      color={isSelected && !isMultiSelecting ? "#333" : undefined}
+      // w={"90%"}
+      draggable={!isMultiSelecting}
       onDragStart={(e) => {
-        !multipleState && workflow.id && onDraggingWorkflowID(workflow.id);
+        setDraggingFile && setDraggingFile(workflow);
       }}
       borderRadius={6}
       p={2}
-      minW={320}
+      // minW={320}
       onClick={() => {
-        !multipleState && loadWorkflowID(workflow.id);
+        !isMultiSelecting && loadWorkflowID(workflow.id);
       }}
       _hover={{
-        bg: colorMode === "light" ? "gray.200" : "#4A5568",
-      }}
-      _active={{
-        transform: "scale(0.98)",
-        borderColor: "#bec3c9",
+        bg: hoverBgColor,
       }}
     >
       <Text fontWeight={"500"}>{workflow.name ?? "untitled"}</Text>
       <Text color={"GrayText"} ml={2} fontSize={"sm"}>
         Updated: {formatTimestamp(workflow.updateTime)}
       </Text>
+      {isDraggingOver && (
+        <Box width={"100%"} mt={2} height={"2px"} backgroundColor={"#4299E1"} />
+      )}
     </Box>
   );
 
   return (
     <HStack
       w={"100%"}
-      mb={2}
+      mb={1}
       justify={"space-between"}
       onContextMenu={handleContextMenu}
     >
-      {multipleState ? (
+      {isMultiSelecting ? (
         <Checkbox
           isChecked={isChecked}
           spacing={4}
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
-            onSelect(workflow.id, e.target.checked);
+            onMultiSelectFlow &&
+              onMultiSelectFlow(workflow.id, e.target.checked);
           }}
         >
           {basicInfoComp}
@@ -92,13 +120,15 @@ export default memo(function WorkflowListItem({
       ) : (
         <>
           {basicInfoComp}
-          <AddTagToWorkflowPopover workflow={workflow} />
-          <DeleteConfirm
-            promptMessage="Are you sure you want to delete this workflow?"
-            onDelete={() => {
-              onDelete(workflow.id);
-            }}
-          />
+          <Flex width={"60px"}>
+            <AddTagToWorkflowPopover workflow={workflow} />
+            <DeleteConfirm
+              promptMessage="Are you sure you want to delete this workflow?"
+              onDelete={() => {
+                onDeleteFlow && onDeleteFlow(workflow.id);
+              }}
+            />
+          </Flex>
         </>
       )}
       {isMenuOpen && (
@@ -110,4 +140,4 @@ export default memo(function WorkflowListItem({
       )}
     </HStack>
   );
-});
+}

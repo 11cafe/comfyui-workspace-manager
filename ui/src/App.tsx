@@ -118,6 +118,8 @@ export default function App() {
     const flow = createFlow({
       json: workflow.json,
       name: workflow.name,
+      parentFolderID: workflow.parentFolderID,
+      tags: workflow.tags,
     });
     setCurFlowID(flow.id);
     setCurFlowName(flow.name);
@@ -133,6 +135,7 @@ export default function App() {
         curFlowID: flowID,
         onDuplicateWorkflow: onDuplicateWorkflow,
         onPositionChange: setPosition,
+        loadWorkflowID: loadWorkflowID,
       }}
     >
       <Box
@@ -192,7 +195,6 @@ export default function App() {
         {route === "recentFlows" && (
           <RecentFilesDrawer
             onclose={() => setRoute("root")}
-            loadWorkflowID={loadWorkflowID}
             onClickNewFlow={() => {
               onClickNewFlow();
               setRoute("root");
