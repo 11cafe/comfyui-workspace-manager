@@ -133,11 +133,8 @@ export default function App() {
       left += curLeft;
       const clientWidth = document.documentElement.clientWidth;
       const clientHeight = document.documentElement.clientHeight;
-      const { offsetHeight = 48, offsetWidth = 400 } =
-        document.getElementById("workspaceManagerPanel") ?? {};
-
-      if (top + offsetHeight > clientHeight) top = clientHeight - offsetHeight;
-      if (left + offsetWidth > clientWidth) left = clientWidth - offsetWidth;
+      if (top + 48 > clientHeight) top = clientHeight - 48;
+      if (left + 312 >= clientWidth) left = clientWidth - 312;
 
       setPositionStyle({ top: Math.max(0, top), left: Math.max(0, left) });
 
@@ -148,6 +145,7 @@ export default function App() {
     },
     [positionStyle]
   );
+
   if (loadingDB || !positionStyle) {
     return null;
   }
@@ -174,7 +172,6 @@ export default function App() {
           }}
         >
           <HStack
-            id="workspaceManagerPanel"
             style={{
               padding: 8,
               position: "fixed",
