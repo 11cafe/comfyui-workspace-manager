@@ -77,7 +77,7 @@ export default function RecentFilesDrawer({ onclose }: Props) {
   };
 
   const onSort = (type: ESortTypes) => {
-    setFiles(sortFileItem(recentFlows, type));
+    setFiles(sortFileItem(files, type));
     sortTypeRef.current = type;
     window.localStorage.setItem(sortTypeLocalStorageKey, type);
   };
