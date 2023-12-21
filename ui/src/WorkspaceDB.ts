@@ -359,7 +359,6 @@ class UserSettingsTable {
     return instance;
   }
 }
-
 export interface Folder extends SortableItem {
   id: string;
   name: string;
@@ -379,7 +378,7 @@ class FoldersTable {
 
   static async load(): Promise<FoldersTable> {
     const instance = new FoldersTable();
-    const jsonStr = await getDB(FoldersTable.TABLE_NAME);
+    let jsonStr = await getDB(FoldersTable.TABLE_NAME);
     let json = jsonStr != null ? JSON.parse(jsonStr) : null;
     if (json == null) {
       const comfyspace = localStorage.getItem("comfyspace") ?? "{}";
