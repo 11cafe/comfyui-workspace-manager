@@ -161,9 +161,13 @@ function saveToMyWorkflowsUpdateJson(id: string) {
 export function createFlow({
   json,
   name,
+  parentFolderID,
+  tags,
 }: {
   json: string;
   name?: string;
+  parentFolderID?: string;
+  tags?: string[];
 }): Workflow {
   if (workspace == null) {
     throw new Error("workspace is not loaded");
@@ -176,9 +180,10 @@ export function createFlow({
     id: uuid,
     name: newFlowName,
     json,
+    parentFolderID: parentFolderID,
     updateTime: time,
     createTime: time,
-    tags: [],
+    tags: tags ?? [],
   };
   localStorage.setItem("workspace", JSON.stringify(workspace));
   saveDB("workflows", JSON.stringify(workspace));

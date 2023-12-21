@@ -73,6 +73,7 @@ export default function RecentFilesDrawer({ onclose }: Props) {
   const loadLatestWorkflows = () => {
     const all = listFolderContent();
     setFiles(sortFileItem(all, sortTypeRef.current));
+    setRefreshFolderStamp(Date.now());
   };
 
   const onSort = (type: ESortTypes) => {
