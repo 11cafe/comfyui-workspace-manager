@@ -1,13 +1,18 @@
 import { v4 as uuidv4 } from "uuid";
 import { deleteFile, getDB, getSystemDir, saveDB, updateFile } from "./Api";
 import { generateUniqueName, sortFileItem, sortFlows, toFileNameFriendly } from "./utils";
-import { ESortTypes, EWorkspacePosition, ImportWorkflow } from "./RecentFilesDrawer/types";
+import { ESortTypes, ImportWorkflow } from "./RecentFilesDrawer/types";
 
 export type Table = "workflows" | "tags" | "userSettings" | "folders";
 
 interface SortableItem {
   name: string;
   updateTime: number;
+}
+
+export interface PanelPosition {
+  top: number;
+  left: number,
 }
 
 export interface Workflow extends SortableItem {
@@ -308,14 +313,17 @@ function curComfyspaceJson(): string {
 
 type UserSettings = {
   myWorkflowsDir: string;
-  topBarLocation: EWorkspacePosition;
+  topBarStyle: PanelPosition;
 };
 class UserSettingsTable {
   public records: UserSettings;
   static readonly TABLE_NAME = "userSettings";
   private constructor() {
     this.records = {
-      topBarLocation: EWorkspacePosition.TOP_LEFT,
+      topBarStyle: {
+        top: 0,
+        left: 0
+      },
       myWorkflowsDir: '',
     };
   }
@@ -371,7 +379,7 @@ class FoldersTable {
 
   static async load(): Promise<FoldersTable> {
     const instance = new FoldersTable();
-    let jsonStr = await getDB(FoldersTable.TABLE_NAME);
+    const jsonStr = await getDB(FoldersTable.TABLE_NAME);
     let json = jsonStr != null ? JSON.parse(jsonStr) : null;
     if (json == null) {
       const comfyspace = localStorage.getItem("comfyspace") ?? "{}";

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 // @ts-ignore
 import { app } from "/scripts/app.js";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
@@ -7,8 +7,10 @@ import {
   IconFolder,
   IconPlus,
   IconTriangleInvertedFilled,
+  IconGripVertical,
 } from "@tabler/icons-react";
 import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
+import Draggable from "./components/Draggable";
 import {
   createFlow,
   getWorkflow,
@@ -16,11 +18,11 @@ import {
   updateFlow,
   workspace,
   userSettingsTable,
+  PanelPosition,
 } from "./WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
 import EditFlowName from "./components/EditFlowName";
-import { EWorkspacePosition, positionConfig } from "./RecentFilesDrawer/types";
 type Route = "root" | "customNodes" | "recentFlows";
 
 export default function App() {
@@ -30,7 +32,7 @@ export default function App() {
   const [loadingDB, setLoadingDB] = useState(true);
   const [flowID, setFlowID] = useState<string | null>(null);
   const curFlowID = useRef<string | null>(null);
-  const [position, setPosition] = useState<EWorkspacePosition>();
+  const [positionStyle, setPositionStyle] = useState<PanelPosition>();
 
   const setCurFlowID = (id: string) => {
     curFlowID.current = id;
@@ -51,10 +53,7 @@ export default function App() {
     app.registerExtension(ext);
     try {
       await loadDBs();
-      setPosition(
-        userSettingsTable?.records?.topBarLocation ||
-          EWorkspacePosition.TOP_LEFT
-      );
+      updatePanelPosition(userSettingsTable.getSetting("topBarStyle"), false);
     } catch (error) {
       console.error("error loading db", error);
     }
@@ -126,7 +125,30 @@ export default function App() {
     app.loadGraphData(JSON.parse(flow.json));
   };
 
-  if (loadingDB || !position) {
+  const updatePanelPosition = useCallback(
+    (position: PanelPosition, needUpdateDB: boolean = false) => {
+      const { top: curTop = 0, left: curLeft = 0 } = positionStyle || {};
+      let { top = 0, left = 0 } = position ?? {};
+      top += curTop;
+      left += curLeft;
+      const clientWidth = document.documentElement.clientWidth;
+      const clientHeight = document.documentElement.clientHeight;
+      const { offsetHeight = 48, offsetWidth = 400 } =
+        document.getElementById("workspaceManagerPanel") ?? {};
+
+      if (top + offsetHeight > clientHeight) top = clientHeight - offsetHeight;
+      if (left + offsetWidth > clientWidth) left = clientWidth - offsetWidth;
+
+      setPositionStyle({ top: Math.max(0, top), left: Math.max(0, left) });
+
+      needUpdateDB &&
+        userSettingsTable?.upsert({
+          topBarStyle: { top, left },
+        });
+    },
+    [positionStyle]
+  );
+  if (loadingDB || !positionStyle) {
     return null;
   }
   return (
@@ -134,7 +156,6 @@ export default function App() {
       value={{
         curFlowID: flowID,
         onDuplicateWorkflow: onDuplicateWorkflow,
-        onPositionChange: setPosition,
         loadWorkflowID: loadWorkflowID,
       }}
     >
@@ -145,53 +166,59 @@ export default function App() {
           top: 0,
           left: 0,
         }}
+        draggable={false}
       >
-        <HStack
-          style={{
-            padding: 8,
-            position: "fixed",
-            ...positionConfig[position],
+        <Draggable
+          onDragEnd={(position) => {
+            updatePanelPosition({ top: position.y, left: position.x }, true);
           }}
-          justifyContent={"space-between"}
-          alignItems={"center"}
-          gap={4}
         >
           <HStack
-            flexDirection={
-              position.includes("Right") ? "row-reverse" : "initial"
-            }
+            id="workspaceManagerPanel"
+            style={{
+              padding: 8,
+              position: "fixed",
+              ...positionStyle,
+            }}
+            justifyContent={"space-between"}
+            alignItems={"center"}
+            gap={4}
+            draggable={false}
           >
-            <Button
-              size={"sm"}
-              aria-label="workspace folder"
-              onClick={() => setRoute("recentFlows")}
-            >
-              <HStack gap={1}>
-                <IconFolder size={21} />
-                <IconTriangleInvertedFilled size={8} />
-              </HStack>
-            </Button>
-            <Button
-              size={"sm"}
-              variant={"outline"}
-              colorScheme="teal"
-              aria-label="workspace folder"
-              onClick={() => onClickNewFlow()}
-              px={2.5}
-            >
-              <HStack gap={1}>
-                <IconPlus size={16} color={"white"} />
-                <Text color={"white"} fontSize={"sm"}>
-                  New
-                </Text>
-              </HStack>
-            </Button>
-            <EditFlowName
-              displayName={curFlowName ?? ""}
-              updateFlowName={setCurFlowName}
-            />
+            <HStack draggable={false}>
+              <Button
+                size={"sm"}
+                aria-label="workspace folder"
+                onClick={() => setRoute("recentFlows")}
+              >
+                <HStack gap={1}>
+                  <IconFolder size={21} />
+                  <IconTriangleInvertedFilled size={8} />
+                </HStack>
+              </Button>
+              <Button
+                size={"sm"}
+                variant={"outline"}
+                colorScheme="teal"
+                aria-label="workspace folder"
+                onClick={() => onClickNewFlow()}
+                px={2.5}
+              >
+                <HStack gap={1}>
+                  <IconPlus size={16} color={"white"} />
+                  <Text color={"white"} fontSize={"sm"}>
+                    New
+                  </Text>
+                </HStack>
+              </Button>
+              <EditFlowName
+                displayName={curFlowName ?? ""}
+                updateFlowName={setCurFlowName}
+              />
+              <IconGripVertical id="dragPanelIcon" cursor="move" />
+            </HStack>
           </HStack>
-        </HStack>
+        </Draggable>
         {route === "recentFlows" && (
           <RecentFilesDrawer
             onclose={() => setRoute("root")}

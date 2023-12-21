@@ -7,7 +7,6 @@ import {
   ModalBody,
   ModalCloseButton,
   Text,
-  Select,
   StackDivider,
   VStack,
   Box,
@@ -20,18 +19,15 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { IconEdit } from "@tabler/icons-react";
-import { useRef, useState, useContext } from "react";
+import { useRef, useState } from "react";
 import { getSystemDir } from "../Api";
-import { EWorkspacePosition } from "./types";
 import { userSettingsTable } from "../WorkspaceDB";
-import { WorkspaceContext } from "../WorkspaceContext";
 
 export default function WorkspaceSettingsModal({
   onClose,
 }: {
   onClose: () => void;
 }) {
-  const { onPositionChange } = useContext(WorkspaceContext);
   const [isEditDirectory, setIsEditDirectory] = useState(false);
   const [currentDirectory, setCurrentDirectory] = useState(
     userSettingsTable?.records.myWorkflowsDir
@@ -138,29 +134,6 @@ export default function WorkspaceSettingsModal({
                 align="stretch"
                 w="100%"
               >
-                <Box>
-                  <Text fontWeight={500}>Workspace Position</Text>
-                  <Select
-                    mt={2}
-                    defaultValue={userSettingsTable?.records.topBarLocation}
-                    onChange={(selected) => {
-                      userSettingsTable?.upsert({
-                        topBarLocation: selected.target
-                          .value as EWorkspacePosition,
-                      });
-                      onPositionChange &&
-                        onPositionChange(
-                          selected.target.value as EWorkspacePosition
-                        );
-                    }}
-                  >
-                    {Object.values(EWorkspacePosition).map((position) => (
-                      <option value={position} key={position}>
-                        {position}
-                      </option>
-                    ))}
-                  </Select>
-                </Box>
                 <Box mb={4}>
                   <Text mb={2} fontWeight={500}>
                     Workspace Save Directory
