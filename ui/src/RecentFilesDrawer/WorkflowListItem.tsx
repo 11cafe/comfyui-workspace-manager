@@ -1,4 +1,11 @@
-import { Box, HStack, useColorMode, Text, Checkbox } from "@chakra-ui/react";
+import {
+  Box,
+  HStack,
+  useColorMode,
+  Text,
+  Checkbox,
+  Flex,
+} from "@chakra-ui/react";
 import { Workflow, isFolder, updateFlow } from "../WorkspaceDB";
 import { formatTimestamp } from "../utils";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
@@ -44,6 +51,8 @@ export default function WorkflowListItem({ workflow }: Props) {
 
   const basicInfoComp = (
     <Box
+      flexShrink={1}
+      flexGrow={1}
       onDragOver={(e) => {
         e.preventDefault();
         setIsDraggingOver(true);
@@ -65,14 +74,14 @@ export default function WorkflowListItem({ workflow }: Props) {
         isSelected ? "teal.200" : isMenuOpen ? hoverBgColor : undefined
       }
       color={isSelected && !isMultiSelecting ? "#333" : undefined}
-      w={"90%"}
+      // w={"90%"}
       draggable={!isMultiSelecting}
       onDragStart={(e) => {
         setDraggingFile && setDraggingFile(workflow);
       }}
       borderRadius={6}
       p={2}
-      minW={320}
+      // minW={320}
       onClick={() => {
         !isMultiSelecting && loadWorkflowID(workflow.id);
       }}
@@ -93,7 +102,7 @@ export default function WorkflowListItem({ workflow }: Props) {
   return (
     <HStack
       w={"100%"}
-      mb={2}
+      mb={1}
       justify={"space-between"}
       onContextMenu={handleContextMenu}
     >
@@ -111,13 +120,15 @@ export default function WorkflowListItem({ workflow }: Props) {
       ) : (
         <>
           {basicInfoComp}
-          <AddTagToWorkflowPopover workflow={workflow} />
-          <DeleteConfirm
-            promptMessage="Are you sure you want to delete this workflow?"
-            onDelete={() => {
-              onDeleteFlow && onDeleteFlow(workflow.id);
-            }}
-          />
+          <Flex width={"60px"}>
+            <AddTagToWorkflowPopover workflow={workflow} />
+            <DeleteConfirm
+              promptMessage="Are you sure you want to delete this workflow?"
+              onDelete={() => {
+                onDeleteFlow && onDeleteFlow(workflow.id);
+              }}
+            />
+          </Flex>
         </>
       )}
       {isMenuOpen && (

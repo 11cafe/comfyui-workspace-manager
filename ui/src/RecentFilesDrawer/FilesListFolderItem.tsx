@@ -51,8 +51,7 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
       <HStack
         w={"100%"}
         as={"button"}
-        mb={2}
-        gap={1}
+        py={1}
         onClick={() => {
           setIsCollapsed(!isCollapsed);
         }}
@@ -101,7 +100,7 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
         />
       </HStack>
       {!isCollapsed && (
-        <Stack ml={3}>
+        <Stack ml={4}>
           {children.map((file) => {
             if (isFolder(file)) {
               return <FilesListFolderItem folder={file} />;

@@ -424,6 +424,12 @@ class FoldersTable {
   }
   public delete(id: string) {
     delete this.records[id];
+    const childrenFlows = listWorkflows().filter(
+      (flow) => flow.parentFolderID == id
+    );
+    childrenFlows.forEach((flow) =>
+      updateFlow(flow.id, { parentFolderID: undefined })
+    );
     saveDB("folders", JSON.stringify(this.records));
     localStorage.setItem("comfyspace", curComfyspaceJson());
   }
