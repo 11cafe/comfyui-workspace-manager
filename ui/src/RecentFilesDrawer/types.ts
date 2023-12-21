@@ -25,4 +25,4 @@ export enum ESortTypes {
 export type ImportWorkflow = {
   json: string;
   name?: string;
-}
+};

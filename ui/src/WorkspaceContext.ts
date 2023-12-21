@@ -1,13 +1,26 @@
 import { createContext } from "react";
-import { Workflow } from "./WorkspaceDB";
+import { Folder, Workflow } from "./WorkspaceDB";
 
 export const WorkspaceContext = createContext<{
   curFlowID: string | null;
   onDuplicateWorkflow?: (flowID: string) => void;
+  loadWorkflowID: (id: string) => void;
 }>({
   curFlowID: null,
+  loadWorkflowID: () => {},
 });
 
 export const RecentFilesContext = createContext<{
-  setRecentFiles?: (flows: Workflow[]) => void;
-}>({});
+  onRefreshFilesList?: () => void;
+  draggingFile?: Workflow | Folder;
+  setDraggingFile?: (file: Workflow | Folder) => void;
+  isMultiSelecting?: boolean;
+  multiSelectedFlowsID?: string[];
+  onMultiSelectFlow?: (flowId: string, selected: boolean) => void;
+  onDeleteFlow?: (flowId: string) => void;
+  refreshFolderStamp: number;
+  setRefreshFolderStamp: (stamp: number) => void;
+}>({
+  refreshFolderStamp: 0,
+  setRefreshFolderStamp: () => {},
+});
