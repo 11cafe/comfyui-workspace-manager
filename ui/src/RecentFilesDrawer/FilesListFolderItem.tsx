@@ -18,6 +18,7 @@ import { useState, memo, useContext, useEffect } from "react";
 import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 import { RecentFilesContext } from "../WorkspaceContext";
 import WorkflowListItem from "./WorkflowListItem";
+import FilesListFolderItemRightClickMenu from "./FilesListFolderItemRightClickMenu";
 
 type Props = {
   folder: Folder;
@@ -28,6 +29,8 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
   const [children, setChildren] = useState<Array<Folder | Workflow>>(
     listFolderContent(folder.id)
   );
+  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { colorMode } = useColorMode();
   const { draggingFile, refreshFolderStamp, setRefreshFolderStamp } =
     useContext(RecentFilesContext);
@@ -38,6 +41,11 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
   useEffect(() => {
     setChildren(listFolderContent(folder.id));
   }, [folder.id, refreshFolderStamp]);
+  const handleContextMenu = (event: any) => {
+    event.preventDefault();
+    setMenuPosition({ x: event.clientX, y: event.clientY });
+    setIsMenuOpen(true);
+  };
   return (
     <Stack>
       <HStack
@@ -48,6 +56,7 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
         onClick={() => {
           setIsCollapsed(!isCollapsed);
         }}
+        onContextMenu={handleContextMenu}
         onDragOver={(e) => {
           e.preventDefault();
           setIsActive(true);
@@ -65,7 +74,7 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
           setIsActive(false);
         }}
         _hover={activeStyle}
-        style={isActive ? activeStyle : undefined}
+        style={isActive || isMenuOpen ? activeStyle : undefined}
       >
         <HStack gap={1}>
           {isCollapsed ? (
@@ -83,6 +92,13 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
           </svg>
         </HStack>
         <Text>{folder.name}</Text>
+
+        <FilesListFolderItemRightClickMenu
+          isopen={isMenuOpen}
+          menuPosition={menuPosition}
+          onClose={() => setIsMenuOpen(false)}
+          folder={folder}
+        />
       </HStack>
       {!isCollapsed && (
         <Stack ml={3}>

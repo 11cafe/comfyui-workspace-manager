@@ -40,6 +40,7 @@ export default function WorkflowListItem({ workflow }: Props) {
   const handleClose = () => {
     setIsMenuOpen(false);
   };
+  const hoverBgColor = colorMode === "light" ? "gray.200" : "#4A5568";
 
   const basicInfoComp = (
     <Box
@@ -60,7 +61,9 @@ export default function WorkflowListItem({ workflow }: Props) {
         setIsDraggingOver(false);
       }}
       textAlign={"left"}
-      backgroundColor={isSelected ? "teal.200" : undefined}
+      backgroundColor={
+        isSelected ? "teal.200" : isMenuOpen ? hoverBgColor : undefined
+      }
       color={isSelected && !isMultiSelecting ? "#333" : undefined}
       w={"90%"}
       draggable={!isMultiSelecting}
@@ -74,11 +77,7 @@ export default function WorkflowListItem({ workflow }: Props) {
         !isMultiSelecting && loadWorkflowID(workflow.id);
       }}
       _hover={{
-        bg: colorMode === "light" ? "gray.200" : "#4A5568",
-      }}
-      _active={{
-        transform: "scale(0.98)",
-        borderColor: "#bec3c9",
+        bg: hoverBgColor,
       }}
     >
       <Text fontWeight={"500"}>{workflow.name ?? "untitled"}</Text>

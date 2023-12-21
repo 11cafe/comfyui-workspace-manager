@@ -393,9 +393,10 @@ class FoldersTable {
     return this.records[id];
   }
   public create(input: { name: string; parentFolderID?: string }): Folder {
+    const uniqueName = this.generateUniqueName(input.name);
     const folder: Folder = {
       id: uuidv4(),
-      name: input.name,
+      name: uniqueName,
       parentFolderID: input.parentFolderID ?? null,
       updateTime: Date.now(),
       createTime: Date.now(),
@@ -425,5 +426,22 @@ class FoldersTable {
     delete this.records[id];
     saveDB("folders", JSON.stringify(this.records));
     localStorage.setItem("comfyspace", curComfyspaceJson());
+  }
+  public generateUniqueName(name?: string) {
+    let newFlowName = name ?? "New folder";
+    const folderNameList = this.listAll()?.map((f) => f.name);
+    if (folderNameList.includes(newFlowName)) {
+      let num = 2;
+      let flag = true;
+      while (flag) {
+        if (folderNameList.includes(`${newFlowName} ${num}`)) {
+          num++;
+        } else {
+          newFlowName = `${newFlowName} ${num}`;
+          flag = false;
+        }
+      }
+    }
+    return newFlowName;
   }
 }
