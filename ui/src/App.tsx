@@ -173,47 +173,50 @@ export default function App() {
         >
           <HStack
             style={{
-              padding: 8,
+              padding: 2,
               position: "fixed",
               ...positionStyle,
             }}
             justifyContent={"space-between"}
             alignItems={"center"}
-            gap={4}
+            gap={2}
             draggable={false}
           >
-            <HStack draggable={false}>
-              <Button
-                size={"sm"}
-                aria-label="workspace folder"
-                onClick={() => setRoute("recentFlows")}
-              >
-                <HStack gap={1}>
-                  <IconFolder size={21} />
-                  <IconTriangleInvertedFilled size={8} />
-                </HStack>
-              </Button>
-              <Button
-                size={"sm"}
-                variant={"outline"}
-                colorScheme="teal"
-                aria-label="workspace folder"
-                onClick={() => onClickNewFlow()}
-                px={2.5}
-              >
-                <HStack gap={1}>
-                  <IconPlus size={16} color={"white"} />
-                  <Text color={"white"} fontSize={"sm"}>
-                    New
-                  </Text>
-                </HStack>
-              </Button>
-              <EditFlowName
-                displayName={curFlowName ?? ""}
-                updateFlowName={setCurFlowName}
-              />
-              <IconGripVertical id="dragPanelIcon" cursor="move" />
-            </HStack>
+            <Button
+              size={"sm"}
+              aria-label="workspace folder"
+              onClick={() => setRoute("recentFlows")}
+            >
+              <HStack gap={1}>
+                <IconFolder size={21} />
+                <IconTriangleInvertedFilled size={8} />
+              </HStack>
+            </Button>
+            <Button
+              size={"sm"}
+              variant={"outline"}
+              colorScheme="teal"
+              aria-label="workspace folder"
+              onClick={() => onClickNewFlow()}
+              px={2.5}
+            >
+              <HStack gap={1}>
+                <IconPlus size={16} color={"white"} />
+                <Text color={"white"} fontSize={"sm"}>
+                  New
+                </Text>
+              </HStack>
+            </Button>
+            <EditFlowName
+              displayName={curFlowName ?? ""}
+              updateFlowName={setCurFlowName}
+            />
+            <IconGripVertical
+              id="dragPanelIcon"
+              cursor="move"
+              size={15}
+              color="#FFF"
+            />
           </HStack>
         </Draggable>
         {route === "recentFlows" && (
