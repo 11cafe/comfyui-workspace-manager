@@ -107,16 +107,6 @@ export async function listBackup(dir: string) {
   }
 }
 
-export async function getMyWorkflowsDir() {
-  try {
-    const response = await fetch("/workspace/get_my_workflows_dir");
-    const result = await response.text();
-    return result;
-  } catch (error) {
-    console.error("Error getting workflows dir:", error);
-  }
-}
-
 export async function getSystemDir(root?: string) {
   try {
     const response = await fetch("/workspace/get_system_dir", {
@@ -129,7 +119,6 @@ export async function getSystemDir(root?: string) {
       }),
     });
     const result = await response.json();
-    console.log("getSystemDir", result);
     return result;
   } catch (error) {
     console.error("Error getting workflows dir:", error);

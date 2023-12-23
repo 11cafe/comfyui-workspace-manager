@@ -219,38 +219,13 @@ async def list_backup(request):
     except Exception as e:
         return web.Response(text=json.dumps({"error": str(e)}), status=500)
 
-DEFAULT_MY_WORKFLOWS_DIR = os.path.join(comfy_path,'my_workflows')
-@server.PromptServer.instance.routes.post("/workspace/update_file")
-async def update_file(request):
-    data = await request.json()
-    file_path = data['file_path']
-    json_str = data['json_str']
-    full_path = os.path.join(DEFAULT_MY_WORKFLOWS_DIR, file_path)
-    # Create the directory if it doesn't exist
-    os.makedirs(os.path.dirname(full_path), exist_ok=True)
 
-    with open(full_path, 'w') as file:
-        file.write(json_str)
-    return web.Response(text="File updated successfully")
-
-@server.PromptServer.instance.routes.get("/workspace/get_my_workflows_dir")
-async def get_my_workflows_dir_endpoint(request):
-    absolute_path = get_my_workflows_dir()
-    return web.Response(text=absolute_path)
-
-def get_my_workflows_dir():
-    data = read_table('userSettings')
-    if(data):
-        records = json.loads(data)
-        curDir = records['myWorkflowsDir'] if records else None
-        if curDir:
-            return curDir
-    return DEFAULT_MY_WORKFLOWS_DIR
 
 @server.PromptServer.instance.routes.post("/workspace/get_system_dir")
 async def get_system_dir(request):
     try:
-        dir_path = request.query.get('absolute_dir')
+        reqData = await request.json()
+        dir_path = reqData['absolute_dir']
         if not dir_path:
             dir_path = comfy_path
         if not os.path.isdir(dir_path):
@@ -262,13 +237,37 @@ async def get_system_dir(request):
 
         return web.Response(text=json.dumps({"dir_path":dir_path, "dir_contents":dir_contents}), content_type='application/json')
     except Exception as e:
-        return web.Response(text=str(e), status=500)
+        return web.Response(text=json.dumps({"error": str(e)}), status=500)
+
+def get_my_workflows_dir():
+    data = read_table('userSettings')
+    if(data):
+        records = json.loads(data)
+        curDir = records['myWorkflowsDir'] if records else None
+        if curDir:
+            return curDir
+    return os.path.join(comfy_path,'my_workflows')
+
+@server.PromptServer.instance.routes.post("/workspace/update_file")
+async def update_file(request):
+    data = await request.json()
+    file_path = data['file_path']
+    json_str = data['json_str']
+    my_workflows_dir = get_my_workflows_dir()
+    full_path = os.path.join(my_workflows_dir, file_path)
+    # Create the directory if it doesn't exist
+    os.makedirs(os.path.dirname(full_path), exist_ok=True)
+
+    with open(full_path, 'w') as file:
+        file.write(json_str)
+    return web.Response(text="File updated successfully")
 
 @server.PromptServer.instance.routes.post("/workspace/delete_file")
 async def delete_file(request):
     data = await request.json()
     file_path = data['file_path']
-    full_path = os.path.join(DEFAULT_MY_WORKFLOWS_DIR, file_path)
+    my_workflows_dir = get_my_workflows_dir()
+    full_path = os.path.join(my_workflows_dir, file_path)
 
     if os.path.exists(full_path):
         os.remove(full_path)
