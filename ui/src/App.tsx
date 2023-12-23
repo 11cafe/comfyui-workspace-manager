@@ -126,15 +126,18 @@ export default function App() {
   };
 
   const updatePanelPosition = useCallback(
-    (position: PanelPosition, needUpdateDB: boolean = false) => {
+    (position?: PanelPosition, needUpdateDB: boolean = false) => {
       const { top: curTop = 0, left: curLeft = 0 } = positionStyle || {};
       let { top = 0, left = 0 } = position ?? {};
       top += curTop;
       left += curLeft;
       const clientWidth = document.documentElement.clientWidth;
       const clientHeight = document.documentElement.clientHeight;
-      if (top + 48 > clientHeight) top = clientHeight - 48;
-      if (left + 312 >= clientWidth) left = clientWidth - 312;
+      const panelElement = document.getElementById("workspaceManagerPanel");
+      const offsetWidth = panelElement?.offsetWidth || 392;
+
+      if (top + 36 > clientHeight) top = clientHeight - 36;
+      if (left + offsetWidth >= clientWidth) left = clientWidth - offsetWidth;
 
       setPositionStyle({ top: Math.max(0, top), left: Math.max(0, left) });
 
@@ -181,6 +184,7 @@ export default function App() {
             alignItems={"center"}
             gap={2}
             draggable={false}
+            id="workspaceManagerPanel"
           >
             <Button
               size={"sm"}
@@ -209,7 +213,12 @@ export default function App() {
             </Button>
             <EditFlowName
               displayName={curFlowName ?? ""}
-              updateFlowName={setCurFlowName}
+              updateFlowName={(newName) => {
+                setCurFlowName(newName);
+                requestAnimationFrame(() => {
+                  updatePanelPosition();
+                });
+              }}
             />
             <IconGripVertical
               id="dragPanelIcon"
