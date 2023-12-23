@@ -137,29 +137,30 @@ export function updateFlow(
   localStorage.setItem("workspace", JSON.stringify(workspace));
   saveDB("workflows", JSON.stringify(workspace));
   // save to my_workflows/
-  if (input.name != null) {
-    // renamed file
-    before.filePath && deleteFile(before.filePath);
-    saveToMyWorkflowsUpdateJson(id);
+  if (input.name != null || input.parentFolderID != null) {
+    // renamed file or moved file folder
+    deleteJsonFileMyWorkflows(before);
+    saveJsonFileMyWorkflows(after);
     return;
   }
   if (input.json != null) {
-    saveToMyWorkflowsUpdateJson(id);
+    saveJsonFileMyWorkflows(after);
   }
 }
 
-function saveToMyWorkflowsUpdateJson(id: string) {
-  if (workspace == null) {
+function saveJsonFileMyWorkflows(workflow: Workflow) {
+  const file_path = generateFilePath(workflow);
+  console.log("save json file path", file_path, "workflow", workflow);
+  file_path != null && updateFile(file_path, workflow.json);
+}
+
+function deleteJsonFileMyWorkflows(workflow: Workflow) {
+  if (workflow.name == null) {
     return;
   }
-  const workflow = workspace[id];
-  if (workflow == null) {
-    console.error("saveToMyWorkflowsUpdateJson: workflow not found", id);
-    return;
-  }
-  const file_path = toFileNameFriendly(workflow.name) + ".json";
-  workspace[id].filePath = file_path;
-  updateFile(file_path, workflow.json);
+  const file_path = generateFilePath(workflow);
+  console.log("delete json file path", file_path, "workflow", workflow);
+  file_path != null && deleteFile(file_path);
 }
 
 export function createFlow({
@@ -191,38 +192,31 @@ export function createFlow({
   };
   localStorage.setItem("workspace", JSON.stringify(workspace));
   saveDB("workflows", JSON.stringify(workspace));
-  saveToMyWorkflowsUpdateJson(uuid);
+  saveJsonFileMyWorkflows(workspace[uuid]);
   return workspace[uuid];
 }
 
 export async function batchCreateFlows(
   flowList: ImportWorkflow[]
 ): Promise<string | undefined> {
-  if (workspace == null) {
-    throw new Error("workspace is not loaded");
-  }
-
-  const uuidList: string[] = [];
-
   flowList.forEach((flow) => {
+    if (workspace == null) {
+      return;
+    }
     const newFlowName = generateUniqueName(flow.name);
     const uuid = uuidv4();
     const time = Date.now();
-    workspace &&
-      (workspace[uuid] = {
-        id: uuid,
-        name: newFlowName,
-        json: flow.json,
-        updateTime: time,
-        createTime: time,
-        tags: [],
-      });
-    uuidList.push(uuid);
+    workspace[uuid] = {
+      id: uuid,
+      name: newFlowName,
+      json: flow.json,
+      updateTime: time,
+      createTime: time,
+      tags: [],
+    };
+    saveJsonFileMyWorkflows(workspace[uuid]);
   });
 
-  uuidList.forEach((uuid) => {
-    saveToMyWorkflowsUpdateJson(uuid);
-  });
   const stringifyWorkspace = JSON.stringify(workspace);
   localStorage.setItem("workspace", stringifyWorkspace);
   return await saveDB("workflows", stringifyWorkspace);
@@ -247,36 +241,48 @@ export function getWorkflow(id: string): Workflow | undefined {
 
 export function deleteFlow(id: string) {
   if (workspace == null) {
-    throw new Error("workspace is not loaded");
+    return;
   }
-  const filePath = workspace[id]?.filePath;
+  const workflow = workspace[id];
+  if (workflow) {
+    deleteJsonFileMyWorkflows({ ...workflow });
+  }
   delete workspace[id];
   localStorage.setItem("workspace", JSON.stringify(workspace));
   saveDB("workflows", JSON.stringify(workspace));
-  if (filePath != null) {
-    deleteFile(filePath);
-  }
 }
 
 export function batchDeleteFlow(ids: string[]) {
-  if (workspace == null) {
-    throw new Error("workspace is not loaded");
-  }
-  const filePathList = ids.map((id) => {
-    const filePath = workspace?.[id]?.filePath;
+  ids.forEach((id) => {
+    if (workspace == null) {
+      return;
+    }
+    const workflow = workspace[id];
+    if (workflow) {
+      deleteJsonFileMyWorkflows({ ...workflow });
+    }
     workspace && delete workspace[id];
-    return filePath;
   });
 
   const stringifyWorkspace = JSON.stringify(workspace);
   localStorage.setItem("workspace", stringifyWorkspace);
   saveDB("workflows", stringifyWorkspace);
+}
 
-  if (filePathList.length) {
-    filePathList.forEach((filePath) => {
-      filePath && deleteFile(filePath);
-    });
+export function generateFilePath(workflow: Workflow): string | null {
+  let filePath = toFileNameFriendly(workflow.name) + ".json";
+  let curFolderID = workflow.parentFolderID;
+  while (curFolderID != null) {
+    const folder = foldersTable?.get(curFolderID);
+    if (folder == null) {
+      break;
+    }
+    const folderName = folder.name;
+    filePath = `${folderName}/${filePath}`;
+    curFolderID = folder.parentFolderID ?? undefined;
   }
+
+  return filePath ?? null;
 }
 /** End of Class Workflow */
 
