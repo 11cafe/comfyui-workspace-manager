@@ -53,7 +53,7 @@ export default function App() {
     app.registerExtension(ext);
     try {
       await loadDBs();
-      updatePanelPosition(userSettingsTable.getSetting("topBarStyle"), false);
+      updatePanelPosition(userSettingsTable?.getSetting("topBarStyle"), false);
     } catch (error) {
       console.error("error loading db", error);
     }
@@ -170,7 +170,7 @@ export default function App() {
         draggable={false}
       >
         <Draggable
-          onDragEnd={(position) => {
+          onDragEnd={(position: { x: number; y: number }) => {
             updatePanelPosition({ top: position.y, left: position.x }, true);
           }}
         >

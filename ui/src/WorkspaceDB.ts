@@ -1,6 +1,11 @@
 import { v4 as uuidv4 } from "uuid";
 import { deleteFile, getDB, getSystemDir, saveDB, updateFile } from "./Api";
-import { generateUniqueName, sortFileItem, sortFlows, toFileNameFriendly } from "./utils";
+import {
+  generateUniqueName,
+  sortFileItem,
+  sortFlows,
+  toFileNameFriendly,
+} from "./utils";
 import { ESortTypes, ImportWorkflow } from "./RecentFilesDrawer/types";
 
 export type Table = "workflows" | "tags" | "userSettings" | "folders";
@@ -12,7 +17,7 @@ interface SortableItem {
 
 export interface PanelPosition {
   top: number;
-  left: number,
+  left: number;
 }
 
 export interface Workflow extends SortableItem {
@@ -322,15 +327,15 @@ class UserSettingsTable {
     this.records = {
       topBarStyle: {
         top: 0,
-        left: 0
+        left: 0,
       },
-      myWorkflowsDir: '',
+      myWorkflowsDir: "",
     };
   }
   public listSettings() {
     return this.records;
   }
-  public getSetting(key: keyof UserSettings) {
+  public getSetting<K extends keyof UserSettings>(key: K): UserSettings[K] {
     return this.records[key];
   }
   public upsert(newPairs: Partial<UserSettings>) {
@@ -353,7 +358,7 @@ class UserSettingsTable {
     }
     if (!json.myWorkflowsDir) {
       const getDir = await getSystemDir();
-      json.myWorkflowsDir = `${getDir.dir_path}/my_workflows`
+      json.myWorkflowsDir = `${getDir.dir_path}/my_workflows`;
     }
     instance.records = json;
     return instance;
