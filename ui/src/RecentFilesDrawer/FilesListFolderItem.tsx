@@ -10,6 +10,7 @@ import {
 import {
   Folder,
   Workflow,
+  foldersTable,
   isFolder,
   listFolderContent,
   updateFlow,
@@ -25,7 +26,7 @@ type Props = {
 };
 export default memo(function FilesListFolderItem({ folder }: Props) {
   const [isActive, setIsActive] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(folder.isCollapse ?? false);
   const [children, setChildren] = useState<Array<Folder | Workflow>>(
     listFolderContent(folder.id)
   );
@@ -46,6 +47,12 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
     setMenuPosition({ x: event.clientX, y: event.clientY });
     setIsMenuOpen(true);
   };
+  useEffect(() => {
+    foldersTable?.update({
+      ...folder,
+      isCollapse: isCollapsed,
+    });
+  }, [isCollapsed]);
   return (
     <Stack>
       <HStack

@@ -376,6 +376,7 @@ export interface Folder extends SortableItem {
   parentFolderID: string | null; // if null, it is in the root folder
   createTime: number;
   type: "folder";
+  isCollapse?: boolean;
 }
 
 class FoldersTable {
@@ -426,7 +427,11 @@ class FoldersTable {
 
     return folder;
   }
-  public update(input: { id: string; name?: string; parentFolderID?: string }) {
+  public update(
+    input: {
+      id: string;
+    } & Partial<Folder>
+  ) {
     const folder = this.records[input.id];
     if (folder == null) {
       return;
