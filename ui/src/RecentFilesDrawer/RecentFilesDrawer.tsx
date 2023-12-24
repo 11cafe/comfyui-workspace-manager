@@ -207,6 +207,7 @@ export default function RecentFilesDrawer({ onclose }: Props) {
                     width={"auto"}
                     flexShrink={0}
                     size={"sm"}
+                    borderRadius={15}
                     py={4}
                     onClick={() => onClickTag(tag.name)}
                     isActive={selectedTag === tag.name}
