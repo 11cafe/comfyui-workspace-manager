@@ -28,8 +28,7 @@ export default function WorkflowListItem({ workflow }: Props) {
     onMultiSelectFlow,
     onDeleteFlow,
     multiSelectedFlowsID,
-    setRefreshFolderStamp,
-    refreshFolderStamp,
+    onRefreshFilesList,
     draggingFile,
   } = useContext(RecentFilesContext);
   const isChecked =
@@ -65,7 +64,7 @@ export default function WorkflowListItem({ workflow }: Props) {
           updateFlow(draggingFile.id, {
             parentFolderID: workflow.parentFolderID,
           });
-          setRefreshFolderStamp(refreshFolderStamp + 1);
+          onRefreshFilesList && onRefreshFilesList();
         }
         setIsDraggingOver(false);
       }}

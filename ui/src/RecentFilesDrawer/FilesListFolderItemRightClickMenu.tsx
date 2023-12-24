@@ -32,7 +32,7 @@ export default function FilesListFolderItemRightClickMenu({
 }: Props) {
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const { setRefreshFolderStamp } = useContext(RecentFilesContext);
+  const { onRefreshFilesList } = useContext(RecentFilesContext);
   return (
     <>
       <Box position="absolute" top={menuPosition.y} left={menuPosition.x}>
@@ -87,7 +87,7 @@ export default function FilesListFolderItemRightClickMenu({
                   setIsDeleteOpen(false);
                   onClose();
                   foldersTable?.delete(folder.id);
-                  setRefreshFolderStamp(Date.now());
+                  onRefreshFilesList && onRefreshFilesList();
                 }}
               >
                 Yes, delete

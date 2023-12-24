@@ -32,7 +32,7 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { colorMode } = useColorMode();
-  const { draggingFile, refreshFolderStamp, setRefreshFolderStamp } =
+  const { draggingFile, refreshFolderStamp, onRefreshFilesList } =
     useContext(RecentFilesContext);
   const activeStyle =
     colorMode === "light"
@@ -68,7 +68,7 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
             updateFlow(draggingFile.id, {
               parentFolderID: folder.id,
             });
-            setRefreshFolderStamp(refreshFolderStamp + 1);
+            onRefreshFilesList && onRefreshFilesList();
           }
           setIsActive(false);
         }}

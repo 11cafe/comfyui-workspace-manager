@@ -110,7 +110,8 @@ export default function RecentFilesDrawer({ onclose }: Props) {
   }, []);
   useEffect(() => {
     loadLatestWorkflows();
-  }, [curFlowID, refreshFolderStamp]);
+    console.log("refreshFolderStamp", refreshFolderStamp);
+  }, [curFlowID]);
 
   const onSelect = useCallback((flowId: string, selected: boolean) => {
     setSelectedKeys((preState) => {

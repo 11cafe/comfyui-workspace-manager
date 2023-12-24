@@ -25,7 +25,7 @@ export default function EditFolderNameModal({ folder, onclose }: Props) {
   // const { curFlowID } = useContext(WorkspaceContext);
   const [editName, setEditName] = useState(folder.name);
   const [submitError, setSubmitError] = useState("");
-  const { setRefreshFolderStamp } = useContext(RecentFilesContext);
+  const { onRefreshFilesList } = useContext(RecentFilesContext);
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setEditName(event.target.value);
     submitError && setSubmitError("");
@@ -45,7 +45,7 @@ export default function EditFolderNameModal({ folder, onclose }: Props) {
         id: folder.id,
         name: trimEditName,
       });
-      setRefreshFolderStamp(Date.now());
+      onRefreshFilesList && onRefreshFilesList();
       onclose();
     }
   };
