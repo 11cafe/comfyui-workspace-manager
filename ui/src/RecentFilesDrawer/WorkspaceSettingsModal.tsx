@@ -17,8 +17,9 @@ import {
   Input,
   Stack,
   useToast,
+  SimpleGrid,
 } from "@chakra-ui/react";
-import { IconEdit } from "@tabler/icons-react";
+import { IconEdit, IconFolder } from "@tabler/icons-react";
 import { useRef, useState } from "react";
 import { getSystemDir } from "../Api";
 import { userSettingsTable } from "../WorkspaceDB";
@@ -28,6 +29,7 @@ export default function WorkspaceSettingsModal({
 }: {
   onClose: () => void;
 }) {
+  const [isManualEntry, setIsManualEntry] = useState(false);
   const [isEditDirectory, setIsEditDirectory] = useState(false);
   const [currentDirectory, setCurrentDirectory] = useState(
     userSettingsTable?.records.myWorkflowsDir
@@ -72,6 +74,7 @@ export default function WorkspaceSettingsModal({
 
   const onCloseEditDirectory = () => {
     setIsEditDirectory(false);
+    setIsManualEntry(false);
     setDirPathList([]);
   };
 
@@ -90,12 +93,14 @@ export default function WorkspaceSettingsModal({
         return;
       }
     }
+    console.log("manualEntry", manualEntry);
     const newPath = manualEntry ?? `/${dirPathList.join("/")}`;
     userSettingsTable?.upsert({
       myWorkflowsDir: newPath,
     });
     setCurrentDirectory(userSettingsTable?.getSetting("myWorkflowsDir"));
-    manualEntry ? setNoPermission(false) : onCloseEditDirectory();
+    manualEntry && setNoPermission(false);
+    onCloseEditDirectory();
   };
 
   const onReset = async () => {
@@ -119,6 +124,33 @@ export default function WorkspaceSettingsModal({
     }
   };
 
+  const onOpenEnter = () => {
+    setIsEditDirectory(true);
+    setIsManualEntry(true);
+  };
+
+  const enterFolderAddressComp = (
+    <Box textAlign="end" mb={4}>
+      <Input
+        placeholder="Please enter the absolute path directory address"
+        ref={manualEntryRef}
+        mt={2}
+        mb={2}
+      />
+      <Button
+        colorScheme="teal"
+        mr={3}
+        size="sm"
+        onClick={() => {
+          manualEntryRef?.current?.value &&
+            onSaveDirectory(manualEntryRef?.current?.value);
+        }}
+      >
+        Save
+      </Button>
+    </Box>
+  );
+
   return (
     <>
       <Modal isOpen={true} onClose={onClose} size={"xl"}>
@@ -140,15 +172,24 @@ export default function WorkspaceSettingsModal({
                   </Text>
                   {!isEditDirectory ? (
                     <Flex>
-                      <Tag>{currentDirectory}</Tag>
+                      <Tag overflowWrap="anywhere">{currentDirectory}</Tag>
                       <IconButton
-                        aria-label="Start edit"
+                        aria-label="Enter folder address"
                         size={"sm"}
                         ml={2}
                         icon={<IconEdit />}
+                        onClick={onOpenEnter}
+                      />
+                      <IconButton
+                        aria-label="Select folder"
+                        size={"sm"}
+                        ml={2}
+                        icon={<IconFolder />}
                         onClick={onOpenEditDirectory}
                       />
                     </Flex>
+                  ) : isManualEntry ? (
+                    enterFolderAddressComp
                   ) : (
                     <VStack spacing={2} alignItems="start">
                       <Stack spacing="2px" direction="row" wrap="wrap">
@@ -169,11 +210,28 @@ export default function WorkspaceSettingsModal({
                           </>
                         ))}
                       </Stack>
-                      <Stack spacing={2} direction="row" wrap="wrap">
+                      <SimpleGrid
+                        columns={2}
+                        spacing={3}
+                        maxHeight={500}
+                        width="100%"
+                        overflowY="auto"
+                      >
                         {subdirectoryList.map((sub, index) => (
                           <Button
                             key={`${sub}-${index}`}
-                            size="xs"
+                            size="sm"
+                            leftIcon={
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="#EFC54D"
+                                style={{ width: "1.2rem", height: "1.2rem" }}
+                              >
+                                <path d="M19.5 21a3 3 0 0 0 3-3v-4.5a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3V18a3 3 0 0 0 3 3h15ZM1.5 10.146V6a3 3 0 0 1 3-3h5.379a2.25 2.25 0 0 1 1.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 0 1 3 3v1.146A4.483 4.483 0 0 0 19.5 9h-15a4.483 4.483 0 0 0-3 1.146Z" />
+                              </svg>
+                            }
+                            justifyContent="start"
                             onClick={() => {
                               onDirJump(-1, sub);
                             }}
@@ -181,7 +239,7 @@ export default function WorkspaceSettingsModal({
                             {sub}
                           </Button>
                         ))}
-                      </Stack>
+                      </SimpleGrid>
                       <Box w="100%" textAlign="end">
                         <Button
                           colorScheme="teal"
@@ -244,24 +302,7 @@ export default function WorkspaceSettingsModal({
                   of the required folder.
                 </Text>
               )}
-              <Box textAlign="end" mb={4}>
-                <Input
-                  placeholder="Please enter the absolute path directory address"
-                  ref={manualEntryRef}
-                  mt={2}
-                  mb={2}
-                />
-                <Button
-                  colorScheme="teal"
-                  mr={3}
-                  size="sm"
-                  onClick={() => {
-                    onSaveDirectory(manualEntryRef?.current?.value);
-                  }}
-                >
-                  Save
-                </Button>
-              </Box>
+              {enterFolderAddressComp}
             </Box>
           </ModalBody>
         </ModalContent>
