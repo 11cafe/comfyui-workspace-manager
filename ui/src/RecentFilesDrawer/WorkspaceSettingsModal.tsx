@@ -93,7 +93,6 @@ export default function WorkspaceSettingsModal({
         return;
       }
     }
-    console.log("manualEntry", manualEntry);
     const newPath = manualEntry ?? `/${dirPathList.join("/")}`;
     userSettingsTable?.upsert({
       myWorkflowsDir: newPath,
