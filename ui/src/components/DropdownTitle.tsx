@@ -93,7 +93,7 @@ export default function DropdowmTitle() {
           <MenuItem
             onClick={() => setIsOpenNewName(true)}
           >
-            Create a Copy
+            Save As
           </MenuItem>
         </MenuList>
       </Menu>
