@@ -150,7 +150,6 @@ export function updateFlow(
 
 function saveJsonFileMyWorkflows(workflow: Workflow) {
   const file_path = generateFilePath(workflow);
-  console.log("save json file path", file_path, "workflow", workflow);
   file_path != null && updateFile(file_path, workflow.json);
 }
 
@@ -159,7 +158,6 @@ function deleteJsonFileMyWorkflows(workflow: Workflow) {
     return;
   }
   const file_path = generateFilePath(workflow);
-  console.log("delete json file path", file_path, "workflow", workflow);
   file_path != null && deleteFile(file_path);
 }
 
