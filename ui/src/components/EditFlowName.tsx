@@ -73,7 +73,7 @@ export default function EditFlowName(props: Props) {
         <Text
           color="white"
           onClick={startEdit}
-          maxW={220}
+          maxW={240}
           whiteSpace="nowrap"
           overflow="hidden"
           textOverflow="ellipsis"

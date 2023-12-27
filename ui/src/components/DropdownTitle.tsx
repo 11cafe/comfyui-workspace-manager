@@ -17,12 +17,14 @@ import {
   FormLabel,
   FormErrorMessage,
   Input,
+  Portal,
 } from "@chakra-ui/react";
-import { IconArrowDown } from '@tabler/icons-react'
+import { IconChevronDown } from "@tabler/icons-react";
 import { workspace } from "../WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
+import { Overlay } from "./Overlay";
 
-export default function DropdowmTitle() {
+export default function DropdownTitle() {
   const { curFlowID, onDuplicateWorkflow } = useContext(WorkspaceContext);
   const [isOpenNewName, setIsOpenNewName] = useState(false);
   const [newFlowName, setNewFlowName] = useState("");
@@ -41,11 +43,11 @@ export default function DropdowmTitle() {
 
     onDuplicateWorkflow?.(curFlowID, newFlowName);
     handleOnCloseModal();
-  }
+  };
 
   const handleOnCloseModal = () => {
     setIsOpenNewName(false);
-  }
+  };
 
   const handleDownload = useCallback(() => {
     if (!workspace || !curFlowID) {
@@ -53,17 +55,17 @@ export default function DropdowmTitle() {
       return;
     }
 
-    const json_data = workspace[curFlowID]
+    const json_data = workspace[curFlowID];
 
     if (!json_data) {
       alert("Workspace does not exist");
       return;
     }
 
-    const blob = new Blob([json_data.json], { type: 'application/json' });
+    const blob = new Blob([json_data.json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
 
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `${json_data.name}.json`;
     document.body.appendChild(a);
@@ -74,33 +76,32 @@ export default function DropdowmTitle() {
 
   return (
     <>
-      <Menu>
-        <MenuButton
-          as={IconButton}
-          aria-label='Options'
-          icon={<IconArrowDown />}
-          variant='outline'
-          height={6}
-          minWidth={3}
-          background={"white"}
-        />
-        <MenuList minWidth={150}>
-          <MenuItem
-            onClick={handleDownload}
-          >
-            Download
-          </MenuItem>
-          <MenuItem
-            onClick={() => setIsOpenNewName(true)}
-          >
-            Save As
-          </MenuItem>
-        </MenuList>
+      <Menu isLazy={true}>
+        {({ isOpen }) => (
+          <>
+            <MenuButton>
+              <IconButton
+                icon={<IconChevronDown size={20} />}
+                aria-label="menu"
+                size={"xs"}
+              />
+            </MenuButton>
+            <Portal>
+              <MenuList minWidth={150}>
+                <MenuItem onClick={handleDownload}>Download</MenuItem>
+                <MenuItem onClick={() => setIsOpenNewName(true)}>
+                  Save As
+                </MenuItem>
+              </MenuList>
+              {isOpen && <Overlay backgroundColor={null} />}
+            </Portal>
+          </>
+        )}
       </Menu>
       <Modal isOpen={isOpenNewName} onClose={handleOnCloseModal}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Duplicate workflow</ModalHeader>
+          <ModalHeader>Save As</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <FormControl isInvalid={!!submitError}>
@@ -132,5 +133,5 @@ export default function DropdowmTitle() {
         </ModalContent>
       </Modal>
     </>
-  )
+  );
 }

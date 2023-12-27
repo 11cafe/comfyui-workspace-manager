@@ -2,12 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 // @ts-ignore
 import { app } from "/scripts/app.js";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
-import {
-  HStack,
-  Box,
-  Button,
-  Text,
-} from "@chakra-ui/react";
+import { HStack, Box, Button, Text } from "@chakra-ui/react";
 import {
   IconFolder,
   IconPlus,
@@ -28,7 +23,7 @@ import {
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
 import EditFlowName from "./components/EditFlowName";
-import DropdowmTitle from "./components/DropdownTitle";
+import DropdownTitle from "./components/DropdownTitle";
 type Route = "root" | "customNodes" | "recentFlows";
 
 export default function App() {
@@ -218,7 +213,6 @@ export default function App() {
               </HStack>
             </Button>
 
-            <DropdowmTitle />
             <EditFlowName
               displayName={curFlowName ?? ""}
               updateFlowName={(newName) => {
@@ -234,6 +228,7 @@ export default function App() {
               size={15}
               color="#FFF"
             />
+            <DropdownTitle />
           </HStack>
         </Draggable>
         {route === "recentFlows" && (
