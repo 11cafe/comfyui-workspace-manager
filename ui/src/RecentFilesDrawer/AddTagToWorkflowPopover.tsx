@@ -9,6 +9,7 @@ import {
   PopoverHeader,
   Input,
   HStack,
+  IconButton,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { Tag, Workflow, tagsTable, updateFlow } from "../WorkspaceDB";
@@ -52,9 +53,12 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
   return (
     <Popover isLazy={true}>
       <PopoverTrigger>
-        <Button variant={"ghost"} size={"sm"} colorScheme="teal">
-          <IconTag color={"#718096"} />
-        </Button>
+        <IconButton
+          aria-label="Delete confirm"
+          size={"sm"}
+          variant="ghost"
+          icon={<IconTag color={"#718096"} />}
+        />
       </PopoverTrigger>
       <PopoverContent>
         <PopoverArrow />

@@ -14,6 +14,7 @@ import {
   useDisclosure,
   HStack,
   Text,
+  Tooltip,
 } from "@chakra-ui/react";
 import { useContext, ChangeEvent, useState } from "react";
 import { listWorkflows, updateFlow } from "../WorkspaceDB";
@@ -68,9 +69,19 @@ export default function EditFlowName(props: Props) {
 
   return (
     <HStack>
-      <Text color="white" onClick={startEdit}>
-        {displayName}
-      </Text>
+      <Tooltip label={displayName} placement="bottom">
+        <Text
+          color="white"
+          onClick={startEdit}
+          maxW={240}
+          whiteSpace="nowrap"
+          overflow="hidden"
+          textOverflow="ellipsis"
+        >
+          {displayName}
+        </Text>
+      </Tooltip>
+
       <Modal isOpen={isOpen} onClose={onCloseModal}>
         <ModalOverlay />
         <ModalContent>

@@ -1,6 +1,6 @@
 // @ts-ignore
 import { ESortTypes } from "./RecentFilesDrawer/types";
-import { listWorkflows, Workflow } from "./WorkspaceDB";
+import { Folder, listWorkflows, Workflow } from "./WorkspaceDB";
 // @ts-ignore
 import { app, ComfyApp } from "/scripts/app.js";
 // copied from app.js
@@ -43,6 +43,42 @@ export function toFileNameFriendly(str: string) {
   str = str.replace(/[\\/:*?"<>|]/g, "_");
 
   return str.trim();
+}
+
+function isValidFileName(fileName: string) {
+  // Check for empty string
+  if (!fileName || fileName.length === 0) {
+    return false;
+  }
+
+  // Windows reserved characters
+  const windowsInvalidChars = /[<>:"\/\\|?*\x00-\x1F]/;
+  if (windowsInvalidChars.test(fileName)) {
+    return false;
+  }
+
+  // Windows reserved names
+  const windowsReservedNames = /^(con|prn|aux|nul|com[0-9]|lpt[0-9])(\..*)?$/i;
+  if (windowsReservedNames.test(fileName)) {
+    return false;
+  }
+
+  // Check for macOS restricted character (colon)
+  if (fileName.includes(":")) {
+    return false;
+  }
+
+  // Check for trailing periods or spaces (Windows restriction)
+  if (/[. ]$/.test(fileName)) {
+    return false;
+  }
+
+  // Length check (general precaution)
+  // if (fileName.length > 255) {
+  //   return false;
+  // }
+
+  return true;
 }
 
 export function formatTimestamp(unixTimestamp: number) {
@@ -90,6 +126,28 @@ export function sortFlows(
 
   return copyFlows;
 }
+
+export const sortFileItem = (
+  items: Array<Workflow | Folder>,
+  sortType: ESortTypes = ESortTypes.RECENTLY_MODIFIED
+) => {
+  const copyFlows = [...items];
+  switch (sortType) {
+    case ESortTypes.AZ:
+      copyFlows.sort((a, b) => a.name.localeCompare(b.name));
+      break;
+    case ESortTypes.ZA:
+      copyFlows.sort((a, b) => b.name.localeCompare(a.name));
+      break;
+    case ESortTypes.RECENTLY_MODIFIED:
+      copyFlows.sort((a, b) => b.updateTime - a.updateTime);
+      break;
+    case ESortTypes.OLDEST_MODIFIED:
+      copyFlows.sort((a, b) => a.updateTime - b.updateTime);
+      break;
+  }
+  return copyFlows;
+};
 
 export function insertWorkflowToCanvas(json: string, insertPos?: number[]) {
   let graphData = JSON.parse(json);

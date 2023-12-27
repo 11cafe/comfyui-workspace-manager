@@ -3,84 +3,133 @@ import {
   HStack,
   useColorMode,
   Text,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverCloseButton,
-  PopoverArrow,
-  Button,
-  PopoverBody,
+  Checkbox,
+  Flex,
 } from "@chakra-ui/react";
-import { Workflow } from "../WorkspaceDB";
+import { Workflow, isFolder, updateFlow } from "../WorkspaceDB";
 import { formatTimestamp } from "../utils";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
-import { IconTrash } from "@tabler/icons-react";
-import { useState } from "react";
+import { useState, memo, ChangeEvent, useContext } from "react";
 import WorkflowListItemRightClickMenu from "./WorkflowListItemRightClickMenu";
+import DeleteConfirm from "../components/DeleteConfirm";
+import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 
 type Props = {
-  isSelected: boolean;
   workflow: Workflow;
-  loadWorkflowID: (id: string) => void;
-  onDelete: (id: string) => void;
-  onDraggingWorkflowID: (id: string) => void;
 };
-export default function WorkflowListItem({
-  isSelected,
-  workflow,
-  loadWorkflowID,
-  onDelete,
-  onDraggingWorkflowID,
-}: Props) {
+export default function WorkflowListItem({ workflow }: Props) {
   const { colorMode } = useColorMode();
-
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+  const {
+    setDraggingFile,
+    isMultiSelecting,
+    onMultiSelectFlow,
+    onDeleteFlow,
+    multiSelectedFlowsID,
+    onRefreshFilesList,
+    draggingFile,
+  } = useContext(RecentFilesContext);
+  const isChecked =
+    multiSelectedFlowsID &&
+    multiSelectedFlowsID.length > 0 &&
+    multiSelectedFlowsID.includes(workflow.id);
+  const { curFlowID, loadWorkflowID } = useContext(WorkspaceContext);
+  const isSelected = curFlowID === workflow.id;
   const handleContextMenu = (event: any) => {
     event.preventDefault();
     setMenuPosition({ x: event.clientX, y: event.clientY });
     setIsMenuOpen(true);
   };
+
   const handleClose = () => {
     setIsMenuOpen(false);
   };
+  const hoverBgColor = colorMode === "light" ? "gray.200" : "#4A5568";
+
+  const basicInfoComp = (
+    <Box
+      flexShrink={1}
+      flexGrow={1}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setIsDraggingOver(true);
+      }}
+      onDragLeave={() => {
+        setIsDraggingOver(false);
+      }}
+      onDrop={() => {
+        if (draggingFile && !isFolder(draggingFile)) {
+          updateFlow(draggingFile.id, {
+            parentFolderID: workflow.parentFolderID,
+          });
+          onRefreshFilesList && onRefreshFilesList();
+        }
+        setIsDraggingOver(false);
+      }}
+      textAlign={"left"}
+      backgroundColor={
+        isSelected ? "teal.200" : isMenuOpen ? hoverBgColor : undefined
+      }
+      color={isSelected && !isMultiSelecting ? "#333" : undefined}
+      // w={"90%"}
+      draggable={!isMultiSelecting}
+      onDragStart={(e) => {
+        setDraggingFile && setDraggingFile(workflow);
+      }}
+      borderRadius={6}
+      p={2}
+      // minW={320}
+      onClick={() => {
+        !isMultiSelecting && loadWorkflowID(workflow.id);
+      }}
+      _hover={{
+        bg: hoverBgColor,
+      }}
+    >
+      <Text fontWeight={"500"}>{workflow.name ?? "untitled"}</Text>
+      <Text color={"GrayText"} ml={2} fontSize={"sm"}>
+        Updated: {formatTimestamp(workflow.updateTime)}
+      </Text>
+      {isDraggingOver && (
+        <Box width={"100%"} mt={2} height={"2px"} backgroundColor={"#4299E1"} />
+      )}
+    </Box>
+  );
 
   return (
     <HStack
       w={"100%"}
+      mb={1}
       justify={"space-between"}
       onContextMenu={handleContextMenu}
     >
-      <Box
-        as="button"
-        textAlign={"left"}
-        backgroundColor={isSelected ? "teal.200" : undefined}
-        color={isSelected ? "#333" : undefined}
-        w={"90%"}
-        draggable
-        onDragStart={(e) => {
-          workflow.id && onDraggingWorkflowID(workflow.id);
-        }}
-        borderRadius={6}
-        p={2}
-        mb={2}
-        onClick={() => {
-          loadWorkflowID(workflow.id);
-        }}
-        _hover={{
-          bg: colorMode === "light" ? "gray.200" : "#4A5568",
-        }}
-        _active={{
-          transform: "scale(0.98)",
-          borderColor: "#bec3c9",
-        }}
-      >
-        <Text fontWeight={"500"}>{workflow.name ?? "untitled"}</Text>
-        <Text color={"GrayText"} ml={2} fontSize={"sm"}>
-          Updated: {formatTimestamp(workflow.updateTime)}
-        </Text>
-      </Box>
+      {isMultiSelecting ? (
+        <Checkbox
+          isChecked={isChecked}
+          spacing={4}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+            onMultiSelectFlow &&
+              onMultiSelectFlow(workflow.id, e.target.checked);
+          }}
+        >
+          {basicInfoComp}
+        </Checkbox>
+      ) : (
+        <>
+          {basicInfoComp}
+          <Flex width={"60px"}>
+            <AddTagToWorkflowPopover workflow={workflow} />
+            <DeleteConfirm
+              promptMessage="Are you sure you want to delete this workflow?"
+              onDelete={() => {
+                onDeleteFlow && onDeleteFlow(workflow.id);
+              }}
+            />
+          </Flex>
+        </>
+      )}
       {isMenuOpen && (
         <WorkflowListItemRightClickMenu
           menuPosition={menuPosition}
@@ -88,36 +137,6 @@ export default function WorkflowListItem({
           workflowID={workflow.id}
         />
       )}
-      <AddTagToWorkflowPopover workflow={workflow} />
-      <Popover isLazy={true}>
-        {({ isOpen, onClose }) => (
-          <>
-            <PopoverTrigger>
-              <IconTrash color="#F56565" cursor={"pointer"} />
-            </PopoverTrigger>
-            <PopoverContent>
-              <PopoverArrow />
-              <PopoverCloseButton />
-              {/* <PopoverHeader>Confirmation!</PopoverHeader> */}
-              <PopoverBody>
-                <Text mb={4} fontWeight={600}>
-                  Are you sure you want to delete this workflow?
-                </Text>
-                <Button
-                  colorScheme="red"
-                  size={"sm"}
-                  onClick={() => {
-                    onDelete(workflow.id);
-                    onClose();
-                  }}
-                >
-                  Yes, delete
-                </Button>
-              </PopoverBody>
-            </PopoverContent>
-          </>
-        )}
-      </Popover>
     </HStack>
   );
 }

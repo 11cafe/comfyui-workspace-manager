@@ -81,7 +81,7 @@ export default function RecentFilesDrawerMenu({}: Props) {
         <ManageTagsModal onclose={() => setIsManageTagsOpen(false)} />
       )}
       {isSettingsOpen && (
-        <WorkspaceSettingsModal onclose={() => setIsSettingsOpen(false)} />
+        <WorkspaceSettingsModal onClose={() => setIsSettingsOpen(false)} />
       )}
       {isOpen && <ViewBackupsModal onclose={onClose} />}
     </>

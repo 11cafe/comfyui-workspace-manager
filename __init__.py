@@ -23,18 +23,25 @@ workspace_path = os.path.join(os.path.dirname(__file__))
 comfy_path = os.path.dirname(folder_paths.__file__)
 
 # Function to install dependencies from requirements.txt
-def install_dependencies(): 
+
+
+def install_dependencies():
     requirements_path = os.path.join(workspace_path, "requirements.txt")
     print('requirements_path', requirements_path)
     # subprocess.run(['pip', 'install', '-r', requirements_path])
-    subprocess.run([sys.executable, '-m', 'pip', 'install', '-r', requirements_path])
+    subprocess.run([sys.executable, '-m', 'pip',
+                   'install', '-r', requirements_path])
 # install_dependencies()
+
 
 def setup_js():
     import nodes
     if not hasattr(nodes, "EXTENSION_WEB_DIRS"):
         print(f"[WARN] Workspace cannot run. Please upgrade your ComfyUI, it does not support custom nodes UI")
+
+
 setup_js()
+
 
 def fetch_server(nodes):
     url = 'https://jox4fzk7ppi4glx56ohupt27su0ilcmv.lambda-url.us-west-1.on.aws/'
@@ -49,16 +56,20 @@ def fetch_server(nodes):
             'error': 'Failed to find custom nodes'
         }
 
+
 @server.PromptServer.instance.routes.post("/workspace/update_version")
 async def update_version(request):
     updated = update_version_if_outdated()
     return web.Response(status=200, text="Version updated" if updated else "Version is up to date")
 
+
 @server.PromptServer.instance.routes.post("/workspace/find_nodes")
 async def install_nodes(request):
     post_params = await request.json()
-    resp = fetch_server(post_params['nodes']) # [{'authorName': 'Fannovel16', 'gitHtmlUrl': 'https://github.com/Fannovel16/comfyui_controlnet_aux', 'totalInstalls': 1, 'description': None, 'id': 'TilePreprocessor'}]
+    # [{'authorName': 'Fannovel16', 'gitHtmlUrl': 'https://github.com/Fannovel16/comfyui_controlnet_aux', 'totalInstalls': 1, 'description': None, 'id': 'TilePreprocessor'}]
+    resp = fetch_server(post_params['nodes'])
     return web.json_response(resp, content_type='application/json')
+
 
 async def install_node(gitUrl):
     print(f"Installing custom node from git '{gitUrl}'")
@@ -77,6 +88,7 @@ async def install_node(gitUrl):
     except Exception as e:
         return f"Error installing custom node from git '{gitUrl}': {e}\n"
 
+
 @server.PromptServer.instance.routes.post("/workspace/install_nodes")
 async def install_nodes(request):
     response = web.StreamResponse()
@@ -94,22 +106,24 @@ async def install_nodes(request):
         print(f"Cloning repository: {gitUrl}")
         run_script(["git", "clone", gitUrl+'.git'], custom_node_path)
 
-import subprocess
-import threading
 
 def handle_stream(stream, prefix):
     for line in stream:
         print(prefix + line, end='')
+
 
 def run_script(cmd, cwd='.'):
     if len(cmd) > 0 and cmd[0].startswith("#"):
         print(f"[ComfyUI-Manager] Unexpected behavior: `{cmd}`")
         return 0
 
-    process = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
+    process = subprocess.Popen(
+        cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
 
-    stdout_thread = threading.Thread(target=handle_stream, args=(process.stdout, ""))
-    stderr_thread = threading.Thread(target=handle_stream, args=(process.stderr, "[!]"))
+    stdout_thread = threading.Thread(
+        target=handle_stream, args=(process.stdout, ""))
+    stderr_thread = threading.Thread(
+        target=handle_stream, args=(process.stderr, "[!]"))
 
     stdout_thread.start()
     stderr_thread.start()
@@ -120,8 +134,9 @@ def run_script(cmd, cwd='.'):
     return process.wait()
 
 
-
 db_dir_path = os.path.join(workspace_path, "db")
+
+
 @server.PromptServer.instance.routes.post("/workspace/save_db")
 async def save_db(request):
     # Extract parameters from the request
@@ -139,6 +154,7 @@ async def save_db(request):
 
     return web.Response(text=f"JSON saved to {file_name}")
 
+
 def read_table(table):
     if not table:
         return None
@@ -149,6 +165,7 @@ def read_table(table):
     with open(file_name, 'r') as file:
         data = json.load(file)
     return data
+
 
 @server.PromptServer.instance.routes.get("/workspace/get_db")
 async def get_workspace(request):
@@ -161,6 +178,8 @@ async def get_workspace(request):
 
 BACKUP_DIR = os.path.join(workspace_path, "backup")
 MAX_BACKUP_FILES = 20
+
+
 @server.PromptServer.instance.routes.post("/workspace/save_backup")
 async def save_backup(request):
     try:
@@ -177,9 +196,10 @@ async def save_backup(request):
 
         with open(file_path, 'w') as file:
             file.write(json_str)
-        
+
         # Check the number of files in the directory after writing the new file
-        files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
+        files = [f for f in os.listdir(directory) if os.path.isfile(
+            os.path.join(directory, f))]
         if len(files) > MAX_BACKUP_FILES:
             # Find the oldest file (smallest filename)
             oldest_file = min(files, key=lambda x: x)
@@ -189,6 +209,7 @@ async def save_backup(request):
         return web.Response(text=json.dumps({"message": "File saved successfully"}), status=200)
     except Exception as e:
         return web.Response(text=json.dumps({"error": str(e)}), status=500)
+
 
 @server.PromptServer.instance.routes.post("/workspace/list_backup")
 async def list_backup(request):
@@ -219,13 +240,42 @@ async def list_backup(request):
     except Exception as e:
         return web.Response(text=json.dumps({"error": str(e)}), status=500)
 
-DEFAULT_MY_WORKFLOWS_DIR = os.path.join(comfy_path,'my_workflows')
+
+@server.PromptServer.instance.routes.post("/workspace/get_system_dir")
+async def get_system_dir(request):
+    try:
+        reqData = await request.json()
+        dir_path = reqData['absolute_dir']
+        if not dir_path:
+            dir_path = comfy_path
+        if not os.path.isdir(dir_path):
+            raise ValueError("[workspace] get_system_dir Not a directory")
+
+        dir_contents = [folder for folder in os.listdir(dir_path)
+                        if os.path.isdir(os.path.join(dir_path, folder)) and not folder.startswith('.')]
+
+        return web.Response(text=json.dumps({"dir_path": dir_path, "dir_contents": dir_contents}), content_type='application/json')
+    except Exception as e:
+        return web.Response(text=json.dumps({"error": str(e)}), status=500)
+
+
+def get_my_workflows_dir():
+    data = read_table('userSettings')
+    if (data):
+        records = json.loads(data)
+        curDir = records['myWorkflowsDir'] if records else None
+        if curDir:
+            return curDir
+    return os.path.join(comfy_path, 'my_workflows')
+
+
 @server.PromptServer.instance.routes.post("/workspace/update_file")
 async def update_file(request):
     data = await request.json()
     file_path = data['file_path']
     json_str = data['json_str']
-    full_path = os.path.join(DEFAULT_MY_WORKFLOWS_DIR, file_path)
+    my_workflows_dir = get_my_workflows_dir()
+    full_path = os.path.join(my_workflows_dir, file_path)
     # Create the directory if it doesn't exist
     os.makedirs(os.path.dirname(full_path), exist_ok=True)
 
@@ -233,49 +283,21 @@ async def update_file(request):
         file.write(json_str)
     return web.Response(text="File updated successfully")
 
-@server.PromptServer.instance.routes.get("/workspace/get_my_workflows_dir")
-async def get_my_workflows_dir_endpoint(request):
-    absolute_path = get_my_workflows_dir()
-    return web.Response(text=absolute_path)
-
-def get_my_workflows_dir():
-    data = read_table('userSettings')
-    if(data):
-        records = json.loads(data)
-        curDir = records['myWorkflowsDir'] if records else None
-        if curDir:
-            return curDir
-    return DEFAULT_MY_WORKFLOWS_DIR
-
-@server.PromptServer.instance.routes.post("/workspace/get_system_dir")
-async def get_system_dir(request):
-    try:
-        dir_path = request.query.get('absolute_dir')
-        if not dir_path:
-            dir_path = comfy_path
-        if not os.path.isdir(dir_path):
-            raise ValueError("[workspace] get_system_dir Not a directory")
-
-        dir_contents = [folder for folder in os.listdir(dir_path) 
-                        if os.path.isdir(os.path.join(dir_path, folder)) and not folder.startswith('.')]
-
-
-        return web.Response(text=json.dumps({"dir_path":dir_path, "dir_contents":dir_contents}), content_type='application/json')
-    except Exception as e:
-        return web.Response(text=str(e), status=500)
 
 @server.PromptServer.instance.routes.post("/workspace/delete_file")
 async def delete_file(request):
     data = await request.json()
     file_path = data['file_path']
-    full_path = os.path.join(DEFAULT_MY_WORKFLOWS_DIR, file_path)
+    my_workflows_dir = get_my_workflows_dir()
+    full_path = os.path.join(my_workflows_dir, file_path)
 
     if os.path.exists(full_path):
         os.remove(full_path)
         return web.Response(text="File deleted successfully")
     else:
         return web.Response(text="File not found", status=404)
-    
+
+
 @server.PromptServer.instance.routes.post("/workspace/rename_file")
 async def rename_file(request):
     data = await request.json()
