@@ -1,4 +1,10 @@
-import { ChangeEvent, useCallback, useContext, useState } from "react";
+import {
+  ChangeEvent,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import {
   Menu,
   MenuButton,
@@ -20,16 +26,21 @@ import {
   Portal,
 } from "@chakra-ui/react";
 import { IconChevronDown } from "@tabler/icons-react";
-import { workspace } from "../WorkspaceDB";
+import { getWorkflow, workspace } from "../WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { Overlay } from "./Overlay";
 
 export default function DropdownTitle() {
   const { curFlowID, onDuplicateWorkflow } = useContext(WorkspaceContext);
+
   const [isOpenNewName, setIsOpenNewName] = useState(false);
   const [newFlowName, setNewFlowName] = useState("");
   const [submitError, setSubmitError] = useState("");
 
+  useEffect(() => {
+    const workflow = curFlowID ? getWorkflow(curFlowID) : undefined;
+    setNewFlowName(workflow?.name ?? "");
+  }, [curFlowID]);
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setNewFlowName(event.target.value);
     submitError && setSubmitError("");
@@ -98,40 +109,42 @@ export default function DropdownTitle() {
           </>
         )}
       </Menu>
-      <Modal isOpen={isOpenNewName} onClose={handleOnCloseModal}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Save As</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <FormControl isInvalid={!!submitError}>
-              <FormLabel>Workflow name</FormLabel>
-              <Input
-                value={newFlowName}
-                onChange={handleChange}
-                autoFocus
-                onKeyUp={(e) => {
-                  e.code === "Enter" && !submitError && onSubmit();
-                }}
-              />
-              {submitError && (
-                <FormErrorMessage>{submitError}</FormErrorMessage>
-              )}
-            </FormControl>
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              colorScheme="teal"
-              mr={3}
-              onClick={onSubmit}
-              isDisabled={!newFlowName || !!submitError}
-            >
-              Save
-            </Button>
-            <Button onClick={handleOnCloseModal}>Cancel</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      {isOpenNewName && (
+        <Modal isOpen={true} onClose={handleOnCloseModal}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Save As</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <FormControl isInvalid={!!submitError}>
+                <FormLabel>Workflow name</FormLabel>
+                <Input
+                  value={newFlowName}
+                  onChange={handleChange}
+                  autoFocus
+                  onKeyUp={(e) => {
+                    e.code === "Enter" && !submitError && onSubmit();
+                  }}
+                />
+                {submitError && (
+                  <FormErrorMessage>{submitError}</FormErrorMessage>
+                )}
+              </FormControl>
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                colorScheme="teal"
+                mr={3}
+                onClick={onSubmit}
+                isDisabled={!newFlowName || !!submitError}
+              >
+                Save
+              </Button>
+              <Button onClick={handleOnCloseModal}>Cancel</Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      )}
     </>
   );
 }

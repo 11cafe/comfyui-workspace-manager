@@ -163,6 +163,13 @@ function deleteJsonFileMyWorkflows(workflow: Workflow) {
   file_path != null && deleteFile(file_path);
 }
 
+export function getFlow(id: string): Workflow | undefined {
+  if (workspace == null) {
+    return undefined;
+  }
+  return workspace[id];
+}
+
 export function createFlow({
   json,
   name,
