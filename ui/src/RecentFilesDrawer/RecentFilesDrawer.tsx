@@ -11,6 +11,7 @@ import {
   Card,
   Box,
   Flex,
+  Input 
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState, useRef, useCallback } from "react";
 import {
@@ -41,6 +42,7 @@ import { ESortTypes, sortTypeLocalStorageKey } from "./types";
 import { app } from "/scripts/app.js";
 import { insertWorkflowToCanvas3 } from "./InsertWorkflowToCanvas";
 import FilesListFolderItem from "./FilesListFolderItem";
+import { useDebounce } from "../customHooks/useDebaunce";
 
 const MAX_TAGS_TO_SHOW = 6;
 type Props = {
@@ -56,6 +58,8 @@ export default function RecentFilesDrawer({ onclose }: Props) {
   const [multipleState, setMultipleState] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   const [refreshFolderStamp, setRefreshFolderStamp] = useState(0);
+  const [searchValue, setSearchValue] = useState("");
+  const debaunceSearchValue = useDebounce(searchValue, 400);
   const draggingWorkflowID = useRef<string | null>(null);
   const [draggingFile, setDraggingFile] = useState<Workflow | Folder | null>(
     null
@@ -99,6 +103,7 @@ export default function RecentFilesDrawer({ onclose }: Props) {
   const handleClick = (e: any) => {
     onclose();
   };
+
   useEffect(() => {
     app.canvasEl.addEventListener("drop", handleDrop);
     app.canvasEl.addEventListener("click", handleClick);
@@ -108,9 +113,14 @@ export default function RecentFilesDrawer({ onclose }: Props) {
       app.canvasEl.removeEventListener("click", handleClick);
     };
   }, []);
+
   useEffect(() => {
     loadLatestWorkflows();
   }, [curFlowID]);
+
+  useEffect(() => {
+    setFiles(listWorkflows().filter(flow => flow.name.includes(debaunceSearchValue)))
+  }, [debaunceSearchValue])
 
   const onSelect = useCallback((flowId: string, selected: boolean) => {
     setSelectedKeys((preState) => {
@@ -252,6 +262,15 @@ export default function RecentFilesDrawer({ onclose }: Props) {
                   aria-label="new folder button"
                 />
               </HStack>
+
+              <Input
+                placeholder='Search flow'
+                width={"auto"}
+                height={"auto"}
+                value={searchValue}
+                onChange={({ target }) => setSearchValue(target.value)}
+              />
+
               <Menu closeOnSelect={true}>
                 <MenuButton
                   as={Button}
