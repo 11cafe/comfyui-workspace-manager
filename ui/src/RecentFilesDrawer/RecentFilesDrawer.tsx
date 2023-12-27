@@ -30,6 +30,7 @@ import {
   IconChevronUp,
   IconFolderPlus,
   IconX,
+  IconSearch,
 } from "@tabler/icons-react";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
@@ -49,6 +50,16 @@ type Props = {
   onclose: () => void;
   onClickNewFlow: () => void;
 };
+
+const IconSearchStyle: CSSProperties = {
+  position: "absolute",
+  marginLeft: "5px",
+  width: "20px",
+  height: "20px",
+  top: "50%",
+  transform: "translateY(-50%)",
+}
+
 export default function RecentFilesDrawer({ onclose }: Props) {
   const [files, setFiles] = useState<Array<Folder | Workflow>>([]);
   const recentFlows = files.filter((n) => !isFolder(n)) as Workflow[];
@@ -119,7 +130,7 @@ export default function RecentFilesDrawer({ onclose }: Props) {
   }, [curFlowID]);
 
   useEffect(() => {
-    setFiles(listWorkflows().filter(flow => flow.name.includes(debaunceSearchValue)))
+    setFiles(listWorkflows().filter(flow => flow.name.toLocaleLowerCase().includes(debaunceSearchValue.toLocaleLowerCase())))
   }, [debaunceSearchValue])
 
   const onSelect = useCallback((flowId: string, selected: boolean) => {
@@ -152,6 +163,10 @@ export default function RecentFilesDrawer({ onclose }: Props) {
       draggingWorkflowID.current = file.id;
     }
   };
+
+  const handleClearSearchValue = () => {
+    setSearchValue('');
+  }
 
   const DRAWER_WIDTH = 440;
   return (
@@ -263,13 +278,31 @@ export default function RecentFilesDrawer({ onclose }: Props) {
                 />
               </HStack>
 
-              <Input
-                placeholder='Search flow'
-                width={"auto"}
-                height={"auto"}
-                value={searchValue}
-                onChange={({ target }) => setSearchValue(target.value)}
-              />
+              <Box style={{ position: 'relative' }}>
+                <IconSearch style={IconSearchStyle} />
+                <IconButton
+                  position="absolute"
+                  right="5px"
+                  width="20px"
+                  height="20px"
+                  top="50%"
+                  transform="translateY(-50%)"
+                  cursor="pointer"
+                  background="none"
+                  zIndex="100"
+                  icon={<IconX />}
+                  onClick={handleClearSearchValue}
+                  aria-label="clear input button"
+                />
+                <Input
+                  placeholder='Search'
+                  width={"auto"}
+                  height={"auto"}
+                  paddingLeft={"30px"}
+                  value={searchValue}
+                  onChange={({ target }) => setSearchValue(target.value)}
+                />
+              </Box>
 
               <Menu closeOnSelect={true}>
                 <MenuButton
