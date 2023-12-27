@@ -23,6 +23,7 @@ import {
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
 import EditFlowName from "./components/EditFlowName";
+import DropdownTitle from "./components/DropdownTitle";
 type Route = "root" | "customNodes" | "recentFlows";
 
 export default function App() {
@@ -106,7 +107,7 @@ export default function App() {
     app.loadGraphData(defaultObj);
   };
 
-  const onDuplicateWorkflow = (workflowID: string) => {
+  const onDuplicateWorkflow = (workflowID: string, newFlowName?: string) => {
     if (workspace == null) {
       return;
     }
@@ -116,7 +117,7 @@ export default function App() {
     }
     const flow = createFlow({
       json: workflow.json,
-      name: workflow.name,
+      name: newFlowName || workflow.name,
       parentFolderID: workflow.parentFolderID,
       tags: workflow.tags,
     });
@@ -211,6 +212,7 @@ export default function App() {
                 </Text>
               </HStack>
             </Button>
+
             <EditFlowName
               displayName={curFlowName ?? ""}
               updateFlowName={(newName) => {
@@ -226,6 +228,7 @@ export default function App() {
               size={15}
               color="#FFF"
             />
+            <DropdownTitle />
           </HStack>
         </Draggable>
         {route === "recentFlows" && (

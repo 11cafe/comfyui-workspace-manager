@@ -3,7 +3,7 @@ import { Folder, Workflow } from "./WorkspaceDB";
 
 export const WorkspaceContext = createContext<{
   curFlowID: string | null;
-  onDuplicateWorkflow?: (flowID: string) => void;
+  onDuplicateWorkflow?: (flowID: string, newFlowName?: string) => void;
   loadWorkflowID: (id: string) => void;
 }>({
   curFlowID: null,
