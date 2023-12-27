@@ -48,6 +48,7 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
     setIsMenuOpen(true);
   };
   useEffect(() => {
+    if (folder.isCollapse === isCollapsed) return;
     foldersTable?.update({
       ...folder,
       isCollapse: isCollapsed,
