@@ -30,7 +30,6 @@ import {
   IconChevronUp,
   IconFolderPlus,
   IconX,
-  IconSearch,
 } from "@tabler/icons-react";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
@@ -44,21 +43,13 @@ import { app } from "/scripts/app.js";
 import { insertWorkflowToCanvas3 } from "./InsertWorkflowToCanvas";
 import FilesListFolderItem from "./FilesListFolderItem";
 import { useDebounce } from "../customHooks/useDebaunce";
+import SeacrhInput from "../components/SearchInput";
 
 const MAX_TAGS_TO_SHOW = 6;
 type Props = {
   onclose: () => void;
   onClickNewFlow: () => void;
 };
-
-const IconSearchStyle: CSSProperties = {
-  position: "absolute",
-  marginLeft: "5px",
-  width: "20px",
-  height: "20px",
-  top: "50%",
-  transform: "translateY(-50%)",
-}
 
 export default function RecentFilesDrawer({ onclose }: Props) {
   const [files, setFiles] = useState<Array<Folder | Workflow>>([]);
@@ -164,8 +155,8 @@ export default function RecentFilesDrawer({ onclose }: Props) {
     }
   };
 
-  const handleClearSearchValue = () => {
-    setSearchValue('');
+  const onUpdateSearchValue = (newValue: string) => {
+    setSearchValue(newValue);
   }
 
   const DRAWER_WIDTH = 440;
@@ -278,31 +269,7 @@ export default function RecentFilesDrawer({ onclose }: Props) {
                 />
               </HStack>
 
-              <Box style={{ position: 'relative' }}>
-                <IconSearch style={IconSearchStyle} />
-                <IconButton
-                  position="absolute"
-                  right="5px"
-                  width="20px"
-                  height="20px"
-                  top="50%"
-                  transform="translateY(-50%)"
-                  cursor="pointer"
-                  background="none"
-                  zIndex="100"
-                  icon={<IconX />}
-                  onClick={handleClearSearchValue}
-                  aria-label="clear input button"
-                />
-                <Input
-                  placeholder='Search'
-                  width={"auto"}
-                  height={"auto"}
-                  paddingLeft={"30px"}
-                  value={searchValue}
-                  onChange={({ target }) => setSearchValue(target.value)}
-                />
-              </Box>
+              <SeacrhInput searchValue={searchValue} onUpdateSearchValue={onUpdateSearchValue} />
 
               <Menu closeOnSelect={true}>
                 <MenuButton
