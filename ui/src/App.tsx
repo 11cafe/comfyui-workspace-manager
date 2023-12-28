@@ -24,6 +24,7 @@ import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
 import EditFlowName from "./components/EditFlowName";
 import DropdownTitle from "./components/DropdownTitle";
+import { AlertDialogBase, showDialog } from "./components/AlertDialogBase";
 type Route = "root" | "customNodes" | "recentFlows";
 
 export default function App() {
@@ -34,6 +35,7 @@ export default function App() {
   const [flowID, setFlowID] = useState<string | null>(null);
   const curFlowID = useRef<string | null>(null);
   const [positionStyle, setPositionStyle] = useState<PanelPosition>();
+  const [isDirty, setIsDirty] = useState(false);
 
   const setCurFlowID = (id: string) => {
     curFlowID.current = id;
@@ -77,14 +79,22 @@ export default function App() {
       if (curFlowID.current != null) {
         const graphJson = JSON.stringify(app.graph.serialize());
         localStorage.setItem("curFlowID", curFlowID.current);
-        graphJson != null &&
-          updateFlow(curFlowID.current, {
-            json: graphJson,
-          });
+
+        const curWorkflow = curFlowID.current
+          ? getWorkflow(curFlowID.current)
+          : undefined;
+        if (graphJson === curWorkflow?.json) {
+          setIsDirty(false);
+        } else {
+          setIsDirty(true);
+        }
       }
     }, 1000);
   }, []);
   const loadWorkflowID = (id: string) => {
+    // if (isDirty) {
+    //   return;
+    // }
     if (workspace == null) {
       alert("Error: Workspace not loaded!");
       return;
@@ -212,8 +222,8 @@ export default function App() {
                 </Text>
               </HStack>
             </Button>
-
             <EditFlowName
+              isDirty={isDirty}
               displayName={curFlowName ?? ""}
               updateFlowName={(newName) => {
                 setCurFlowName(newName);

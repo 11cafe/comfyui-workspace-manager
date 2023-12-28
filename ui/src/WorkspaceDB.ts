@@ -8,7 +8,12 @@ import {
 } from "./utils";
 import { ESortTypes, ImportWorkflow } from "./RecentFilesDrawer/types";
 
-export type Table = "workflows" | "tags" | "userSettings" | "folders";
+export type Table =
+  | "workflows"
+  | "tags"
+  | "userSettings"
+  | "folders"
+  | "changelogs";
 
 interface SortableItem {
   name: string;
@@ -318,12 +323,12 @@ async function loadTagsTable(): Promise<TagsTable> {
   };
 }
 
-function curComfyspaceJson(): string {
+export function curComfyspaceJson(): string {
   return JSON.stringify({
     [UserSettingsTable.TABLE_NAME]: userSettingsTable?.records,
     ["tags"]: tagsTable?.tags,
     ["workflows"]: workspace,
-    [FoldersTable.TABLE_NAME]: foldersTable?.getDB(),
+    [FoldersTable.TABLE_NAME]: foldersTable?.getRecords(),
   });
 }
 
@@ -410,7 +415,7 @@ class FoldersTable {
   public listAll(): Folder[] {
     return Object.values(this.records);
   }
-  public getDB() {
+  public getRecords() {
     return this.records;
   }
   public get(id: string): Folder | undefined {

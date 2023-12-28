@@ -95,6 +95,9 @@ export default function DropdownTitle() {
                 icon={<IconChevronDown size={20} />}
                 aria-label="menu"
                 size={"xs"}
+                backgroundColor={"#323232"}
+                color={"white"}
+                // variant={"outline"}
               />
             </MenuButton>
             <Portal>

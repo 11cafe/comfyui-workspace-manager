@@ -73,14 +73,12 @@ export default function WorkflowListItem({ workflow }: Props) {
         isSelected ? "teal.200" : isMenuOpen ? hoverBgColor : undefined
       }
       color={isSelected && !isMultiSelecting ? "#333" : undefined}
-      // w={"90%"}
       draggable={!isMultiSelecting}
       onDragStart={(e) => {
         setDraggingFile && setDraggingFile(workflow);
       }}
       borderRadius={6}
       p={2}
-      // minW={320}
       onClick={() => {
         !isMultiSelecting && loadWorkflowID(workflow.id);
       }}

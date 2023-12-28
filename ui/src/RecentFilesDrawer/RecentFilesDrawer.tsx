@@ -11,6 +11,7 @@ import {
   Card,
   Box,
   Flex,
+  Tooltip,
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState, useRef, useCallback } from "react";
 import {
@@ -170,8 +171,8 @@ export default function RecentFilesDrawer({ onclose }: Props) {
           top={0}
           left={0}
           shadow={"xl"}
-          zIndex={10}
-          // boxShadow={"rgba(255, 255, 255, 0.4) 1px 4px 8px 1px"}
+          zIndex={1000}
+          // boxShadow={"rgba(200, 200, 200, 0.4) 1px 4px 8px 1px"}
         >
           <Flex alignItems={"center"} justifyContent={"space-between"}>
             <HStack gap={4}>
@@ -240,17 +241,20 @@ export default function RecentFilesDrawer({ onclose }: Props) {
                 ) : (
                   <Box />
                 )}
-                <IconButton
-                  size={"sm"}
-                  icon={<IconFolderPlus size={21} />}
-                  onClick={() => {
-                    foldersTable?.create({
-                      name: "New Folder",
-                    });
-                    loadLatestWorkflows();
-                  }}
-                  aria-label="new folder button"
-                />
+                <Tooltip hasArrow label="New folder" placement="bottom-start">
+                  <IconButton
+                    size={"sm"}
+                    variant={"outline"}
+                    icon={<IconFolderPlus size={21} />}
+                    onClick={() => {
+                      foldersTable?.create({
+                        name: "New Folder",
+                      });
+                      loadLatestWorkflows();
+                    }}
+                    aria-label="new folder button"
+                  />
+                </Tooltip>
               </HStack>
               <Menu closeOnSelect={true}>
                 <MenuButton

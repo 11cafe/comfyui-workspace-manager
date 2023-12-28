@@ -85,7 +85,7 @@ export default function MultipleSelectionOperation(props: Props) {
           {selectedKeys.length > 0 && (
             <Text fontWeight={600}>{`Selected ${selectedKeys.length}`}</Text>
           )}
-          <Tooltip hasArrow label="Exit batch operation">
+          <Tooltip hasArrow label="Exit multi-select">
             <IconButton
               aria-label="Close multi-select operation"
               size={"sm"}
@@ -97,15 +97,11 @@ export default function MultipleSelectionOperation(props: Props) {
           </Tooltip>
         </>
       ) : (
-        <Tooltip
-          hasArrow
-          label="Start batch operation"
-          placement="bottom-start"
-        >
+        <Tooltip hasArrow label="Select multiple" placement="bottom-start">
           <IconButton
             aria-label="Start multi-select operation"
             size={"sm"}
-            // variant={"ghost"}
+            variant={"outline"}
             icon={<IconListCheck size={21} />}
             onClick={() => {
               changeMultipleState(true);
