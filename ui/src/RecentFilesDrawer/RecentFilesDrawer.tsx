@@ -12,6 +12,7 @@ import {
   Box,
   Flex,
   Tooltip,
+  Input,
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState, useRef, useCallback } from "react";
 import {
@@ -30,6 +31,7 @@ import {
   IconChevronUp,
   IconFolderPlus,
   IconX,
+  IconSearch,
 } from "@tabler/icons-react";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
@@ -42,12 +44,23 @@ import { ESortTypes, sortTypeLocalStorageKey } from "./types";
 import { app } from "/scripts/app.js";
 import { insertWorkflowToCanvas3 } from "./InsertWorkflowToCanvas";
 import FilesListFolderItem from "./FilesListFolderItem";
+import { useDebounce } from "../customHooks/useDebaunce";
 
 const MAX_TAGS_TO_SHOW = 6;
 type Props = {
   onclose: () => void;
   onClickNewFlow: () => void;
 };
+
+const IconSearchStyle: CSSProperties = {
+  position: "absolute",
+  marginLeft: "5px",
+  width: "20px",
+  height: "20px",
+  top: "50%",
+  transform: "translateY(-50%)",
+};
+
 export default function RecentFilesDrawer({ onclose }: Props) {
   const [files, setFiles] = useState<Array<Folder | Workflow>>([]);
   const recentFlows = files.filter((n) => !isFolder(n)) as Workflow[];
@@ -57,6 +70,8 @@ export default function RecentFilesDrawer({ onclose }: Props) {
   const [multipleState, setMultipleState] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   const [refreshFolderStamp, setRefreshFolderStamp] = useState(0);
+  const [searchValue, setSearchValue] = useState("");
+  const debaunceSearchValue = useDebounce(searchValue, 400);
   const draggingWorkflowID = useRef<string | null>(null);
   const [draggingFile, setDraggingFile] = useState<Workflow | Folder | null>(
     null
@@ -100,6 +115,7 @@ export default function RecentFilesDrawer({ onclose }: Props) {
   const handleClick = (e: any) => {
     onclose();
   };
+
   useEffect(() => {
     app.canvasEl.addEventListener("drop", handleDrop);
     app.canvasEl.addEventListener("click", handleClick);
@@ -109,9 +125,20 @@ export default function RecentFilesDrawer({ onclose }: Props) {
       app.canvasEl.removeEventListener("click", handleClick);
     };
   }, []);
+
   useEffect(() => {
     loadLatestWorkflows();
   }, [curFlowID]);
+
+  useEffect(() => {
+    setFiles(
+      listWorkflows().filter((flow) =>
+        flow.name
+          .toLocaleLowerCase()
+          .includes(debaunceSearchValue.toLocaleLowerCase())
+      )
+    );
+  }, [debaunceSearchValue]);
 
   const onSelect = useCallback((flowId: string, selected: boolean) => {
     setSelectedKeys((preState) => {
@@ -142,6 +169,10 @@ export default function RecentFilesDrawer({ onclose }: Props) {
     if (!isFolder(file)) {
       draggingWorkflowID.current = file.id;
     }
+  };
+
+  const handleClearSearchValue = () => {
+    setSearchValue("");
   };
 
   const DRAWER_WIDTH = 440;
@@ -258,6 +289,33 @@ export default function RecentFilesDrawer({ onclose }: Props) {
                   </Tooltip>
                 )}
               </HStack>
+
+              <Box style={{ position: "relative" }}>
+                <IconSearch style={IconSearchStyle} />
+                <IconButton
+                  position="absolute"
+                  right="5px"
+                  width="20px"
+                  height="20px"
+                  top="50%"
+                  transform="translateY(-50%)"
+                  cursor="pointer"
+                  background="none"
+                  zIndex="100"
+                  icon={<IconX />}
+                  onClick={handleClearSearchValue}
+                  aria-label="clear input button"
+                />
+                <Input
+                  placeholder="Search"
+                  width={"auto"}
+                  height={"auto"}
+                  paddingLeft={"30px"}
+                  value={searchValue}
+                  onChange={({ target }) => setSearchValue(target.value)}
+                />
+              </Box>
+
               <Menu closeOnSelect={true}>
                 <MenuButton
                   as={Button}
