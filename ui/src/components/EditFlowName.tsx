@@ -23,10 +23,14 @@ import { WorkspaceContext } from "../WorkspaceContext";
 type Props = {
   displayName: string;
   updateFlowName: (newName: string) => void;
+  isDirty: boolean;
 };
 
-export default function EditFlowName(props: Props) {
-  const { displayName, updateFlowName } = props;
+export default function EditFlowName({
+  displayName,
+  updateFlowName,
+  isDirty,
+}: Props) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { curFlowID } = useContext(WorkspaceContext);
   const [editName, setEditName] = useState(displayName);
@@ -74,10 +78,12 @@ export default function EditFlowName(props: Props) {
           color="white"
           onClick={startEdit}
           maxW={240}
+          fontWeight={500}
           whiteSpace="nowrap"
           overflow="hidden"
           textOverflow="ellipsis"
         >
+          {isDirty && "* "}
           {displayName}
         </Text>
       </Tooltip>

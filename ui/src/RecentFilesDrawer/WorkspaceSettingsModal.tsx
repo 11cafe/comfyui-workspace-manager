@@ -23,6 +23,7 @@ import { IconEdit, IconFolder } from "@tabler/icons-react";
 import { useRef, useState } from "react";
 import { getSystemDir } from "../Api";
 import { userSettingsTable } from "../WorkspaceDB";
+import { ShortcutSettings } from "../settings/ShortcutSettings";
 
 export default function WorkspaceSettingsModal({
   onClose,
@@ -259,6 +260,7 @@ export default function WorkspaceSettingsModal({
                     </VStack>
                   )}
                 </Box>
+                <ShortcutSettings />
               </VStack>
             </HStack>
           </ModalBody>

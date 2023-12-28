@@ -2,12 +2,20 @@ import { useCallback, useEffect, useRef, useState } from "react";
 // @ts-ignore
 import { app } from "/scripts/app.js";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
-import { HStack, Box, Button, Text } from "@chakra-ui/react";
+import {
+  HStack,
+  Box,
+  Button,
+  Text,
+  IconButton,
+  Tooltip,
+} from "@chakra-ui/react";
 import {
   IconFolder,
   IconPlus,
   IconTriangleInvertedFilled,
   IconGripVertical,
+  IconDeviceFloppy,
 } from "@tabler/icons-react";
 import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
 import Draggable from "./components/Draggable";
@@ -24,6 +32,8 @@ import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
 import EditFlowName from "./components/EditFlowName";
 import DropdownTitle from "./components/DropdownTitle";
+import { matchSaveWorkflowShortcut } from "./utils";
+
 type Route = "root" | "customNodes" | "recentFlows";
 
 export default function App() {
@@ -34,6 +44,32 @@ export default function App() {
   const [flowID, setFlowID] = useState<string | null>(null);
   const curFlowID = useRef<string | null>(null);
   const [positionStyle, setPositionStyle] = useState<PanelPosition>();
+  const [isDirty, setIsDirty] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const saveCurWorkflow = useCallback(() => {
+    if (curFlowID.current) {
+      const graphJson = JSON.stringify(app.graph.serialize());
+      updateFlow(curFlowID.current, {
+        lastSavedJson: graphJson,
+      });
+    }
+  }, []);
+  const discardUnsavedChanges = () => {
+    let userInput = confirm(
+      "Are you sure you want to discard unsaved changes?"
+    );
+
+    if (userInput) {
+      // User clicked OK
+      if (curFlowID.current) {
+        const flow = getWorkflow(curFlowID.current);
+        if (flow && flow.lastSavedJson) {
+          app.loadGraphData(JSON.parse(flow.lastSavedJson));
+        }
+      }
+    }
+  };
 
   const setCurFlowID = (id: string) => {
     curFlowID.current = id;
@@ -81,6 +117,15 @@ export default function App() {
           updateFlow(curFlowID.current, {
             json: graphJson,
           });
+
+        const curWorkflow = curFlowID.current
+          ? getWorkflow(curFlowID.current)
+          : undefined;
+        if (curWorkflow == null || graphJson === curWorkflow?.lastSavedJson) {
+          setIsDirty(false);
+        } else {
+          setIsDirty(true);
+        }
       }
     }, 1000);
   }, []);
@@ -102,9 +147,7 @@ export default function App() {
   const onClickNewFlow = () => {
     const defaultObj = defaultGraph;
     const flow = createFlow({ json: JSON.stringify(defaultObj) });
-    setCurFlowID(flow.id);
-    setCurFlowName(flow.name);
-    app.loadGraphData(defaultObj);
+    loadWorkflowID(flow.id);
   };
 
   const onDuplicateWorkflow = (workflowID: string, newFlowName?: string) => {
@@ -121,9 +164,7 @@ export default function App() {
       parentFolderID: workflow.parentFolderID,
       tags: workflow.tags,
     });
-    setCurFlowID(flow.id);
-    setCurFlowName(flow.name);
-    app.loadGraphData(JSON.parse(flow.json));
+    loadWorkflowID(flow.id);
   };
 
   const updatePanelPosition = useCallback(
@@ -150,6 +191,17 @@ export default function App() {
     [positionStyle]
   );
 
+  const shortcutListener = (event: KeyboardEvent) => {
+    if (matchSaveWorkflowShortcut(event)) {
+      saveCurWorkflow();
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("keydown", shortcutListener);
+    return () => window.removeEventListener("keydown", shortcutListener);
+  }, []);
+
   if (loadingDB || !positionStyle) {
     return null;
   }
@@ -159,6 +211,8 @@ export default function App() {
         curFlowID: flowID,
         onDuplicateWorkflow: onDuplicateWorkflow,
         loadWorkflowID: loadWorkflowID,
+        discardUnsavedChanges: discardUnsavedChanges,
+        saveCurWorkflow: saveCurWorkflow,
       }}
     >
       <Box
@@ -186,11 +240,14 @@ export default function App() {
             gap={2}
             draggable={false}
             id="workspaceManagerPanel"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
           >
             <Button
               size={"sm"}
               aria-label="workspace folder"
               onClick={() => setRoute("recentFlows")}
+              px={2}
             >
               <HStack gap={1}>
                 <IconFolder size={21} />
@@ -212,8 +269,8 @@ export default function App() {
                 </Text>
               </HStack>
             </Button>
-
             <EditFlowName
+              isDirty={isDirty}
               displayName={curFlowName ?? ""}
               updateFlowName={(newName) => {
                 setCurFlowName(newName);
@@ -222,13 +279,26 @@ export default function App() {
                 });
               }}
             />
-            <IconGripVertical
-              id="dragPanelIcon"
-              cursor="move"
-              size={15}
-              color="#FFF"
-            />
+            {isDirty && (
+              <Tooltip label="Save workflow">
+                <IconButton
+                  onClick={saveCurWorkflow}
+                  icon={<IconDeviceFloppy size={20} color="white" />}
+                  size={"sm"}
+                  aria-label="save workspace"
+                  variant={"ghost"}
+                />
+              </Tooltip>
+            )}
             <DropdownTitle />
+            {isHovered && (
+              <IconGripVertical
+                id="dragPanelIcon"
+                cursor="move"
+                size={15}
+                color="#FFF"
+              />
+            )}
           </HStack>
         </Draggable>
         {route === "recentFlows" && (

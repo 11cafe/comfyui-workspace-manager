@@ -7,8 +7,14 @@ import {
   toFileNameFriendly,
 } from "./utils";
 import { ESortTypes, ImportWorkflow } from "./RecentFilesDrawer/types";
+import { ChangelogsTable } from "./db-tables/ChangelogsTable";
 
-export type Table = "workflows" | "tags" | "userSettings" | "folders";
+export type Table =
+  | "workflows"
+  | "tags"
+  | "userSettings"
+  | "folders"
+  | "changelogs";
 
 interface SortableItem {
   name: string;
@@ -23,6 +29,7 @@ export interface PanelPosition {
 export interface Workflow extends SortableItem {
   id: string;
   json: string;
+  lastSavedJson?: string;
   name: string;
   updateTime: number;
   createTime: number;
@@ -57,6 +64,7 @@ export let workspace: Workflows | undefined = undefined;
 export let tagsTable: TagsTable | null = null;
 export let userSettingsTable: UserSettingsTable | null = null;
 export let foldersTable: FoldersTable | null = null;
+export let changelogsTable: ChangelogsTable | null = null;
 
 export async function loadDBs() {
   const loadWorkflows = async () => {
@@ -75,11 +83,15 @@ export async function loadDBs() {
   const loadFolders = async () => {
     foldersTable = await FoldersTable.load();
   };
+  const loadChangelogs = async () => {
+    changelogsTable = await ChangelogsTable.load();
+  };
   await Promise.all([
     loadWorkflows(),
     loadTags(),
     loadUserSettings(),
     loadFolders(),
+    // loadChangelogs(),
   ]);
 }
 
@@ -107,6 +119,7 @@ export function updateFlow(
   input: {
     name?: string;
     json?: string;
+    lastSavedJson?: string;
     tags?: string[];
     parentFolderID?: string;
   }
@@ -318,18 +331,21 @@ async function loadTagsTable(): Promise<TagsTable> {
   };
 }
 
-function curComfyspaceJson(): string {
+export function curComfyspaceJson(): string {
   return JSON.stringify({
     [UserSettingsTable.TABLE_NAME]: userSettingsTable?.records,
     ["tags"]: tagsTable?.tags,
     ["workflows"]: workspace,
-    [FoldersTable.TABLE_NAME]: foldersTable?.getDB(),
+    [FoldersTable.TABLE_NAME]: foldersTable?.getRecords(),
   });
 }
 
 type UserSettings = {
   myWorkflowsDir: string;
   topBarStyle: PanelPosition;
+  shortcuts: {
+    save: string;
+  };
 };
 class UserSettingsTable {
   public records: UserSettings;
@@ -341,6 +357,9 @@ class UserSettingsTable {
         left: 0,
       },
       myWorkflowsDir: "",
+      shortcuts: {
+        save: "Shift+S",
+      },
     };
   }
   public listSettings() {
@@ -410,7 +429,7 @@ class FoldersTable {
   public listAll(): Folder[] {
     return Object.values(this.records);
   }
-  public getDB() {
+  public getRecords() {
     return this.records;
   }
   public get(id: string): Folder | undefined {

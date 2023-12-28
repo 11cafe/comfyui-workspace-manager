@@ -1,6 +1,11 @@
 // @ts-ignore
 import { ESortTypes } from "./RecentFilesDrawer/types";
-import { Folder, listWorkflows, Workflow } from "./WorkspaceDB";
+import {
+  Folder,
+  listWorkflows,
+  userSettingsTable,
+  Workflow,
+} from "./WorkspaceDB";
 // @ts-ignore
 import { app, ComfyApp } from "/scripts/app.js";
 // copied from app.js
@@ -262,3 +267,25 @@ export function getPngMetadata(file: File) {
     reader.readAsArrayBuffer(file);
   });
 }
+
+export const matchSaveWorkflowShortcut = (event: KeyboardEvent) => {
+  const short = userSettingsTable?.getSetting("shortcuts")?.save;
+  if (!short) return false;
+  return matchShortcut(event, short);
+};
+
+export const matchShortcut = (
+  event: KeyboardEvent,
+  shortcutString: string
+): boolean => {
+  const keys = shortcutString.split("+");
+  const keyEvent: Record<string, boolean> = {
+    Control: event.ctrlKey,
+    Shift: event.shiftKey,
+    Alt: event.altKey,
+    Command: event.metaKey,
+    [event.key.toUpperCase()]: true,
+  };
+
+  return keys.every((key) => keyEvent[key]);
+};
