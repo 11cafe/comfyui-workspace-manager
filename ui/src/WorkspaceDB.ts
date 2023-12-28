@@ -28,6 +28,7 @@ export interface PanelPosition {
 export interface Workflow extends SortableItem {
   id: string;
   json: string;
+  lastSavedJson?: string;
   name: string;
   updateTime: number;
   createTime: number;
@@ -112,6 +113,7 @@ export function updateFlow(
   input: {
     name?: string;
     json?: string;
+    lastSavedJson?: string;
     tags?: string[];
     parentFolderID?: string;
   }

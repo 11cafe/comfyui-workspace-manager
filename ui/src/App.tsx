@@ -46,7 +46,7 @@ export default function App() {
     if (curFlowID.current) {
       const graphJson = JSON.stringify(app.graph.serialize());
       updateFlow(curFlowID.current, {
-        json: graphJson,
+        lastSavedJson: graphJson,
       });
     }
   }, []);
@@ -59,29 +59,13 @@ export default function App() {
       // User clicked OK
       if (curFlowID.current) {
         const flow = getWorkflow(curFlowID.current);
-        if (flow) {
-          app.loadGraphData(JSON.parse(flow.json));
+        if (flow && flow.lastSavedJson) {
+          app.loadGraphData(JSON.parse(flow.lastSavedJson));
         }
       }
     }
   };
-  const handleShowDialog = () => {
-    showDialog(
-      `You have unsaved changes in your current workflow, please save or discard changes before switching workflow`,
-      [
-        {
-          label: "Save",
-          onClick: saveCurWorkflow,
-          colorScheme: "teal",
-        },
-        {
-          label: "Discard",
-          onClick: discardUnsavedChanges,
-          colorScheme: "red",
-        },
-      ]
-    );
-  };
+
   const setCurFlowID = (id: string) => {
     curFlowID.current = id;
     setFlowID(id);
@@ -124,11 +108,15 @@ export default function App() {
       if (curFlowID.current != null) {
         const graphJson = JSON.stringify(app.graph.serialize());
         localStorage.setItem("curFlowID", curFlowID.current);
+        graphJson != null &&
+          updateFlow(curFlowID.current, {
+            json: graphJson,
+          });
 
         const curWorkflow = curFlowID.current
           ? getWorkflow(curFlowID.current)
           : undefined;
-        if (graphJson === curWorkflow?.json) {
+        if (curWorkflow == null || graphJson === curWorkflow?.lastSavedJson) {
           setIsDirty(false);
         } else {
           setIsDirty(true);
@@ -137,10 +125,6 @@ export default function App() {
     }, 1000);
   }, []);
   const loadWorkflowID = (id: string) => {
-    if (isDirty) {
-      handleShowDialog();
-      return;
-    }
     if (workspace == null) {
       alert("Error: Workspace not loaded!");
       return;
@@ -158,9 +142,7 @@ export default function App() {
   const onClickNewFlow = () => {
     const defaultObj = defaultGraph;
     const flow = createFlow({ json: JSON.stringify(defaultObj) });
-    setCurFlowID(flow.id);
-    setCurFlowName(flow.name);
-    app.loadGraphData(defaultObj);
+    loadWorkflowID(flow.id);
   };
 
   const onDuplicateWorkflow = (workflowID: string, newFlowName?: string) => {
@@ -177,9 +159,7 @@ export default function App() {
       parentFolderID: workflow.parentFolderID,
       tags: workflow.tags,
     });
-    setCurFlowID(flow.id);
-    setCurFlowName(flow.name);
-    app.loadGraphData(JSON.parse(flow.json));
+    loadWorkflowID(flow.id);
   };
 
   const updatePanelPosition = useCallback(
@@ -260,6 +240,7 @@ export default function App() {
               size={"sm"}
               aria-label="workspace folder"
               onClick={() => setRoute("recentFlows")}
+              px={2}
             >
               <HStack gap={1}>
                 <IconFolder size={21} />
