@@ -2,12 +2,20 @@ import { useCallback, useEffect, useRef, useState } from "react";
 // @ts-ignore
 import { app } from "/scripts/app.js";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
-import { HStack, Box, Button, Text } from "@chakra-ui/react";
+import {
+  HStack,
+  Box,
+  Button,
+  Text,
+  IconButton,
+  Tooltip,
+} from "@chakra-ui/react";
 import {
   IconFolder,
   IconPlus,
   IconTriangleInvertedFilled,
   IconGripVertical,
+  IconDeviceFloppy,
 } from "@tabler/icons-react";
 import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
 import Draggable from "./components/Draggable";
@@ -37,6 +45,8 @@ export default function App() {
   const curFlowID = useRef<string | null>(null);
   const [positionStyle, setPositionStyle] = useState<PanelPosition>();
   const [isDirty, setIsDirty] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
   const saveCurWorkflow = useCallback(() => {
     if (curFlowID.current) {
       const graphJson = JSON.stringify(app.graph.serialize());
@@ -230,6 +240,8 @@ export default function App() {
             gap={2}
             draggable={false}
             id="workspaceManagerPanel"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
           >
             <Button
               size={"sm"}
@@ -267,13 +279,26 @@ export default function App() {
                 });
               }}
             />
+            {isDirty && (
+              <Tooltip label="Save workflow">
+                <IconButton
+                  onClick={saveCurWorkflow}
+                  icon={<IconDeviceFloppy size={20} color="white" />}
+                  size={"sm"}
+                  aria-label="save workspace"
+                  variant={"ghost"}
+                />
+              </Tooltip>
+            )}
             <DropdownTitle />
-            <IconGripVertical
-              id="dragPanelIcon"
-              cursor="move"
-              size={15}
-              color="#FFF"
-            />
+            {isHovered && (
+              <IconGripVertical
+                id="dragPanelIcon"
+                cursor="move"
+                size={15}
+                color="#FFF"
+              />
+            )}
           </HStack>
         </Draggable>
         {route === "recentFlows" && (
