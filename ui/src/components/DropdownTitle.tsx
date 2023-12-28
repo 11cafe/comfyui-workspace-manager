@@ -25,13 +25,23 @@ import {
   Input,
   Portal,
 } from "@chakra-ui/react";
-import { IconChevronDown } from "@tabler/icons-react";
-import { getWorkflow, workspace } from "../WorkspaceDB";
+import {
+  IconArrowBackUpDouble,
+  IconChevronDown,
+  IconDeviceFloppy,
+  IconDownload,
+} from "@tabler/icons-react";
+import { getWorkflow, userSettingsTable, workspace } from "../WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { Overlay } from "./Overlay";
 
 export default function DropdownTitle() {
-  const { curFlowID, onDuplicateWorkflow } = useContext(WorkspaceContext);
+  const {
+    curFlowID,
+    onDuplicateWorkflow,
+    discardUnsavedChanges,
+    saveCurWorkflow,
+  } = useContext(WorkspaceContext);
 
   const [isOpenNewName, setIsOpenNewName] = useState(false);
   const [newFlowName, setNewFlowName] = useState("");
@@ -84,7 +94,7 @@ export default function DropdownTitle() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }, [curFlowID]);
-
+  const saveShortcut = userSettingsTable?.getSetting("shortcuts")?.save;
   return (
     <>
       <Menu isLazy={true}>
@@ -102,9 +112,30 @@ export default function DropdownTitle() {
             </MenuButton>
             <Portal>
               <MenuList minWidth={150}>
-                <MenuItem onClick={handleDownload}>Download</MenuItem>
+                <MenuItem
+                  onClick={saveCurWorkflow}
+                  icon={<IconDeviceFloppy size={20} />}
+                  iconSpacing={1}
+                  command={saveShortcut}
+                >
+                  Save
+                </MenuItem>
+                <MenuItem
+                  onClick={handleDownload}
+                  icon={<IconDownload size={20} />}
+                  iconSpacing={1}
+                >
+                  Download
+                </MenuItem>
                 <MenuItem onClick={() => setIsOpenNewName(true)}>
                   Save As
+                </MenuItem>
+                <MenuItem
+                  onClick={discardUnsavedChanges}
+                  icon={<IconArrowBackUpDouble size={20} />}
+                  iconSpacing={1}
+                >
+                  Discard unsaved changes
                 </MenuItem>
               </MenuList>
               {isOpen && <Overlay backgroundColor={null} />}

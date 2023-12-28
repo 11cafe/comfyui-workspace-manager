@@ -335,6 +335,9 @@ export function curComfyspaceJson(): string {
 type UserSettings = {
   myWorkflowsDir: string;
   topBarStyle: PanelPosition;
+  shortcuts: {
+    save: string;
+  };
 };
 class UserSettingsTable {
   public records: UserSettings;
@@ -346,6 +349,9 @@ class UserSettingsTable {
         left: 0,
       },
       myWorkflowsDir: "",
+      shortcuts: {
+        save: "Shift+S",
+      },
     };
   }
   public listSettings() {

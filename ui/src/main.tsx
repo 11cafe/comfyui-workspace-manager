@@ -6,6 +6,7 @@ import { ColorModeScript } from "@chakra-ui/react";
 
 import { ChakraProvider } from "@chakra-ui/react";
 import { extendTheme, type ThemeConfig } from "@chakra-ui/react";
+import { AlertDialogProvider } from "./components/AlertDialogProvider.tsx";
 
 const topbar = document.createElement("div");
 document.body.append(topbar);
@@ -21,7 +22,9 @@ ReactDOM.createRoot(topbar).render(
   <React.StrictMode>
     <ChakraProvider>
       <ColorModeScript initialColorMode={theme.config.initialColorMode} />
-      <App />
+      <AlertDialogProvider>
+        <App />
+      </AlertDialogProvider>
     </ChakraProvider>
   </React.StrictMode>
 );

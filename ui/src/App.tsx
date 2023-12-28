@@ -24,7 +24,12 @@ import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
 import EditFlowName from "./components/EditFlowName";
 import DropdownTitle from "./components/DropdownTitle";
-import { AlertDialogBase, showDialog } from "./components/AlertDialogBase";
+import {
+  AlertDialogProvider,
+  useDialog,
+} from "./components/AlertDialogProvider";
+import { matchSaveWorkflowShortcut } from "./utils";
+
 type Route = "root" | "customNodes" | "recentFlows";
 
 export default function App() {
@@ -36,7 +41,47 @@ export default function App() {
   const curFlowID = useRef<string | null>(null);
   const [positionStyle, setPositionStyle] = useState<PanelPosition>();
   const [isDirty, setIsDirty] = useState(false);
+  const { showDialog } = useDialog();
+  const saveCurWorkflow = useCallback(() => {
+    if (curFlowID.current) {
+      const graphJson = JSON.stringify(app.graph.serialize());
+      updateFlow(curFlowID.current, {
+        json: graphJson,
+      });
+    }
+  }, []);
+  const discardUnsavedChanges = () => {
+    let userInput = confirm(
+      "Are you sure you want to discard unsaved changes?"
+    );
 
+    if (userInput) {
+      // User clicked OK
+      if (curFlowID.current) {
+        const flow = getWorkflow(curFlowID.current);
+        if (flow) {
+          app.loadGraphData(JSON.parse(flow.json));
+        }
+      }
+    }
+  };
+  const handleShowDialog = () => {
+    showDialog(
+      `You have unsaved changes in your current workflow, please save or discard changes before switching workflow`,
+      [
+        {
+          label: "Save",
+          onClick: saveCurWorkflow,
+          colorScheme: "teal",
+        },
+        {
+          label: "Discard",
+          onClick: discardUnsavedChanges,
+          colorScheme: "red",
+        },
+      ]
+    );
+  };
   const setCurFlowID = (id: string) => {
     curFlowID.current = id;
     setFlowID(id);
@@ -92,9 +137,10 @@ export default function App() {
     }, 1000);
   }, []);
   const loadWorkflowID = (id: string) => {
-    // if (isDirty) {
-    //   return;
-    // }
+    if (isDirty) {
+      handleShowDialog();
+      return;
+    }
     if (workspace == null) {
       alert("Error: Workspace not loaded!");
       return;
@@ -160,6 +206,17 @@ export default function App() {
     [positionStyle]
   );
 
+  const shortcutListener = (event: KeyboardEvent) => {
+    if (matchSaveWorkflowShortcut(event)) {
+      saveCurWorkflow();
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("keydown", shortcutListener);
+    return () => window.removeEventListener("keydown", shortcutListener);
+  }, []);
+
   if (loadingDB || !positionStyle) {
     return null;
   }
@@ -169,6 +226,8 @@ export default function App() {
         curFlowID: flowID,
         onDuplicateWorkflow: onDuplicateWorkflow,
         loadWorkflowID: loadWorkflowID,
+        discardUnsavedChanges: discardUnsavedChanges,
+        saveCurWorkflow: saveCurWorkflow,
       }}
     >
       <Box
@@ -232,13 +291,13 @@ export default function App() {
                 });
               }}
             />
+            <DropdownTitle />
             <IconGripVertical
               id="dragPanelIcon"
               cursor="move"
               size={15}
               color="#FFF"
             />
-            <DropdownTitle />
           </HStack>
         </Draggable>
         {route === "recentFlows" && (
