@@ -122,13 +122,17 @@ export default function RecentFilesDrawer({ onclose }: Props) {
   }, [curFlowID]);
 
   useEffect(() => {
-    setFiles(
-      listWorkflows().filter((flow) =>
-        flow.name
-          .toLocaleLowerCase()
-          .includes(debaunceSearchValue.toLocaleLowerCase())
-      )
-    );
+    if (debaunceSearchValue === "") {
+      loadLatestWorkflows();
+    } else {
+      setFiles(
+        listWorkflows().filter((flow) =>
+          flow.name
+            .toLocaleLowerCase()
+            .includes(debaunceSearchValue.toLocaleLowerCase())
+        )
+      );
+    }
   }, [debaunceSearchValue]);
 
   const onSelect = useCallback((flowId: string, selected: boolean) => {
