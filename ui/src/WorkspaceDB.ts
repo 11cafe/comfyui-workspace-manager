@@ -7,6 +7,7 @@ import {
   toFileNameFriendly,
 } from "./utils";
 import { ESortTypes, ImportWorkflow } from "./RecentFilesDrawer/types";
+import { ChangelogsTable } from "./db-tables/ChangelogsTable";
 
 export type Table =
   | "workflows"
@@ -63,6 +64,7 @@ export let workspace: Workflows | undefined = undefined;
 export let tagsTable: TagsTable | null = null;
 export let userSettingsTable: UserSettingsTable | null = null;
 export let foldersTable: FoldersTable | null = null;
+export let changelogsTable: ChangelogsTable | null = null;
 
 export async function loadDBs() {
   const loadWorkflows = async () => {
@@ -81,11 +83,15 @@ export async function loadDBs() {
   const loadFolders = async () => {
     foldersTable = await FoldersTable.load();
   };
+  const loadChangelogs = async () => {
+    changelogsTable = await ChangelogsTable.load();
+  };
   await Promise.all([
     loadWorkflows(),
     loadTags(),
     loadUserSettings(),
     loadFolders(),
+    // loadChangelogs(),
   ]);
 }
 
