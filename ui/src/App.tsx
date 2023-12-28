@@ -24,10 +24,6 @@ import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
 import EditFlowName from "./components/EditFlowName";
 import DropdownTitle from "./components/DropdownTitle";
-import {
-  AlertDialogProvider,
-  useDialog,
-} from "./components/AlertDialogProvider";
 import { matchSaveWorkflowShortcut } from "./utils";
 
 type Route = "root" | "customNodes" | "recentFlows";
@@ -41,7 +37,6 @@ export default function App() {
   const curFlowID = useRef<string | null>(null);
   const [positionStyle, setPositionStyle] = useState<PanelPosition>();
   const [isDirty, setIsDirty] = useState(false);
-  const { showDialog } = useDialog();
   const saveCurWorkflow = useCallback(() => {
     if (curFlowID.current) {
       const graphJson = JSON.stringify(app.graph.serialize());

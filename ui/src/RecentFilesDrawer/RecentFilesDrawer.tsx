@@ -227,7 +227,7 @@ export default function RecentFilesDrawer({ onclose }: Props) {
             </HStack>
             <HStack mb={2} mt={2} p={0} justifyContent="space-between">
               <HStack>
-                {recentFlows.length > 0 ? (
+                {files.length > 0 ? (
                   <MultipleSelectionOperation
                     multipleState={multipleState}
                     changeMultipleState={(state) => {
@@ -241,20 +241,22 @@ export default function RecentFilesDrawer({ onclose }: Props) {
                 ) : (
                   <Box />
                 )}
-                <Tooltip hasArrow label="New folder" placement="bottom-start">
-                  <IconButton
-                    size={"sm"}
-                    variant={"outline"}
-                    icon={<IconFolderPlus size={21} />}
-                    onClick={() => {
-                      foldersTable?.create({
-                        name: "New Folder",
-                      });
-                      loadLatestWorkflows();
-                    }}
-                    aria-label="new folder button"
-                  />
-                </Tooltip>
+                {!multipleState && (
+                  <Tooltip hasArrow label="New folder" placement="bottom-start">
+                    <IconButton
+                      size={"sm"}
+                      variant={"outline"}
+                      icon={<IconFolderPlus size={21} />}
+                      onClick={() => {
+                        foldersTable?.create({
+                          name: "New Folder",
+                        });
+                        loadLatestWorkflows();
+                      }}
+                      aria-label="new folder button"
+                    />
+                  </Tooltip>
+                )}
               </HStack>
               <Menu closeOnSelect={true}>
                 <MenuButton
