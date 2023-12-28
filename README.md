@@ -26,12 +26,12 @@ It is recommended to do git clone than downloading zip folder, because you can g
 
 - 🔁Effortlessly switch between different workflows in your workspace.
 - 🤏**Drag and drop** to insert subworkflows into current flow.
-- Create new workflows and rename existing ones.
-- 📂**Auto saves** all workflows in a single folder (now it's under `/ComfyUI/my_workflows`)
+- Create and name workflows
+- 🗂️Organize workflows with folders, 🏷️tags
+- 📂Saves all your workflows in a single folder (now it's under `/ComfyUI/my_workflows`)
 - 📑Quickly duplicate flow in right-click menu
 - **Bulk import** workflows into your workspace
-- 🏷️Organize workflows with **tags**
-- [beta] auto backup workspace locally
+- 🕛Version control of workflow, never lose any changes (Upcoming)
 - cloud sync & backup workspace so you will never lose your data (Upcoming!)
 - One-click share workflow (Upcoming!)
 
@@ -39,9 +39,13 @@ switch between flows:
 
 ![switch flow (1)](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/79cbc1b5-9b1a-44c5-835a-8c6645409d9d)
 
-drag and drop to insert sub-workflow:
+🤏drag and drop to insert sub-workflow:
 
 ![drag drop file demo](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/4ab1949d-7fa8-403a-9d92-5d43ad568572)
+
+🗂️Organize your workflows with folders:
+
+<img width="397" alt="Screenshot 2023-12-28 at 11 20 01 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/b14ede49-8d2a-486e-a9e1-5e871864e4f7">
 
 import flows:
 
@@ -63,7 +67,8 @@ add tags to flow:
 
 ### Where are my workflow and workspace data stored?
 
-🍺 All your workflows are now output to a folder in `/ComfyUI/my_workflows`
+🍺 All your workflows are now output to a folder in `/ComfyUI/my_workflows` ⚠️Note: this is a ONE-WAY sync folder, that will only reflect changes made from your ComfyUI workspace browser; If you add some files manually using your OS file system (e.g. Finder in MacOS, File Explorer in Windows), workspace manager will not be able to pickup those changes. You need to use the "Import" button in files side bar to add new files to workspace manager.
+
 Our internal db data is stored in your disk under /ComfyUI/custom_nodes/comfyui-workspace-manager/db/
 
 ## Upcoming Features
