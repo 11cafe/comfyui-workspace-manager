@@ -13,15 +13,16 @@ const IconSearchStyle: CSSProperties = {
   width: "20px",
   height: "20px",
   top: "50%",
+  color: "#A0AEC0",
   transform: "translateY(-50%)",
-}
+};
 
 export default function SeacrhInput(props: Props) {
   const { searchValue, onUpdateSearchValue } = props;
   const isSearchValueNotEmpty = searchValue !== "";
 
   return (
-    <Box style={{ position: 'relative' }}>
+    <Box style={{ position: "relative" }} mb={2}>
       <IconSearch style={IconSearchStyle} />
       {isSearchValueNotEmpty && (
         <IconButton
@@ -39,9 +40,8 @@ export default function SeacrhInput(props: Props) {
         />
       )}
       <Input
-        placeholder='Search'
-        width={"auto"}
-        height={"auto"}
+        placeholder="Search"
+        size={"sm"}
         paddingLeft={"35px"}
         paddingBlock={"5px"}
         value={searchValue}

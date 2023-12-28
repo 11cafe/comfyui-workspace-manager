@@ -280,12 +280,6 @@ export default function RecentFilesDrawer({ onclose }: Props) {
                   </Tooltip>
                 )}
               </HStack>
-
-              <SeacrhInput
-                searchValue={searchValue}
-                onUpdateSearchValue={onUpdateSearchValue}
-              />
-
               <Menu closeOnSelect={true}>
                 <MenuButton
                   as={Button}
@@ -314,6 +308,10 @@ export default function RecentFilesDrawer({ onclose }: Props) {
                 </MenuList>
               </Menu>
             </HStack>
+            <SeacrhInput
+              searchValue={searchValue}
+              onUpdateSearchValue={onUpdateSearchValue}
+            />
             <Flex overflowY={"auto"} overflowX={"hidden"} direction="column">
               {files.map((n) => {
                 if (isFolder(n)) {
