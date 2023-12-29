@@ -8,6 +8,10 @@ import {
 } from "./utils";
 import { ESortTypes, ImportWorkflow } from "./RecentFilesDrawer/types";
 import { ChangelogsTable } from "./db-tables/ChangelogsTable";
+import {
+  getWorkspaceIndexDB,
+  updateWorkspaceIndexDB,
+} from "./db-tables/IndexDBUtils";
 
 export type Table =
   | "workflows"
@@ -70,9 +74,12 @@ export async function loadDBs() {
   const loadWorkflows = async () => {
     let workflowsStr = await getDB("workflows");
     if (workflowsStr == null) {
-      workflowsStr = localStorage.getItem("workspace") ?? "{}";
+      const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
+      const comfyspaceData = JSON.parse(comfyspace);
+      workspace = comfyspaceData["workflows"] || {};
+    } else {
+      workspace = JSON.parse(workflowsStr);
     }
-    workspace = JSON.parse(workflowsStr ?? "{}");
   };
   const loadTags = async () => {
     tagsTable = await loadTagsTable();
@@ -147,7 +154,7 @@ export function updateFlow(
     ...input,
     updateTime: Date.now(),
   };
-  localStorage.setItem("workspace", JSON.stringify(workspace));
+  updateWorkspaceIndexDB();
   saveDB("workflows", JSON.stringify(workspace));
   // save to my_workflows/
   if (input.name != null || input.parentFolderID != null) {
@@ -208,7 +215,7 @@ export function createFlow({
     createTime: time,
     tags: tags ?? [],
   };
-  localStorage.setItem("workspace", JSON.stringify(workspace));
+  updateWorkspaceIndexDB();
   saveDB("workflows", JSON.stringify(workspace));
   saveJsonFileMyWorkflows(workspace[uuid]);
   return workspace[uuid];
@@ -236,7 +243,7 @@ export async function batchCreateFlows(
   });
 
   const stringifyWorkspace = JSON.stringify(workspace);
-  localStorage.setItem("workspace", stringifyWorkspace);
+  updateWorkspaceIndexDB();
   return await saveDB("workflows", stringifyWorkspace);
 }
 
@@ -266,7 +273,7 @@ export function deleteFlow(id: string) {
     deleteJsonFileMyWorkflows({ ...workflow });
   }
   delete workspace[id];
-  localStorage.setItem("workspace", JSON.stringify(workspace));
+  updateWorkspaceIndexDB();
   saveDB("workflows", JSON.stringify(workspace));
 }
 
@@ -283,7 +290,7 @@ export function batchDeleteFlow(ids: string[]) {
   });
 
   const stringifyWorkspace = JSON.stringify(workspace);
-  localStorage.setItem("workspace", stringifyWorkspace);
+  updateWorkspaceIndexDB();
   saveDB("workflows", stringifyWorkspace);
 }
 
@@ -306,7 +313,14 @@ export function generateFilePath(workflow: Workflow): string | null {
 
 async function loadTagsTable(): Promise<TagsTable> {
   const tagsStr = await getDB("tags");
-  const tags: Tags = JSON.parse(tagsStr ?? "{}") ?? {};
+  let tags: Tags;
+  if (tagsStr == null) {
+    const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
+    const comfyspaceData = JSON.parse(comfyspace);
+    tags = comfyspaceData["tags"] || {};
+  } else {
+    tags = JSON.parse(tagsStr ?? "{}") ?? {};
+  }
   return {
     tags, // Expose the tags array publicly
     listAll() {
@@ -374,7 +388,7 @@ class UserSettingsTable {
       ...newPairs,
     };
     saveDB(UserSettingsTable.TABLE_NAME, JSON.stringify(this.records));
-    localStorage.setItem("comfyspace", curComfyspaceJson());
+    updateWorkspaceIndexDB();
   }
 
   static async load(): Promise<UserSettingsTable> {
@@ -382,7 +396,7 @@ class UserSettingsTable {
     const jsonStr = await getDB(UserSettingsTable.TABLE_NAME);
     let json = jsonStr != null ? JSON.parse(jsonStr) : null;
     if (json == null) {
-      const comfyspace = localStorage.getItem("comfyspace") ?? "{}";
+      const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
       const comfyspaceData = JSON.parse(comfyspace);
       json = comfyspaceData[UserSettingsTable.TABLE_NAME] || {};
     }
@@ -417,7 +431,7 @@ class FoldersTable {
     let jsonStr = await getDB(FoldersTable.TABLE_NAME);
     let json = jsonStr != null ? JSON.parse(jsonStr) : null;
     if (json == null) {
-      const comfyspace = localStorage.getItem("comfyspace") ?? "{}";
+      const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
       const comfyspaceData = JSON.parse(comfyspace);
       json = comfyspaceData[FoldersTable.TABLE_NAME];
     }
@@ -447,7 +461,7 @@ class FoldersTable {
     };
     this.records[folder.id] = folder;
     saveDB("folders", JSON.stringify(this.records));
-    localStorage.setItem("comfyspace", curComfyspaceJson());
+    updateWorkspaceIndexDB();
 
     return folder;
   }
@@ -467,7 +481,7 @@ class FoldersTable {
     };
     this.records[input.id] = newRecord;
     saveDB("folders", JSON.stringify(this.records));
-    localStorage.setItem("comfyspace", curComfyspaceJson());
+    updateWorkspaceIndexDB();
   }
   public delete(id: string) {
     delete this.records[id];
@@ -478,7 +492,7 @@ class FoldersTable {
       updateFlow(flow.id, { parentFolderID: undefined })
     );
     saveDB("folders", JSON.stringify(this.records));
-    localStorage.setItem("comfyspace", curComfyspaceJson());
+    updateWorkspaceIndexDB();
   }
   public generateUniqueName(name?: string) {
     let newFlowName = name ?? "New folder";
