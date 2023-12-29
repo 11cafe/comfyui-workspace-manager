@@ -23,15 +23,21 @@ and restart your ComfyUI.
 It is recommended to do git clone than downloading zip folder, because you can get latest updates by `git pull`!
 
 ## Features
+### 📣Update 12/29/2023 - Manual save, version history
+Finally, you can **manually save** your workflow by either click the 💾 floppy disk icon beside the workflow name or Shift+S shortcut (you can customize this shortcut in Settings)
+Everytime you save, it will create a new record in **Version History** (you can access this in the dropdown menu on the left side of the name topbar)
+You can go back and switch versions in version history. You won't need to worry about losing any changes from now on!
+
+<img width="400" alt="Screenshot 2023-12-29 at 9 59 57 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/88c82672-ebf2-4feb-bf5b-74b447843c2c">
 
 - 🔁Effortlessly switch between different workflows in your workspace.
 - 🤏**Drag and drop** to insert subworkflows into current flow.
 - Create and name workflows
 - 🗂️Organize workflows with folders, 🏷️tags
 - 📂Saves all your workflows in a single folder (now it's under `/ComfyUI/my_workflows`)
-- 📑Quickly duplicate flow in right-click menu
+- 🕛**Version control** of workflow, never lose any changes
 - **Bulk import** workflows into your workspace
-- 🕛Version control of workflow, never lose any changes (Upcoming)
+- 📑Quickly duplicate flow in right-click menu
 - cloud sync & backup workspace so you will never lose your data (Upcoming!)
 - One-click share workflow (Upcoming!)
 
@@ -58,6 +64,8 @@ add tags to flow: <img width="500" alt="Screenshot 2023-12-13 at 1 54 04 AM" src
 
 Workflow operations: Manual Save, Download, Discard unsaved changes: 
 <img width="500" alt="Screenshot 2023-12-29 at 9 59 57 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/88c82672-ebf2-4feb-bf5b-74b447843c2c">
+Version history:
+<img width="387" alt="Screenshot 2023-12-29 at 11 17 37 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/ac8c52d7-c339-46a0-8682-ed03b0cab75d">
 
 
 **Looking for colaborators and coworkers** to develop this ComfyUI project management tool. If you know React, Python or ML model deployment, please reach out to weixuanfu01@gmail.com We want to make it easy to **manage, share and deploy** ComfyUI project.
