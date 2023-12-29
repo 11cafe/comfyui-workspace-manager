@@ -52,14 +52,13 @@ import flows:
 ![import flows](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/884c8852-73c7-41d6-9179-7fb1fcea9d04)
 
 duplicate flow by right click menu option:
-![duplicate flow](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/69bde2d3-24df-4025-b74a-d2ff030f5aeb)
+<img width="385" alt="Screenshot 2023-12-29 at 9 58 26 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/b74c4405-8232-4e39-b995-3b4877d27c9e">
 
-<img width="500" alt="Screenshot 2023-12-13 at 1 51 59 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/63a110ac-fc61-4f64-98f4-af3d588fdd03">
+add tags to flow: <img width="500" alt="Screenshot 2023-12-13 at 1 54 04 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/6bf4d22b-f52a-4d23-8882-4a31162616f3">
 
-add tags to flow:
+Workflow operations: Manual Save, Download, Discard unsaved changes: 
+<img width="500" alt="Screenshot 2023-12-29 at 9 59 57 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/88c82672-ebf2-4feb-bf5b-74b447843c2c">
 
-<img width="500" alt="Screenshot 2023-12-13 at 1 54 04 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/6bf4d22b-f52a-4d23-8882-4a31162616f3">
-<img width="800" alt="workflow name topbar" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/9aaf4d76-a44e-45f2-ab24-9ef5cf36d4a9">
 
 **Looking for colaborators and coworkers** to develop this ComfyUI project management tool. If you know React, Python or ML model deployment, please reach out to weixuanfu01@gmail.com We want to make it easy to **manage, share and deploy** ComfyUI project.
 
