@@ -291,7 +291,7 @@ export default function App() {
                 />
               </Tooltip>
             )}
-            <DropdownTitle />
+            <DropdownTitle onClick={() => setIsHovered(false)} />
             {isHovered && (
               <IconGripVertical
                 id="dragPanelIcon"

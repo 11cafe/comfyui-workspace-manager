@@ -24,6 +24,7 @@ import {
   FormErrorMessage,
   Input,
   Portal,
+  Tooltip,
 } from "@chakra-ui/react";
 import {
   IconArrowBackUpDouble,
@@ -31,11 +32,16 @@ import {
   IconDeviceFloppy,
   IconDownload,
 } from "@tabler/icons-react";
-import { getWorkflow, userSettingsTable, workspace } from "../WorkspaceDB";
+import {
+  Workflow,
+  getWorkflow,
+  userSettingsTable,
+  workspace,
+} from "../WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { Overlay } from "./Overlay";
 
-export default function DropdownTitle() {
+export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
   const {
     curFlowID,
     onDuplicateWorkflow,
@@ -46,10 +52,12 @@ export default function DropdownTitle() {
   const [isOpenNewName, setIsOpenNewName] = useState(false);
   const [newFlowName, setNewFlowName] = useState("");
   const [submitError, setSubmitError] = useState("");
+  const [workflow, setWorkflow] = useState<Workflow>();
 
   useEffect(() => {
     const workflow = curFlowID ? getWorkflow(curFlowID) : undefined;
     setNewFlowName(workflow?.name ?? "");
+    setWorkflow(workflow);
   }, [curFlowID]);
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setNewFlowName(event.target.value);
@@ -100,14 +108,13 @@ export default function DropdownTitle() {
       <Menu isLazy={true}>
         {({ isOpen }) => (
           <>
-            <MenuButton>
+            <MenuButton onClick={onClick}>
               <IconButton
                 icon={<IconChevronDown size={20} />}
                 aria-label="menu"
                 size={"xs"}
                 backgroundColor={"#323232"}
                 color={"white"}
-                // variant={"outline"}
               />
             </MenuButton>
             <Portal>
@@ -134,13 +141,16 @@ export default function DropdownTitle() {
                 >
                   Save As
                 </MenuItem>
-                <MenuItem
-                  onClick={discardUnsavedChanges}
-                  icon={<IconArrowBackUpDouble size={20} />}
-                  iconSpacing={1}
-                >
-                  Discard unsaved changes
-                </MenuItem>
+                <Tooltip label="This will revert current workflow to your last saved version. You will lose all changes made since your last save.">
+                  <MenuItem
+                    onClick={discardUnsavedChanges}
+                    icon={<IconArrowBackUpDouble size={20} />}
+                    iconSpacing={1}
+                    isDisabled={workflow?.lastSavedJson == null}
+                  >
+                    Discard unsaved changes
+                  </MenuItem>
+                </Tooltip>
               </MenuList>
               {isOpen && <Overlay backgroundColor={null} />}
             </Portal>
