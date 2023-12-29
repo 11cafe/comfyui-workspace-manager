@@ -222,6 +222,7 @@ export default function App() {
           top: 0,
           left: 0,
         }}
+        zIndex={1000}
         draggable={false}
       >
         <Draggable

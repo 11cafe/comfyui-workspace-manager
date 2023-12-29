@@ -111,7 +111,7 @@ export default function DropdownTitle() {
               />
             </MenuButton>
             <Portal>
-              <MenuList minWidth={150}>
+              <MenuList minWidth={150} zIndex={1000}>
                 <MenuItem
                   onClick={saveCurWorkflow}
                   icon={<IconDeviceFloppy size={20} />}
