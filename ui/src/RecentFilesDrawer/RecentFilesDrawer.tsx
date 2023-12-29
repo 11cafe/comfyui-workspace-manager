@@ -11,6 +11,8 @@ import {
   Card,
   Box,
   Flex,
+  Tooltip,
+  Input,
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState, useRef, useCallback } from "react";
 import {
@@ -41,12 +43,15 @@ import { ESortTypes, sortTypeLocalStorageKey } from "./types";
 import { app } from "/scripts/app.js";
 import { insertWorkflowToCanvas3 } from "./InsertWorkflowToCanvas";
 import FilesListFolderItem from "./FilesListFolderItem";
+import { useDebounce } from "../customHooks/useDebaunce";
+import SeacrhInput from "../components/SearchInput";
 
 const MAX_TAGS_TO_SHOW = 6;
 type Props = {
   onclose: () => void;
   onClickNewFlow: () => void;
 };
+
 export default function RecentFilesDrawer({ onclose }: Props) {
   const [files, setFiles] = useState<Array<Folder | Workflow>>([]);
   const recentFlows = files.filter((n) => !isFolder(n)) as Workflow[];
@@ -56,6 +61,8 @@ export default function RecentFilesDrawer({ onclose }: Props) {
   const [multipleState, setMultipleState] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   const [refreshFolderStamp, setRefreshFolderStamp] = useState(0);
+  const [searchValue, setSearchValue] = useState("");
+  const debaunceSearchValue = useDebounce(searchValue, 400);
   const draggingWorkflowID = useRef<string | null>(null);
   const [draggingFile, setDraggingFile] = useState<Workflow | Folder | null>(
     null
@@ -99,6 +106,7 @@ export default function RecentFilesDrawer({ onclose }: Props) {
   const handleClick = (e: any) => {
     onclose();
   };
+
   useEffect(() => {
     app.canvasEl.addEventListener("drop", handleDrop);
     app.canvasEl.addEventListener("click", handleClick);
@@ -108,9 +116,24 @@ export default function RecentFilesDrawer({ onclose }: Props) {
       app.canvasEl.removeEventListener("click", handleClick);
     };
   }, []);
+
   useEffect(() => {
     loadLatestWorkflows();
   }, [curFlowID]);
+
+  useEffect(() => {
+    if (debaunceSearchValue === "") {
+      loadLatestWorkflows();
+    } else {
+      setFiles(
+        listWorkflows().filter((flow) =>
+          flow.name
+            .toLocaleLowerCase()
+            .includes(debaunceSearchValue.toLocaleLowerCase())
+        )
+      );
+    }
+  }, [debaunceSearchValue]);
 
   const onSelect = useCallback((flowId: string, selected: boolean) => {
     setSelectedKeys((preState) => {
@@ -143,6 +166,10 @@ export default function RecentFilesDrawer({ onclose }: Props) {
     }
   };
 
+  const onUpdateSearchValue = (newValue: string) => {
+    setSearchValue(newValue);
+  };
+
   const DRAWER_WIDTH = 440;
   return (
     <RecentFilesContext.Provider
@@ -170,8 +197,8 @@ export default function RecentFilesDrawer({ onclose }: Props) {
           top={0}
           left={0}
           shadow={"xl"}
-          zIndex={10}
-          // boxShadow={"rgba(255, 255, 255, 0.4) 1px 4px 8px 1px"}
+          zIndex={1000}
+          // boxShadow={"rgba(200, 200, 200, 0.4) 1px 4px 8px 1px"}
         >
           <Flex alignItems={"center"} justifyContent={"space-between"}>
             <HStack gap={4}>
@@ -226,7 +253,7 @@ export default function RecentFilesDrawer({ onclose }: Props) {
             </HStack>
             <HStack mb={2} mt={2} p={0} justifyContent="space-between">
               <HStack>
-                {recentFlows.length > 0 ? (
+                {files.length > 0 ? (
                   <MultipleSelectionOperation
                     multipleState={multipleState}
                     changeMultipleState={(state) => {
@@ -240,17 +267,22 @@ export default function RecentFilesDrawer({ onclose }: Props) {
                 ) : (
                   <Box />
                 )}
-                <IconButton
-                  size={"sm"}
-                  icon={<IconFolderPlus size={21} />}
-                  onClick={() => {
-                    foldersTable?.create({
-                      name: "New Folder",
-                    });
-                    loadLatestWorkflows();
-                  }}
-                  aria-label="new folder button"
-                />
+                {!multipleState && (
+                  <Tooltip hasArrow label="New folder" placement="bottom-start">
+                    <IconButton
+                      size={"sm"}
+                      variant={"outline"}
+                      icon={<IconFolderPlus size={21} />}
+                      onClick={() => {
+                        foldersTable?.create({
+                          name: "New Folder",
+                        });
+                        loadLatestWorkflows();
+                      }}
+                      aria-label="new folder button"
+                    />
+                  </Tooltip>
+                )}
               </HStack>
               <Menu closeOnSelect={true}>
                 <MenuButton
@@ -280,6 +312,10 @@ export default function RecentFilesDrawer({ onclose }: Props) {
                 </MenuList>
               </Menu>
             </HStack>
+            <SeacrhInput
+              searchValue={searchValue}
+              onUpdateSearchValue={onUpdateSearchValue}
+            />
             <Flex overflowY={"auto"} overflowX={"hidden"} direction="column">
               {files.map((n) => {
                 if (isFolder(n)) {

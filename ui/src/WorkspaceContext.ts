@@ -5,9 +5,13 @@ export const WorkspaceContext = createContext<{
   curFlowID: string | null;
   onDuplicateWorkflow?: (flowID: string, newFlowName?: string) => void;
   loadWorkflowID: (id: string) => void;
+  saveCurWorkflow: () => void;
+  discardUnsavedChanges: () => void;
 }>({
   curFlowID: null,
   loadWorkflowID: () => {},
+  saveCurWorkflow: () => {},
+  discardUnsavedChanges: () => {},
 });
 
 export const RecentFilesContext = createContext<{
