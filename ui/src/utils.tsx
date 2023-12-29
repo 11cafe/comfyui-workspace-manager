@@ -86,7 +86,10 @@ function isValidFileName(fileName: string) {
   return true;
 }
 
-export function formatTimestamp(unixTimestamp: number) {
+export function formatTimestamp(
+  unixTimestamp: number,
+  showSec: boolean = false
+) {
   // Create a new Date object from the UNIX timestamp
   const date = new Date(unixTimestamp);
 
@@ -96,9 +99,13 @@ export function formatTimestamp(unixTimestamp: number) {
   const year = date.getFullYear();
   const hours = String(date.getHours()).padStart(2, "0");
   const minutes = String(date.getMinutes()).padStart(2, "0");
-
+  const seconds = String(date.getSeconds()).padStart(2, "0");
   // Format the date and time string
-  return `${month}-${day}-${year} ${hours}:${minutes}`;
+  let res = `${month}-${day}-${year} ${hours}:${minutes}`;
+  if (showSec) {
+    return res + `:${seconds}`;
+  }
+  return res;
 }
 
 /**

@@ -98,7 +98,7 @@ export async function loadDBs() {
     loadTags(),
     loadUserSettings(),
     loadFolders(),
-    // loadChangelogs(),
+    loadChangelogs(),
   ]);
 }
 
