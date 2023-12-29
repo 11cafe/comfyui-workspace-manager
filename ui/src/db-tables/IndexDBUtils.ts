@@ -9,7 +9,6 @@ function openDatabase(): Promise<IDBDatabase> {
 
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
-      console.log("onupgradeneeded db", db);
       // Create an object store if it doesn't exist
       if (!db.objectStoreNames.contains(WORKSPACE_TABLE)) {
         db.createObjectStore(WORKSPACE_TABLE, { keyPath: "id" });
@@ -49,7 +48,6 @@ export async function updateWorkspaceIndexDB() {
   try {
     const comfyspaceData = curComfyspaceJson(); // Your function to get the data
     await writeWorkspaceTable(comfyspaceData);
-    console.log("Data written to IndexedDB");
   } catch (error) {
     console.error("Error writing to IndexedDB:", error);
   }
