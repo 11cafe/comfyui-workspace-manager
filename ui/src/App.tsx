@@ -287,18 +287,20 @@ export default function App() {
                 });
               }}
             />
-            {isDirty && (
-              <Tooltip label="Save workflow">
-                <IconButton
-                  onClick={saveCurWorkflow}
-                  icon={<IconDeviceFloppy size={20} color="white" />}
-                  size={"sm"}
-                  aria-label="save workspace"
-                  variant={"ghost"}
-                />
-              </Tooltip>
-            )}
-            <DropdownTitle onClick={() => setIsHovered(false)} />
+            <HStack gap={"1px"}>
+              {isDirty && (
+                <Tooltip label="Save workflow">
+                  <IconButton
+                    onClick={saveCurWorkflow}
+                    icon={<IconDeviceFloppy size={20} color="white" />}
+                    size={"sm"}
+                    aria-label="save workspace"
+                    variant={"ghost"}
+                  />
+                </Tooltip>
+              )}
+              <DropdownTitle onClick={() => setIsHovered(false)} />
+            </HStack>
             {isHovered && (
               <IconGripVertical
                 id="dragPanelIcon"
