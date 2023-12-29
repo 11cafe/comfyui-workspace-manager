@@ -27,6 +27,7 @@ import {
   workspace,
   userSettingsTable,
   PanelPosition,
+  changelogsTable,
 } from "./WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
@@ -52,6 +53,11 @@ export default function App() {
       const graphJson = JSON.stringify(app.graph.serialize());
       updateFlow(curFlowID.current, {
         lastSavedJson: graphJson,
+      });
+
+      changelogsTable?.create({
+        workflowID: curFlowID.current,
+        json: graphJson,
       });
     }
   }, []);
@@ -213,6 +219,7 @@ export default function App() {
         loadWorkflowID: loadWorkflowID,
         discardUnsavedChanges: discardUnsavedChanges,
         saveCurWorkflow: saveCurWorkflow,
+        isDirty: isDirty,
       }}
     >
       <Box
@@ -280,18 +287,20 @@ export default function App() {
                 });
               }}
             />
-            {isDirty && (
-              <Tooltip label="Save workflow">
-                <IconButton
-                  onClick={saveCurWorkflow}
-                  icon={<IconDeviceFloppy size={20} color="white" />}
-                  size={"sm"}
-                  aria-label="save workspace"
-                  variant={"ghost"}
-                />
-              </Tooltip>
-            )}
-            <DropdownTitle onClick={() => setIsHovered(false)} />
+            <HStack gap={"1px"}>
+              {isDirty && (
+                <Tooltip label="Save workflow">
+                  <IconButton
+                    onClick={saveCurWorkflow}
+                    icon={<IconDeviceFloppy size={20} color="white" />}
+                    size={"sm"}
+                    aria-label="save workspace"
+                    variant={"ghost"}
+                  />
+                </Tooltip>
+              )}
+              <DropdownTitle onClick={() => setIsHovered(false)} />
+            </HStack>
             {isHovered && (
               <IconGripVertical
                 id="dragPanelIcon"

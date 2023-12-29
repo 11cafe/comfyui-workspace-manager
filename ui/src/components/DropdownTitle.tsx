@@ -31,6 +31,7 @@ import {
   IconChevronDown,
   IconDeviceFloppy,
   IconDownload,
+  IconHistory,
 } from "@tabler/icons-react";
 import {
   Workflow,
@@ -40,6 +41,7 @@ import {
 } from "../WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { Overlay } from "./Overlay";
+import { VersionHistoryDrawer } from "./VersionHistoryDrawer";
 
 export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
   const {
@@ -50,6 +52,7 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
   } = useContext(WorkspaceContext);
 
   const [isOpenNewName, setIsOpenNewName] = useState(false);
+  const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [newFlowName, setNewFlowName] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [workflow, setWorkflow] = useState<Workflow>();
@@ -141,6 +144,13 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
                 >
                   Save As
                 </MenuItem>
+                <MenuItem
+                  onClick={() => setIsVersionHistoryOpen(true)}
+                  icon={<IconHistory size={20} />}
+                  iconSpacing={1}
+                >
+                  Versions History
+                </MenuItem>
                 <Tooltip label="This will revert current workflow to your last saved version. You will lose all changes made since your last save.">
                   <MenuItem
                     onClick={discardUnsavedChanges}
@@ -157,6 +167,9 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
           </>
         )}
       </Menu>
+      {isVersionHistoryOpen && (
+        <VersionHistoryDrawer onClose={() => setIsVersionHistoryOpen(false)} />
+      )}
       {isOpenNewName && (
         <Modal isOpen={true} onClose={handleOnCloseModal}>
           <ModalOverlay />

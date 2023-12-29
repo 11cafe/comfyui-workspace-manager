@@ -172,8 +172,6 @@ async def get_workspace(request):
     # Extract the table parameter from the query string
     table = request.query.get('table')
     data = read_table(table)
-    if not data:
-        return web.Response(status=400, text=f"table not found - {table}")
     return web.json_response(data)
 
 BACKUP_DIR = os.path.join(workspace_path, "backup")

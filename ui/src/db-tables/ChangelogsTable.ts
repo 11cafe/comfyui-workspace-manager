@@ -42,7 +42,23 @@ export class ChangelogsTable {
   public get(id: string): Changelog | undefined {
     return this.records[id];
   }
-  public create(input: { json: string; workflowID: string }): Changelog {
+  public getLastestByWorkflowID(workflowID: string): Changelog {
+    const all = Object.values(this.records)
+      .filter((c) => c.workflowID === workflowID)
+      .sort((a, b) => b.createTime - a.createTime);
+    return all[0];
+  }
+  public getByWorkflowID(workflowID: string): Changelog[] {
+    return Object.values(this.records)
+      .filter((c) => c.workflowID === workflowID)
+      .sort((a, b) => b.createTime - a.createTime);
+  }
+  public create(input: { json: string; workflowID: string }): Changelog | null {
+    const latest = this.getLastestByWorkflowID(input.workflowID);
+    // only create when there is a change
+    if (latest != null && latest.json === input.json) {
+      return null;
+    }
     const change: Changelog = {
       id: uuidv4(),
       json: input.json,
