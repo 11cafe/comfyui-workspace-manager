@@ -57,7 +57,7 @@ export default function App() {
   }, []);
   const discardUnsavedChanges = () => {
     let userInput = confirm(
-      "Are you sure you want to discard unsaved changes?"
+      "Are you sure you want to discard unsaved changes? This will revert current workflow to your last saved version. You will lose all changes made since your last save."
     );
 
     if (userInput) {
