@@ -127,7 +127,11 @@ export default function DropdownTitle() {
                 >
                   Download
                 </MenuItem>
-                <MenuItem onClick={() => setIsOpenNewName(true)}>
+                <MenuItem
+                  onClick={() => setIsOpenNewName(true)}
+                  icon={<IconDeviceFloppy size={20} />}
+                  iconSpacing={1}
+                >
                   Save As
                 </MenuItem>
                 <MenuItem
