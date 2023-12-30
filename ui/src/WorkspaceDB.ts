@@ -12,6 +12,7 @@ import {
   getWorkspaceIndexDB,
   updateWorkspaceIndexDB,
 } from "./db-tables/IndexDBUtils";
+import { FoldersTable } from "./db-tables/FoldersTable";
 
 export type Table =
   | "workflows"
@@ -168,12 +169,21 @@ export function updateFlow(
   }
 }
 
-function saveJsonFileMyWorkflows(workflow: Workflow) {
+export function saveJsonFileMyWorkflows(workflow: Workflow) {
   const file_path = generateFilePath(workflow);
-  file_path != null && updateFile(file_path, workflow.json);
+  if (file_path == null) {
+    return;
+  }
+  if (workspace != null) {
+    const fullPath = generateFilePathAbsolute(workflow);
+    workspace[workflow.id].filePath = fullPath ?? undefined;
+    updateWorkspaceIndexDB();
+    saveDB("workflows", JSON.stringify(workspace));
+  }
+  updateFile(file_path, workflow.json);
 }
 
-function deleteJsonFileMyWorkflows(workflow: Workflow) {
+export function deleteJsonFileMyWorkflows(workflow: Workflow) {
   if (workflow.name == null) {
     return;
   }
@@ -293,7 +303,22 @@ export function batchDeleteFlow(ids: string[]) {
   updateWorkspaceIndexDB();
   saveDB("workflows", stringifyWorkspace);
 }
-
+export function generateFilePathAbsolute(workflow: Workflow): string | null {
+  const subPath = generateFilePath(workflow);
+  if (workspace == null) {
+    console.error("workspace is not loaded");
+    return null;
+  }
+  let myWorkflowsDir = userSettingsTable?.getSetting("myWorkflowsDir");
+  if (myWorkflowsDir == null) {
+    console.error("myWorkflowsDir is not set");
+    return null;
+  }
+  if (!myWorkflowsDir.endsWith("/")) {
+    myWorkflowsDir = myWorkflowsDir + "/";
+  }
+  return myWorkflowsDir + subPath;
+}
 export function generateFilePath(workflow: Workflow): string | null {
   let filePath = toFileNameFriendly(workflow.name) + ".json";
   let curFolderID = workflow.parentFolderID;
@@ -415,100 +440,4 @@ export interface Folder extends SortableItem {
   createTime: number;
   type: "folder";
   isCollapse?: boolean;
-}
-
-class FoldersTable {
-  static readonly TABLE_NAME = "folders";
-  private records: {
-    [id: string]: Folder;
-  };
-  private constructor() {
-    this.records = {};
-  }
-
-  static async load(): Promise<FoldersTable> {
-    const instance = new FoldersTable();
-    let jsonStr = await getDB(FoldersTable.TABLE_NAME);
-    let json = jsonStr != null ? JSON.parse(jsonStr) : null;
-    if (json == null) {
-      const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
-      const comfyspaceData = JSON.parse(comfyspace);
-      json = comfyspaceData[FoldersTable.TABLE_NAME];
-    }
-    if (json != null) {
-      instance.records = json;
-    }
-    return instance;
-  }
-  public listAll(): Folder[] {
-    return Object.values(this.records);
-  }
-  public getRecords() {
-    return this.records;
-  }
-  public get(id: string): Folder | undefined {
-    return this.records[id];
-  }
-  public create(input: { name: string; parentFolderID?: string }): Folder {
-    const uniqueName = this.generateUniqueName(input.name);
-    const folder: Folder = {
-      id: uuidv4(),
-      name: uniqueName,
-      parentFolderID: input.parentFolderID ?? null,
-      updateTime: Date.now(),
-      createTime: Date.now(),
-      type: "folder",
-    };
-    this.records[folder.id] = folder;
-    saveDB("folders", JSON.stringify(this.records));
-    updateWorkspaceIndexDB();
-
-    return folder;
-  }
-  public update(
-    input: {
-      id: string;
-    } & Partial<Folder>
-  ) {
-    const folder = this.records[input.id];
-    if (folder == null) {
-      return;
-    }
-    const newRecord = {
-      ...folder,
-      ...input,
-      updateTime: Date.now(),
-    };
-    this.records[input.id] = newRecord;
-    saveDB("folders", JSON.stringify(this.records));
-    updateWorkspaceIndexDB();
-  }
-  public delete(id: string) {
-    delete this.records[id];
-    const childrenFlows = listWorkflows().filter(
-      (flow) => flow.parentFolderID == id
-    );
-    childrenFlows.forEach((flow) =>
-      updateFlow(flow.id, { parentFolderID: undefined })
-    );
-    saveDB("folders", JSON.stringify(this.records));
-    updateWorkspaceIndexDB();
-  }
-  public generateUniqueName(name?: string) {
-    let newFlowName = name ?? "New folder";
-    const folderNameList = this.listAll()?.map((f) => f.name);
-    if (folderNameList.includes(newFlowName)) {
-      let num = 2;
-      let flag = true;
-      while (flag) {
-        if (folderNameList.includes(`${newFlowName} ${num}`)) {
-          num++;
-        } else {
-          newFlowName = `${newFlowName} ${num}`;
-          flag = false;
-        }
-      }
-    }
-    return newFlowName;
-  }
 }

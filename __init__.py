@@ -291,7 +291,15 @@ async def delete_file(request):
 
     if os.path.exists(full_path):
         os.remove(full_path)
-        return web.Response(text="File deleted successfully")
+
+        # Check if the directory is empty after deleting the file
+        directory = os.path.dirname(full_path)
+        if not os.listdir(directory):
+            # If the directory is empty, remove the directory
+            os.rmdir(directory)
+            return web.Response(text="File and empty directory deleted successfully")
+        else:
+            return web.Response(text="File deleted successfully")
     else:
         return web.Response(text="File not found", status=404)
 

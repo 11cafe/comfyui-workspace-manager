@@ -1,8 +1,12 @@
 // @ts-ignore
+import { deleteFile } from "./Api";
 import { ESortTypes } from "./RecentFilesDrawer/types";
 import {
+  deleteJsonFileMyWorkflows,
   Folder,
+  generateFilePathAbsolute,
   listWorkflows,
+  saveJsonFileMyWorkflows,
   userSettingsTable,
   Workflow,
 } from "./WorkspaceDB";
@@ -137,6 +141,17 @@ export function sortFlows(
   }
 
   return copyFlows;
+}
+export function validateOrSaveAllJsonFileMyWorkflows() {
+  listWorkflows().forEach((workflow) => {
+    const fullPath = generateFilePathAbsolute(workflow);
+    // @ts-ignore
+    if (workflow.filePath != fullPath) {
+      // file path changed
+      workflow.filePath != null && deleteFile(workflow.filePath);
+      saveJsonFileMyWorkflows(workflow);
+    }
+  });
 }
 
 export const sortFileItem = (
