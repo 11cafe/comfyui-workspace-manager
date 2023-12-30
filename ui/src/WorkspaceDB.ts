@@ -168,9 +168,18 @@ export function updateFlow(
   }
 }
 
-function saveJsonFileMyWorkflows(workflow: Workflow) {
+export function saveJsonFileMyWorkflows(workflow: Workflow) {
   const file_path = generateFilePath(workflow);
-  file_path != null && updateFile(file_path, workflow.json);
+  if (file_path == null) {
+    return;
+  }
+  if (workspace != null) {
+    const fullPath = generateFilePathAbsolute(workflow);
+    workspace[workflow.id].filePath = fullPath ?? undefined;
+    updateWorkspaceIndexDB();
+    saveDB("workflows", JSON.stringify(workspace));
+  }
+  updateFile(file_path, workflow.json);
 }
 
 function deleteJsonFileMyWorkflows(workflow: Workflow) {
@@ -293,7 +302,22 @@ export function batchDeleteFlow(ids: string[]) {
   updateWorkspaceIndexDB();
   saveDB("workflows", stringifyWorkspace);
 }
-
+export function generateFilePathAbsolute(workflow: Workflow): string | null {
+  const subPath = generateFilePath(workflow);
+  if (workspace == null) {
+    console.error("workspace is not loaded");
+    return null;
+  }
+  let myWorkflowsDir = userSettingsTable?.getSetting("myWorkflowsDir");
+  if (myWorkflowsDir == null) {
+    console.error("myWorkflowsDir is not set");
+    return null;
+  }
+  if (!myWorkflowsDir.endsWith("/")) {
+    myWorkflowsDir = myWorkflowsDir + "/";
+  }
+  return myWorkflowsDir + subPath;
+}
 export function generateFilePath(workflow: Workflow): string | null {
   let filePath = toFileNameFriendly(workflow.name) + ".json";
   let curFolderID = workflow.parentFolderID;

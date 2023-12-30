@@ -33,7 +33,10 @@ import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
 import EditFlowName from "./components/EditFlowName";
 import DropdownTitle from "./components/DropdownTitle";
-import { matchSaveWorkflowShortcut } from "./utils";
+import {
+  matchSaveWorkflowShortcut,
+  validateOrSaveAllJsonFileMyWorkflows,
+} from "./utils";
 
 type Route = "root" | "customNodes" | "recentFlows";
 
@@ -112,6 +115,7 @@ export default function App() {
       setCurFlowID(flow.id);
       setCurFlowName(flow.name ?? "");
     }
+    validateOrSaveAllJsonFileMyWorkflows();
   };
   useEffect(() => {
     graphAppSetup();

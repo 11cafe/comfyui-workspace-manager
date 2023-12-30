@@ -24,6 +24,8 @@ import { useRef, useState } from "react";
 import { getSystemDir } from "../Api";
 import { userSettingsTable } from "../WorkspaceDB";
 import { ShortcutSettings } from "../settings/ShortcutSettings";
+import { validate } from "uuid";
+import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
 
 export default function WorkspaceSettingsModal({
   onClose,
@@ -101,6 +103,8 @@ export default function WorkspaceSettingsModal({
     setCurrentDirectory(userSettingsTable?.getSetting("myWorkflowsDir"));
     manualEntry && setNoPermission(false);
     onCloseEditDirectory();
+    // to update /my_workflows files in disk to new location
+    validateOrSaveAllJsonFileMyWorkflows();
   };
 
   const onReset = async () => {
