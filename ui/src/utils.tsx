@@ -1,6 +1,8 @@
 // @ts-ignore
+import { deleteFile } from "./Api";
 import { ESortTypes } from "./RecentFilesDrawer/types";
 import {
+  deleteJsonFileMyWorkflows,
   Folder,
   generateFilePathAbsolute,
   listWorkflows,
@@ -146,6 +148,7 @@ export function validateOrSaveAllJsonFileMyWorkflows() {
     // @ts-ignore
     if (workflow.filePath != fullPath) {
       // file path changed
+      workflow.filePath != null && deleteFile(workflow.filePath);
       saveJsonFileMyWorkflows(workflow);
     }
   });
