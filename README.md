@@ -34,7 +34,7 @@ You can go back and switch versions in version history. You won't need to worry 
 - 🤏**Drag and drop** to insert subworkflows into current flow.
 - Create and name workflows
 - 🗂️Organize workflows with folders, 🏷️tags
-- 📂Saves all your workflows in a single folder (now it's under `/ComfyUI/my_workflows`)
+- 📂Saves all your workflows in a single folder (now it's under `/ComfyUI/my_workflows`), customize this location in Settings
 - 🕛**Version control** of workflow, never lose any changes
 - **Bulk import** workflows into your workspace
 - 📑Quickly duplicate flow in right-click menu
@@ -52,6 +52,11 @@ switch between flows:
 🗂️Organize your workflows with folders:
 
 <img width="397" alt="Screenshot 2023-12-28 at 11 20 01 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/b14ede49-8d2a-486e-a9e1-5e871864e4f7">
+
+Choose the folder location where you want to save your workflows .json files in Settings:
+
+<img width="400" alt="Screenshot 2024-01-02 at 10 22 45 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/4751b096-0886-4a32-95b1-87c7ce5b3787">
+
 
 import flows:
 
