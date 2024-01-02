@@ -36,7 +36,7 @@ export class ChangelogsTable {
       (c) => c.workflowID === workflowID
     );
   }
-  public getDB() {
+  public getRecords() {
     return this.records;
   }
   public get(id: string): Changelog | undefined {

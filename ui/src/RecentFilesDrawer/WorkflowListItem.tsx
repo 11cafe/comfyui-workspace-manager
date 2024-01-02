@@ -5,6 +5,8 @@ import {
   Text,
   Checkbox,
   Flex,
+  Image,
+  Stack,
 } from "@chakra-ui/react";
 import { Workflow, isFolder, updateFlow } from "../WorkspaceDB";
 import { formatTimestamp } from "../utils";
@@ -68,7 +70,6 @@ export default function WorkflowListItem({ workflow }: Props) {
         }
         setIsDraggingOver(false);
       }}
-      textAlign={"left"}
       backgroundColor={
         isSelected ? "teal.200" : isMenuOpen ? hoverBgColor : undefined
       }
@@ -78,7 +79,8 @@ export default function WorkflowListItem({ workflow }: Props) {
         setDraggingFile && setDraggingFile(workflow);
       }}
       borderRadius={6}
-      p={2}
+      px={1}
+      py={1}
       onClick={() => {
         !isMultiSelecting && loadWorkflowID(workflow.id);
       }}
@@ -86,10 +88,23 @@ export default function WorkflowListItem({ workflow }: Props) {
         bg: hoverBgColor,
       }}
     >
-      <Text fontWeight={"500"}>{workflow.name ?? "untitled"}</Text>
-      <Text color={"GrayText"} ml={2} fontSize={"sm"}>
-        Updated: {formatTimestamp(workflow.updateTime)}
-      </Text>
+      <HStack>
+        {workflow.coverMediaPath && (
+          <Image
+            boxSize="60px"
+            objectFit="cover"
+            src={`/workspace/view_media?filename=${workflow.coverMediaPath}`}
+            alt={workflow.name ?? "workflow cover image"}
+          />
+        )}
+
+        <Stack textAlign={"left"} gap={0}>
+          <Text fontWeight={"500"}>{workflow.name ?? "untitled"}</Text>
+          <Text color={"GrayText"} ml={2} fontSize={"sm"}>
+            Updated: {formatTimestamp(workflow.updateTime)}
+          </Text>
+        </Stack>
+      </HStack>
       {isDraggingOver && (
         <Box width={"100%"} mt={2} height={"2px"} backgroundColor={"#4299E1"} />
       )}

@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 // @ts-ignore
 import { app } from "/scripts/app.js";
+// @ts-ignore
+import { api } from "/scripts/api.js";
+
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
 import {
   HStack,
@@ -28,6 +31,7 @@ import {
   userSettingsTable,
   PanelPosition,
   changelogsTable,
+  mediaTable,
 } from "./WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
@@ -116,6 +120,7 @@ export default function App() {
       setCurFlowName(flow.name ?? "");
     }
     validateOrSaveAllJsonFileMyWorkflows();
+    console.log("workflow", getWorkflow(curFlowID.current));
   };
   useEffect(() => {
     graphAppSetup();
@@ -209,6 +214,33 @@ export default function App() {
 
   useEffect(() => {
     window.addEventListener("keydown", shortcutListener);
+    api.addEventListener("executed", (e: any) => {
+      console.log("executed", e);
+      e.detail?.output?.images?.forEach((image: any) => {
+        console.log("1111executed image", image);
+        if (curFlowID.current == null) return;
+        let path = image.filename;
+        if (image.subfolder != null && image.subfolder !== "") {
+          path = image.subfolder + "/" + path;
+        }
+        mediaTable?.create({
+          workflowID: curFlowID.current,
+          localPath: path,
+        });
+      });
+      e.detail?.output?.gifs?.forEach((image: any) => {
+        console.log("1111executed image", image);
+        if (curFlowID.current == null) return;
+        let path = image.filename;
+        if (image.subfolder != null && image.subfolder !== "") {
+          path = image.subfolder + "/" + path;
+        }
+        mediaTable?.create({
+          workflowID: curFlowID.current,
+          localPath: path,
+        });
+      });
+    });
     return () => window.removeEventListener("keydown", shortcutListener);
   }, []);
 
@@ -270,9 +302,9 @@ export default function App() {
               size={"sm"}
               variant={"outline"}
               colorScheme="teal"
-              aria-label="workspace folder"
+              aria-label="new workflow"
               onClick={() => onClickNewFlow()}
-              px={2.5}
+              px={2}
             >
               <HStack gap={1}>
                 <IconPlus size={16} color={"white"} />
