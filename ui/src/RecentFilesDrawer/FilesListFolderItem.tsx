@@ -1,12 +1,4 @@
-import {
-  Box,
-  HStack,
-  useColorMode,
-  Text,
-  Checkbox,
-  Stack,
-  list,
-} from "@chakra-ui/react";
+import { HStack, useColorMode, Text, Stack } from "@chakra-ui/react";
 import {
   Folder,
   Workflow,
@@ -50,7 +42,7 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
   useEffect(() => {
     if (folder.isCollapse === isCollapsed) return;
     foldersTable?.update({
-      ...folder,
+      id: folder.id,
       isCollapse: isCollapsed,
     });
   }, [isCollapsed]);
@@ -108,7 +100,7 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
         />
       </HStack>
       {!isCollapsed && (
-        <Stack ml={4}>
+        <Stack ml={4} gap={0}>
           {children.map((file) => {
             if (isFolder(file)) {
               return <FilesListFolderItem folder={file} />;

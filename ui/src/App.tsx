@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 // @ts-ignore
 import { app } from "/scripts/app.js";
+// @ts-ignore
+import { api } from "/scripts/api.js";
+
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
 import {
   HStack,
@@ -16,6 +19,7 @@ import {
   IconTriangleInvertedFilled,
   IconGripVertical,
   IconDeviceFloppy,
+  IconPhoto,
 } from "@tabler/icons-react";
 import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
 import Draggable from "./components/Draggable";
@@ -28,17 +32,20 @@ import {
   userSettingsTable,
   PanelPosition,
   changelogsTable,
+  mediaTable,
 } from "./WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
 import EditFlowName from "./components/EditFlowName";
 import DropdownTitle from "./components/DropdownTitle";
 import {
+  getFileUrl,
   matchSaveWorkflowShortcut,
   validateOrSaveAllJsonFileMyWorkflows,
 } from "./utils";
+import GalleryModal from "./gallery/GalleryModal";
 
-type Route = "root" | "customNodes" | "recentFlows";
+type Route = "root" | "customNodes" | "recentFlows" | "gallery";
 
 export default function App() {
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
@@ -154,10 +161,30 @@ export default function App() {
     setCurFlowName(flow.name);
     setRoute("root");
   };
-  const onClickNewFlow = () => {
-    const defaultObj = defaultGraph;
-    const flow = createFlow({ json: JSON.stringify(defaultObj) });
+  const loadNewWorkflow = (input?: { json?: string; name?: string }) => {
+    let jsonStr = input?.json ?? JSON.stringify(defaultGraph);
+    const flow = createFlow({ json: jsonStr, name: input?.name });
     loadWorkflowID(flow.id);
+    setRoute("root");
+  };
+
+  const loadFilePath = async (
+    relativePath: string,
+    overwriteCurrent: boolean = false
+  ) => {
+    const fileName = relativePath.split("/").pop() ?? relativePath;
+    if (!overwriteCurrent) {
+      loadNewWorkflow({ name: fileName });
+    } else {
+      saveCurWorkflow();
+    }
+    const res = await fetch(getFileUrl(relativePath));
+    const blob = await res.blob();
+    const fileObj = new File([blob], fileName, {
+      type: res.headers.get("Content-Type") || "",
+    });
+    await app.handleFile(fileObj);
+    setRoute("root");
   };
 
   const onDuplicateWorkflow = (workflowID: string, newFlowName?: string) => {
@@ -206,9 +233,24 @@ export default function App() {
       saveCurWorkflow();
     }
   };
+  const onExecutedCreateMedia = useCallback((image: any) => {
+    if (curFlowID.current == null) return;
+    let path = image.filename;
+    if (image.subfolder != null && image.subfolder !== "") {
+      path = image.subfolder + "/" + path;
+    }
+    mediaTable?.create({
+      workflowID: curFlowID.current,
+      localPath: path,
+    });
+  }, []);
 
   useEffect(() => {
     window.addEventListener("keydown", shortcutListener);
+    api.addEventListener("executed", (e: any) => {
+      e.detail?.output?.images?.forEach(onExecutedCreateMedia);
+      e.detail?.output?.gifs?.forEach(onExecutedCreateMedia);
+    });
     return () => window.removeEventListener("keydown", shortcutListener);
   }, []);
 
@@ -224,6 +266,8 @@ export default function App() {
         discardUnsavedChanges: discardUnsavedChanges,
         saveCurWorkflow: saveCurWorkflow,
         isDirty: isDirty,
+        loadNewWorkflow: loadNewWorkflow,
+        loadFilePath: loadFilePath,
       }}
     >
       <Box
@@ -270,9 +314,9 @@ export default function App() {
               size={"sm"}
               variant={"outline"}
               colorScheme="teal"
-              aria-label="workspace folder"
-              onClick={() => onClickNewFlow()}
-              px={2.5}
+              aria-label="new workflow"
+              onClick={() => loadNewWorkflow()}
+              px={2}
             >
               <HStack gap={1}>
                 <IconPlus size={16} color={"white"} />
@@ -304,6 +348,15 @@ export default function App() {
                 </Tooltip>
               )}
               <DropdownTitle onClick={() => setIsHovered(false)} />
+              <Tooltip label="Open gallery">
+                <IconButton
+                  onClick={() => setRoute("gallery")}
+                  icon={<IconPhoto size={20} color="white" />}
+                  size={"sm"}
+                  aria-label="open gallery"
+                  variant={"ghost"}
+                />
+              </Tooltip>
             </HStack>
             {isHovered && (
               <IconGripVertical
@@ -319,10 +372,13 @@ export default function App() {
           <RecentFilesDrawer
             onclose={() => setRoute("root")}
             onClickNewFlow={() => {
-              onClickNewFlow();
+              loadNewWorkflow();
               setRoute("root");
             }}
           />
+        )}
+        {route === "gallery" && (
+          <GalleryModal onclose={() => setRoute("root")} />
         )}
       </Box>
     </WorkspaceContext.Provider>

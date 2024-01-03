@@ -311,3 +311,18 @@ export const matchShortcut = (
 
   return keys.every((key) => keyEvent[key]);
 };
+
+export function isImageFormat(fileName: string) {
+  const imageExtensions = ["png", "jpg", "jpeg", "gif", "bmp", "webp"];
+  const extension = fileName.split(".").pop();
+  return extension != null && imageExtensions.includes(extension);
+}
+export function isVideoFormat(fileName: string) {
+  const videoExtensions = ["mp4", "webm", "ogg"];
+  const extension = fileName.split(".").pop();
+  return extension != null && videoExtensions.includes(extension);
+}
+
+export function getFileUrl(relativePath: string) {
+  return `/workspace/view_media?filename=${relativePath}`;
+}

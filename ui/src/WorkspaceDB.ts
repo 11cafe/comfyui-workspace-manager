@@ -13,13 +13,15 @@ import {
   updateWorkspaceIndexDB,
 } from "./db-tables/IndexDBUtils";
 import { FoldersTable } from "./db-tables/FoldersTable";
+import { MediaTable } from "./db-tables/MediaTable";
 
 export type Table =
   | "workflows"
   | "tags"
   | "userSettings"
   | "folders"
-  | "changelogs";
+  | "changelogs"
+  | "media";
 
 interface SortableItem {
   name: string;
@@ -41,6 +43,8 @@ export interface Workflow extends SortableItem {
   filePath?: string;
   tags?: string[];
   parentFolderID?: string;
+  mediaIDs?: string[];
+  coverMediaPath?: string;
 }
 export function isFolder(n: Folder | Workflow): n is Folder {
   // @ts-ignore
@@ -70,6 +74,7 @@ export let tagsTable: TagsTable | null = null;
 export let userSettingsTable: UserSettingsTable | null = null;
 export let foldersTable: FoldersTable | null = null;
 export let changelogsTable: ChangelogsTable | null = null;
+export let mediaTable: MediaTable | null = null;
 
 export async function loadDBs() {
   const loadWorkflows = async () => {
@@ -94,12 +99,16 @@ export async function loadDBs() {
   const loadChangelogs = async () => {
     changelogsTable = await ChangelogsTable.load();
   };
+  const loadMedia = async () => {
+    mediaTable = await MediaTable.load();
+  };
   await Promise.all([
     loadWorkflows(),
     loadTags(),
     loadUserSettings(),
     loadFolders(),
     loadChangelogs(),
+    loadMedia(),
   ]);
 }
 
@@ -122,16 +131,7 @@ export function listFolderContent(
 }
 
 /** Class Workflow: below will be migrated to a class */
-export function updateFlow(
-  id: string,
-  input: {
-    name?: string;
-    json?: string;
-    lastSavedJson?: string;
-    tags?: string[];
-    parentFolderID?: string;
-  }
-) {
+export function updateFlow(id: string, input: Partial<Workflow>) {
   if (workspace == null) {
     return;
   }
@@ -376,6 +376,8 @@ export function curComfyspaceJson(): string {
     ["tags"]: tagsTable?.tags,
     ["workflows"]: workspace,
     [FoldersTable.TABLE_NAME]: foldersTable?.getRecords(),
+    [ChangelogsTable.TABLE_NAME]: changelogsTable?.getRecords(),
+    [MediaTable.TABLE_NAME]: mediaTable?.getRecords(),
   });
 }
 

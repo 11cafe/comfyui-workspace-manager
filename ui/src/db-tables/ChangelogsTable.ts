@@ -1,6 +1,7 @@
 import { getDB, saveDB } from "../Api";
 import { v4 as uuidv4 } from "uuid";
 import { curComfyspaceJson } from "../WorkspaceDB";
+import { updateWorkspaceIndexDB } from "./IndexDBUtils";
 
 type Changelog = {
   id: string;
@@ -36,7 +37,7 @@ export class ChangelogsTable {
       (c) => c.workflowID === workflowID
     );
   }
-  public getDB() {
+  public getRecords() {
     return this.records;
   }
   public get(id: string): Changelog | undefined {
@@ -67,7 +68,7 @@ export class ChangelogsTable {
     };
     this.records[change.id] = change;
     saveDB("changelogs", JSON.stringify(this.records));
-    localStorage.setItem("comfyspace", curComfyspaceJson());
+    updateWorkspaceIndexDB();
     return change;
   }
 }

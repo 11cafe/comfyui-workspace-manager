@@ -16,9 +16,9 @@ export default defineConfig({
     rollupOptions: {
       // make sure to externalize deps that shouldn't be bundled
       // into your library
-      external: ["/scripts/app.js"],
+      external: ["/scripts/app.js", "/scripts/api.js"],
       input: {
-        input: "entry.js"
+        input: "entry.js",
       },
       output: {
         // Provide global variables to use in the UMD build
@@ -29,7 +29,7 @@ export default defineConfig({
         },
         dir: "../dist",
         assetFileNames: "[name]-[hash][extname]",
-        entryFileNames: "workspace-manager-[hash].js"
+        entryFileNames: "workspace-manager-[hash].js",
       },
     },
   },
