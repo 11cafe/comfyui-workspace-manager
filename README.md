@@ -28,6 +28,7 @@ Every image/video you generate will be saved in the gallery of the current workf
 
 <img width="400" alt="Screenshot 2024-01-03 at 9 05 01 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/879ea664-c06b-4abb-b4f0-a9305ade3bc9">
 <img width="394" alt="Screenshot 2024-01-03 at 7 35 20 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/ae818652-8680-48a2-bdd3-bd02cb20ad16">
+
 ### 📣Update 12/29/2023 - Manual save, version history
 Finally, you can **manually save** your workflow by either click the 💾 floppy disk icon beside the workflow name or Shift+S shortcut (you can customize this shortcut in Settings)
 Everytime you save, it will create a new record in **Version History** (you can access this in the dropdown menu on the left side of the name topbar)
@@ -49,11 +50,11 @@ You can go back and switch versions in version history. You won't need to worry 
 
 switch between flows:
 
-![switch between workflows with cover photo](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/11543a0f-6cc4-41fb-8666-772ab9a2cfe6)
+<img src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/11543a0f-6cc4-41fb-8666-772ab9a2cfe6" width="500">
 
 🤏drag and drop to insert sub-workflow:
 
-![drag drop file demo (1)](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/7540c45b-be51-4428-8558-96adcc1024c8)
+<img src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/7540c45b-be51-4428-8558-96adcc1024c8" width="480">
 
 🗂️Organize your workflows with folders:
 
