@@ -322,3 +322,7 @@ export function isVideoFormat(fileName: string) {
   const extension = fileName.split(".").pop();
   return extension != null && videoExtensions.includes(extension);
 }
+
+export function getFileUrl(relativePath: string) {
+  return `/workspace/view_media?filename=${relativePath}`;
+}

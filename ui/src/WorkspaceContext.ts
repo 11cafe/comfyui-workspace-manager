@@ -8,12 +8,16 @@ export const WorkspaceContext = createContext<{
   saveCurWorkflow: () => void;
   discardUnsavedChanges: () => void;
   isDirty: boolean;
+  loadNewWorkflow: (input?: { json: string; name?: string }) => void;
+  loadFilePath: (path: string, overwriteCurrent?: boolean) => void;
 }>({
   curFlowID: null,
   loadWorkflowID: () => {},
   saveCurWorkflow: () => {},
   discardUnsavedChanges: () => {},
   isDirty: false,
+  loadNewWorkflow: () => {},
+  loadFilePath: () => {},
 });
 
 export const RecentFilesContext = createContext<{

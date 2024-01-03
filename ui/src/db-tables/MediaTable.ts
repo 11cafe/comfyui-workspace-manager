@@ -1,6 +1,7 @@
-import { getDB, saveDB } from "../Api";
+import { getDB, saveBackup, saveDB } from "../Api";
 import { v4 as uuidv4 } from "uuid";
 import { curComfyspaceJson, getWorkflow, updateFlow } from "../WorkspaceDB";
+import { updateWorkspaceIndexDB } from "./IndexDBUtils";
 
 type Media = {
   id: string;
@@ -77,7 +78,7 @@ export class MediaTable {
 
     this.records[md.id] = md;
     saveDB("media", JSON.stringify(this.records));
-    localStorage.setItem("comfyspace", curComfyspaceJson());
+    updateWorkspaceIndexDB();
     return md;
   }
 }

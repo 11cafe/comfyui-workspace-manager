@@ -39,6 +39,7 @@ import { WorkspaceContext } from "./WorkspaceContext";
 import EditFlowName from "./components/EditFlowName";
 import DropdownTitle from "./components/DropdownTitle";
 import {
+  getFileUrl,
   matchSaveWorkflowShortcut,
   validateOrSaveAllJsonFileMyWorkflows,
 } from "./utils";
@@ -160,10 +161,30 @@ export default function App() {
     setCurFlowName(flow.name);
     setRoute("root");
   };
-  const onClickNewFlow = () => {
-    const defaultObj = defaultGraph;
-    const flow = createFlow({ json: JSON.stringify(defaultObj) });
+  const loadNewWorkflow = (input?: { json?: string; name?: string }) => {
+    let jsonStr = input?.json ?? JSON.stringify(defaultGraph);
+    const flow = createFlow({ json: jsonStr, name: input?.name });
     loadWorkflowID(flow.id);
+    setRoute("root");
+  };
+
+  const loadFilePath = async (
+    relativePath: string,
+    overwriteCurrent: boolean = false
+  ) => {
+    const fileName = relativePath.split("/").pop() ?? relativePath;
+    if (!overwriteCurrent) {
+      loadNewWorkflow({ name: fileName });
+    } else {
+      saveCurWorkflow();
+    }
+    const res = await fetch(getFileUrl(relativePath));
+    const blob = await res.blob();
+    const fileObj = new File([blob], fileName, {
+      type: res.headers.get("Content-Type") || "",
+    });
+    await app.handleFile(fileObj);
+    setRoute("root");
   };
 
   const onDuplicateWorkflow = (workflowID: string, newFlowName?: string) => {
@@ -245,6 +266,8 @@ export default function App() {
         discardUnsavedChanges: discardUnsavedChanges,
         saveCurWorkflow: saveCurWorkflow,
         isDirty: isDirty,
+        loadNewWorkflow: loadNewWorkflow,
+        loadFilePath: loadFilePath,
       }}
     >
       <Box
@@ -292,7 +315,7 @@ export default function App() {
               variant={"outline"}
               colorScheme="teal"
               aria-label="new workflow"
-              onClick={() => onClickNewFlow()}
+              onClick={() => loadNewWorkflow()}
               px={2}
             >
               <HStack gap={1}>
@@ -349,7 +372,7 @@ export default function App() {
           <RecentFilesDrawer
             onclose={() => setRoute("root")}
             onClickNewFlow={() => {
-              onClickNewFlow();
+              loadNewWorkflow();
               setRoute("root");
             }}
           />

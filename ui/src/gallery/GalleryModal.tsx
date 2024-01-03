@@ -22,11 +22,13 @@ import { formatTimestamp, isImageFormat } from "../utils";
 import { useDialog } from "../components/AlertDialogProvider";
 const IMAGE_SIZE = 200;
 export default function GalleryModal({ onclose }: { onclose: () => void }) {
-  const { curFlowID } = useContext(WorkspaceContext);
+  const { curFlowID, loadNewWorkflow, loadFilePath } =
+    useContext(WorkspaceContext);
   const workflow = curFlowID != null ? getWorkflow(curFlowID) : null;
   const media = mediaTable?.getByWorkflowID(curFlowID ?? "");
   const [coverPath, setCoverPath] = useState(workflow?.coverMediaPath);
   const { showDialog } = useDialog();
+
   if (curFlowID == null) {
     return null;
   }
@@ -98,12 +100,19 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
                       />
                     </Tooltip>
                     <Button
+                      flexGrow={1}
                       onClick={() =>
                         showDialog("How do you want to load this workflow?", [
-                          { label: "Load in new workflow", onClick: () => {} },
+                          {
+                            label: "Load in new workflow",
+                            onClick: () => {
+                              loadFilePath(media.localPath);
+                            },
+                            colorScheme: "teal",
+                          },
                           {
                             label: "Overwrite current workflow",
-                            onClick: () => {},
+                            onClick: () => loadFilePath(media.localPath, true),
                             colorScheme: "red",
                           },
                         ])

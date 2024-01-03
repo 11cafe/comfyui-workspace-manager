@@ -30,6 +30,7 @@ import {
   IconChevronDown,
   IconChevronUp,
   IconFolderPlus,
+  IconPlus,
   IconX,
 } from "@tabler/icons-react";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
@@ -52,7 +53,7 @@ type Props = {
   onClickNewFlow: () => void;
 };
 
-export default function RecentFilesDrawer({ onclose }: Props) {
+export default function RecentFilesDrawer({ onclose, onClickNewFlow }: Props) {
   const [files, setFiles] = useState<Array<Folder | Workflow>>([]);
   const recentFlows = files.filter((n) => !isFolder(n)) as Workflow[];
   const { curFlowID } = useContext(WorkspaceContext);
@@ -206,6 +207,16 @@ export default function RecentFilesDrawer({ onclose }: Props) {
                 Workflows
               </Text>
               <ImportJsonFlows />
+              <Tooltip label="New workflow">
+                <IconButton
+                  aria-label="New workflow"
+                  size={"sm"}
+                  icon={<IconPlus />}
+                  variant={"outline"}
+                  colorScheme="teal"
+                  onClick={onClickNewFlow}
+                />
+              </Tooltip>
             </HStack>
             <HStack alignItems={"center"}>
               <RecentFilesDrawerMenu />
