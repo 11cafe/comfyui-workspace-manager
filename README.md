@@ -49,11 +49,11 @@ You can go back and switch versions in version history. You won't need to worry 
 
 switch between flows:
 
-![switch flow (1)](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/79cbc1b5-9b1a-44c5-835a-8c6645409d9d)
+![switch between workflows with cover photo](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/11543a0f-6cc4-41fb-8666-772ab9a2cfe6)
 
 🤏drag and drop to insert sub-workflow:
 
-![drag drop file demo](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/4ab1949d-7fa8-403a-9d92-5d43ad568572)
+![drag drop file demo (1)](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/7540c45b-be51-4428-8558-96adcc1024c8)
 
 🗂️Organize your workflows with folders:
 
