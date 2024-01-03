@@ -9,7 +9,7 @@ import {
   Stack,
 } from "@chakra-ui/react";
 import { Workflow, isFolder, updateFlow } from "../WorkspaceDB";
-import { formatTimestamp } from "../utils";
+import { formatTimestamp, isImageFormat } from "../utils";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import { useState, memo, ChangeEvent, useContext } from "react";
 import WorkflowListItemRightClickMenu from "./WorkflowListItemRightClickMenu";
@@ -89,14 +89,24 @@ export default function WorkflowListItem({ workflow }: Props) {
       }}
     >
       <HStack>
-        {workflow.coverMediaPath && (
-          <Image
-            boxSize="60px"
-            objectFit="cover"
-            src={`/workspace/view_media?filename=${workflow.coverMediaPath}`}
-            alt={workflow.name ?? "workflow cover image"}
-          />
-        )}
+        {workflow.coverMediaPath != null &&
+          (isImageFormat(workflow.coverMediaPath) ? (
+            <Image
+              borderRadius={3}
+              boxSize="60px"
+              objectFit="cover"
+              src={`/workspace/view_media?filename=${workflow.coverMediaPath}`}
+              alt={workflow.name ?? "workflow cover image"}
+            />
+          ) : (
+            <video width="60" height="60">
+              <source
+                src={`/workspace/view_media?filename=${workflow.coverMediaPath}`}
+                type="video/mp4"
+              />
+              Your browser does not support the video tag.
+            </video>
+          ))}
 
         <Stack textAlign={"left"} gap={0}>
           <Text fontWeight={"500"}>{workflow.name ?? "untitled"}</Text>
