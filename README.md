@@ -1,6 +1,6 @@
 # ☕️ ComfyUI Workspace Manager - Comfyspace
 
-A ComfyUI custom node for project management to **centralize the management of all your workflows in one place**. Seamlessly switch between workflows, create and update them within a single workspace, like Google Docs.
+A ComfyUI workflow management extension to **organize and manage of all your workflows in one place**. Seamlessly switch between workflows, create and update them within a single workspace, like Google Docs.
 
 If you have questions or suggestions, please join our [Discord Channel](https://discord.gg/NYTTPsb3f6)
 
