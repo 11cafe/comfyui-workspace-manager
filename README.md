@@ -23,6 +23,11 @@ and restart your ComfyUI.
 It is recommended to do git clone than downloading zip folder, because you can get latest updates by `git pull`!
 
 ## Features
+### 📣Update 01/03/2024 - Gallery and cover images
+Every image/video you generate will be saved in the gallery of the current workflow. You can set any image in the gallery as the cover photo of the workflow
+
+<img width="400" alt="Screenshot 2024-01-03 at 9 05 01 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/879ea664-c06b-4abb-b4f0-a9305ade3bc9">
+<img width="394" alt="Screenshot 2024-01-03 at 7 35 20 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/ae818652-8680-48a2-bdd3-bd02cb20ad16">
 ### 📣Update 12/29/2023 - Manual save, version history
 Finally, you can **manually save** your workflow by either click the 💾 floppy disk icon beside the workflow name or Shift+S shortcut (you can customize this shortcut in Settings)
 Everytime you save, it will create a new record in **Version History** (you can access this in the dropdown menu on the left side of the name topbar)
@@ -35,7 +40,8 @@ You can go back and switch versions in version history. You won't need to worry 
 - Create and name workflows
 - 🗂️Organize workflows with folders, 🏷️tags
 - 📂Saves all your workflows in a single folder (by default under `/ComfyUI/my_workflows`), customize this location in Settings
-- 🕛**Version control** of workflow, never lose any changes
+- 🖼️Gallery and cover images: Every image/video you generate will be saved in the gallery of the current workflow. You can set any image in the gallery as the cover photo of the workflow
+- 🕛**Version control** of workflow, never lose any changes (Everytime you press save, it will log a new version in history. you can easily revert back to any versions like git)
 - **Bulk import** workflows into your workspace
 - 📑Quickly duplicate flow in right-click menu
 - cloud sync & backup workspace so you will never lose your data (Upcoming!)
