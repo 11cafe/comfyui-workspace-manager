@@ -42,7 +42,7 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
   useEffect(() => {
     if (folder.isCollapse === isCollapsed) return;
     foldersTable?.update({
-      ...folder,
+      id: folder.id,
       isCollapse: isCollapsed,
     });
   }, [isCollapsed]);

@@ -12,25 +12,21 @@ import {
   Link,
   Stack,
   Tooltip,
+  IconButton,
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState } from "react";
-import {
-  Tag,
-  Workflow,
-  getWorkflow,
-  mediaTable,
-  tagsTable,
-  updateFlow,
-} from "../WorkspaceDB";
-import { IconPinFilled, IconSettings, IconTrash } from "@tabler/icons-react";
+import { getWorkflow, mediaTable, updateFlow } from "../WorkspaceDB";
+import { IconPin, IconPinFilled } from "@tabler/icons-react";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { formatTimestamp, isImageFormat } from "../utils";
+import { useDialog } from "../components/AlertDialogProvider";
 const IMAGE_SIZE = 200;
 export default function GalleryModal({ onclose }: { onclose: () => void }) {
   const { curFlowID } = useContext(WorkspaceContext);
   const workflow = curFlowID != null ? getWorkflow(curFlowID) : null;
   const media = mediaTable?.getByWorkflowID(curFlowID ?? "");
   const [coverPath, setCoverPath] = useState(workflow?.coverMediaPath);
+  const { showDialog } = useDialog();
   if (curFlowID == null) {
     return null;
   }
@@ -71,26 +67,53 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
               const isCover =
                 coverPath != null && coverPath === media.localPath;
               return (
-                <Tooltip label={formatTimestamp(media.createTime)}>
-                  <Stack width={IMAGE_SIZE}>
+                <Stack width={IMAGE_SIZE} justifyContent={"space-between"}>
+                  <Tooltip label={formatTimestamp(media.createTime, true)}>
                     {mediaPreview}
-                    <Text color={"GrayText"}>{media.localPath}</Text>
+                  </Tooltip>
+                  <Tooltip label={media.localPath}>
+                    <Text color={"GrayText"} noOfLines={1}>
+                      {media.localPath}
+                    </Text>
+                  </Tooltip>
+                  <HStack justifyContent={"space-between"}>
+                    <Tooltip label="Set as cover">
+                      <IconButton
+                        size={"sm"}
+                        icon={
+                          isCover ? (
+                            <IconPinFilled size={20} />
+                          ) : (
+                            <IconPin size={20} />
+                          )
+                        }
+                        aria-label="set as cover"
+                        isActive={isCover}
+                        onClick={() => {
+                          updateFlow(curFlowID, {
+                            coverMediaPath: media.localPath,
+                          });
+                          setCoverPath(media.localPath);
+                        }}
+                      />
+                    </Tooltip>
                     <Button
-                      leftIcon={
-                        isCover ? <IconPinFilled size={20} /> : undefined
+                      onClick={() =>
+                        showDialog("How do you want to load this workflow?", [
+                          { label: "Load in new workflow", onClick: () => {} },
+                          {
+                            label: "Overwrite current workflow",
+                            onClick: () => {},
+                            colorScheme: "red",
+                          },
+                        ])
                       }
-                      isActive={isCover}
-                      onClick={() => {
-                        updateFlow(curFlowID, {
-                          coverMediaPath: media.localPath,
-                        });
-                        setCoverPath(media.localPath);
-                      }}
+                      size={"sm"}
                     >
-                      {isCover ? "Cover" : "Set as cover"}
+                      Load
                     </Button>
-                  </Stack>
-                </Tooltip>
+                  </HStack>
+                </Stack>
               );
             })}
           </HStack>

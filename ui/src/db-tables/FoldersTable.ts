@@ -64,8 +64,10 @@ export class FoldersTable {
     const newRecord = {
       ...folder,
       ...input,
-      updateTime: Date.now(),
     };
+    if (input.name != null) {
+      newRecord.updateTime = Date.now();
+    }
     this.records[input.id] = newRecord;
     saveDB("folders", JSON.stringify(this.records));
     updateWorkspaceIndexDB();
