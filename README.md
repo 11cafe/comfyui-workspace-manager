@@ -58,26 +58,29 @@ switch between flows:
 
 🗂️Organize your workflows with folders:
 
-<img width="397" alt="Screenshot 2023-12-28 at 11 20 01 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/b14ede49-8d2a-486e-a9e1-5e871864e4f7">
+<img width="340" alt="Screenshot 2023-12-28 at 11 20 01 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/b14ede49-8d2a-486e-a9e1-5e871864e4f7">
 
 Choose the folder location where you want to save your workflows .json files in Settings:
 
-<img width="400" alt="Screenshot 2024-01-02 at 10 22 45 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/4751b096-0886-4a32-95b1-87c7ce5b3787">
+<img width="500" alt="Screenshot 2024-01-02 at 10 22 45 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/4751b096-0886-4a32-95b1-87c7ce5b3787">
 
 
-import flows:
+Bulk import flows:
 
 ![import flows](https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/884c8852-73c7-41d6-9179-7fb1fcea9d04)
-
-duplicate flow by right click menu option:
-<img width="385" alt="Screenshot 2023-12-29 at 9 58 26 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/b74c4405-8232-4e39-b995-3b4877d27c9e">
 
 add tags to flow: <img width="500" alt="Screenshot 2023-12-13 at 1 54 04 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/6bf4d22b-f52a-4d23-8882-4a31162616f3">
 
 Workflow operations: Manual Save, Download, Discard unsaved changes: 
+
 <img width="500" alt="Screenshot 2023-12-29 at 9 59 57 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/88c82672-ebf2-4feb-bf5b-74b447843c2c">
+
 Version history:
+
 <img width="387" alt="Screenshot 2023-12-29 at 11 17 37 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/ac8c52d7-c339-46a0-8682-ed03b0cab75d">
+
+duplicate flow by right click menu option:
+<img width="385" alt="Screenshot 2023-12-29 at 9 58 26 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/b74c4405-8232-4e39-b995-3b4877d27c9e">
 
 
 **Looking for colaborators and coworkers** to develop this ComfyUI project management tool. If you know React, Python or ML model deployment, please reach out to weixuanfu01@gmail.com We want to make it easy to **manage, share and deploy** ComfyUI project.
