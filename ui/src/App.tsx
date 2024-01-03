@@ -19,6 +19,7 @@ import {
   IconTriangleInvertedFilled,
   IconGripVertical,
   IconDeviceFloppy,
+  IconPhoto,
 } from "@tabler/icons-react";
 import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
 import Draggable from "./components/Draggable";
@@ -41,8 +42,9 @@ import {
   matchSaveWorkflowShortcut,
   validateOrSaveAllJsonFileMyWorkflows,
 } from "./utils";
+import GalleryModal from "./gallery/GalleryModal";
 
-type Route = "root" | "customNodes" | "recentFlows";
+type Route = "root" | "customNodes" | "recentFlows" | "gallery";
 
 export default function App() {
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
@@ -120,7 +122,6 @@ export default function App() {
       setCurFlowName(flow.name ?? "");
     }
     validateOrSaveAllJsonFileMyWorkflows();
-    console.log("workflow", getWorkflow(curFlowID.current));
   };
   useEffect(() => {
     graphAppSetup();
@@ -211,35 +212,23 @@ export default function App() {
       saveCurWorkflow();
     }
   };
+  const onExecutedCreateMedia = useCallback((image: any) => {
+    if (curFlowID.current == null) return;
+    let path = image.filename;
+    if (image.subfolder != null && image.subfolder !== "") {
+      path = image.subfolder + "/" + path;
+    }
+    mediaTable?.create({
+      workflowID: curFlowID.current,
+      localPath: path,
+    });
+  }, []);
 
   useEffect(() => {
     window.addEventListener("keydown", shortcutListener);
     api.addEventListener("executed", (e: any) => {
-      console.log("executed", e);
-      e.detail?.output?.images?.forEach((image: any) => {
-        console.log("1111executed image", image);
-        if (curFlowID.current == null) return;
-        let path = image.filename;
-        if (image.subfolder != null && image.subfolder !== "") {
-          path = image.subfolder + "/" + path;
-        }
-        mediaTable?.create({
-          workflowID: curFlowID.current,
-          localPath: path,
-        });
-      });
-      e.detail?.output?.gifs?.forEach((image: any) => {
-        console.log("1111executed image", image);
-        if (curFlowID.current == null) return;
-        let path = image.filename;
-        if (image.subfolder != null && image.subfolder !== "") {
-          path = image.subfolder + "/" + path;
-        }
-        mediaTable?.create({
-          workflowID: curFlowID.current,
-          localPath: path,
-        });
-      });
+      e.detail?.output?.images?.forEach(onExecutedCreateMedia);
+      e.detail?.output?.gifs?.forEach(onExecutedCreateMedia);
     });
     return () => window.removeEventListener("keydown", shortcutListener);
   }, []);
@@ -336,6 +325,15 @@ export default function App() {
                 </Tooltip>
               )}
               <DropdownTitle onClick={() => setIsHovered(false)} />
+              <Tooltip label="Open gallery">
+                <IconButton
+                  onClick={() => setRoute("gallery")}
+                  icon={<IconPhoto size={20} color="white" />}
+                  size={"sm"}
+                  aria-label="open gallery"
+                  variant={"ghost"}
+                />
+              </Tooltip>
             </HStack>
             {isHovered && (
               <IconGripVertical
@@ -355,6 +353,9 @@ export default function App() {
               setRoute("root");
             }}
           />
+        )}
+        {route === "gallery" && (
+          <GalleryModal onclose={() => setRoute("root")} />
         )}
       </Box>
     </WorkspaceContext.Provider>
