@@ -48,14 +48,14 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
       pl={4}
       pr={5}
       pt={4}
-      gap={4}
+      gap={0}
       position={"fixed"}
       top={0}
       left={0}
       zIndex={1000}
     >
-      <CardBody>
-        <Flex justifyContent={"space-between"} alignItems={"center"} mb={3}>
+      <CardHeader pb={1} mb={0}>
+        <Flex justifyContent={"space-between"} alignItems={"center"}>
           <Heading size="md">Version History</Heading>
           <IconButton
             size={"sm"}
@@ -65,6 +65,8 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
             aria-label="close version history"
           />
         </Flex>
+      </CardHeader>
+      <CardBody overflowY={"auto"} gap={0}>
         <Text mb={4}>All the saved changes of this workflow</Text>
         <Stack divider={<StackDivider />} spacing={2}>
           {changelogs?.map((c) => {

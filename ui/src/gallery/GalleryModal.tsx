@@ -38,7 +38,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
       <ModalContent width={"90%"} maxWidth={"90vw"} height={"90vh"}>
         <ModalHeader>Gallery - {workflow?.name}</ModalHeader>
         <ModalCloseButton />
-        <ModalBody>
+        <ModalBody overflowY={"auto"}>
           <HStack wrap={"wrap"}>
             {media?.map((media) => {
               if (media.localPath == null) {
