@@ -248,8 +248,20 @@ export default function App() {
   useEffect(() => {
     window.addEventListener("keydown", shortcutListener);
     api.addEventListener("executed", (e: any) => {
-      e.detail?.output?.images?.forEach(onExecutedCreateMedia);
-      e.detail?.output?.gifs?.forEach(onExecutedCreateMedia);
+      e.detail?.output?.images?.forEach(
+        (im: { filename: string; subfolder: string; type: string }) => {
+          if (im.type === "output") {
+            onExecutedCreateMedia(im);
+          }
+        }
+      );
+      e.detail?.output?.gifs?.forEach(
+        (im: { filename: string; subfolder: string; type: string }) => {
+          if (im.type === "output") {
+            onExecutedCreateMedia(im);
+          }
+        }
+      );
     });
     return () => window.removeEventListener("keydown", shortcutListener);
   }, []);

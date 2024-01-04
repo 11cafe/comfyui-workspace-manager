@@ -69,7 +69,11 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
               const isCover =
                 coverPath != null && coverPath === media.localPath;
               return (
-                <Stack width={IMAGE_SIZE} justifyContent={"space-between"}>
+                <Stack
+                  width={IMAGE_SIZE}
+                  justifyContent={"space-between"}
+                  mb={2}
+                >
                   <Tooltip label={formatTimestamp(media.createTime, true)}>
                     {mediaPreview}
                   </Tooltip>
