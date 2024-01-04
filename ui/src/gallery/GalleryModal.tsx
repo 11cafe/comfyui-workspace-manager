@@ -16,7 +16,7 @@ import {
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState } from "react";
 import { getWorkflow, mediaTable, updateFlow } from "../WorkspaceDB";
-import { IconPin, IconPinFilled } from "@tabler/icons-react";
+import { IconPin, IconPinFilled, IconTrash } from "@tabler/icons-react";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { formatTimestamp, isImageFormat } from "../utils";
 import { useDialog } from "../components/AlertDialogProvider";
@@ -27,11 +27,16 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
   const workflow = curFlowID != null ? getWorkflow(curFlowID) : null;
   const media = mediaTable?.getByWorkflowID(curFlowID ?? "");
   const [coverPath, setCoverPath] = useState(workflow?.coverMediaPath);
+  const [images, setImages] = useState(media ?? []);
   const { showDialog } = useDialog();
 
   if (curFlowID == null) {
     return null;
   }
+  const onRefreshImagesList = () => {
+    const media = mediaTable?.getByWorkflowID(curFlowID ?? "");
+    setImages(media ?? []);
+  };
   return (
     <Modal isOpen={true} onClose={onclose} blockScrollOnMount={true}>
       <ModalOverlay />
@@ -40,7 +45,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
         <ModalCloseButton />
         <ModalBody overflowY={"auto"}>
           <HStack wrap={"wrap"}>
-            {media?.map((media) => {
+            {images.map((media) => {
               if (media.localPath == null) {
                 return null;
               }
@@ -58,13 +63,21 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
                   />
                 </Link>
               ) : (
-                <video width={IMAGE_SIZE} height={IMAGE_SIZE} controls>
-                  <source
+                <Link
+                  href={`/workspace/view_media?filename=${media.localPath}`}
+                  isExternal
+                >
+                  <video
+                    width={IMAGE_SIZE}
+                    height={IMAGE_SIZE}
                     src={`/workspace/view_media?filename=${media.localPath}`}
-                    type="video/mp4"
-                  />
-                  Your browser does not support the video tag.
-                </video>
+                    loop={true}
+                    autoPlay={true}
+                    muted={true}
+                  >
+                    <track kind="captions" />
+                  </video>
+                </Link>
               );
               const isCover =
                 coverPath != null && coverPath === media.localPath;
@@ -86,11 +99,12 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
                     <Tooltip label="Set as cover">
                       <IconButton
                         size={"sm"}
+                        variant={"ghost"}
                         icon={
                           isCover ? (
-                            <IconPinFilled size={20} />
+                            <IconPinFilled size={19} />
                           ) : (
-                            <IconPin size={20} />
+                            <IconPin size={19} />
                           )
                         }
                         aria-label="set as cover"
@@ -125,6 +139,29 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
                     >
                       Load
                     </Button>
+                    <Tooltip label="Remove image from gallery">
+                      <IconButton
+                        size={"sm"}
+                        variant={"ghost"}
+                        icon={<IconTrash size={19} />}
+                        aria-label="remove image from gallery"
+                        colorScheme="red"
+                        onClick={() => {
+                          const res = confirm(
+                            "Are you sure to remove this image from gallery? (won't delete image on your disk)"
+                          );
+                          if (!res) return;
+                          mediaTable?.delete(media.id);
+                          if (isCover) {
+                            updateFlow(curFlowID, {
+                              coverMediaPath: undefined,
+                            });
+                            setCoverPath(undefined);
+                          }
+                          onRefreshImagesList();
+                        }}
+                      />
+                    </Tooltip>
                   </HStack>
                 </Stack>
               );

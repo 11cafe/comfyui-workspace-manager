@@ -81,4 +81,9 @@ export class MediaTable {
     updateWorkspaceIndexDB();
     return md;
   }
+  public delete(id: string) {
+    delete this.records[id];
+    saveDB("media", JSON.stringify(this.records));
+    updateWorkspaceIndexDB();
+  }
 }
