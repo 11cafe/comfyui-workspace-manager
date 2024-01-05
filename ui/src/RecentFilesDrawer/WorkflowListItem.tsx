@@ -111,7 +111,6 @@ export default function WorkflowListItem({ workflow }: Props) {
         <Stack textAlign={"left"} gap={0}>
           <Text fontWeight={"500"}>{workflow.name ?? "untitled"}</Text>
           <Text color={"GrayText"} ml={2} fontSize={"sm"}>
-            {workflow.id}
             Updated: {formatTimestamp(workflow.updateTime)}
           </Text>
         </Stack>

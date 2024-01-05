@@ -116,7 +116,10 @@ export default function App() {
       setCurFlowID(latestWf.id);
       setCurFlowName(latestWf.name);
     } else {
-      loadNewWorkflow();
+      const graphJson = localStorage.getItem("workflow");
+      const flow = createFlow({ json: graphJson ?? "" });
+      setCurFlowID(flow.id);
+      setCurFlowName(flow.name ?? "");
     }
     validateOrSaveAllJsonFileMyWorkflows();
   };
