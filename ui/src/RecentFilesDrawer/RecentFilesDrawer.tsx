@@ -208,7 +208,7 @@ export default function RecentFilesDrawer({ onclose, onClickNewFlow }: Props) {
               <Text fontSize={20} fontWeight={600} mr={4}>
                 Workflows
               </Text>
-              <Link onClick={openCognitoPopup}>Login</Link>
+              {/* <Link onClick={openCognitoPopup}>Login</Link> */}
               <ImportJsonFlows />
               <Tooltip label="New workflow">
                 <IconButton
