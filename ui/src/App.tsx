@@ -28,12 +28,7 @@ import {
 } from "./utils";
 import GalleryModal from "./gallery/GalleryModal";
 import { Topbar } from "./topbar/Topbar";
-import {
-  authTokenListener,
-  popupWindow,
-  pullAuthTokenCloseIfExist,
-} from "./auth/authUtils";
-import { COMFYSPACE_AUTH_REDIRECT_URL } from "./const";
+import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
 
 export default function App() {
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
@@ -77,7 +72,6 @@ export default function App() {
   const setCurFlowID = (id: string) => {
     curFlowID.current = id;
     setFlowID(id);
-    console.log("localstorage curflow id", id);
     localStorage.setItem("curFlowID", id);
   };
 
