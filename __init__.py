@@ -345,3 +345,8 @@ async def api_view_file(request):
         content_type=content_type,
         headers={"Content-Disposition": f"filename=\"{filename}\""}
     )
+
+@server.PromptServer.instance.routes.get('/comfyspace_auth')
+async def catch_all(request):
+    web_root = os.path.join(comfy_path, "web")
+    return web.FileResponse(os.path.join(web_root, "index.html"))

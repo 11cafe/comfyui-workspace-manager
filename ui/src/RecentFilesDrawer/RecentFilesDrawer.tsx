@@ -13,6 +13,7 @@ import {
   Flex,
   Tooltip,
   Input,
+  Link,
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState, useRef, useCallback } from "react";
 import {
@@ -46,6 +47,7 @@ import { insertWorkflowToCanvas3 } from "./InsertWorkflowToCanvas";
 import FilesListFolderItem from "./FilesListFolderItem";
 import { useDebounce } from "../customHooks/useDebaunce";
 import SeacrhInput from "../components/SearchInput";
+import { openCognitoPopup } from "../auth/authUtils";
 
 const MAX_TAGS_TO_SHOW = 6;
 type Props = {
@@ -206,6 +208,7 @@ export default function RecentFilesDrawer({ onclose, onClickNewFlow }: Props) {
               <Text fontSize={20} fontWeight={600} mr={4}>
                 Workflows
               </Text>
+              <Link onClick={openCognitoPopup}>Login</Link>
               <ImportJsonFlows />
               <Tooltip label="New workflow">
                 <IconButton

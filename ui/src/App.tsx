@@ -3,26 +3,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { app } from "/scripts/app.js";
 // @ts-ignore
 import { api } from "/scripts/api.js";
-
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
-import {
-  HStack,
-  Box,
-  Button,
-  Text,
-  IconButton,
-  Tooltip,
-} from "@chakra-ui/react";
-import {
-  IconFolder,
-  IconPlus,
-  IconTriangleInvertedFilled,
-  IconGripVertical,
-  IconDeviceFloppy,
-  IconPhoto,
-} from "@tabler/icons-react";
+import { Box } from "@chakra-ui/react";
 import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
-import Draggable from "./components/Draggable";
 import {
   createFlow,
   getWorkflow,
@@ -36,16 +19,14 @@ import {
 } from "./WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
-import EditFlowName from "./components/EditFlowName";
-import DropdownTitle from "./components/DropdownTitle";
 import {
+  Route,
   getFileUrl,
   matchSaveWorkflowShortcut,
   validateOrSaveAllJsonFileMyWorkflows,
 } from "./utils";
 import GalleryModal from "./gallery/GalleryModal";
-
-type Route = "root" | "customNodes" | "recentFlows" | "gallery";
+import { Topbar } from "./topbar/Topbar";
 
 export default function App() {
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
@@ -56,7 +37,6 @@ export default function App() {
   const curFlowID = useRef<string | null>(null);
   const [positionStyle, setPositionStyle] = useState<PanelPosition>();
   const [isDirty, setIsDirty] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
 
   const saveCurWorkflow = useCallback(() => {
     if (curFlowID.current) {
@@ -97,7 +77,17 @@ export default function App() {
       // Unique name for the extension
       name: "WorkspaceManager",
       async setup(app) {
-        // Any setup to run after the app is created
+        // when drop file create new flow with file name
+        const originalHandleFileFunc = app.handleFile.bind(app);
+        app.handleFile = async function (file: File) {
+          const flow = createFlow({
+            name: file.name,
+            json: JSON.stringify(defaultGraph),
+          });
+          setCurFlowID(flow.id);
+          setCurFlowName(flow.name ?? "Unknown name");
+          await originalHandleFileFunc(file);
+        };
       },
       async addCustomNodeDefs(defs) {
         nodeDefs.current = defs;
@@ -280,6 +270,7 @@ export default function App() {
         isDirty: isDirty,
         loadNewWorkflow: loadNewWorkflow,
         loadFilePath: loadFilePath,
+        setRoute: setRoute,
       }}
     >
       <Box
@@ -292,94 +283,12 @@ export default function App() {
         zIndex={1000}
         draggable={false}
       >
-        <Draggable
-          onDragEnd={(position: { x: number; y: number }) => {
-            updatePanelPosition({ top: position.y, left: position.x }, true);
-          }}
-        >
-          <HStack
-            style={{
-              padding: 2,
-              position: "fixed",
-              ...positionStyle,
-            }}
-            justifyContent={"space-between"}
-            alignItems={"center"}
-            gap={2}
-            draggable={false}
-            id="workspaceManagerPanel"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-          >
-            <Button
-              size={"sm"}
-              aria-label="workspace folder"
-              onClick={() => setRoute("recentFlows")}
-              px={2}
-            >
-              <HStack gap={1}>
-                <IconFolder size={21} />
-                <IconTriangleInvertedFilled size={8} />
-              </HStack>
-            </Button>
-            <Button
-              size={"sm"}
-              variant={"outline"}
-              colorScheme="teal"
-              aria-label="new workflow"
-              onClick={() => loadNewWorkflow()}
-              px={2}
-            >
-              <HStack gap={1}>
-                <IconPlus size={16} color={"white"} />
-                <Text color={"white"} fontSize={"sm"}>
-                  New
-                </Text>
-              </HStack>
-            </Button>
-            <EditFlowName
-              isDirty={isDirty}
-              displayName={curFlowName ?? ""}
-              updateFlowName={(newName) => {
-                setCurFlowName(newName);
-                requestAnimationFrame(() => {
-                  updatePanelPosition();
-                });
-              }}
-            />
-            <HStack gap={"1px"}>
-              {isDirty && (
-                <Tooltip label="Save workflow">
-                  <IconButton
-                    onClick={saveCurWorkflow}
-                    icon={<IconDeviceFloppy size={20} color="white" />}
-                    size={"sm"}
-                    aria-label="save workspace"
-                    variant={"ghost"}
-                  />
-                </Tooltip>
-              )}
-              <DropdownTitle onClick={() => setIsHovered(false)} />
-              <Tooltip label="Open gallery">
-                <IconButton
-                  onClick={() => setRoute("gallery")}
-                  icon={<IconPhoto size={20} color="white" />}
-                  size={"sm"}
-                  aria-label="open gallery"
-                  variant={"ghost"}
-                />
-              </Tooltip>
-            </HStack>
-            {isHovered && (
-              <IconGripVertical
-                id="dragPanelIcon"
-                cursor="move"
-                size={15}
-                color="#FFF"
-              />
-            )}
-          </HStack>
-        </Draggable>
+        <Topbar
+          curFlowName={curFlowName}
+          setCurFlowName={setCurFlowName}
+          updatePanelPosition={updatePanelPosition}
+          positionStyle={positionStyle}
+        />
         {route === "recentFlows" && (
           <RecentFilesDrawer
             onclose={() => setRoute("root")}
