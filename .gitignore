@@ -1,4 +1,5 @@
-__pycache__/*
+__pycache__
+.env
 # Logs
 logs
 *.log
@@ -13,7 +14,6 @@ db
 dist-ssr
 *.local
 backup
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

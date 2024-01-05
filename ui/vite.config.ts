@@ -7,6 +7,7 @@ export default defineConfig({
     // a hacky resolution for reactDOM process is not defined error
     "process.env.NODE_ENV": '"production"',
   },
+  envDir: ".",
   build: {
     watch: {
       include: ["src/**"],
