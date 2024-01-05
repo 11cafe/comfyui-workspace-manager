@@ -209,9 +209,9 @@ export default function RecentFilesDrawer({ onclose, onClickNewFlow }: Props) {
                 <Text fontSize={19} fontWeight={600}>
                   ☕️Workspace
                 </Text>
-                <Tooltip label="Login to share and sync your workflows to cloud">
+                {/* <Tooltip label="Login to share and sync your workflows to cloud">
                   <Link onClick={openCognitoPopup}>Login</Link>
-                </Tooltip>
+                </Tooltip> */}
               </HStack>
               <ImportJsonFlows />
               <Tooltip label="New workflow">
