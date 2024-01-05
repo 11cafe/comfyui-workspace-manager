@@ -88,18 +88,6 @@ export function Topbar({
           }}
         />
         <HStack gap={"1px"}>
-          {isDirty && (
-            <Tooltip label="Save workflow">
-              <IconButton
-                onClick={saveCurWorkflow}
-                icon={<IconDeviceFloppy size={20} color="white" />}
-                size={"sm"}
-                aria-label="save workspace"
-                variant={"ghost"}
-              />
-            </Tooltip>
-          )}
-          <DropdownTitle onClick={() => setIsHovered(false)} />
           <Tooltip label="Open gallery">
             <IconButton
               onClick={() => setRoute("gallery")}
@@ -109,7 +97,19 @@ export function Topbar({
               variant={"ghost"}
             />
           </Tooltip>
+          <DropdownTitle onClick={() => setIsHovered(false)} />
         </HStack>
+        {isDirty && (
+          <Tooltip label="Save workflow">
+            <IconButton
+              onClick={saveCurWorkflow}
+              icon={<IconDeviceFloppy size={22} color="white" />}
+              size={"xs"}
+              aria-label="save workspace"
+              variant={"ghost"}
+            />
+          </Tooltip>
+        )}
         {isHovered && (
           <IconGripVertical
             id="dragPanelIcon"
