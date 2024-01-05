@@ -71,7 +71,7 @@ export default function App() {
   const setCurFlowID = (id: string) => {
     curFlowID.current = id;
     setFlowID(id);
-    localStorage.setItem("comfyspace_curFlowID", id);
+    localStorage.setItem("curFlowID", id);
   };
 
   const graphAppSetup = async () => {
@@ -110,7 +110,7 @@ export default function App() {
       console.error("error loading db", error);
     }
     setLoadingDB(false);
-    const latest = localStorage.getItem("comfyspace_curFlowID");
+    const latest = localStorage.getItem("curFlowID");
     const latestWf = latest != null ? getWorkflow(latest) : null;
     if (latestWf) {
       setCurFlowID(latestWf.id);
