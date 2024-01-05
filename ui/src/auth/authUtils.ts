@@ -7,7 +7,7 @@ const redirectUri = encodeURIComponent(COMFYSPACE_AUTH_REDIRECT_URL);
 
 export function openCognitoPopup() {
   const cognitoUrl = `${COGNITO_DOMAIN}/login`;
-  const responseType = "code";
+  const responseType = "token";
 
   const popupUrl = `${cognitoUrl}?response_type=${responseType}&client_id=${CLIENT_ID}&redirect_uri=${redirectUri}`;
   popupWindow = window.open(
@@ -20,12 +20,15 @@ export function openCognitoPopup() {
 }
 
 export function pullAuthTokenCloseIfExist() {
-  const authToken = new URLSearchParams(window.location.search).get(
-    "comfyspace_auth_code"
-  );
-  if (authToken != null && authToken !== "") {
+  console.log("window.location.href", window.location.href);
+  if (window.location.href.includes(COMFYSPACE_AUTH_REDIRECT_URL + "#")) {
+    const paramsString = window.location.href.split("#")[1];
+    let params = new URLSearchParams(paramsString);
+
+    let accessToken = params.get("access_token");
+    console.log("accessToken", accessToken);
     window.opener.postMessage(
-      { comfyspace_authToken: authToken },
+      { comfyspace_authToken: accessToken },
       "http://127.0.0.1:8188/"
     );
     window.close();
@@ -36,7 +39,19 @@ export function authTokenListener(event: MessageEvent) {
   const { comfyspace_authToken } = event.data;
   if (comfyspace_authToken) {
     console.log("received new code", comfyspace_authToken);
-    exchangeCodeForToken(comfyspace_authToken);
+    fetch(`${COGNITO_DOMAIN}/oauth2/userInfo`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${comfyspace_authToken}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("User Info:", data);
+      })
+      .catch((error) => {
+        console.error("Error fetching user info:", error);
+      });
   }
 }
 
@@ -58,6 +73,7 @@ const exchangeCodeForToken = async (code: string) => {
       headers: headers,
       body: details,
     });
+    console.log("response", response);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

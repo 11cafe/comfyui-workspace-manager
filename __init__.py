@@ -345,10 +345,3 @@ async def api_view_file(request):
         content_type=content_type,
         headers={"Content-Disposition": f"filename=\"{filename}\""}
     )
-
-@server.PromptServer.instance.routes.get('/comfyspace_auth')
-async def catch_all(request):
-    print('hello comfyspace_auth')
-    code = request.query.get('code', None)
-    if code:
-        return web.HTTPFound(f'http://127.0.0.1:8188?comfyspace_auth_code={code}')
