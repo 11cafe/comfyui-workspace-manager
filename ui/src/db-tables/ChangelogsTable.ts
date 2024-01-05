@@ -1,7 +1,6 @@
 import { getDB, saveDB } from "../Api";
 import { v4 as uuidv4 } from "uuid";
-import { curComfyspaceJson } from "../WorkspaceDB";
-import { updateWorkspaceIndexDB } from "./IndexDBUtils";
+import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
 
 type Changelog = {
   id: string;
@@ -23,7 +22,7 @@ export class ChangelogsTable {
     let jsonStr = await getDB(ChangelogsTable.TABLE_NAME);
     let json = jsonStr != null ? JSON.parse(jsonStr) : null;
     if (json == null) {
-      const comfyspace = localStorage.getItem("comfyspace") ?? "{}";
+      const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
       const comfyspaceData = JSON.parse(comfyspace);
       json = comfyspaceData[ChangelogsTable.TABLE_NAME];
     }
