@@ -29,7 +29,7 @@ export function Topbar({
   setCurFlowName,
 }: Props) {
   const [isHovered, setIsHovered] = useState(false);
-  const { isDirty, loadNewWorkflow, saveCurWorkflow, setRoute } =
+  const { isDirty, loadNewWorkflow, saveCurWorkflow, setRoute, curFlowID } =
     useContext(WorkspaceContext);
   return (
     <Draggable
@@ -87,19 +87,21 @@ export function Topbar({
             });
           }}
         />
-        <HStack gap={"1px"}>
-          <Tooltip label="Open gallery">
-            <IconButton
-              onClick={() => setRoute("gallery")}
-              icon={<IconPhoto size={20} color="white" />}
-              size={"sm"}
-              aria-label="open gallery"
-              variant={"ghost"}
-            />
-          </Tooltip>
-          <DropdownTitle onClick={() => setIsHovered(false)} />
-        </HStack>
-        {isDirty && (
+        {curFlowID && (
+          <HStack gap={"1px"}>
+            <Tooltip label="Open gallery">
+              <IconButton
+                onClick={() => setRoute("gallery")}
+                icon={<IconPhoto size={20} color="white" />}
+                size={"sm"}
+                aria-label="open gallery"
+                variant={"ghost"}
+              />
+            </Tooltip>
+            <DropdownTitle onClick={() => setIsHovered(false)} />
+          </HStack>
+        )}
+        {curFlowID && isDirty && (
           <Tooltip label="Save workflow">
             <IconButton
               onClick={saveCurWorkflow}

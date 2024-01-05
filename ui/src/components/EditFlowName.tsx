@@ -70,7 +70,7 @@ export default function EditFlowName({
     setSubmitError("");
     onClose();
   };
-
+  if (curFlowID == null) return null;
   return (
     <HStack>
       <Tooltip label={displayName} placement="bottom">

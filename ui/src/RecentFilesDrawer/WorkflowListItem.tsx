@@ -99,12 +99,13 @@ export default function WorkflowListItem({ workflow }: Props) {
               alt={workflow.name ?? "workflow cover image"}
             />
           ) : (
-            <video width="60" height="60">
-              <source
-                src={`/workspace/view_media?filename=${workflow.coverMediaPath}`}
-                type="video/mp4"
-              />
-              Your browser does not support the video tag.
+            <video
+              width={60}
+              height={60}
+              src={`/workspace/view_media?filename=${workflow.coverMediaPath}`}
+              muted={true}
+            >
+              <track kind="captions" />
             </video>
           ))}
 
