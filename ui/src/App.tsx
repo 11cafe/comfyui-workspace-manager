@@ -28,6 +28,7 @@ import {
 } from "./utils";
 import GalleryModal from "./gallery/GalleryModal";
 import { Topbar } from "./topbar/Topbar";
+import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
 
 export default function App() {
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
@@ -118,10 +119,10 @@ export default function App() {
       setCurFlowID(latestWf.id);
       setCurFlowName(latestWf.name);
     } else {
-      const graphJson = localStorage.getItem("workflow");
-      const flow = createFlow({ json: graphJson ?? "" });
-      setCurFlowID(flow.id);
-      setCurFlowName(flow.name ?? "");
+      // const graphJson = localStorage.getItem("workflow");
+      // const flow = createFlow({ json: graphJson ?? "" });
+      // setCurFlowID(flow.id);
+      // setCurFlowName(flow.name ?? "");
     }
     validateOrSaveAllJsonFileMyWorkflows();
   };
@@ -129,6 +130,7 @@ export default function App() {
     graphAppSetup();
     setInterval(() => {
       if (curFlowID.current != null) {
+        localStorage.setItem("curFlowID", curFlowID.current);
         const graphJson = JSON.stringify(app.graph.serialize());
         graphJson != null &&
           updateFlow(curFlowID.current, {
@@ -145,6 +147,7 @@ export default function App() {
         }
       }
     }, 1000);
+    pullAuthTokenCloseIfExist();
   }, []);
   const loadWorkflowID = (id: string) => {
     if (workspace == null) {
@@ -247,6 +250,8 @@ export default function App() {
 
   useEffect(() => {
     window.addEventListener("keydown", shortcutListener);
+    window.addEventListener("message", authTokenListener);
+
     api.addEventListener("executed", (e: any) => {
       e.detail?.output?.images?.forEach(
         (im: { filename: string; subfolder: string; type: string }) => {
@@ -263,7 +268,10 @@ export default function App() {
         }
       );
     });
-    return () => window.removeEventListener("keydown", shortcutListener);
+    return () => {
+      window.removeEventListener("message", authTokenListener);
+      window.removeEventListener("keydown", shortcutListener);
+    };
   }, []);
 
   if (loadingDB || !positionStyle) {

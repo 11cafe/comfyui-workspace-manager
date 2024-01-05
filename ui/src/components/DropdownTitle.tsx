@@ -130,6 +130,16 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
                 >
                   Save
                 </MenuItem>
+                <Tooltip label="This will revert current workflow to your last saved version. You will lose all changes made since your last save.">
+                  <MenuItem
+                    onClick={discardUnsavedChanges}
+                    icon={<IconArrowBackUpDouble size={20} />}
+                    iconSpacing={1}
+                    isDisabled={workflow?.lastSavedJson == null}
+                  >
+                    Discard unsaved changes
+                  </MenuItem>
+                </Tooltip>
                 <MenuItem
                   onClick={handleDownload}
                   icon={<IconDownload size={20} />}
@@ -151,16 +161,6 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
                 >
                   Versions History
                 </MenuItem>
-                <Tooltip label="This will revert current workflow to your last saved version. You will lose all changes made since your last save.">
-                  <MenuItem
-                    onClick={discardUnsavedChanges}
-                    icon={<IconArrowBackUpDouble size={20} />}
-                    iconSpacing={1}
-                    isDisabled={workflow?.lastSavedJson == null}
-                  >
-                    Discard unsaved changes
-                  </MenuItem>
-                </Tooltip>
               </MenuList>
               {isOpen && <Overlay backgroundColor={null} />}
             </Portal>
