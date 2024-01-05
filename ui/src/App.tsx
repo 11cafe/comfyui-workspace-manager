@@ -4,7 +4,7 @@ import { app } from "/scripts/app.js";
 // @ts-ignore
 import { api } from "/scripts/api.js";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
-import { Box } from "@chakra-ui/react";
+import { Box, list } from "@chakra-ui/react";
 import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
 import {
   createFlow,
@@ -16,6 +16,7 @@ import {
   PanelPosition,
   changelogsTable,
   mediaTable,
+  listWorkflows,
 } from "./WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
@@ -70,6 +71,8 @@ export default function App() {
   const setCurFlowID = (id: string) => {
     curFlowID.current = id;
     setFlowID(id);
+    localStorage.setItem("comfyspace_curFlowID", id);
+    console.log("set cur flow id", id);
   };
 
   const graphAppSetup = async () => {
@@ -77,13 +80,19 @@ export default function App() {
       // Unique name for the extension
       name: "WorkspaceManager",
       async setup(app) {
+        // clean up legacy localStorage
+        localStorage.removeItem("workspace");
+        localStorage.removeItem("comfyspace");
         // when drop file create new flow with file name
         const originalHandleFileFunc = app.handleFile.bind(app);
         app.handleFile = async function (file: File) {
+          console.log("originalHandleFileFunc file", file);
+
           const flow = createFlow({
             name: file.name,
             json: JSON.stringify(defaultGraph),
           });
+          console.log("originalHandleFileFunc flow", flow);
           setCurFlowID(flow.id);
           setCurFlowName(flow.name ?? "Unknown name");
           await originalHandleFileFunc(file);
@@ -92,6 +101,9 @@ export default function App() {
       async addCustomNodeDefs(defs) {
         nodeDefs.current = defs;
       },
+      // async afterConfigureGraph() {
+      //   localStorage.setItem("workflow", JSON.stringify(app.graph.serialize()));
+      // },
     };
     app.registerExtension(ext);
     try {
@@ -101,16 +113,22 @@ export default function App() {
       console.error("error loading db", error);
     }
     setLoadingDB(false);
-    const latest = localStorage.getItem("curFlowID");
+    const latest = localStorage.getItem("comfyspace_curFlowID");
+    console.log("latest id", latest);
+
     const latestWf = latest != null ? getWorkflow(latest) : null;
+    console.log("lastWf", latestWf);
     if (latestWf) {
       setCurFlowID(latestWf.id);
       setCurFlowName(latestWf.name);
     } else {
-      const graphJson = localStorage.getItem("workflow");
-      const flow = createFlow({ json: graphJson ?? "" });
-      setCurFlowID(flow.id);
-      setCurFlowName(flow.name ?? "");
+      loadNewWorkflow();
+      // const flows = listWorkflows();
+      // if (flows.length > 0) {
+      //   loadWorkflowID(flows[0].id);
+      // } else {
+      //   loadNewWorkflow();
+      // }
     }
     validateOrSaveAllJsonFileMyWorkflows();
   };
@@ -119,7 +137,8 @@ export default function App() {
     setInterval(() => {
       if (curFlowID.current != null) {
         const graphJson = JSON.stringify(app.graph.serialize());
-        localStorage.setItem("curFlowID", curFlowID.current);
+        console.log("set cur flow id", curFlowID.current);
+        localStorage.setItem("comfyspace_curFlowID", curFlowID.current);
         graphJson != null &&
           updateFlow(curFlowID.current, {
             json: graphJson,
