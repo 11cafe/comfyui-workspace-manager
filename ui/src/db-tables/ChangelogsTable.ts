@@ -8,7 +8,7 @@ export type Changelog = {
   createTime: number;
   json: string;
 };
-type ChangelogRecord = {
+type ChangelogRecords = {
   [id: string]: Changelog;
 };
 export class ChangelogsTable {
@@ -27,7 +27,7 @@ export class ChangelogsTable {
       .filter((c) => c.workflowID === workflowID)
       .sort((a, b) => b.createTime - a.createTime);
   }
-  public async getRecords(): Promise<ChangelogRecord> {
+  public async getRecords(): Promise<ChangelogRecords> {
     let jsonStr = await getDB(ChangelogsTable.TABLE_NAME);
     let json = jsonStr != null ? JSON.parse(jsonStr) : null;
     if (json == null) {

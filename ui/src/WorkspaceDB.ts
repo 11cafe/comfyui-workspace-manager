@@ -377,14 +377,16 @@ async function loadTagsTable(): Promise<TagsTable> {
   };
 }
 
-export function curComfyspaceJson(): string {
+export async function curComfyspaceJson(): Promise<string> {
+  const changeLogs = await changelogsTable?.getRecords();
+  const media = await mediaTable?.getRecords();
   return JSON.stringify({
     [UserSettingsTable.TABLE_NAME]: userSettingsTable?.records,
     ["tags"]: tagsTable?.tags,
     ["workflows"]: workspace,
     [FoldersTable.TABLE_NAME]: foldersTable?.getRecords(),
-    [ChangelogsTable.TABLE_NAME]: changelogsTable?.getRecords(),
-    [MediaTable.TABLE_NAME]: mediaTable?.getRecords(),
+    [ChangelogsTable.TABLE_NAME]: changeLogs,
+    [MediaTable.TABLE_NAME]: media,
   });
 }
 
