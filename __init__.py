@@ -348,5 +348,7 @@ async def api_view_file(request):
 
 @server.PromptServer.instance.routes.get('/comfyspace_auth')
 async def catch_all(request):
-    web_root = os.path.join(comfy_path, "web")
-    return web.FileResponse(os.path.join(web_root, "index.html"))
+    print('hello comfyspace_auth')
+    code = request.query.get('code', None)
+    if code:
+        return web.HTTPFound(f'http://127.0.0.1:8188?comfyspace_auth_code={code}')
