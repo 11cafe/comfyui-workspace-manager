@@ -14,6 +14,7 @@ import {
 } from "./db-tables/IndexDBUtils";
 import { FoldersTable } from "./db-tables/FoldersTable";
 import { MediaTable } from "./db-tables/MediaTable";
+import { COMFYSPACE_TRACKING_FIELD_NAME } from "./const";
 
 export type Table =
   | "workflows"
@@ -180,7 +181,13 @@ export function saveJsonFileMyWorkflows(workflow: Workflow) {
     updateWorkspaceIndexDB();
     saveDB("workflows", JSON.stringify(workspace));
   }
-  updateFile(file_path, workflow.json);
+  const json = workflow.json;
+  const flow = JSON.parse(json);
+  flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {
+    id: workflow.id,
+    name: workflow.name,
+  };
+  updateFile(file_path, JSON.stringify(flow));
 }
 
 export function deleteJsonFileMyWorkflows(workflow: Workflow) {
@@ -370,14 +377,16 @@ async function loadTagsTable(): Promise<TagsTable> {
   };
 }
 
-export function curComfyspaceJson(): string {
+export async function curComfyspaceJson(): Promise<string> {
+  const changeLogs = await changelogsTable?.getRecords();
+  const media = await mediaTable?.getRecords();
   return JSON.stringify({
     [UserSettingsTable.TABLE_NAME]: userSettingsTable?.records,
     ["tags"]: tagsTable?.tags,
     ["workflows"]: workspace,
     [FoldersTable.TABLE_NAME]: foldersTable?.getRecords(),
-    [ChangelogsTable.TABLE_NAME]: changelogsTable?.getRecords(),
-    [MediaTable.TABLE_NAME]: mediaTable?.getRecords(),
+    [ChangelogsTable.TABLE_NAME]: changeLogs,
+    [MediaTable.TABLE_NAME]: media,
   });
 }
 

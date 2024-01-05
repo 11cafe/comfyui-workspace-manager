@@ -1,64 +1,59 @@
-import { getDB, saveBackup, saveDB } from "../Api";
+import { getDB, saveDB } from "../Api";
 import { v4 as uuidv4 } from "uuid";
-import { curComfyspaceJson, getWorkflow, updateFlow } from "../WorkspaceDB";
-import { updateWorkspaceIndexDB } from "./IndexDBUtils";
+import { getWorkflow, updateFlow } from "../WorkspaceDB";
+import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
 
-type Media = {
+export type Media = {
   id: string;
   workflowID: string;
   createTime: number;
   localPath: string;
   format: string;
 };
+
+type MediaRecords = {
+  [id: string]: Media;
+};
+
 export class MediaTable {
   static readonly TABLE_NAME = "media";
-  private records: {
-    [id: string]: Media;
-  };
-  private constructor() {
-    this.records = {};
-  }
+  private constructor() {}
 
   static async load(): Promise<MediaTable> {
-    const instance = new MediaTable();
+    return new MediaTable();
+  }
+  public async listByWorkflowID(workflowID: string): Promise<Media[]> {
+    const records = await this.getRecords();
+    return Object.values(records)
+      .filter((c) => c.workflowID === workflowID)
+      .sort((a, b) => b.createTime - a.createTime);
+  }
+  public async getRecords(): Promise<MediaRecords> {
     let jsonStr = await getDB(MediaTable.TABLE_NAME);
     let json = jsonStr != null ? JSON.parse(jsonStr) : null;
     if (json == null) {
-      const comfyspace = localStorage.getItem("comfyspace") ?? "{}";
+      const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
       const comfyspaceData = JSON.parse(comfyspace);
       json = comfyspaceData[MediaTable.TABLE_NAME];
     }
-    if (json != null) {
-      instance.records = json;
-    }
-    return instance;
+    return json ?? {};
   }
-  public listByWorkflowID(workflowID: string): Media[] {
-    return Object.values(this.records).filter(
-      (c) => c.workflowID === workflowID
-    );
+  public async get(id: string): Promise<Media | undefined> {
+    const records = await this.getRecords();
+    return records[id];
   }
-  public getRecords() {
-    return this.records;
-  }
-  public get(id: string): Media | undefined {
-    return this.records[id];
-  }
-  public getLastestByWorkflowID(workflowID: string): Media {
-    const all = Object.values(this.records)
+  public async getLastestByWorkflowID(workflowID: string): Promise<Media> {
+    const records = await this.getRecords();
+    const all = Object.values(records)
       .filter((c) => c.workflowID === workflowID)
       .sort((a, b) => b.createTime - a.createTime);
     return all[0];
   }
-  public getByWorkflowID(workflowID: string): Media[] {
-    return Object.values(this.records)
-      .filter((c) => c.workflowID === workflowID)
-      .sort((a, b) => b.createTime - a.createTime);
-  }
-  public create(input: {
+
+  public async create(input: {
     localPath: string;
     workflowID: string;
-  }): Media | null {
+  }): Promise<Media | null> {
     const format = input.localPath.split(".").pop();
     if (format == null) return null;
     const md: Media = {
@@ -75,15 +70,17 @@ export class MediaTable {
       mediaIDs: Array.from(newMedia),
       coverMediaPath: md.localPath,
     });
+    const records = await this.getRecords();
 
-    this.records[md.id] = md;
-    saveDB("media", JSON.stringify(this.records));
+    records[md.id] = md;
+    saveDB("media", JSON.stringify(records));
     updateWorkspaceIndexDB();
     return md;
   }
-  public delete(id: string) {
-    delete this.records[id];
-    saveDB("media", JSON.stringify(this.records));
+  public async delete(id: string) {
+    const records = await this.getRecords();
+    delete records[id];
+    saveDB("media", JSON.stringify(records));
     updateWorkspaceIndexDB();
   }
 }

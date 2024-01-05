@@ -20,22 +20,32 @@ import { IconPin, IconPinFilled, IconTrash } from "@tabler/icons-react";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { formatTimestamp, isImageFormat } from "../utils";
 import { useDialog } from "../components/AlertDialogProvider";
+import { Media } from "../db-tables/MediaTable";
 const IMAGE_SIZE = 200;
 export default function GalleryModal({ onclose }: { onclose: () => void }) {
   const { curFlowID, loadNewWorkflow, loadFilePath } =
     useContext(WorkspaceContext);
   const workflow = curFlowID != null ? getWorkflow(curFlowID) : null;
-  const media = mediaTable?.getByWorkflowID(curFlowID ?? "");
+
   const [coverPath, setCoverPath] = useState(workflow?.coverMediaPath);
-  const [images, setImages] = useState(media ?? []);
+  const [images, setImages] = useState<Media[]>([]);
   const { showDialog } = useDialog();
+  const loadData = async () => {
+    if (curFlowID == null) return;
+
+    const media = await mediaTable?.listByWorkflowID(curFlowID);
+    setImages(media ?? []);
+  };
+  useEffect(() => {
+    loadData();
+  }, []);
 
   if (curFlowID == null) {
     return null;
   }
+
   const onRefreshImagesList = () => {
-    const media = mediaTable?.getByWorkflowID(curFlowID ?? "");
-    setImages(media ?? []);
+    loadData();
   };
   return (
     <Modal isOpen={true} onClose={onclose} blockScrollOnMount={true}>

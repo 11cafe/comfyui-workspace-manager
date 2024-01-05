@@ -1,61 +1,58 @@
 import { getDB, saveDB } from "../Api";
 import { v4 as uuidv4 } from "uuid";
-import { curComfyspaceJson } from "../WorkspaceDB";
-import { updateWorkspaceIndexDB } from "./IndexDBUtils";
+import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
 
-type Changelog = {
+export type Changelog = {
   id: string;
   workflowID: string;
   createTime: number;
   json: string;
 };
+type ChangelogRecords = {
+  [id: string]: Changelog;
+};
 export class ChangelogsTable {
   static readonly TABLE_NAME = "changelogs";
-  private records: {
-    [id: string]: Changelog;
-  };
-  private constructor() {
-    this.records = {};
-  }
+
+  private constructor() {}
 
   static async load(): Promise<ChangelogsTable> {
     const instance = new ChangelogsTable();
+    return instance;
+  }
+
+  public async listByWorkflowID(workflowID: string): Promise<Changelog[]> {
+    const records = await this.getRecords();
+    return Object.values(records)
+      .filter((c) => c.workflowID === workflowID)
+      .sort((a, b) => b.createTime - a.createTime);
+  }
+  public async getRecords(): Promise<ChangelogRecords> {
     let jsonStr = await getDB(ChangelogsTable.TABLE_NAME);
     let json = jsonStr != null ? JSON.parse(jsonStr) : null;
     if (json == null) {
-      const comfyspace = localStorage.getItem("comfyspace") ?? "{}";
+      const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
       const comfyspaceData = JSON.parse(comfyspace);
       json = comfyspaceData[ChangelogsTable.TABLE_NAME];
     }
-    if (json != null) {
-      instance.records = json;
-    }
-    return instance;
+    return json ?? {};
   }
-  public listByWorkflowID(workflowID: string): Changelog[] {
-    return Object.values(this.records).filter(
-      (c) => c.workflowID === workflowID
-    );
+  public async get(id: string): Promise<Changelog | undefined> {
+    const records = await this.getRecords();
+    return records[id];
   }
-  public getRecords() {
-    return this.records;
-  }
-  public get(id: string): Changelog | undefined {
-    return this.records[id];
-  }
-  public getLastestByWorkflowID(workflowID: string): Changelog {
-    const all = Object.values(this.records)
+  public async getLastestByWorkflowID(workflowID: string): Promise<Changelog> {
+    const records = await this.getRecords();
+    const all = Object.values(records)
       .filter((c) => c.workflowID === workflowID)
       .sort((a, b) => b.createTime - a.createTime);
     return all[0];
   }
-  public getByWorkflowID(workflowID: string): Changelog[] {
-    return Object.values(this.records)
-      .filter((c) => c.workflowID === workflowID)
-      .sort((a, b) => b.createTime - a.createTime);
-  }
-  public create(input: { json: string; workflowID: string }): Changelog | null {
-    const latest = this.getLastestByWorkflowID(input.workflowID);
+  public async create(input: {
+    json: string;
+    workflowID: string;
+  }): Promise<Changelog | null> {
+    const latest = await this.getLastestByWorkflowID(input.workflowID);
     // only create when there is a change
     if (latest != null && latest.json === input.json) {
       return null;
@@ -66,8 +63,9 @@ export class ChangelogsTable {
       workflowID: input.workflowID,
       createTime: Date.now(),
     };
-    this.records[change.id] = change;
-    saveDB("changelogs", JSON.stringify(this.records));
+    const records = await this.getRecords();
+    records[change.id] = change;
+    saveDB("changelogs", JSON.stringify(records));
     updateWorkspaceIndexDB();
     return change;
   }

@@ -46,7 +46,7 @@ async function writeWorkspaceTable(data: string): Promise<void> {
 
 export async function updateWorkspaceIndexDB() {
   try {
-    const comfyspaceData = curComfyspaceJson(); // Your function to get the data
+    const comfyspaceData = await curComfyspaceJson();
     await writeWorkspaceTable(comfyspaceData);
   } catch (error) {
     console.error("Error writing to IndexedDB:", error);
