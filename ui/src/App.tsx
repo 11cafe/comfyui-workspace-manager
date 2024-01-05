@@ -16,6 +16,7 @@ import {
   PanelPosition,
   changelogsTable,
   mediaTable,
+  listWorkflows,
 } from "./WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
@@ -70,6 +71,7 @@ export default function App() {
   const setCurFlowID = (id: string) => {
     curFlowID.current = id;
     setFlowID(id);
+    localStorage.setItem("curFlowID", id);
   };
 
   const graphAppSetup = async () => {
@@ -77,6 +79,9 @@ export default function App() {
       // Unique name for the extension
       name: "WorkspaceManager",
       async setup(app) {
+        // clean up legacy localStorage
+        localStorage.removeItem("workspace");
+        localStorage.removeItem("comfyspace");
         // when drop file create new flow with file name
         const originalHandleFileFunc = app.handleFile.bind(app);
         app.handleFile = async function (file: File) {
@@ -91,6 +96,10 @@ export default function App() {
       },
       async addCustomNodeDefs(defs) {
         nodeDefs.current = defs;
+      },
+      // @ts-ignore
+      async afterConfigureGraph() {
+        localStorage.setItem("workflow", JSON.stringify(app.graph.serialize()));
       },
     };
     app.registerExtension(ext);
@@ -119,7 +128,6 @@ export default function App() {
     setInterval(() => {
       if (curFlowID.current != null) {
         const graphJson = JSON.stringify(app.graph.serialize());
-        localStorage.setItem("curFlowID", curFlowID.current);
         graphJson != null &&
           updateFlow(curFlowID.current, {
             json: graphJson,

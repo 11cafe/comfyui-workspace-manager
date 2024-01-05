@@ -1,7 +1,7 @@
 import { getDB, saveBackup, saveDB } from "../Api";
 import { v4 as uuidv4 } from "uuid";
 import { curComfyspaceJson, getWorkflow, updateFlow } from "../WorkspaceDB";
-import { updateWorkspaceIndexDB } from "./IndexDBUtils";
+import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
 
 type Media = {
   id: string;
@@ -24,7 +24,7 @@ export class MediaTable {
     let jsonStr = await getDB(MediaTable.TABLE_NAME);
     let json = jsonStr != null ? JSON.parse(jsonStr) : null;
     if (json == null) {
-      const comfyspace = localStorage.getItem("comfyspace") ?? "{}";
+      const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
       const comfyspaceData = JSON.parse(comfyspace);
       json = comfyspaceData[MediaTable.TABLE_NAME];
     }
