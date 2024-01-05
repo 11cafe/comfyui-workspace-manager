@@ -99,6 +99,8 @@ export default function App() {
       },
       // @ts-ignore
       async afterConfigureGraph() {
+        // to avoid the bug after switching workflow using comfyspace,
+        // immediately refresh browser, resulting in latest workflow not updated
         localStorage.setItem("workflow", JSON.stringify(app.graph.serialize()));
       },
     };

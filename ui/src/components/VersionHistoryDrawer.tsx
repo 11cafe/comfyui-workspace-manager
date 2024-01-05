@@ -23,23 +23,29 @@ import { WorkspaceContext } from "../WorkspaceContext";
 import { formatTimestamp } from "../utils";
 // @ts-ignore
 import { app } from "/scripts/app.js";
+import { Changelog } from "../db-tables/ChangelogsTable";
 
 export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
   const { curFlowID, isDirty } = useContext(WorkspaceContext);
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
   const curWorkflow = curFlowID != null ? getWorkflow(curFlowID) : null;
+  const [changelogs, setChangelogs] = useState<Changelog[]>([]);
   if (curFlowID == null || curWorkflow == null) {
     alert("No current workflow found!");
     return null;
   }
-  const changelogs = changelogsTable?.getByWorkflowID(curFlowID);
 
   useEffect(() => {
-    const selectedChangelog = changelogs?.filter(
-      (c) => c.json === curWorkflow.lastSavedJson
-    );
-    const selectedChangelogID = selectedChangelog?.[0]?.id;
-    selectedChangelogID && setSelectedVersion(selectedChangelogID);
+    const loadData = async () => {
+      const changelogs = await changelogsTable?.listByWorkflowID(curFlowID);
+      setChangelogs(changelogs ?? []);
+      const selectedChangelog = changelogs?.filter(
+        (c) => c.json === curWorkflow.lastSavedJson
+      );
+      const selectedChangelogID = selectedChangelog?.[0]?.id;
+      selectedChangelogID && setSelectedVersion(selectedChangelogID);
+    };
+    loadData();
   }, []);
   return (
     <Card
