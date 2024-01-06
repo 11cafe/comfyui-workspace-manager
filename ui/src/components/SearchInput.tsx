@@ -17,7 +17,7 @@ const IconSearchStyle: CSSProperties = {
   transform: "translateY(-50%)",
 };
 
-export default function SeacrhInput(props: Props) {
+export default function SearchInput(props: Props) {
   const { searchValue, onUpdateSearchValue } = props;
   const isSearchValueNotEmpty = searchValue !== "";
 

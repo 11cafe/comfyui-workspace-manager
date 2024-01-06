@@ -12,8 +12,6 @@ import {
   Box,
   Flex,
   Tooltip,
-  Input,
-  Link,
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState, useRef, useCallback } from "react";
 import {
@@ -36,7 +34,7 @@ import {
 } from "@tabler/icons-react";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
-import { sortFlows, sortFileItem } from "../utils";
+import { sortFileItem } from "../utils";
 import WorkflowListItem from "./WorkflowListItem";
 import ImportJsonFlows from "./ImportJsonFlows";
 import MultipleSelectionOperation from "./MultipleSelectionOperation";
@@ -45,27 +43,30 @@ import { ESortTypes, sortTypeLocalStorageKey } from "./types";
 import { app } from "/scripts/app.js";
 import { insertWorkflowToCanvas3 } from "./InsertWorkflowToCanvas";
 import FilesListFolderItem from "./FilesListFolderItem";
-import { useDebounce } from "../customHooks/useDebaunce";
-import SeacrhInput from "../components/SearchInput";
+import { useDebounce } from "../customHooks/useDebounce";
+import SearchInput from "../components/SearchInput";
 import { openCognitoPopup } from "../auth/authUtils";
 
 const MAX_TAGS_TO_SHOW = 6;
 type Props = {
-  onclose: () => void;
+  onClose: () => void;
   onClickNewFlow: () => void;
 };
 
-export default function RecentFilesDrawer({ onclose, onClickNewFlow }: Props) {
-  const [files, setFiles] = useState<Array<Folder | Workflow>>([]);
-  const recentFlows = files.filter((n) => !isFolder(n)) as Workflow[];
-  const { curFlowID } = useContext(WorkspaceContext);
+export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
+  const [currentRenderingData, setCurrentRenderingData] = useState<
+    Array<Folder | Workflow>
+  >([]);
+  const aloneFlowsAndFoldersRef = useRef<Array<Folder | Workflow>>([]);
+  const allFlowsRef = useRef<Array<Workflow>>([]);
+
   const [selectedTag, setSelectedTag] = useState<string>();
   const [showAllTags, setShowAllTags] = useState(false);
   const [multipleState, setMultipleState] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   const [refreshFolderStamp, setRefreshFolderStamp] = useState(0);
   const [searchValue, setSearchValue] = useState("");
-  const debaunceSearchValue = useDebounce(searchValue, 400);
+  const debounceSearchValue = useDebounce(searchValue, 400);
   const draggingWorkflowID = useRef<string | null>(null);
   const [draggingFile, setDraggingFile] = useState<Workflow | Folder | null>(
     null
@@ -75,68 +76,78 @@ export default function RecentFilesDrawer({ onclose, onClickNewFlow }: Props) {
       ESortTypes.RECENTLY_MODIFIED
   );
 
-  const onClickTag = (name: string) => {
-    setSelectedTag(name);
-    setFiles(listWorkflows().filter((n) => n.tags?.includes(name)));
-  };
-
   const loadLatestWorkflows = () => {
     const all = listFolderContent();
-    setFiles(sortFileItem(all, sortTypeRef.current));
+    aloneFlowsAndFoldersRef.current = all;
+    allFlowsRef.current = listWorkflows();
+    filterFlows();
     setRefreshFolderStamp(Date.now());
   };
 
+  const isFilter = !!selectedTag || !!debounceSearchValue;
+
+  const filterFlows = () => {
+    if (isFilter) {
+      const filterResult = allFlowsRef.current.filter((flow) => {
+        let tagFlag = true;
+        let keywordFlag = true;
+        if (selectedTag) {
+          tagFlag = !!flow.tags?.includes(selectedTag);
+        }
+        if (debounceSearchValue) {
+          keywordFlag = !!flow.name
+            .toLocaleLowerCase()
+            .includes(debounceSearchValue.toLocaleLowerCase());
+        }
+
+        return tagFlag && keywordFlag;
+      });
+      setCurrentRenderingData(sortFileItem(filterResult, sortTypeRef.current));
+    } else {
+      setCurrentRenderingData(
+        sortFileItem(aloneFlowsAndFoldersRef.current, sortTypeRef.current)
+      );
+    }
+  };
+
   const onSort = (type: ESortTypes) => {
-    setFiles(sortFileItem(files, type));
+    setCurrentRenderingData(sortFileItem(currentRenderingData, type));
     sortTypeRef.current = type;
     window.localStorage.setItem(sortTypeLocalStorageKey, type);
-  };
-
-  const onDelete = useCallback((id: string) => {
-    deleteFlow(id);
-    loadLatestWorkflows();
-  }, []);
-
-  const handleDrop = (e: any) => {
-    workspace &&
-      draggingWorkflowID.current &&
-      insertWorkflowToCanvas3(workspace[draggingWorkflowID.current].json, [
-        e.canvasX,
-        e.canvasY,
-      ]);
-  };
-
-  const handleClick = (e: any) => {
-    onclose();
+    !isFilter && setRefreshFolderStamp(Date.now());
   };
 
   useEffect(() => {
+    filterFlows();
+  }, [debounceSearchValue, selectedTag]);
+
+  const onDelete = useCallback(
+    (id: string) => {
+      deleteFlow(id);
+      loadLatestWorkflows();
+    },
+    [selectedTag, debounceSearchValue]
+  );
+
+  useEffect(() => {
+    loadLatestWorkflows();
+    const handleDrop = (e: any) => {
+      workspace &&
+        draggingWorkflowID.current &&
+        insertWorkflowToCanvas3(workspace[draggingWorkflowID.current].json, [
+          e.canvasX,
+          e.canvasY,
+        ]);
+    };
+
     app.canvasEl.addEventListener("drop", handleDrop);
-    app.canvasEl.addEventListener("click", handleClick);
+    app.canvasEl.addEventListener("click", onClose);
     // Cleanup function to remove event listeners
     return () => {
       app.canvasEl.removeEventListener("drop", handleDrop);
-      app.canvasEl.removeEventListener("click", handleClick);
+      app.canvasEl.removeEventListener("click", onClose);
     };
   }, []);
-
-  useEffect(() => {
-    loadLatestWorkflows();
-  }, [curFlowID]);
-
-  useEffect(() => {
-    if (debaunceSearchValue === "") {
-      loadLatestWorkflows();
-    } else {
-      setFiles(
-        listWorkflows().filter((flow) =>
-          flow.name
-            .toLocaleLowerCase()
-            .includes(debaunceSearchValue.toLocaleLowerCase())
-        )
-      );
-    }
-  }, [debaunceSearchValue]);
 
   const onSelect = useCallback((flowId: string, selected: boolean) => {
     setSelectedKeys((preState) => {
@@ -158,10 +169,13 @@ export default function RecentFilesDrawer({ onclose, onClickNewFlow }: Props) {
         setSelectedKeys([]);
         return;
       case "selectAll":
-        setSelectedKeys(value ? recentFlows.map((flow) => flow.id) : []);
+        setSelectedKeys(
+          value ? allFlowsRef.current.map((flow) => flow.id) : []
+        );
         return;
     }
   };
+
   const onDraggingFile = (file: Workflow | Folder) => {
     setDraggingFile(file);
     if (!isFolder(file)) {
@@ -239,7 +253,6 @@ export default function RecentFilesDrawer({ onclose, onClickNewFlow }: Props) {
                   icon={<IconX />}
                   onClick={() => {
                     setSelectedTag(undefined);
-                    loadLatestWorkflows();
                   }}
                 />
               )}
@@ -254,7 +267,9 @@ export default function RecentFilesDrawer({ onclose, onClickNewFlow }: Props) {
                     size={"sm"}
                     borderRadius={15}
                     py={4}
-                    onClick={() => onClickTag(tag.name)}
+                    onClick={() => {
+                      setSelectedTag(tag.name);
+                    }}
                     isActive={selectedTag === tag.name}
                   >
                     {tag.name}
@@ -271,7 +286,7 @@ export default function RecentFilesDrawer({ onclose, onClickNewFlow }: Props) {
             </HStack>
             <HStack mb={2} mt={2} p={0} justifyContent="space-between">
               <HStack>
-                {files.length > 0 ? (
+                {allFlowsRef.current.length > 0 ? (
                   <MultipleSelectionOperation
                     multipleState={multipleState}
                     changeMultipleState={(state) => {
@@ -279,7 +294,9 @@ export default function RecentFilesDrawer({ onclose, onClickNewFlow }: Props) {
                       !state && setSelectedKeys([]);
                     }}
                     selectedKeys={selectedKeys}
-                    isSelectedAll={selectedKeys.length === recentFlows.length}
+                    isSelectedAll={
+                      selectedKeys.length === allFlowsRef.current.length
+                    }
                     batchOperationCallback={batchOperationCallback}
                   />
                 ) : (
@@ -330,12 +347,12 @@ export default function RecentFilesDrawer({ onclose, onClickNewFlow }: Props) {
                 </MenuList>
               </Menu>
             </HStack>
-            <SeacrhInput
+            <SearchInput
               searchValue={searchValue}
               onUpdateSearchValue={onUpdateSearchValue}
             />
             <Flex overflowY={"auto"} overflowX={"hidden"} direction="column">
-              {files.map((n) => {
+              {currentRenderingData.map((n) => {
                 if (isFolder(n)) {
                   return <FilesListFolderItem folder={n} key={n.id} />;
                 }
