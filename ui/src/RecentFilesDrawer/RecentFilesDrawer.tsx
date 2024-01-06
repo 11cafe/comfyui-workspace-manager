@@ -13,7 +13,7 @@ import {
   Flex,
   Tooltip,
 } from "@chakra-ui/react";
-import { useContext, useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import {
   Workflow,
   deleteFlow,
@@ -31,8 +31,9 @@ import {
   IconFolderPlus,
   IconPlus,
   IconX,
+  IconFolder,
 } from "@tabler/icons-react";
-import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
+import { RecentFilesContext } from "../WorkspaceContext";
 import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
 import { sortFileItem } from "../utils";
 import WorkflowListItem from "./WorkflowListItem";
@@ -46,6 +47,7 @@ import FilesListFolderItem from "./FilesListFolderItem";
 import { useDebounce } from "../customHooks/useDebounce";
 import SearchInput from "../components/SearchInput";
 import { openCognitoPopup } from "../auth/authUtils";
+import { openWorkflowsFolder } from "../Api";
 
 const MAX_TAGS_TO_SHOW = 6;
 type Props = {
@@ -228,6 +230,16 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
                 </Tooltip> */}
               </HStack>
               <ImportJsonFlows />
+              <Tooltip label="Open workspace save directory">
+                <IconButton
+                  aria-label="Open workspace save directory"
+                  size={"sm"}
+                  icon={<IconFolder />}
+                  variant={"outline"}
+                  colorScheme="teal"
+                  onClick={() => openWorkflowsFolder()}
+                />
+              </Tooltip>
               <Tooltip label="New workflow">
                 <IconButton
                   aria-label="New workflow"
