@@ -132,7 +132,7 @@ export function listFolderContent(
 }
 
 /** Class Workflow: below will be migrated to a class */
-export function updateFlow(id: string, input: Partial<Workflow>) {
+export function updateFlow(id: string, input: Partial<Workflow>, needUpdateTime = true) {
   if (workspace == null) {
     return;
   }
@@ -154,8 +154,11 @@ export function updateFlow(id: string, input: Partial<Workflow>) {
   workspace[id] = {
     ...workspace[id],
     ...input,
-    updateTime: Date.now(),
   };
+  
+  if (needUpdateTime) {
+    workspace[id].updateTime = Date.now();
+  }
   updateWorkspaceIndexDB();
   saveDB("workflows", JSON.stringify(workspace));
   // save to my_workflows/
