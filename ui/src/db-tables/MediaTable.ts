@@ -2,6 +2,7 @@ import { getDB, saveDB } from "../Api";
 import { v4 as uuidv4 } from "uuid";
 import { getWorkflow, updateFlow } from "../WorkspaceDB";
 import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
+import { TableBase } from "./TableBase";
 
 export type Media = {
   id: string;
@@ -11,16 +12,9 @@ export type Media = {
   format: string;
 };
 
-type MediaRecords = {
-  [id: string]: Media;
-};
-
-export class MediaTable {
-  static readonly TABLE_NAME = "media";
-  private constructor() {}
-
-  static async load(): Promise<MediaTable> {
-    return new MediaTable();
+export class MediaTable extends TableBase<Media> {
+  constructor() {
+    super("media");
   }
   public async listByWorkflowID(workflowID: string): Promise<Media[]> {
     const records = await this.getRecords();
@@ -28,20 +22,7 @@ export class MediaTable {
       .filter((c) => c.workflowID === workflowID)
       .sort((a, b) => b.createTime - a.createTime);
   }
-  public async getRecords(): Promise<MediaRecords> {
-    let jsonStr = await getDB(MediaTable.TABLE_NAME);
-    let json = jsonStr != null ? JSON.parse(jsonStr) : null;
-    if (json == null) {
-      const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
-      const comfyspaceData = JSON.parse(comfyspace);
-      json = comfyspaceData[MediaTable.TABLE_NAME];
-    }
-    return json ?? {};
-  }
-  public async get(id: string): Promise<Media | undefined> {
-    const records = await this.getRecords();
-    return records[id];
-  }
+
   public async getLastestByWorkflowID(workflowID: string): Promise<Media> {
     const records = await this.getRecords();
     const all = Object.values(records)
@@ -76,11 +57,5 @@ export class MediaTable {
     saveDB("media", JSON.stringify(records));
     updateWorkspaceIndexDB();
     return md;
-  }
-  public async delete(id: string) {
-    const records = await this.getRecords();
-    delete records[id];
-    saveDB("media", JSON.stringify(records));
-    updateWorkspaceIndexDB();
   }
 }

@@ -4,13 +4,13 @@ import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
 import { Table, Workflow } from "../types/workspaceTypes";
 
 export class TableBase<T> {
-  protected readonly tableName: Table;
+  public readonly tableName: Table;
 
   protected constructor(tableName: Table) {
     this.tableName = tableName;
   }
 
-  public async list(): Promise<T[]> {
+  public async listAll(): Promise<T[]> {
     const records = await this.getRecords();
     const workflows = Object.values(records);
     return workflows;

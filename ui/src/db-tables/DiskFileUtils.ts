@@ -6,14 +6,14 @@ import { toFileNameFriendly } from "../utils";
 
 export function saveJsonFileMyWorkflows(
   workflow: Workflow,
-  onFileSaved: (fullPath: string) => void
+  onFileSaved?: (fullPath: string) => void
 ) {
   const file_path = generateFilePath(workflow);
   if (file_path == null) {
     return;
   }
   const fullPath = generateFilePathAbsolute(workflow);
-  fullPath && onFileSaved(fullPath);
+  fullPath && onFileSaved && onFileSaved(fullPath);
 
   const json = workflow.json;
   const flow = JSON.parse(json);

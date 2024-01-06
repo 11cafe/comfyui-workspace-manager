@@ -101,7 +101,7 @@ export async function loadDBs() {
     changelogsTable = await ChangelogsTable.load();
   };
   const loadMedia = async () => {
-    mediaTable = await MediaTable.load();
+    mediaTable = new MediaTable();
   };
   await Promise.all([
     loadWorkflows(),
@@ -386,7 +386,7 @@ export async function curComfyspaceJson(): Promise<string> {
     ["workflows"]: workspace,
     [FoldersTable.TABLE_NAME]: foldersTable?.getRecords(),
     [ChangelogsTable.TABLE_NAME]: changeLogs,
-    [MediaTable.TABLE_NAME]: media,
+    [mediaTable?.tableName ?? "media"]: media,
   });
 }
 
