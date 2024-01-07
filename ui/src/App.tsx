@@ -94,6 +94,25 @@ export default function App() {
           await originalHandleFileFunc(file);
         };
       },
+      async init() {
+        try {
+          await loadDBs();
+          updatePanelPosition(
+            userSettingsTable?.getSetting("topBarStyle"),
+            false
+          );
+        } catch (error) {
+          console.error("error loading db", error);
+        }
+        setLoadingDB(false);
+        const latest = localStorage.getItem("curFlowID");
+        const latestWf = latest != null ? getWorkflow(latest) : null;
+        console.log("latestWf", latestWf);
+        if (latestWf) {
+          loadWorkflowID(latestWf.id);
+        }
+        validateOrSaveAllJsonFileMyWorkflows();
+      },
       async addCustomNodeDefs(defs) {
         nodeDefs.current = defs;
       },
@@ -105,36 +124,16 @@ export default function App() {
       },
     };
     app.registerExtension(ext);
-    try {
-      await loadDBs();
-      updatePanelPosition(userSettingsTable?.getSetting("topBarStyle"), false);
-    } catch (error) {
-      console.error("error loading db", error);
-    }
-    setLoadingDB(false);
-    const latest = localStorage.getItem("curFlowID");
-    const latestWf = latest != null ? getWorkflow(latest) : null;
-    if (latestWf) {
-      setCurFlowID(latestWf.id);
-      setCurFlowName(latestWf.name);
-    } else {
-      // const graphJson = localStorage.getItem("workflow");
-      // const flow = createFlow({ json: graphJson ?? "" });
-      // setCurFlowID(flow.id);
-      // setCurFlowName(flow.name ?? "");
-    }
-    validateOrSaveAllJsonFileMyWorkflows();
   };
   useEffect(() => {
     graphAppSetup();
     setInterval(() => {
       if (curFlowID.current != null) {
-        localStorage.setItem("curFlowID", curFlowID.current);
         const graphJson = JSON.stringify(app.graph.serialize());
-        graphJson != null &&
-          updateFlow(curFlowID.current, {
-            json: graphJson,
-          });
+        // graphJson != null &&
+        //   updateFlow(curFlowID.current, {
+        //     json: graphJson,
+        //   });
 
         const curWorkflow = curFlowID.current
           ? getWorkflow(curFlowID.current)
@@ -149,6 +148,10 @@ export default function App() {
     pullAuthTokenCloseIfExist();
   }, []);
   const loadWorkflowID = (id: string) => {
+    if (app.graph == null) {
+      console.error("app.graph is null cannot load workflow");
+      return;
+    }
     if (workspace == null) {
       alert("Error: Workspace not loaded!");
       return;
@@ -159,6 +162,7 @@ export default function App() {
       alert("Error: Workflow not found! id: " + id);
       return;
     }
+    console.log("loadWorkflowID app", app, flow);
     app.loadGraphData(JSON.parse(flow.json));
     setCurFlowName(flow.name);
     setRoute("root");
