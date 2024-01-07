@@ -145,13 +145,14 @@ export function sortFlows(
 
   return copyFlows;
 }
-export function validateOrSaveAllJsonFileMyWorkflows() {
+export function validateOrSaveAllJsonFileMyWorkflows(deleteEmptyFolder = true) {
   listWorkflows().forEach((workflow) => {
     const fullPath = generateFilePathAbsolute(workflow);
     // @ts-ignore
     if (workflow.filePath != fullPath) {
       // file path changed
-      workflow.filePath != null && deleteFile(workflow.filePath);
+      workflow.filePath != null &&
+        deleteFile(workflow.filePath, deleteEmptyFolder);
       saveJsonFileMyWorkflows(workflow);
     }
   });

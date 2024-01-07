@@ -286,6 +286,7 @@ async def update_file(request):
 async def delete_file(request):
     data = await request.json()
     file_path = data['file_path']
+    delete_empty_folder = data['deleteEmptyFolder']
     my_workflows_dir = get_my_workflows_dir()
     full_path = os.path.join(my_workflows_dir, file_path)
 
@@ -294,7 +295,7 @@ async def delete_file(request):
 
         # Check if the directory is empty after deleting the file
         directory = os.path.dirname(full_path)
-        if not os.listdir(directory):
+        if delete_empty_folder and not os.listdir(directory):
             # If the directory is empty, remove the directory
             os.rmdir(directory)
             return web.Response(text="File and empty directory deleted successfully")
