@@ -16,6 +16,7 @@ import {
   PanelPosition,
   changelogsTable,
   mediaTable,
+  Workflow,
 } from "./WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
@@ -36,6 +37,7 @@ export default function App() {
   const [loadingDB, setLoadingDB] = useState(true);
   const [flowID, setFlowID] = useState<string | null>(null);
   const curFlowID = useRef<string | null>(null);
+  const [curWorkflow, setCurWorkflow] = useState<Workflow | null>(null);
   const [positionStyle, setPositionStyle] = useState<PanelPosition>();
   const [isDirty, setIsDirty] = useState(false);
 
@@ -71,10 +73,36 @@ export default function App() {
   const setCurFlowID = (id: string) => {
     curFlowID.current = id;
     setFlowID(id);
+
     localStorage.setItem("curFlowID", id);
+    const workflow = getWorkflow(id);
+    if (workflow) {
+      setCurWorkflow(workflow);
+      localStorage.setItem("comfy_workspace_workflow", workflow.json);
+    }
   };
+  const setupCurFlowID = useCallback(async () => {
+    try {
+      await loadDBs();
+      updatePanelPosition(userSettingsTable?.getSetting("topBarStyle"), false);
+    } catch (error) {
+      console.error("error loading db", error);
+    }
+    setLoadingDB(false);
+    const latest = localStorage.getItem("curFlowID");
+    const latestWf = latest != null ? getWorkflow(latest) : null;
+
+    if (latestWf) {
+      latestWf && localStorage.setItem("workflow", latestWf.json);
+      console.log("latestWf", latestWf);
+      setCurFlowID(latestWf.id ?? null);
+      setCurFlowName(latestWf.name ?? null);
+    }
+    validateOrSaveAllJsonFileMyWorkflows();
+  }, []);
 
   const graphAppSetup = async () => {
+    setupCurFlowID();
     const ext: ComfyExtension = {
       // Unique name for the extension
       name: "WorkspaceManager",
@@ -94,25 +122,7 @@ export default function App() {
           await originalHandleFileFunc(file);
         };
       },
-      async registerCustomNodes() {
-        try {
-          await loadDBs();
-          updatePanelPosition(
-            userSettingsTable?.getSetting("topBarStyle"),
-            false
-          );
-        } catch (error) {
-          console.error("error loading db", error);
-        }
-        setLoadingDB(false);
-        const latest = localStorage.getItem("curFlowID");
-        const latestWf = latest != null ? getWorkflow(latest) : null;
-        console.log("latestWf", latestWf);
-        if (latestWf) {
-          loadWorkflowID(latestWf.id);
-        }
-        validateOrSaveAllJsonFileMyWorkflows();
-      },
+      async registerCustomNodes() {},
       async addCustomNodeDefs(defs) {
         nodeDefs.current = defs;
       },
