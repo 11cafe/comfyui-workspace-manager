@@ -94,7 +94,7 @@ export default function App() {
           await originalHandleFileFunc(file);
         };
       },
-      async init() {
+      async registerCustomNodes() {
         try {
           await loadDBs();
           updatePanelPosition(
@@ -162,6 +162,8 @@ export default function App() {
       alert("Error: Workflow not found! id: " + id);
       return;
     }
+    app.ui.dialog.close();
+
     console.log("loadWorkflowID app", app, flow);
     app.loadGraphData(JSON.parse(flow.json));
     setCurFlowName(flow.name);
@@ -260,6 +262,7 @@ export default function App() {
     window.addEventListener("message", authTokenListener);
 
     api.addEventListener("executed", (e: any) => {
+      console.log("executed e", e);
       e.detail?.output?.images?.forEach(
         (im: { filename: string; subfolder: string; type: string }) => {
           if (im.type === "output") {
