@@ -1,7 +1,7 @@
 import { getDB, saveDB } from "../Api";
 import { v4 as uuidv4 } from "uuid";
-import { getWorkflow, updateFlow } from "../WorkspaceDB";
-import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
+import { Table, getWorkflow, updateFlow } from "../WorkspaceDB";
+import { updateWorkspaceIndexDB } from "./IndexDBUtils";
 import { TableBase } from "./TableBase";
 
 export type Media = {
@@ -13,6 +13,7 @@ export type Media = {
 };
 
 export class MediaTable extends TableBase<Media> {
+  static readonly TABLE_NAME: Table = "media";
   constructor() {
     super("media");
   }

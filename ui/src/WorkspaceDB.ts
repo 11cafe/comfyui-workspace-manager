@@ -386,7 +386,7 @@ export async function curComfyspaceJson(): Promise<string> {
     ["workflows"]: workspace,
     [FoldersTable.TABLE_NAME]: foldersTable?.getRecords(),
     [ChangelogsTable.TABLE_NAME]: changeLogs,
-    [mediaTable?.tableName ?? "media"]: media,
+    [MediaTable.TABLE_NAME]: media,
   });
 }
 
