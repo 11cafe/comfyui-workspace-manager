@@ -37,7 +37,6 @@ export default function App() {
   const [loadingDB, setLoadingDB] = useState(true);
   const [flowID, setFlowID] = useState<string | null>(null);
   const curFlowID = useRef<string | null>(null);
-  const [curWorkflow, setCurWorkflow] = useState<Workflow | null>(null);
   const [positionStyle, setPositionStyle] = useState<PanelPosition>();
   const [isDirty, setIsDirty] = useState(false);
 
@@ -73,15 +72,13 @@ export default function App() {
   const setCurFlowID = (id: string) => {
     curFlowID.current = id;
     setFlowID(id);
-
-    localStorage.setItem("curFlowID", id);
     const workflow = getWorkflow(id);
     if (workflow) {
-      setCurWorkflow(workflow);
+      localStorage.setItem("curFlowID", id);
       localStorage.setItem("comfy_workspace_workflow", workflow.json);
     }
   };
-  const setupCurFlowID = useCallback(async () => {
+  const initSetupCurFlowID = useCallback(async () => {
     try {
       await loadDBs();
       updatePanelPosition(userSettingsTable?.getSetting("topBarStyle"), false);
@@ -94,7 +91,6 @@ export default function App() {
 
     if (latestWf) {
       latestWf && localStorage.setItem("workflow", latestWf.json);
-      console.log("latestWf", latestWf);
       setCurFlowID(latestWf.id ?? null);
       setCurFlowName(latestWf.name ?? null);
     }
@@ -102,7 +98,7 @@ export default function App() {
   }, []);
 
   const graphAppSetup = async () => {
-    setupCurFlowID();
+    initSetupCurFlowID();
     const ext: ComfyExtension = {
       // Unique name for the extension
       name: "WorkspaceManager",
@@ -162,19 +158,14 @@ export default function App() {
       console.error("app.graph is null cannot load workflow");
       return;
     }
-    if (workspace == null) {
-      alert("Error: Workspace not loaded!");
-      return;
-    }
     setCurFlowID(id);
-    const flow = workspace[id];
+    const flow = getWorkflow(id);
     if (flow == null) {
       alert("Error: Workflow not found! id: " + id);
       return;
     }
     app.ui.dialog.close();
 
-    console.log("loadWorkflowID app", app, flow);
     app.loadGraphData(JSON.parse(flow.json));
     setCurFlowName(flow.name);
     setRoute("root");
@@ -272,7 +263,6 @@ export default function App() {
     window.addEventListener("message", authTokenListener);
 
     api.addEventListener("executed", (e: any) => {
-      console.log("executed e", e);
       e.detail?.output?.images?.forEach(
         (im: { filename: string; subfolder: string; type: string }) => {
           if (im.type === "output") {
