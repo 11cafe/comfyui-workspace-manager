@@ -79,7 +79,7 @@ export let mediaTable: MediaTable | null = null;
 
 export async function loadDBs() {
   const loadWorkflows = async () => {
-    let workflowsStr = await getDB("workflows");
+    const workflowsStr = await getDB("workflows");
     if (workflowsStr == null) {
       const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
       const comfyspaceData = JSON.parse(comfyspace);
@@ -132,7 +132,7 @@ export function listFolderContent(
 }
 
 /** Class Workflow: below will be migrated to a class */
-export function updateFlow(id: string, input: Partial<Workflow>) {
+export function updateFlow(id: string, input: Partial<Workflow>, needUpdateTime = true) {
   if (workspace == null) {
     return;
   }
@@ -154,8 +154,11 @@ export function updateFlow(id: string, input: Partial<Workflow>) {
   workspace[id] = {
     ...workspace[id],
     ...input,
-    updateTime: Date.now(),
   };
+  
+  if (needUpdateTime) {
+    workspace[id].updateTime = Date.now();
+  }
   updateWorkspaceIndexDB();
   saveDB("workflows", JSON.stringify(workspace));
   // save to my_workflows/
@@ -269,9 +272,7 @@ export function listWorkflows(sortBy?: ESortTypes): Workflow[] {
     throw new Error("workspace is not loaded");
   }
   const workflows = Object.values(workspace);
-  return sortBy
-    ? sortFlows(workflows, sortBy)
-    : workflows.sort((a, b) => b.updateTime - a.updateTime);
+  return sortFlows(workflows, sortBy)
 }
 export function getWorkflow(id: string): Workflow | undefined {
   if (workspace == null) {

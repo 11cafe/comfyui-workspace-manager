@@ -16,7 +16,6 @@ import {
   PanelPosition,
   changelogsTable,
   mediaTable,
-  listWorkflows,
 } from "./WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
@@ -54,7 +53,7 @@ export default function App() {
     }
   }, []);
   const discardUnsavedChanges = () => {
-    let userInput = confirm(
+    const userInput = confirm(
       "Are you sure you want to discard unsaved changes? This will revert current workflow to your last saved version. You will lose all changes made since your last save."
     );
 
@@ -165,7 +164,7 @@ export default function App() {
     setRoute("root");
   };
   const loadNewWorkflow = (input?: { json?: string; name?: string }) => {
-    let jsonStr = input?.json ?? JSON.stringify(defaultGraph);
+    const jsonStr = input?.json ?? JSON.stringify(defaultGraph);
     const flow = createFlow({ json: jsonStr, name: input?.name });
     loadWorkflowID(flow.id);
     setRoute("root");
@@ -248,6 +247,10 @@ export default function App() {
     });
   }, []);
 
+  const onCloseDrawer = useCallback(() => {
+    setRoute("root");
+  }, []);
+
   useEffect(() => {
     window.addEventListener("keydown", shortcutListener);
     window.addEventListener("message", authTokenListener);
@@ -309,7 +312,7 @@ export default function App() {
         />
         {route === "recentFlows" && (
           <RecentFilesDrawer
-            onclose={() => setRoute("root")}
+            onClose={onCloseDrawer}
             onClickNewFlow={() => {
               loadNewWorkflow();
               setRoute("root");
