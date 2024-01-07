@@ -72,7 +72,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
             <Heading size={"md"} mr={2}>
               Gallery - {workflow?.name}
             </Heading>
-            <Button
+            {/* <Button
               size={"sm"}
               colorScheme="pink"
               onClick={() => {
@@ -82,7 +82,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
             >
               Share{" "}
               {isSelecting && selectedID.length > 0 ? selectedID.length : ""}
-            </Button>
+            </Button> */}
           </HStack>
           {isSelecting && (
             <HStack gap={3}>
