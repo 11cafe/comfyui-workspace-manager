@@ -101,7 +101,7 @@ export async function loadDBs() {
     changelogsTable = await ChangelogsTable.load();
   };
   const loadMedia = async () => {
-    mediaTable = await MediaTable.load();
+    mediaTable = new MediaTable();
   };
   await Promise.all([
     loadWorkflows(),
