@@ -115,6 +115,11 @@ Our internal db data is stored in your disk under /ComfyUI/custom_nodes/comfyui-
    Right now you need to have python and GPU server up to run ComfyUI or Automatic111, that’s really painful for people who do not own a GPU. You should be able to run UI independently without paying for GPU💰.
    ➡️ Share and deploy your workflow to cloud in 1click and other people can easily run in browser using cloud GPU with no setup. It should be as easy as running Google Docs or Figma.
 
+## Credits
+ComfyUI: https://github.com/comfyanonymous/ComfyUI
+ComfyUI Browser: https://github.com/talesofai/comfyui-browser (Media display code for reference)
+And thanks to all custom node creators building the community!
+
 ## Dev
 
 1. Clone ComfyUI
