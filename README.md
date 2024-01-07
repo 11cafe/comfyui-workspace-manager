@@ -117,6 +117,7 @@ Our internal db data is stored in your disk under /ComfyUI/custom_nodes/comfyui-
 
 ## Credits
 ComfyUI: https://github.com/comfyanonymous/ComfyUI
+
 ComfyUI Browser: https://github.com/talesofai/comfyui-browser (Media display code for reference)
 And thanks to all custom node creators building the community!
 
