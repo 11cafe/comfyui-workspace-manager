@@ -77,13 +77,9 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
             value={selectedTags}
             onChange={(selected) => {
               setSelectedTags(selected);
-              updateFlow(
-                workflow.id,
-                {
-                  tags: selected.map((s) => s.value),
-                },
-                false
-              );
+              updateFlow(workflow.id, {
+                tags: selected.map((s) => s.value),
+              });
               onRefreshFilesList && onRefreshFilesList();
             }}
             chakraStyles={{

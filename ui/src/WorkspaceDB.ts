@@ -132,7 +132,7 @@ export function listFolderContent(
 }
 
 /** Class Workflow: below will be migrated to a class */
-export function updateFlow(id: string, input: Partial<Workflow>, needUpdateTime = true) {
+export function updateFlow(id: string, input: Partial<Workflow>) {
   if (workspace == null) {
     return;
   }
@@ -151,12 +151,16 @@ export function updateFlow(id: string, input: Partial<Workflow>, needUpdateTime 
     // no change detected
     return;
   }
+
   workspace[id] = {
     ...workspace[id],
     ...input,
   };
+
+  const updateKey = Object.keys(input);
   
-  if (needUpdateTime) {
+  // When modifying the associated tag or modifying the directory, updateTime is not modified.
+  if (!(updateKey.length === 1 && ['tags', 'parentFolderID'].includes(updateKey[0]))) {
     workspace[id].updateTime = Date.now();
   }
   updateWorkspaceIndexDB();
