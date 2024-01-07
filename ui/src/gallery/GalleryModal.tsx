@@ -13,10 +13,12 @@ import {
   Stack,
   Tooltip,
   IconButton,
+  Heading,
+  Checkbox,
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState } from "react";
 import { getWorkflow, mediaTable, updateFlow } from "../WorkspaceDB";
-import { IconPin, IconPinFilled, IconTrash } from "@tabler/icons-react";
+import { IconPin, IconPinFilled, IconTrash, IconX } from "@tabler/icons-react";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { formatTimestamp, isImageFormat } from "../utils";
 import { useDialog } from "../components/AlertDialogProvider";
@@ -26,7 +28,8 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
   const { curFlowID, loadNewWorkflow, loadFilePath } =
     useContext(WorkspaceContext);
   const workflow = curFlowID != null ? getWorkflow(curFlowID) : null;
-
+  const [selectedID, setSelectedID] = useState<string[]>([]);
+  const [isSelecting, setIsSelecting] = useState(false);
   const [coverPath, setCoverPath] = useState(workflow?.coverMediaPath);
   const [images, setImages] = useState<Media[]>([]);
   const { showDialog } = useDialog();
@@ -47,11 +50,64 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
   const onRefreshImagesList = () => {
     loadData();
   };
+  const onClickMedia = (media: Media) => {
+    if (isSelecting) {
+      if (selectedID.includes(media.id)) {
+        setSelectedID(selectedID.filter((id) => id !== media.id));
+      } else {
+        setSelectedID([...selectedID, media.id]);
+      }
+      return;
+    }
+    window.open(`/workspace/view_media?filename=${media.localPath}`);
+  };
+  const isAllSelected =
+    images.length > 0 && selectedID.length === images.length;
   return (
     <Modal isOpen={true} onClose={onclose} blockScrollOnMount={true}>
       <ModalOverlay />
       <ModalContent width={"90%"} maxWidth={"90vw"} height={"90vh"}>
-        <ModalHeader>Gallery - {workflow?.name}</ModalHeader>
+        <ModalHeader>
+          <HStack gap={2} mb={2}>
+            <Heading size={"md"} mr={2}>
+              Gallery - {workflow?.name}
+            </Heading>
+            <Button
+              size={"sm"}
+              colorScheme="pink"
+              onClick={() => {
+                setIsSelecting(true);
+                setSelectedID(images.map((i) => i.id));
+              }}
+            >
+              Share{" "}
+              {isSelecting && selectedID.length > 0 ? selectedID.length : ""}
+            </Button>
+          </HStack>
+          {isSelecting && (
+            <HStack gap={3}>
+              <Checkbox
+                isChecked={isAllSelected}
+                onChange={() => {
+                  if (isAllSelected) {
+                    setSelectedID([]);
+                  } else {
+                    setSelectedID(images.map((i) => i.id));
+                  }
+                }}
+              >
+                All
+              </Checkbox>
+              <Text fontSize={16}>{selectedID.length} Selected</Text>
+              <IconButton
+                size={"sm"}
+                icon={<IconX size={19} />}
+                onClick={() => setIsSelecting(false)}
+                aria-label="cancel"
+              />
+            </HStack>
+          )}
+        </ModalHeader>
         <ModalCloseButton />
         <ModalBody overflowY={"auto"}>
           <HStack wrap={"wrap"}>
@@ -61,9 +117,18 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
               }
               const mediaPreview = isImageFormat(media.localPath) ? (
                 <Link
-                  href={`/workspace/view_media?filename=${media.localPath}`}
                   isExternal
+                  onClick={() => onClickMedia(media)}
+                  position={"relative"}
                 >
+                  {isSelecting && (
+                    <Checkbox
+                      isChecked={selectedID.includes(media.id)}
+                      position={"absolute"}
+                      top={2}
+                      left={2}
+                    />
+                  )}
                   <Image
                     borderRadius={3}
                     boxSize={IMAGE_SIZE + "px"}
@@ -73,10 +138,10 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
                   />
                 </Link>
               ) : (
-                <Link
-                  href={`/workspace/view_media?filename=${media.localPath}`}
-                  isExternal
-                >
+                <Link isExternal onClick={() => onClickMedia(media)}>
+                  {isSelecting && (
+                    <Checkbox isChecked={selectedID.includes(media.id)} />
+                  )}
                   <video
                     width={IMAGE_SIZE}
                     height={IMAGE_SIZE}
@@ -91,6 +156,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
               );
               const isCover =
                 coverPath != null && coverPath === media.localPath;
+
               return (
                 <Stack
                   width={IMAGE_SIZE}
@@ -105,7 +171,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
                       {media.localPath}
                     </Text>
                   </Tooltip>
-                  <HStack justifyContent={"space-between"}>
+                  <HStack justifyContent={"space-between"} hidden={isSelecting}>
                     <Tooltip label="Set as cover">
                       <IconButton
                         size={"sm"}
