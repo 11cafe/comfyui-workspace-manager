@@ -87,17 +87,6 @@ export default function App() {
         // clean up legacy localStorage
         localStorage.removeItem("workspace");
         localStorage.removeItem("comfyspace");
-        // when drop file create new flow with file name
-        const originalHandleFileFunc = app.handleFile.bind(app);
-        app.handleFile = async function (file: File) {
-          const flow = createFlow({
-            name: file.name,
-            json: JSON.stringify(defaultGraph),
-          });
-          setCurFlowID(flow.id);
-          setCurFlowName(flow.name ?? "Unknown name");
-          await originalHandleFileFunc(file);
-        };
       },
       async addCustomNodeDefs(defs) {
         nodeDefs.current = defs;
@@ -257,6 +246,20 @@ export default function App() {
   useEffect(() => {
     window.addEventListener("keydown", shortcutListener);
     window.addEventListener("message", authTokenListener);
+
+    const fileInput = document.getElementById("comfy-file-input");
+    fileInput?.addEventListener("change", () => {
+      // @ts-ignore
+      if (fileInput.files && fileInput.files.length > 0) {
+        const flow = createFlow({
+          // @ts-ignore
+          name: fileInput.files[0].name,
+          json: JSON.stringify(defaultGraph),
+        });
+        setCurFlowID(flow.id);
+        setCurFlowName(flow.name ?? "Unknown name");
+      }
+    });
 
     api.addEventListener("executed", (e: any) => {
       e.detail?.output?.images?.forEach(
