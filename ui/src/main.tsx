@@ -20,7 +20,7 @@ const theme = extendTheme({ config });
 export default theme;
 ReactDOM.createRoot(topbar).render(
   <React.StrictMode>
-    <ChakraProvider>
+    <ChakraProvider resetScope="main">
       <ColorModeScript initialColorMode={theme.config.initialColorMode} />
       <AlertDialogProvider>
         <App />

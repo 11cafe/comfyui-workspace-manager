@@ -4,7 +4,7 @@ import { app } from "/scripts/app.js";
 // @ts-ignore
 import { api } from "/scripts/api.js";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
-import { Box } from "@chakra-ui/react";
+import { Box, Portal } from "@chakra-ui/react";
 import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
 import {
   createFlow,
@@ -39,6 +39,7 @@ export default function App() {
   const curFlowID = useRef<string | null>(null);
   const [positionStyle, setPositionStyle] = useState<PanelPosition>();
   const [isDirty, setIsDirty] = useState(false);
+  const workspaceContainerRef = useRef(null);
 
   const saveCurWorkflow = useCallback(() => {
     if (curFlowID.current) {
@@ -297,35 +298,39 @@ export default function App() {
         setRoute: setRoute,
       }}
     >
-      <Box
-        style={{
-          width: "100vh",
-          position: "absolute",
-          top: 0,
-          left: 0,
-        }}
-        zIndex={1000}
-        draggable={false}
-      >
-        <Topbar
-          curFlowName={curFlowName}
-          setCurFlowName={setCurFlowName}
-          updatePanelPosition={updatePanelPosition}
-          positionStyle={positionStyle}
-        />
-        {route === "recentFlows" && (
-          <RecentFilesDrawer
-            onClose={onCloseDrawer}
-            onClickNewFlow={() => {
-              loadNewWorkflow();
-              setRoute("root");
+      <main ref={workspaceContainerRef}>
+        <Portal containerRef={workspaceContainerRef}>
+          <Box
+            style={{
+              width: "100vh",
+              position: "absolute",
+              top: 0,
+              left: 0,
             }}
-          />
-        )}
-        {route === "gallery" && (
-          <GalleryModal onclose={() => setRoute("root")} />
-        )}
-      </Box>
+            zIndex={1000}
+            draggable={false}
+          >
+            <Topbar
+              curFlowName={curFlowName}
+              setCurFlowName={setCurFlowName}
+              updatePanelPosition={updatePanelPosition}
+              positionStyle={positionStyle}
+            />
+            {route === "recentFlows" && (
+              <RecentFilesDrawer
+                onClose={onCloseDrawer}
+                onClickNewFlow={() => {
+                  loadNewWorkflow();
+                  setRoute("root");
+                }}
+              />
+            )}
+            {route === "gallery" && (
+              <GalleryModal onclose={() => setRoute("root")} />
+            )}
+          </Box>
+        </Portal>
+      </main>
     </WorkspaceContext.Provider>
   );
 }
