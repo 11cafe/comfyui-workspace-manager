@@ -75,7 +75,6 @@ export default function App() {
     const workflow = getWorkflow(id);
     if (workflow) {
       localStorage.setItem("curFlowID", id);
-      localStorage.setItem("comfy_workspace_workflow", workflow.json);
     }
   };
 
@@ -99,7 +98,6 @@ export default function App() {
           await originalHandleFileFunc(file);
         };
       },
-      async registerCustomNodes() {},
       async addCustomNodeDefs(defs) {
         nodeDefs.current = defs;
       },
