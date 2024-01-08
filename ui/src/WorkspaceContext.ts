@@ -33,7 +33,9 @@ export const RecentFilesContext = createContext<{
   onDeleteFlow?: (flowId: string) => void;
   refreshFolderStamp: number;
   setRefreshFolderStamp: (stamp: number) => void;
+  renameFlowId: string | null;
 }>({
+  renameFlowId: null,
   refreshFolderStamp: 0,
   setRefreshFolderStamp: () => {},
 });

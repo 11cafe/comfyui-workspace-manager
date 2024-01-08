@@ -46,8 +46,8 @@ import { insertWorkflowToCanvas3 } from "./InsertWorkflowToCanvas";
 import FilesListFolderItem from "./FilesListFolderItem";
 import { useDebounce } from "../customHooks/useDebounce";
 import SearchInput from "../components/SearchInput";
-import { openCognitoPopup } from "../auth/authUtils";
 import { openWorkflowsFolder } from "../Api";
+import RenameFlow from "../components/RenameFlow";
 
 const MAX_TAGS_TO_SHOW = 6;
 type Props = {
@@ -68,6 +68,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   const [refreshFolderStamp, setRefreshFolderStamp] = useState(0);
   const [searchValue, setSearchValue] = useState("");
+  const [renameFlowId, setRenameFlowId] = useState<string | null>(null);
   const debounceSearchValue = useDebounce(searchValue, 400);
   const draggingWorkflowID = useRef<string | null>(null);
   const [draggingFile, setDraggingFile] = useState<Workflow | Folder | null>(
@@ -189,6 +190,14 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
     setSearchValue(newValue);
   };
 
+  const handleSetRenameId = (flowId: string) => {
+    setRenameFlowId(flowId);
+  }
+
+  const handleCloseRenameId = () => {
+    setRenameFlowId(null)
+  }
+
   const DRAWER_WIDTH = 440;
   return (
     <RecentFilesContext.Provider
@@ -202,6 +211,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
         onDeleteFlow: onDelete,
         refreshFolderStamp: refreshFolderStamp,
         setRefreshFolderStamp: setRefreshFolderStamp,
+        renameFlowId: renameFlowId
       }}
     >
       <Box style={{ width: DRAWER_WIDTH }}>
@@ -363,12 +373,17 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
               searchValue={searchValue}
               onUpdateSearchValue={onUpdateSearchValue}
             />
+            <RenameFlow handleClose={handleCloseRenameId}/>
             <Flex overflowY={"auto"} overflowX={"hidden"} direction="column">
               {currentRenderingData.map((n) => {
                 if (isFolder(n)) {
                   return <FilesListFolderItem folder={n} key={n.id} />;
                 }
-                return <WorkflowListItem key={n.id} workflow={n} />;
+                return <WorkflowListItem
+                  key={n.id}
+                  workflow={n}
+                  handleSetRenameId={handleSetRenameId}
+                />;
               })}
             </Flex>
           </Flex>

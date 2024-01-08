@@ -18,8 +18,9 @@ import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 
 type Props = {
   workflow: Workflow;
+  handleSetRenameId?: (flowId: string) => void;
 };
-export default function WorkflowListItem({ workflow }: Props) {
+export default function WorkflowListItem({ workflow, handleSetRenameId }: Props) {
   const { colorMode } = useColorMode();
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
@@ -159,6 +160,7 @@ export default function WorkflowListItem({ workflow }: Props) {
           menuPosition={menuPosition}
           onClose={handleClose}
           workflowID={workflow.id}
+          handleSetRenameId={handleSetRenameId}
         />
       )}
     </HStack>

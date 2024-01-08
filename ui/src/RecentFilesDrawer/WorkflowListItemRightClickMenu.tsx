@@ -6,13 +6,16 @@ type Props = {
   menuPosition: { x: number; y: number };
   onClose: () => void;
   workflowID: string;
+  handleSetRenameId?: (flowId: string) => void;
 };
 export default function WorkflowListItemRightClickMenu({
   menuPosition,
   workflowID,
   onClose,
+  handleSetRenameId
 }: Props) {
   const { onDuplicateWorkflow } = useContext(WorkspaceContext);
+
   return (
     <>
       <Box position="absolute" top={menuPosition.y} left={menuPosition.x}>
@@ -24,6 +27,11 @@ export default function WorkflowListItemRightClickMenu({
               }
             >
               Duplicate
+            </MenuItem>
+            <MenuItem
+              onClick={() =>handleSetRenameId?.(workflowID)}
+            >
+              Rename
             </MenuItem>
           </MenuList>
         </Menu>

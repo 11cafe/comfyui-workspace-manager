@@ -40,7 +40,6 @@ export default function FilesListFolderItemRightClickMenu({
           <MenuList>
             <MenuItem
               onClick={(e) => {
-                console.log("onclick rename");
                 e.preventDefault();
                 setIsRenameOpen(true);
               }}
