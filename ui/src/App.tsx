@@ -78,27 +78,8 @@ export default function App() {
       localStorage.setItem("comfy_workspace_workflow", workflow.json);
     }
   };
-  const initSetupCurFlowID = useCallback(async () => {
-    try {
-      await loadDBs();
-      updatePanelPosition(userSettingsTable?.getSetting("topBarStyle"), false);
-    } catch (error) {
-      console.error("error loading db", error);
-    }
-    setLoadingDB(false);
-    const latest = localStorage.getItem("curFlowID");
-    const latestWf = latest != null ? getWorkflow(latest) : null;
-
-    if (latestWf) {
-      latestWf && localStorage.setItem("workflow", latestWf.json);
-      setCurFlowID(latestWf.id ?? null);
-      setCurFlowName(latestWf.name ?? null);
-    }
-    validateOrSaveAllJsonFileMyWorkflows();
-  }, []);
 
   const graphAppSetup = async () => {
-    initSetupCurFlowID();
     const ext: ComfyExtension = {
       // Unique name for the extension
       name: "WorkspaceManager",
@@ -130,16 +111,32 @@ export default function App() {
       },
     };
     app.registerExtension(ext);
+    try {
+      await loadDBs();
+      updatePanelPosition(userSettingsTable?.getSetting("topBarStyle"), false);
+    } catch (error) {
+      console.error("error loading db", error);
+    }
+    setLoadingDB(false);
+    const latest = localStorage.getItem("curFlowID");
+    const latestWf = latest != null ? getWorkflow(latest) : null;
+
+    if (latestWf) {
+      latestWf && localStorage.setItem("workflow", latestWf.json);
+      setCurFlowID(latestWf.id ?? null);
+      setCurFlowName(latestWf.name ?? null);
+    }
+    validateOrSaveAllJsonFileMyWorkflows();
   };
   useEffect(() => {
     graphAppSetup();
     setInterval(() => {
       if (curFlowID.current != null) {
         const graphJson = JSON.stringify(app.graph.serialize());
-        // graphJson != null &&
-        //   updateFlow(curFlowID.current, {
-        //     json: graphJson,
-        //   });
+        graphJson != null &&
+          updateFlow(curFlowID.current, {
+            json: graphJson,
+          });
 
         const curWorkflow = curFlowID.current
           ? getWorkflow(curFlowID.current)
