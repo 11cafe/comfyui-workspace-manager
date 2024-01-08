@@ -16,6 +16,7 @@ import {
   PanelPosition,
   changelogsTable,
   mediaTable,
+  Workflow,
 } from "./WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
@@ -71,7 +72,11 @@ export default function App() {
   const setCurFlowID = (id: string) => {
     curFlowID.current = id;
     setFlowID(id);
-    localStorage.setItem("curFlowID", id);
+    const workflow = getWorkflow(id);
+    if (workflow) {
+      localStorage.setItem("curFlowID", id);
+      // localStorage.setItem("comfy_workspace_workflow", workflow.json);
+    }
   };
 
   const graphAppSetup = async () => {
@@ -114,14 +119,11 @@ export default function App() {
     setLoadingDB(false);
     const latest = localStorage.getItem("curFlowID");
     const latestWf = latest != null ? getWorkflow(latest) : null;
+
     if (latestWf) {
-      setCurFlowID(latestWf.id);
-      setCurFlowName(latestWf.name);
-    } else {
-      // const graphJson = localStorage.getItem("workflow");
-      // const flow = createFlow({ json: graphJson ?? "" });
-      // setCurFlowID(flow.id);
-      // setCurFlowName(flow.name ?? "");
+      latestWf && localStorage.setItem("workflow", latestWf.json);
+      setCurFlowID(latestWf.id ?? null);
+      setCurFlowName(latestWf.name ?? null);
     }
     validateOrSaveAllJsonFileMyWorkflows();
   };
@@ -129,7 +131,6 @@ export default function App() {
     graphAppSetup();
     setInterval(() => {
       if (curFlowID.current != null) {
-        localStorage.setItem("curFlowID", curFlowID.current);
         const graphJson = JSON.stringify(app.graph.serialize());
         graphJson != null &&
           updateFlow(curFlowID.current, {
@@ -149,16 +150,18 @@ export default function App() {
     pullAuthTokenCloseIfExist();
   }, []);
   const loadWorkflowID = (id: string) => {
-    if (workspace == null) {
-      alert("Error: Workspace not loaded!");
+    if (app.graph == null) {
+      console.error("app.graph is null cannot load workflow");
       return;
     }
     setCurFlowID(id);
-    const flow = workspace[id];
+    const flow = getWorkflow(id);
     if (flow == null) {
       alert("Error: Workflow not found! id: " + id);
       return;
     }
+    app.ui.dialog.close();
+
     app.loadGraphData(JSON.parse(flow.json));
     setCurFlowName(flow.name);
     setRoute("root");
