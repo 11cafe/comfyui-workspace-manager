@@ -75,6 +75,7 @@ export default function App() {
     const workflow = getWorkflow(id);
     if (workflow) {
       localStorage.setItem("curFlowID", id);
+      // localStorage.setItem("comfy_workspace_workflow", workflow.json);
     }
   };
 
