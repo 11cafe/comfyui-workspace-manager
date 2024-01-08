@@ -306,6 +306,7 @@ export default function App() {
               position: "absolute",
               top: 0,
               left: 0,
+              lineHeight: "24px",
             }}
             zIndex={1000}
             draggable={false}
