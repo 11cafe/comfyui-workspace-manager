@@ -1,7 +1,7 @@
 import { deleteFile, saveDB, updateFile } from "../Api";
-import { foldersTable, userSettingsTable } from "../WorkspaceDB";
+import { Workflow, foldersTable, userSettingsTable } from "../WorkspaceDB";
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
-import { Workflow } from "../types/workspaceTypes";
+
 import { toFileNameFriendly } from "../utils";
 
 export function saveJsonFileMyWorkflows(
