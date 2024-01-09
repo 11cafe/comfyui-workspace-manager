@@ -65,7 +65,7 @@ export const AlertDialogProvider: React.FC<{ children: ReactNode }> = ({
           size={"lg"}
         >
           <AlertDialogOverlay>
-            <AlertDialogContent>
+            <AlertDialogContent className="workspace_manager">
               <AlertDialogHeader
                 fontSize="lg"
                 fontWeight="bold"

@@ -20,6 +20,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "public/comfyui", "entry.js", "public/entry.js"],
+  "include": ["src", "public/comfyui", "public/entry.js"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

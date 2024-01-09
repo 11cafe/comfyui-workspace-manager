@@ -13,13 +13,14 @@ export default defineConfig({
       include: ["src/**"],
     },
     outDir: "../../dist",
+    assetsDir: "",
     emptyOutDir: true,
     rollupOptions: {
       // make sure to externalize deps that shouldn't be bundled
       // into your library
       external: ["/scripts/app.js", "/scripts/api.js"],
       input: {
-        input: "entry.js",
+        input: "/src/entry.ts",
       },
       output: {
         // Provide global variables to use in the UMD build
