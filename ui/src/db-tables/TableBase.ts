@@ -1,7 +1,7 @@
 import { getDB, saveDB } from "../Api";
 import { v4 as uuidv4 } from "uuid";
 import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
-import { Table, Workflow } from "../types/workspaceTypes";
+import { Table } from "../WorkspaceDB";
 
 export class TableBase<T> {
   public readonly tableName: Table;

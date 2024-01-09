@@ -158,9 +158,14 @@ export function updateFlow(id: string, input: Partial<Workflow>) {
   };
 
   const updateKey = Object.keys(input);
-  
+
   // When modifying the associated tag or modifying the directory, updateTime is not modified.
-  if (!(updateKey.length === 1 && ['tags', 'parentFolderID'].includes(updateKey[0]))) {
+  if (
+    !(
+      updateKey.length === 1 &&
+      ["tags", "parentFolderID"].includes(updateKey[0])
+    )
+  ) {
     workspace[id].updateTime = Date.now();
   }
   updateWorkspaceIndexDB();
@@ -276,7 +281,7 @@ export function listWorkflows(sortBy?: ESortTypes): Workflow[] {
     throw new Error("workspace is not loaded");
   }
   const workflows = Object.values(workspace);
-  return sortFlows(workflows, sortBy)
+  return sortFlows(workflows, sortBy);
 }
 export function getWorkflow(id: string): Workflow | undefined {
   if (workspace == null) {
