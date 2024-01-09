@@ -19,11 +19,12 @@ const config: ThemeConfig = {
 const theme = extendTheme({ config });
 
 export default theme;
+
 ReactDOM.createRoot(topbar).render(
   <React.StrictMode>
-    <ChakraProvider resetCSS={false}>
+    <ChakraProvider resetCSS={false} disableGlobalStyle={true}>
       <CSSReset scope=".workspace_manager" />
-      <ColorModeScript initialColorMode={theme.config.initialColorMode} />
+      <ColorModeScript />
       <AlertDialogProvider>
         <App />
       </AlertDialogProvider>
@@ -41,6 +42,13 @@ const callback = function (
   mutationsList: MutationRecord[],
   _observer: MutationObserver
 ) {
+  let htmlElement = document.documentElement;
+  console.log("htmlElement", htmlElement);
+  const style = htmlElement.getAttribute("style");
+  if (style != null) {
+    htmlElement.setAttribute("style", style.replace("color-scheme: dark;", ""));
+  }
+
   for (const mutation of mutationsList) {
     if (mutation.type === "attributes" && mutation.attributeName === "class") {
       // remove all chakra classes from body element

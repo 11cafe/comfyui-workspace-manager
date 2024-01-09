@@ -42,6 +42,18 @@ export type CSSResetProps = {
 const CSSReset = ({ scope = "" }: CSSResetProps) => (
   <Global
     styles={css`
+      ${scope} {
+        font-family: var(--chakra-fonts-body);
+        color: var(--chakra-colors-chakra-body-text);
+        background: var(--chakra-colors-chakra-body-bg);
+        transition-property: background-color;
+        transition-duration: var(--chakra-transition-duration-normal);
+        line-height: var(--chakra-lineHeights-base);
+      }
+      ${scope} *, ${scope} ::before, ${scope} ::after {
+        border-color: var(--chakra-colors-chakra-border-color);
+      }
+
       ${scope} :where(html) {
         line-height: 1.5;
         -webkit-text-size-adjust: 100%;
@@ -281,7 +293,7 @@ const CSSReset = ({ scope = "" }: CSSResetProps) => (
         height: auto;
       }
 
-      [data-js-focus-visible]
+      ${scope} [data-js-focus-visible]
         :focus:not([data-focus-visible-added]):not(
           [data-focus-visible-disabled]
         ) {
