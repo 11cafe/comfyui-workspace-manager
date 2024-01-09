@@ -42,13 +42,14 @@ const callback = function (
   mutationsList: MutationRecord[],
   _observer: MutationObserver
 ) {
+  // remove color-scheme property from <html> element, this made the checkboxes dark
   let htmlElement = document.documentElement;
-  console.log("htmlElement", htmlElement);
-  const style = htmlElement.getAttribute("style");
-  if (style != null) {
-    htmlElement.setAttribute("style", style.replace("color-scheme: dark;", ""));
+  if (htmlElement.style.colorScheme === "dark") {
+    // Remove the color-scheme property
+    htmlElement.style.removeProperty("color-scheme");
   }
 
+  // remove chakra from <body> class list, this broke the copy node feature
   for (const mutation of mutationsList) {
     if (mutation.type === "attributes" && mutation.attributeName === "class") {
       // remove all chakra classes from body element
