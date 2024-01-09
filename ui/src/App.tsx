@@ -4,7 +4,7 @@ import { app } from "/scripts/app.js";
 // @ts-ignore
 import { api } from "/scripts/api.js";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
-import { Box } from "@chakra-ui/react";
+import { Box, Portal } from "@chakra-ui/react";
 import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
 import {
   createFlow,
@@ -16,7 +16,7 @@ import {
   PanelPosition,
   changelogsTable,
   mediaTable,
-  listWorkflows,
+  Workflow,
 } from "./WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
@@ -39,6 +39,7 @@ export default function App() {
   const curFlowID = useRef<string | null>(null);
   const [positionStyle, setPositionStyle] = useState<PanelPosition>();
   const [isDirty, setIsDirty] = useState(false);
+  const workspaceContainerRef = useRef(null);
 
   const saveCurWorkflow = useCallback(() => {
     if (curFlowID.current) {
@@ -54,7 +55,7 @@ export default function App() {
     }
   }, []);
   const discardUnsavedChanges = () => {
-    let userInput = confirm(
+    const userInput = confirm(
       "Are you sure you want to discard unsaved changes? This will revert current workflow to your last saved version. You will lose all changes made since your last save."
     );
 
@@ -72,7 +73,11 @@ export default function App() {
   const setCurFlowID = (id: string) => {
     curFlowID.current = id;
     setFlowID(id);
-    localStorage.setItem("curFlowID", id);
+    const workflow = getWorkflow(id);
+    if (workflow) {
+      localStorage.setItem("curFlowID", id);
+      // localStorage.setItem("comfy_workspace_workflow", workflow.json);
+    }
   };
 
   const graphAppSetup = async () => {
@@ -83,17 +88,6 @@ export default function App() {
         // clean up legacy localStorage
         localStorage.removeItem("workspace");
         localStorage.removeItem("comfyspace");
-        // when drop file create new flow with file name
-        const originalHandleFileFunc = app.handleFile.bind(app);
-        app.handleFile = async function (file: File) {
-          const flow = createFlow({
-            name: file.name,
-            json: JSON.stringify(defaultGraph),
-          });
-          setCurFlowID(flow.id);
-          setCurFlowName(flow.name ?? "Unknown name");
-          await originalHandleFileFunc(file);
-        };
       },
       async addCustomNodeDefs(defs) {
         nodeDefs.current = defs;
@@ -115,14 +109,11 @@ export default function App() {
     setLoadingDB(false);
     const latest = localStorage.getItem("curFlowID");
     const latestWf = latest != null ? getWorkflow(latest) : null;
+
     if (latestWf) {
-      setCurFlowID(latestWf.id);
-      setCurFlowName(latestWf.name);
-    } else {
-      // const graphJson = localStorage.getItem("workflow");
-      // const flow = createFlow({ json: graphJson ?? "" });
-      // setCurFlowID(flow.id);
-      // setCurFlowName(flow.name ?? "");
+      latestWf && localStorage.setItem("workflow", latestWf.json);
+      setCurFlowID(latestWf.id ?? null);
+      setCurFlowName(latestWf.name ?? null);
     }
     validateOrSaveAllJsonFileMyWorkflows();
   };
@@ -130,7 +121,6 @@ export default function App() {
     graphAppSetup();
     setInterval(() => {
       if (curFlowID.current != null) {
-        localStorage.setItem("curFlowID", curFlowID.current);
         const graphJson = JSON.stringify(app.graph.serialize());
         graphJson != null &&
           updateFlow(curFlowID.current, {
@@ -150,22 +140,24 @@ export default function App() {
     pullAuthTokenCloseIfExist();
   }, []);
   const loadWorkflowID = (id: string) => {
-    if (workspace == null) {
-      alert("Error: Workspace not loaded!");
+    if (app.graph == null) {
+      console.error("app.graph is null cannot load workflow");
       return;
     }
     setCurFlowID(id);
-    const flow = workspace[id];
+    const flow = getWorkflow(id);
     if (flow == null) {
       alert("Error: Workflow not found! id: " + id);
       return;
     }
+    app.ui.dialog.close();
+
     app.loadGraphData(JSON.parse(flow.json));
     setCurFlowName(flow.name);
     setRoute("root");
   };
   const loadNewWorkflow = (input?: { json?: string; name?: string }) => {
-    let jsonStr = input?.json ?? JSON.stringify(defaultGraph);
+    const jsonStr = input?.json ?? JSON.stringify(defaultGraph);
     const flow = createFlow({ json: jsonStr, name: input?.name });
     loadWorkflowID(flow.id);
     setRoute("root");
@@ -248,9 +240,27 @@ export default function App() {
     });
   }, []);
 
+  const onCloseDrawer = useCallback(() => {
+    setRoute("root");
+  }, []);
+
   useEffect(() => {
     window.addEventListener("keydown", shortcutListener);
     window.addEventListener("message", authTokenListener);
+
+    const fileInput = document.getElementById("comfy-file-input");
+    fileInput?.addEventListener("change", () => {
+      // @ts-ignore
+      if (fileInput.files && fileInput.files.length > 0) {
+        const flow = createFlow({
+          // @ts-ignore
+          name: fileInput.files[0].name,
+          json: JSON.stringify(defaultGraph),
+        });
+        setCurFlowID(flow.id);
+        setCurFlowName(flow.name ?? "Unknown name");
+      }
+    });
 
     api.addEventListener("executed", (e: any) => {
       e.detail?.output?.images?.forEach(
@@ -291,35 +301,40 @@ export default function App() {
         setRoute: setRoute,
       }}
     >
-      <Box
-        style={{
-          width: "100vh",
-          position: "absolute",
-          top: 0,
-          left: 0,
-        }}
-        zIndex={1000}
-        draggable={false}
-      >
-        <Topbar
-          curFlowName={curFlowName}
-          setCurFlowName={setCurFlowName}
-          updatePanelPosition={updatePanelPosition}
-          positionStyle={positionStyle}
-        />
-        {route === "recentFlows" && (
-          <RecentFilesDrawer
-            onclose={() => setRoute("root")}
-            onClickNewFlow={() => {
-              loadNewWorkflow();
-              setRoute("root");
+      <div ref={workspaceContainerRef} className="workspace_manager">
+        <Portal containerRef={workspaceContainerRef}>
+          <Box
+            style={{
+              width: "100vh",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              lineHeight: "24px",
             }}
-          />
-        )}
-        {route === "gallery" && (
-          <GalleryModal onclose={() => setRoute("root")} />
-        )}
-      </Box>
+            zIndex={1000}
+            draggable={false}
+          >
+            <Topbar
+              curFlowName={curFlowName}
+              setCurFlowName={setCurFlowName}
+              updatePanelPosition={updatePanelPosition}
+              positionStyle={positionStyle}
+            />
+            {route === "recentFlows" && (
+              <RecentFilesDrawer
+                onClose={onCloseDrawer}
+                onClickNewFlow={() => {
+                  loadNewWorkflow();
+                  setRoute("root");
+                }}
+              />
+            )}
+            {route === "gallery" && (
+              <GalleryModal onclose={() => setRoute("root")} />
+            )}
+          </Box>
+        </Portal>
+      </div>
     </WorkspaceContext.Provider>
   );
 }

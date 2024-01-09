@@ -79,7 +79,7 @@ export let mediaTable: MediaTable | null = null;
 
 export async function loadDBs() {
   const loadWorkflows = async () => {
-    let workflowsStr = await getDB("workflows");
+    const workflowsStr = await getDB("workflows");
     if (workflowsStr == null) {
       const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
       const comfyspaceData = JSON.parse(comfyspace);
@@ -101,7 +101,7 @@ export async function loadDBs() {
     changelogsTable = await ChangelogsTable.load();
   };
   const loadMedia = async () => {
-    mediaTable = await MediaTable.load();
+    mediaTable = new MediaTable();
   };
   await Promise.all([
     loadWorkflows(),
@@ -151,11 +151,18 @@ export function updateFlow(id: string, input: Partial<Workflow>) {
     // no change detected
     return;
   }
+
   workspace[id] = {
     ...workspace[id],
     ...input,
-    updateTime: Date.now(),
   };
+
+  const updateKey = Object.keys(input);
+  
+  // When modifying the associated tag or modifying the directory, updateTime is not modified.
+  if (!(updateKey.length === 1 && ['tags', 'parentFolderID'].includes(updateKey[0]))) {
+    workspace[id].updateTime = Date.now();
+  }
   updateWorkspaceIndexDB();
   saveDB("workflows", JSON.stringify(workspace));
   // save to my_workflows/
@@ -269,9 +276,7 @@ export function listWorkflows(sortBy?: ESortTypes): Workflow[] {
     throw new Error("workspace is not loaded");
   }
   const workflows = Object.values(workspace);
-  return sortBy
-    ? sortFlows(workflows, sortBy)
-    : workflows.sort((a, b) => b.updateTime - a.updateTime);
+  return sortFlows(workflows, sortBy)
 }
 export function getWorkflow(id: string): Workflow | undefined {
   if (workspace == null) {

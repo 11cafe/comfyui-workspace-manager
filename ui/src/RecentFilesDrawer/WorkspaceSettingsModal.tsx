@@ -104,7 +104,7 @@ export default function WorkspaceSettingsModal({
     manualEntry && setNoPermission(false);
     onCloseEditDirectory();
     // to update /my_workflows files in disk to new location
-    validateOrSaveAllJsonFileMyWorkflows();
+    validateOrSaveAllJsonFileMyWorkflows(false);
   };
 
   const onReset = async () => {

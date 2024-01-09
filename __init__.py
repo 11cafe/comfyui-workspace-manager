@@ -286,6 +286,7 @@ async def update_file(request):
 async def delete_file(request):
     data = await request.json()
     file_path = data['file_path']
+    delete_empty_folder = data['deleteEmptyFolder']
     my_workflows_dir = get_my_workflows_dir()
     full_path = os.path.join(my_workflows_dir, file_path)
 
@@ -294,7 +295,7 @@ async def delete_file(request):
 
         # Check if the directory is empty after deleting the file
         directory = os.path.dirname(full_path)
-        if not os.listdir(directory):
+        if delete_empty_folder and not os.listdir(directory):
             # If the directory is empty, remove the directory
             os.rmdir(directory)
             return web.Response(text="File and empty directory deleted successfully")
@@ -345,3 +346,20 @@ async def api_view_file(request):
         content_type=content_type,
         headers={"Content-Disposition": f"filename=\"{filename}\""}
     )
+
+
+@server.PromptServer.instance.routes.post("/workspace/open_workflow_file_browser")
+async def open_workflow_file_browser(request):
+    my_workflows_dir = get_my_workflows_dir()
+    print('open', my_workflows_dir)
+    try:
+        if sys.platform == 'win32':
+            subprocess.run(['explorer', my_workflows_dir])
+        elif sys.platform == 'darwin':
+            subprocess.run(['open', my_workflows_dir])
+        else:  # Assuming Unix/Linux
+            subprocess.run(['xdg-open', my_workflows_dir])
+        return web.Response(text=json.dumps('open successfully'), content_type='application/json')
+    except Exception as e:
+        print('open', my_workflows_dir,e)
+        return web.Response(text=json.dumps({"error": str(e)}), status=500)

@@ -1,6 +1,7 @@
 import { getDB, saveDB } from "../Api";
 import { v4 as uuidv4 } from "uuid";
 import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
+import { Table } from "../WorkspaceDB";
 
 export type Changelog = {
   id: string;
@@ -12,7 +13,7 @@ type ChangelogRecords = {
   [id: string]: Changelog;
 };
 export class ChangelogsTable {
-  static readonly TABLE_NAME = "changelogs";
+  static readonly TABLE_NAME: Table = "changelogs";
 
   private constructor() {}
 
@@ -65,7 +66,7 @@ export class ChangelogsTable {
     };
     const records = await this.getRecords();
     records[change.id] = change;
-    saveDB("changelogs", JSON.stringify(records));
+    saveDB(ChangelogsTable.TABLE_NAME, JSON.stringify(records));
     updateWorkspaceIndexDB();
     return change;
   }

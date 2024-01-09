@@ -52,7 +52,7 @@ export async function updateFile(file_path: string, jsonData: string) {
   }
 }
 
-export async function deleteFile(file_path: string) {
+export async function deleteFile(file_path: string, deleteEmptyFolder = true) {
   try {
     const response = await fetch("/workspace/delete_file", {
       method: "POST",
@@ -61,6 +61,7 @@ export async function deleteFile(file_path: string) {
       },
       body: JSON.stringify({
         file_path: file_path,
+        deleteEmptyFolder,
       }),
     });
     const result = await response.text();
@@ -122,5 +123,20 @@ export async function getSystemDir(root?: string) {
     return result;
   } catch (error) {
     console.error("Error getting workflows dir:", error);
+  }
+}
+
+export async function openWorkflowsFolder() {
+  try {
+    const response = await fetch("/workspace/open_workflow_file_browser", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error open workflows folder:", error);
   }
 }
