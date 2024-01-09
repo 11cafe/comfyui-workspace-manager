@@ -13,10 +13,11 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useContext, useState } from "react";
-import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
-import { Folder, foldersTable } from "../WorkspaceDB";
+import { RecentFilesContext } from "../WorkspaceContext";
+import { Folder, createFlow, foldersTable } from "../WorkspaceDB";
 import EditFolderNameModal from "../components/EditFolderName";
-import DeleteConfirm from "../components/DeleteConfirm";
+import { defaultGraph } from "../defaultGraph";
+import ImportFilesSelector from "../components/ImportFilesSelector";
 
 type Props = {
   menuPosition: { x: number; y: number };
@@ -32,9 +33,30 @@ export default function FilesListFolderItemRightClickMenu({
 }: Props) {
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isOpenImportFiles, setIsOpenImportFiles] = useState(false);
   const { onRefreshFilesList } = useContext(RecentFilesContext);
+
+  const handleCreateNewFlow = () => {
+    createFlow({
+      parentFolderID: folder.id,
+      json: JSON.stringify(defaultGraph),
+    });
+
+    onRefreshFilesList?.();
+  }
+
+  const handleCloseImportFiles = () => {
+    setIsOpenImportFiles(false);
+  }
+
   return (
     <>
+      <ImportFilesSelector
+        isOpen={isOpenImportFiles}
+        handleClose={handleCloseImportFiles}
+        folderId={folder.id}
+        folderName={folder.name}
+      />
       <Box position="absolute" top={menuPosition.y} left={menuPosition.x}>
         <Menu isOpen={isopen} onClose={onClose} isLazy>
           <MenuList>
@@ -46,7 +68,15 @@ export default function FilesListFolderItemRightClickMenu({
             >
               Rename
             </MenuItem>
-            <MenuItem onClick={() => setIsDeleteOpen(true)}>Delete</MenuItem>
+            <MenuItem onClick={() => setIsDeleteOpen(true)}>
+              Delete
+            </MenuItem>
+            <MenuItem onClick={() => handleCreateNewFlow()}>
+              New File
+            </MenuItem>
+            <MenuItem onClick={() => setIsOpenImportFiles(true)}>
+              Import Flows to Folder
+            </MenuItem>
           </MenuList>
         </Menu>
       </Box>

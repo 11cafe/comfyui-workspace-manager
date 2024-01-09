@@ -199,6 +199,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   }
 
   const DRAWER_WIDTH = 440;
+
   return (
     <RecentFilesContext.Provider
       value={{
@@ -379,6 +380,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
                 if (isFolder(n)) {
                   return <FilesListFolderItem folder={n} key={n.id} />;
                 }
+
                 return <WorkflowListItem
                   key={n.id}
                   workflow={n}

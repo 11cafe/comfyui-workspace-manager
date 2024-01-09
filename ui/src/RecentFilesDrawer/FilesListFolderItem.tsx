@@ -28,10 +28,12 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
   const { colorMode } = useColorMode();
   const { draggingFile, refreshFolderStamp, onRefreshFilesList } =
     useContext(RecentFilesContext);
+
   const activeStyle =
     colorMode === "light"
       ? { backgroundColor: "#E2E8F0" }
       : { backgroundColor: "#4A5568" };
+
   useEffect(() => {
     setChildren(
       listFolderContent(
@@ -40,11 +42,13 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
       )
     );
   }, [folder.id, refreshFolderStamp]);
+
   const handleContextMenu = (event: MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
     setMenuPosition({ x: event.clientX, y: event.clientY });
     setIsMenuOpen(true);
   };
+
   useEffect(() => {
     if (folder.isCollapse === isCollapsed) return;
     foldersTable?.update({
@@ -52,6 +56,7 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
       isCollapse: isCollapsed,
     });
   }, [isCollapsed]);
+
   return (
     <Stack>
       <HStack
