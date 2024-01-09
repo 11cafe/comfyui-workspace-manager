@@ -117,6 +117,7 @@ export default function App() {
     }
     validateOrSaveAllJsonFileMyWorkflows();
   };
+
   useEffect(() => {
     graphAppSetup();
     setInterval(() => {
@@ -139,6 +140,7 @@ export default function App() {
     }, 1000);
     pullAuthTokenCloseIfExist();
   }, []);
+
   const loadWorkflowID = (id: string) => {
     if (app.graph == null) {
       console.error("app.graph is null cannot load workflow");
@@ -156,6 +158,7 @@ export default function App() {
     setCurFlowName(flow.name);
     setRoute("root");
   };
+
   const loadNewWorkflow = (input?: { json?: string; name?: string }) => {
     const jsonStr = input?.json ?? JSON.stringify(defaultGraph);
     const flow = createFlow({ json: jsonStr, name: input?.name });
@@ -228,6 +231,7 @@ export default function App() {
       saveCurWorkflow();
     }
   };
+
   const onExecutedCreateMedia = useCallback((image: any) => {
     if (curFlowID.current == null) return;
     let path = image.filename;
@@ -290,6 +294,7 @@ export default function App() {
   if (loadingDB || !positionStyle) {
     return null;
   }
+
   return (
     <WorkspaceContext.Provider
       value={{
