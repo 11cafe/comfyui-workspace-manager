@@ -7,6 +7,7 @@ import { ColorModeScript } from "@chakra-ui/react";
 import { ChakraProvider } from "@chakra-ui/react";
 import { extendTheme, type ThemeConfig } from "@chakra-ui/react";
 import { AlertDialogProvider } from "./components/AlertDialogProvider.tsx";
+import CSSReset from "./MyCSSReset.tsx";
 
 const topbar = document.createElement("div");
 document.body.append(topbar);
@@ -18,10 +19,12 @@ const config: ThemeConfig = {
 const theme = extendTheme({ config });
 
 export default theme;
+
 ReactDOM.createRoot(topbar).render(
   <React.StrictMode>
-    <ChakraProvider>
-      <ColorModeScript initialColorMode={theme.config.initialColorMode} />
+    <ChakraProvider resetCSS={false} disableGlobalStyle={true}>
+      <CSSReset scope=".workspace_manager" />
+      <ColorModeScript />
       <AlertDialogProvider>
         <App />
       </AlertDialogProvider>
@@ -39,6 +42,14 @@ const callback = function (
   mutationsList: MutationRecord[],
   _observer: MutationObserver
 ) {
+  // remove color-scheme property from <html> element, this made the checkboxes dark
+  let htmlElement = document.documentElement;
+  if (htmlElement.style.colorScheme === "dark") {
+    // Remove the color-scheme property
+    htmlElement.style.removeProperty("color-scheme");
+  }
+
+  // remove chakra from <body> class list, this broke the copy node feature
   for (const mutation of mutationsList) {
     if (mutation.type === "attributes" && mutation.attributeName === "class") {
       // remove all chakra classes from body element
