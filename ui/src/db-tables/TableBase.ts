@@ -1,5 +1,4 @@
 import { getDB, saveDB } from "../Api";
-import { v4 as uuidv4 } from "uuid";
 import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
 import { Table } from "../WorkspaceDB";
 

@@ -2,17 +2,17 @@
 import Dexie, { Table } from "dexie";
 import { Workflow } from "../WorkspaceDB";
 
-export class WorkflowDexie extends Dexie {
+export class WorkspaceDB extends Dexie {
   // 'friends' is added by dexie when declaring the stores()
   // We just tell the typing system this is the case
-  friends!: Table<Workflow>;
+  workflows!: Table<Workflow, string>;
 
   constructor() {
-    super("myDatabase");
+    super("WorkspaceDB");
     this.version(1).stores({
-      friends: "++id, name, age", // Primary key and indexed props
+      workflows: "++id, name", // Primary key and indexed props
     });
   }
 }
 
-export const db = new WorkflowDexie();
+export const indexdb = new WorkspaceDB();
