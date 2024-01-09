@@ -23,8 +23,7 @@ import {
   tagsTable,
   workspace,
   foldersTable,
-  Folder,
-} from "../WorkspaceDB";
+} from "../db-tables/WorkspaceDB";
 import {
   IconChevronDown,
   IconChevronUp,
@@ -46,8 +45,8 @@ import { insertWorkflowToCanvas3 } from "./InsertWorkflowToCanvas";
 import FilesListFolderItem from "./FilesListFolderItem";
 import { useDebounce } from "../customHooks/useDebounce";
 import SearchInput from "../components/SearchInput";
-import { openCognitoPopup } from "../auth/authUtils";
 import { openWorkflowsFolder } from "../Api";
+import { Folder } from "../types/dbTypes";
 
 const MAX_TAGS_TO_SHOW = 6;
 type Props = {

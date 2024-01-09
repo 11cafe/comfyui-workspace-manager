@@ -1,28 +1,21 @@
 import { v4 as uuidv4 } from "uuid";
-import { deleteFile, getDB, getSystemDir, saveDB, updateFile } from "./Api";
-import {
-  generateUniqueName,
-  sortFileItem,
-  sortFlows,
-  toFileNameFriendly,
-} from "./utils";
-import { ESortTypes, ImportWorkflow } from "./RecentFilesDrawer/types";
-import { ChangelogsTable } from "./db-tables/ChangelogsTable";
-import {
-  getWorkspaceIndexDB,
-  updateWorkspaceIndexDB,
-} from "./db-tables/IndexDBUtils";
-import { FoldersTable } from "./db-tables/FoldersTable";
-import { MediaTable } from "./db-tables/MediaTable";
-import { COMFYSPACE_TRACKING_FIELD_NAME } from "./const";
-import { indexdb } from "./db-tables/indexdb";
+import { getDB, saveDB, updateFile } from "../Api";
+import { generateUniqueName, sortFileItem, sortFlows } from "../utils";
+import { ESortTypes, ImportWorkflow } from "../RecentFilesDrawer/types";
+import { ChangelogsTable } from "./ChangelogsTable";
+import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
+import { FoldersTable } from "./FoldersTable";
+import { MediaTable } from "./MediaTable";
+import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
+import { indexdb } from "./indexdb";
 import {
   deleteJsonFileMyWorkflows,
   generateFilePath,
   generateFilePathAbsolute,
-} from "./db-tables/DiskFileUtils";
-import { TagsTable } from "./types/dbTypes";
-import { loadTagsTable } from "./db-tables/tagsTable";
+} from "./DiskFileUtils";
+import { Folder, TagsTable } from "../types/dbTypes";
+import { loadTagsTable } from "./tagsTable";
+import { UserSettingsTable } from "./UserSettingsTable";
 
 export type Table =
   | "workflows"
@@ -35,11 +28,6 @@ export type Table =
 interface SortableItem {
   name: string;
   updateTime: number;
-}
-
-export interface PanelPosition {
-  top: number;
-  left: number;
 }
 
 export interface Workflow extends SortableItem {
@@ -156,7 +144,7 @@ export function updateFlow(id: string, input: Partial<Workflow>) {
   // update memory
   workspace[id] = newWorkflow;
   //update indexdb
-  indexdb.workflows.update(id, newWorkflow);
+  // indexdb.workflows.update(id, newWorkflow);
   //update legacy indexdb backup
   updateWorkspaceIndexDB();
   // update disk file db
@@ -230,7 +218,7 @@ export function createFlow({
   //add to cache
   workspace[uuid] = newWorkflow;
   //add to IndexDB
-  indexdb.workflows.add(newWorkflow);
+  // indexdb.workflows.add(newWorkflow);
   // add to disk file db
   saveDB("workflows", JSON.stringify(workspace));
   // legacy index cache
@@ -323,67 +311,4 @@ export async function curComfyspaceJson(): Promise<string> {
     [ChangelogsTable.TABLE_NAME]: changeLogs,
     [MediaTable.TABLE_NAME]: media,
   });
-}
-
-type UserSettings = {
-  myWorkflowsDir: string;
-  topBarStyle: PanelPosition;
-  shortcuts: {
-    save: string;
-  };
-};
-class UserSettingsTable {
-  public records: UserSettings;
-  static readonly TABLE_NAME = "userSettings";
-  private constructor() {
-    this.records = {
-      topBarStyle: {
-        top: 0,
-        left: 0,
-      },
-      myWorkflowsDir: "",
-      shortcuts: {
-        save: "Shift+S",
-      },
-    };
-  }
-  public listSettings() {
-    return this.records;
-  }
-  public getSetting<K extends keyof UserSettings>(key: K): UserSettings[K] {
-    return this.records[key];
-  }
-  public upsert(newPairs: Partial<UserSettings>) {
-    this.records = {
-      ...this.records,
-      ...newPairs,
-    };
-    saveDB(UserSettingsTable.TABLE_NAME, JSON.stringify(this.records));
-    updateWorkspaceIndexDB();
-  }
-
-  static async load(): Promise<UserSettingsTable> {
-    const instance = new UserSettingsTable();
-    const jsonStr = await getDB(UserSettingsTable.TABLE_NAME);
-    let json = jsonStr != null ? JSON.parse(jsonStr) : null;
-    if (json == null) {
-      const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
-      const comfyspaceData = JSON.parse(comfyspace);
-      json = comfyspaceData[UserSettingsTable.TABLE_NAME] || {};
-    }
-    if (!json.myWorkflowsDir) {
-      const getDir = await getSystemDir();
-      json.myWorkflowsDir = `${getDir.dir_path}/my_workflows`;
-    }
-    instance.records = json;
-    return instance;
-  }
-}
-export interface Folder extends SortableItem {
-  id: string;
-  name: string;
-  parentFolderID: string | null; // if null, it is in the root folder
-  createTime: number;
-  type: "folder";
-  isCollapse?: boolean;
 }

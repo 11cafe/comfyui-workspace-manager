@@ -1,6 +1,6 @@
 import { Input, Stack, Text } from "@chakra-ui/react";
 import { useState } from "react";
-import { userSettingsTable } from "../WorkspaceDB";
+import { userSettingsTable } from "../db-tables/WorkspaceDB";
 
 export function ShortcutSettings() {
   const shortcutSetting = userSettingsTable?.getSetting("shortcuts")?.save;

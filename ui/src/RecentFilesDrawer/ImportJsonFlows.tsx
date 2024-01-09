@@ -1,7 +1,7 @@
 import { Button } from "@chakra-ui/react";
 import { IconFileImport } from "@tabler/icons-react";
 import { ChangeEvent, useContext, useRef } from "react";
-import { batchCreateFlows } from "../WorkspaceDB";
+import { batchCreateFlows } from "../db-tables/WorkspaceDB";
 import { RecentFilesContext } from "../WorkspaceContext";
 import { getPngMetadata } from "../utils";
 import { ImportWorkflow } from "./types";

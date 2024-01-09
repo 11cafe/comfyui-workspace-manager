@@ -38,7 +38,7 @@ import {
   getWorkflow,
   userSettingsTable,
   workspace,
-} from "../WorkspaceDB";
+} from "../db-tables/WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { Overlay } from "./Overlay";
 import { VersionHistoryDrawer } from "./VersionHistoryDrawer";
