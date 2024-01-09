@@ -248,10 +248,11 @@ export default function App() {
     window.addEventListener("keydown", shortcutListener);
     window.addEventListener("message", authTokenListener);
 
-    const fileInput = document.getElementById("comfy-file-input");
-    fileInput?.addEventListener("change", () => {
-      // @ts-ignore
-      if (fileInput.files && fileInput.files.length > 0) {
+    const fileInput = document.getElementById(
+      "comfy-file-input"
+    ) as HTMLInputElement;
+    const fileInputListener = () => {
+      if (fileInput && fileInput.files && fileInput.files.length > 0) {
         const flow = createFlow({
           // @ts-ignore
           name: fileInput.files[0].name,
@@ -260,7 +261,8 @@ export default function App() {
         setCurFlowID(flow.id);
         setCurFlowName(flow.name ?? "Unknown name");
       }
-    });
+    };
+    fileInput?.addEventListener("change", fileInputListener);
 
     api.addEventListener("executed", (e: any) => {
       e.detail?.output?.images?.forEach(
@@ -281,6 +283,7 @@ export default function App() {
     return () => {
       window.removeEventListener("message", authTokenListener);
       window.removeEventListener("keydown", shortcutListener);
+      window.removeEventListener("change", fileInputListener);
     };
   }, []);
 
