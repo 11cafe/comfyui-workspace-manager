@@ -1,4 +1,4 @@
-import{j as e,G as i}from"./workspace-manager-7VfwGuMm.js";const r=String.raw,n=r`
+import{j as e,G as i}from"./workspace-manager-IwcWZCSX.js";const r=String.raw,n=r`
   :root,
   :host {
     --chakra-vh: 100vh;
