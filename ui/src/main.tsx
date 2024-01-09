@@ -1,10 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.tsx";
 import { ColorModeScript } from "@chakra-ui/react";
-import { ChakraProvider } from "@chakra-ui/react";
 import { AlertDialogProvider } from "./components/AlertDialogProvider.tsx";
-import CSSReset from "./MyCSSReset.tsx";
+
+const App = React.lazy(() => import("./App.tsx"));
+const CSSReset = React.lazy(() => import("./MyCSSReset.tsx"));
+const ChakraProvider = React.lazy(() =>
+  import("@chakra-ui/react").then((module) => ({
+    default: module.ChakraProvider,
+  }))
+);
 
 export const setupReact = () => {
   const topbar = document.createElement("div");
