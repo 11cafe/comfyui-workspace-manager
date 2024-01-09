@@ -1,18 +1,18 @@
 import { HStack, useColorMode, Text, Stack } from "@chakra-ui/react";
 import {
-  Folder,
   Workflow,
   foldersTable,
   isFolder,
   listFolderContent,
   updateFlow,
-} from "../WorkspaceDB";
+} from "../db-tables/WorkspaceDB";
 import { useState, memo, useContext, useEffect, MouseEvent } from "react";
 import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 import { RecentFilesContext } from "../WorkspaceContext";
 import WorkflowListItem from "./WorkflowListItem";
 import FilesListFolderItemRightClickMenu from "./FilesListFolderItemRightClickMenu";
 import { ESortTypes, sortTypeLocalStorageKey } from "./types";
+import { Folder } from "../types/dbTypes";
 
 type Props = {
   folder: Folder;

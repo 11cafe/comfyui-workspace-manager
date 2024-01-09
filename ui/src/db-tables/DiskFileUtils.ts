@@ -1,5 +1,5 @@
 import { deleteFile, saveDB, updateFile } from "../Api";
-import { Workflow, foldersTable, userSettingsTable } from "../WorkspaceDB";
+import { Workflow, foldersTable, userSettingsTable } from "./WorkspaceDB";
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
 
 import { toFileNameFriendly } from "../utils";

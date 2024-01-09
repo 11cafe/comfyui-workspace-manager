@@ -1,14 +1,9 @@
 import { getDB, saveDB } from "../Api";
 import { v4 as uuidv4 } from "uuid";
 import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
-import { Table } from "../WorkspaceDB";
+import { Table } from "./WorkspaceDB";
+import { Changelog } from "../types/dbTypes";
 
-export type Changelog = {
-  id: string;
-  workflowID: string;
-  createTime: number;
-  json: string;
-};
 type ChangelogRecords = {
   [id: string]: Changelog;
 };

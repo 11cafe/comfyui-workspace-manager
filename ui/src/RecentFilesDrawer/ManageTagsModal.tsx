@@ -12,7 +12,7 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { Tag, Workflow, tagsTable, updateFlow } from "../WorkspaceDB";
+import { Tag, Workflow, tagsTable, updateFlow } from "../db-tables/WorkspaceDB";
 import { IconSettings, IconTrash } from "@tabler/icons-react";
 
 export default function ManageTagsModal({ onclose }: { onclose: () => void }) {

@@ -16,14 +16,13 @@ import {
   changelogsTable,
   getWorkflow,
   updateFlow,
-  workspace,
-} from "../WorkspaceDB";
+} from "../db-tables/WorkspaceDB";
 import { useContext, useEffect, useState } from "react";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { formatTimestamp } from "../utils";
 // @ts-ignore
 import { app } from "/scripts/app.js";
-import { Changelog } from "../db-tables/ChangelogsTable";
+import { Changelog } from "../types/dbTypes";
 
 export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
   const { curFlowID, isDirty } = useContext(WorkspaceContext);

@@ -1,6 +1,6 @@
 import { getDB, saveDB } from "../Api";
 import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
-import { Table } from "../WorkspaceDB";
+import { Table } from "./WorkspaceDB";
 
 export class TableBase<T> {
   public readonly tableName: Table;

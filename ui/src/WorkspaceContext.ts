@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { Folder, Workflow } from "./WorkspaceDB";
+import { Folder, Workflow } from "./db-tables/WorkspaceDB";
 import { Route } from "./utils";
 
 export const WorkspaceContext = createContext<{
