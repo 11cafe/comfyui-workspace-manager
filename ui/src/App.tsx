@@ -13,11 +13,10 @@ import {
   updateFlow,
   workspace,
   userSettingsTable,
-  PanelPosition,
   changelogsTable,
   mediaTable,
   Workflow,
-} from "./WorkspaceDB";
+} from "./db-tables/WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
 import {
@@ -29,6 +28,7 @@ import {
 import GalleryModal from "./gallery/GalleryModal";
 import { Topbar } from "./topbar/Topbar";
 import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
+import { PanelPosition } from "./types/dbTypes";
 
 export default function App() {
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});

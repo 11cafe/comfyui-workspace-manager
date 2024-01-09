@@ -13,7 +13,7 @@ import {
   Input,
 } from "@chakra-ui/react";
 import { useContext, ChangeEvent, useState } from "react";
-import { Folder, foldersTable } from "../WorkspaceDB";
+import { Folder, foldersTable } from "../db-tables/WorkspaceDB";
 import { RecentFilesContext } from "../WorkspaceContext";
 
 type Props = {

@@ -1,4 +1,4 @@
-import { Table } from "./WorkspaceDB";
+import { Table } from "./db-tables/WorkspaceDB";
 
 export async function getDB(table: Table): Promise<string | undefined> {
   try {

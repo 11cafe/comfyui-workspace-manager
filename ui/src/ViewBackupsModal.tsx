@@ -19,7 +19,7 @@ import { IconBurger, IconHistory, IconMenu2 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { listBackup } from "./Api";
 import { formatTimestamp } from "./utils";
-import { Workflows } from "./WorkspaceDB";
+import { Workflows } from "./db-tables/WorkspaceDB";
 
 type Props = {
   onclose: () => void;

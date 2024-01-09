@@ -1,16 +1,10 @@
-import { getDB, saveDB } from "../Api";
+import { saveDB } from "../Api";
 import { v4 as uuidv4 } from "uuid";
-import { Table, getWorkflow, updateFlow } from "../WorkspaceDB";
+import { Table, getWorkflow, updateFlow } from "./WorkspaceDB";
 import { updateWorkspaceIndexDB } from "./IndexDBUtils";
 import { TableBase } from "./TableBase";
-
-export type Media = {
-  id: string;
-  workflowID: string;
-  createTime: number;
-  localPath: string;
-  format: string;
-};
+import { Media } from "../types/dbTypes";
+import { indexdb } from "./indexdb";
 
 export class MediaTable extends TableBase<Media> {
   static readonly TABLE_NAME: Table = "media";
@@ -52,10 +46,13 @@ export class MediaTable extends TableBase<Media> {
       mediaIDs: Array.from(newMedia),
       coverMediaPath: md.localPath,
     });
+    // save indexdb
+    // indexdb.media.add(md);
     const records = await this.getRecords();
-
     records[md.id] = md;
+    // save disk file db
     saveDB("media", JSON.stringify(records));
+    // save legacy indexdb backup
     updateWorkspaceIndexDB();
     return md;
   }
