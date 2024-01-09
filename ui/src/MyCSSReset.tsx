@@ -39,12 +39,24 @@ export type CSSResetProps = {
   scope?: string;
 };
 
-export const CSSReset = ({ scope = "" }: CSSResetProps) => (
+const CSSReset = ({ scope = "" }: CSSResetProps) => (
   <Global
     styles={css`
-      body {
-        line-height: normal;
-        font-family: "PingFang SC";
+      ${scope} :where(html) {
+        line-height: 1.5;
+        -webkit-text-size-adjust: 100%;
+        font-family: system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        -moz-osx-font-smoothing: grayscale;
+        touch-action: manipulation;
+      }
+
+      ${scope} :where(body) {
+        position: relative;
+        min-height: 100%;
+        margin: 0;
+        font-feature-settings: "kern";
       }
 
       ${scope} :where(*, *::before, *::after) {
@@ -54,7 +66,7 @@ export const CSSReset = ({ scope = "" }: CSSResetProps) => (
         word-wrap: break-word;
       }
 
-      ${scope} main {
+      ${scope} :where(main) {
         display: block;
       }
 
@@ -102,11 +114,11 @@ export const CSSReset = ({ scope = "" }: CSSResetProps) => (
         bottom: -0.25em;
       }
 
-      ${scope} sup {
+      ${scope} :where(sup) {
         top: -0.5em;
       }
 
-      ${scope} img {
+      ${scope} :where(img) {
         border-style: none;
       }
 
@@ -196,7 +208,7 @@ export const CSSReset = ({ scope = "" }: CSSResetProps) => (
         display: none;
       }
 
-      ${scope} [hidden] {
+      [hidden] {
         display: none !important;
       }
 
@@ -218,7 +230,7 @@ export const CSSReset = ({ scope = "" }: CSSResetProps) => (
         margin: 0;
       }
 
-      ${scope} button {
+      ${scope} :where(button) {
         background: transparent;
         padding: 0;
       }

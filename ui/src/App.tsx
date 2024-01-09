@@ -298,7 +298,7 @@ export default function App() {
         setRoute: setRoute,
       }}
     >
-      <main ref={workspaceContainerRef}>
+      <div ref={workspaceContainerRef} className="workspace_manager">
         <Portal containerRef={workspaceContainerRef}>
           <Box
             style={{
@@ -331,7 +331,7 @@ export default function App() {
             )}
           </Box>
         </Portal>
-      </main>
+      </div>
     </WorkspaceContext.Provider>
   );
 }
