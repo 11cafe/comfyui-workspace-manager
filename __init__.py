@@ -351,7 +351,6 @@ async def api_view_file(request):
 @server.PromptServer.instance.routes.post("/workspace/open_workflow_file_browser")
 async def open_workflow_file_browser(request):
     my_workflows_dir = get_my_workflows_dir()
-    print('open', my_workflows_dir)
     try:
         if sys.platform == 'win32':
             subprocess.run(['explorer', my_workflows_dir])
@@ -361,5 +360,4 @@ async def open_workflow_file_browser(request):
             subprocess.run(['xdg-open', my_workflows_dir])
         return web.Response(text=json.dumps('open successfully'), content_type='application/json')
     except Exception as e:
-        print('open', my_workflows_dir,e)
         return web.Response(text=json.dumps({"error": str(e)}), status=500)

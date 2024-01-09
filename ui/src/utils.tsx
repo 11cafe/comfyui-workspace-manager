@@ -2,14 +2,13 @@
 import { deleteFile } from "./Api";
 import { ESortTypes } from "./RecentFilesDrawer/types";
 import {
-  deleteJsonFileMyWorkflows,
   Folder,
-  generateFilePathAbsolute,
   listWorkflows,
   saveJsonFileMyWorkflows,
   userSettingsTable,
   Workflow,
 } from "./WorkspaceDB";
+import { generateFilePathAbsolute } from "./db-tables/DiskFileUtils";
 // @ts-ignore
 import { app, ComfyApp } from "/scripts/app.js";
 

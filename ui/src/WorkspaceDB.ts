@@ -15,6 +15,14 @@ import {
 import { FoldersTable } from "./db-tables/FoldersTable";
 import { MediaTable } from "./db-tables/MediaTable";
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "./const";
+import { indexdb } from "./db-tables/indexdb";
+import {
+  deleteJsonFileMyWorkflows,
+  generateFilePath,
+  generateFilePathAbsolute,
+} from "./db-tables/DiskFileUtils";
+import { TagsTable } from "./types/dbTypes";
+import { loadTagsTable } from "./db-tables/tagsTable";
 
 export type Table =
   | "workflows"
@@ -54,20 +62,6 @@ export function isFolder(n: Folder | Workflow): n is Folder {
 
 export type Workflows = {
   [id: string]: Workflow;
-};
-export type Tags = {
-  [name: string]: Tag;
-};
-export type Tag = {
-  name: string;
-  workflowIDs: string[];
-  updateTime: number;
-};
-type TagsTable = {
-  tags: Tags;
-  listAll(): Tag[];
-  upsert(name: string): Tag;
-  delete(name: string): void;
 };
 
 export let workspace: Workflows | undefined = undefined;
@@ -151,19 +145,21 @@ export function updateFlow(id: string, input: Partial<Workflow>) {
     // no change detected
     return;
   }
-
-  workspace[id] = {
-    ...workspace[id],
-    ...input,
-  };
-
-  const updateKey = Object.keys(input);
-  
+  let newWorkflow: Workflow = after;
   // When modifying the associated tag or modifying the directory, updateTime is not modified.
-  if (!(updateKey.length === 1 && ['tags', 'parentFolderID'].includes(updateKey[0]))) {
-    workspace[id].updateTime = Date.now();
+  const updateKey = Object.keys(input);
+  const isModifyingTagOrFolder =
+    updateKey.length === 1 && ["tags", "parentFolderID"].includes(updateKey[0]);
+  if (!isModifyingTagOrFolder) {
+    newWorkflow.updateTime = Date.now();
   }
+  // update memory
+  workspace[id] = newWorkflow;
+  //update indexdb
+  indexdb.workflows.update(id, newWorkflow);
+  //update legacy indexdb backup
   updateWorkspaceIndexDB();
+  // update disk file db
   saveDB("workflows", JSON.stringify(workspace));
   // save to my_workflows/
   if (input.name != null || input.parentFolderID != null) {
@@ -197,14 +193,6 @@ export function saveJsonFileMyWorkflows(workflow: Workflow) {
   updateFile(file_path, JSON.stringify(flow));
 }
 
-export function deleteJsonFileMyWorkflows(workflow: Workflow) {
-  if (workflow.name == null) {
-    return;
-  }
-  const file_path = generateFilePath(workflow);
-  file_path != null && deleteFile(file_path);
-}
-
 export function getFlow(id: string): Workflow | undefined {
   if (workspace == null) {
     return undefined;
@@ -230,7 +218,7 @@ export function createFlow({
   const newFlowName = generateUniqueName(name);
   const uuid = uuidv4(); // ⇨ '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
   const time = Date.now();
-  workspace[uuid] = {
+  const newWorkflow: Workflow = {
     id: uuid,
     name: newFlowName,
     json,
@@ -239,8 +227,15 @@ export function createFlow({
     createTime: time,
     tags: tags ?? [],
   };
-  updateWorkspaceIndexDB();
+  //add to cache
+  workspace[uuid] = newWorkflow;
+  //add to IndexDB
+  indexdb.workflows.add(newWorkflow);
+  // add to disk file db
   saveDB("workflows", JSON.stringify(workspace));
+  // legacy index cache
+  updateWorkspaceIndexDB();
+  // add to my_workflows/
   saveJsonFileMyWorkflows(workspace[uuid]);
   return workspace[uuid];
 }
@@ -276,7 +271,7 @@ export function listWorkflows(sortBy?: ESortTypes): Workflow[] {
     throw new Error("workspace is not loaded");
   }
   const workflows = Object.values(workspace);
-  return sortFlows(workflows, sortBy)
+  return sortFlows(workflows, sortBy);
 }
 export function getWorkflow(id: string): Workflow | undefined {
   if (workspace == null) {
@@ -315,72 +310,7 @@ export function batchDeleteFlow(ids: string[]) {
   updateWorkspaceIndexDB();
   saveDB("workflows", stringifyWorkspace);
 }
-export function generateFilePathAbsolute(workflow: Workflow): string | null {
-  const subPath = generateFilePath(workflow);
-  if (workspace == null) {
-    console.error("workspace is not loaded");
-    return null;
-  }
-  let myWorkflowsDir = userSettingsTable?.getSetting("myWorkflowsDir");
-  if (myWorkflowsDir == null) {
-    console.error("myWorkflowsDir is not set");
-    return null;
-  }
-  if (!myWorkflowsDir.endsWith("/")) {
-    myWorkflowsDir = myWorkflowsDir + "/";
-  }
-  return myWorkflowsDir + subPath;
-}
-export function generateFilePath(workflow: Workflow): string | null {
-  let filePath = toFileNameFriendly(workflow.name) + ".json";
-  let curFolderID = workflow.parentFolderID;
-  while (curFolderID != null) {
-    const folder = foldersTable?.get(curFolderID);
-    if (folder == null) {
-      break;
-    }
-    const folderName = folder.name;
-    filePath = `${folderName}/${filePath}`;
-    curFolderID = folder.parentFolderID ?? undefined;
-  }
-
-  return filePath ?? null;
-}
 /** End of Class Workflow */
-
-async function loadTagsTable(): Promise<TagsTable> {
-  const tagsStr = await getDB("tags");
-  let tags: Tags;
-  if (tagsStr == null) {
-    const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
-    const comfyspaceData = JSON.parse(comfyspace);
-    tags = comfyspaceData["tags"] || {};
-  } else {
-    tags = JSON.parse(tagsStr ?? "{}") ?? {};
-  }
-  return {
-    tags, // Expose the tags array publicly
-    listAll() {
-      return Object.values(tags).sort((a, b) => b.updateTime - a.updateTime);
-    },
-    upsert(name: string) {
-      if (tags[name] == null) {
-        tags[name] = {
-          name,
-          workflowIDs: [],
-          updateTime: Date.now(),
-        };
-      }
-      tags[name].updateTime = Date.now();
-      saveDB("tags", JSON.stringify(tags));
-      return tags[name];
-    },
-    delete(name: string) {
-      delete tags[name];
-      saveDB("tags", JSON.stringify(tags));
-    },
-  };
-}
 
 export async function curComfyspaceJson(): Promise<string> {
   const changeLogs = await changelogsTable?.getRecords();
