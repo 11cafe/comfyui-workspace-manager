@@ -7,8 +7,6 @@ If you have questions or suggestions, please
   <img src="https://animeartmagazine.com/wp-content/uploads/2022/05/discord-button600.webp" alt="Join Discord" width="120"/>
 </a>
 
-[📚Official Wiki Docs](https://github.com/11cafe/comfyui-workspace-manager/wiki)
-
 ## Installation
 
 ### [Option 1] via ComfyUI Manager (Preferred)
