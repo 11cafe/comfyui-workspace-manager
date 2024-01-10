@@ -1,19 +1,13 @@
-// setTimeout(() => {
-//   import("./main.tsx").then(({ setupReact }) => {
-//     setupReact();
-//   });
-// }, 1);
-
-// Select the node that will be observed for mutations
-const targetNode = document.body; // or any other parent element you want to observe
+const targetNode = document.body;
 
 // Options for the observer (which mutations to observe)
 const config = { childList: true, subtree: true };
 
-// Callback function to execute when mutations are observed
+// @ts-ignore
 const callback = function (mutationsList, observer) {
   for (const mutation of mutationsList) {
     if (mutation.type === "childList") {
+      // @ts-ignore
       mutation.addedNodes.forEach((node) => {
         if (node.nodeName === "CANVAS") {
           console.log("Canvas element added to the DOM:", node);
