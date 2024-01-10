@@ -147,10 +147,7 @@ export default function App() {
       } catch (e) {
         console.error("error parsing json", e);
       }
-      // console.log("graphJson", graphJson);
-      // console.log("lastSaved", lastSaved);
       const equal = JSON.stringify(graphJson) === JSON.stringify(lastSaved);
-      // console.log("equal", equal);
       return !equal;
     }
     return false;
