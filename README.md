@@ -3,6 +3,7 @@
 A ComfyUI workflow management extension to **organize and manage all your workflows in one place**. Seamlessly switch between workflows, track version history and image generation history within a single workspace, like Google Docs.
 
 If you have questions or suggestions, please [Join our Discord](https://discord.gg/HHvfEurv2Z)
+
 for collaboration, email: weixuanfu01@gmail.com 
 
 ## Installation
