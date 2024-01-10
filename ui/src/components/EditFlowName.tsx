@@ -17,7 +17,7 @@ import {
   Tooltip,
 } from "@chakra-ui/react";
 import { useContext, ChangeEvent, useState } from "react";
-import { listWorkflows, updateFlow } from "../WorkspaceDB";
+import { listWorkflows, updateFlow } from "../db-tables/WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
 
 type Props = {

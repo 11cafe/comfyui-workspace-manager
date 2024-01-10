@@ -17,12 +17,12 @@ import {
   Checkbox,
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState } from "react";
-import { getWorkflow, mediaTable, updateFlow } from "../WorkspaceDB";
+import { getWorkflow, mediaTable, updateFlow } from "../db-tables/WorkspaceDB";
 import { IconPin, IconPinFilled, IconTrash, IconX } from "@tabler/icons-react";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { formatTimestamp, isImageFormat } from "../utils";
 import { useDialog } from "../components/AlertDialogProvider";
-import { Media } from "../db-tables/MediaTable";
+import { Media } from "../types/dbTypes";
 const IMAGE_SIZE = 200;
 export default function GalleryModal({ onclose }: { onclose: () => void }) {
   const { curFlowID, loadNewWorkflow, loadFilePath } =

@@ -8,7 +8,7 @@ import {
   Image,
   Stack,
 } from "@chakra-ui/react";
-import { Workflow, isFolder, updateFlow } from "../WorkspaceDB";
+import { Workflow, isFolder, updateFlow } from "../db-tables/WorkspaceDB";
 import { formatTimestamp, isImageFormat } from "../utils";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import { useState, memo, ChangeEvent, useContext } from "react";

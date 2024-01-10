@@ -23,8 +23,7 @@ import {
   tagsTable,
   workspace,
   foldersTable,
-  Folder,
-} from "../WorkspaceDB";
+} from "../db-tables/WorkspaceDB";
 import {
   IconChevronDown,
   IconChevronUp,
@@ -48,6 +47,7 @@ import { useDebounce } from "../customHooks/useDebounce";
 import SearchInput from "../components/SearchInput";
 import { openWorkflowsFolder } from "../Api";
 import RenameFlow from "../components/RenameFlow";
+import { Folder } from "../types/dbTypes";
 
 const MAX_TAGS_TO_SHOW = 6;
 type Props = {

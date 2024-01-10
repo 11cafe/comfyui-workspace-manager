@@ -7,7 +7,7 @@ import {
 } from "@tabler/icons-react";
 import DeleteConfirm from "../components/DeleteConfirm";
 import { ChangeEvent } from "react";
-import { batchDeleteFlow, listWorkflows } from "../WorkspaceDB";
+import { batchDeleteFlow, listWorkflows } from "../db-tables/WorkspaceDB";
 import JSZip from "JSZip";
 import { formatTimestamp } from "../utils";
 

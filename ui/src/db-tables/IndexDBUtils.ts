@@ -1,4 +1,4 @@
-import { curComfyspaceJson } from "../WorkspaceDB";
+import { curComfyspaceJson } from "./WorkspaceDB";
 const WORKSPACE_KEY = "backup";
 const WORKSPACE_TABLE = "workspace";
 let indexDB: IDBDatabase | null = null;

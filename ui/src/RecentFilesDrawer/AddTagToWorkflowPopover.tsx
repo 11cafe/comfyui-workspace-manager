@@ -12,7 +12,7 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import { useEffect, useState, useContext } from "react";
-import { Tag, Workflow, tagsTable, updateFlow } from "../WorkspaceDB";
+import { Tag, Workflow, tagsTable, updateFlow } from "../db-tables/WorkspaceDB";
 import { IconPlus, IconTag } from "@tabler/icons-react";
 import { MultiValue, Select } from "chakra-react-select";
 import { RecentFilesContext } from "../WorkspaceContext";
@@ -77,13 +77,9 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
             value={selectedTags}
             onChange={(selected) => {
               setSelectedTags(selected);
-              updateFlow(
-                workflow.id,
-                {
-                  tags: selected.map((s) => s.value),
-                },
-                false
-              );
+              updateFlow(workflow.id, {
+                tags: selected.map((s) => s.value),
+              });
               onRefreshFilesList && onRefreshFilesList();
             }}
             chakraStyles={{

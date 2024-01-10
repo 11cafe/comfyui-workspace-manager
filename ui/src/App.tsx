@@ -4,7 +4,7 @@ import { app } from "/scripts/app.js";
 // @ts-ignore
 import { api } from "/scripts/api.js";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
-import { Box } from "@chakra-ui/react";
+import { Box, Portal } from "@chakra-ui/react";
 import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
 import {
   createFlow,
@@ -13,11 +13,10 @@ import {
   updateFlow,
   workspace,
   userSettingsTable,
-  PanelPosition,
   changelogsTable,
   mediaTable,
   Workflow,
-} from "./WorkspaceDB";
+} from "./db-tables/WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
 import {
@@ -29,6 +28,11 @@ import {
 import GalleryModal from "./gallery/GalleryModal";
 import { Topbar } from "./topbar/Topbar";
 import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
+import { PanelPosition } from "./types/dbTypes";
+import React from "react";
+// const RecentFilesDrawer = React.lazy(
+//   () => import("./RecentFilesDrawer/RecentFilesDrawer")
+// );
 
 export default function App() {
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
@@ -39,6 +43,7 @@ export default function App() {
   const curFlowID = useRef<string | null>(null);
   const [positionStyle, setPositionStyle] = useState<PanelPosition>();
   const [isDirty, setIsDirty] = useState(false);
+  const workspaceContainerRef = useRef(null);
 
   const saveCurWorkflow = useCallback(() => {
     if (curFlowID.current) {
@@ -87,17 +92,6 @@ export default function App() {
         // clean up legacy localStorage
         localStorage.removeItem("workspace");
         localStorage.removeItem("comfyspace");
-        // when drop file create new flow with file name
-        const originalHandleFileFunc = app.handleFile.bind(app);
-        app.handleFile = async function (file: File) {
-          const flow = createFlow({
-            name: file.name,
-            json: JSON.stringify(defaultGraph),
-          });
-          setCurFlowID(flow.id);
-          setCurFlowName(flow.name ?? "Unknown name");
-          await originalHandleFileFunc(file);
-        };
       },
       async addCustomNodeDefs(defs) {
         nodeDefs.current = defs;
@@ -262,6 +256,22 @@ export default function App() {
     window.addEventListener("keydown", shortcutListener);
     window.addEventListener("message", authTokenListener);
 
+    const fileInput = document.getElementById(
+      "comfy-file-input"
+    ) as HTMLInputElement;
+    const fileInputListener = () => {
+      if (fileInput && fileInput.files && fileInput.files.length > 0) {
+        const flow = createFlow({
+          // @ts-ignore
+          name: fileInput.files[0].name,
+          json: JSON.stringify(defaultGraph),
+        });
+        setCurFlowID(flow.id);
+        setCurFlowName(flow.name ?? "Unknown name");
+      }
+    };
+    fileInput?.addEventListener("change", fileInputListener);
+
     api.addEventListener("executed", (e: any) => {
       e.detail?.output?.images?.forEach(
         (im: { filename: string; subfolder: string; type: string }) => {
@@ -281,6 +291,7 @@ export default function App() {
     return () => {
       window.removeEventListener("message", authTokenListener);
       window.removeEventListener("keydown", shortcutListener);
+      window.removeEventListener("change", fileInputListener);
     };
   }, []);
 
@@ -302,35 +313,40 @@ export default function App() {
         setRoute: setRoute,
       }}
     >
-      <Box
-        style={{
-          width: "100vh",
-          position: "absolute",
-          top: 0,
-          left: 0,
-        }}
-        zIndex={1000}
-        draggable={false}
-      >
-        <Topbar
-          curFlowName={curFlowName}
-          setCurFlowName={setCurFlowName}
-          updatePanelPosition={updatePanelPosition}
-          positionStyle={positionStyle}
-        />
-        {route === "recentFlows" && (
-          <RecentFilesDrawer
-            onClose={onCloseDrawer}
-            onClickNewFlow={() => {
-              loadNewWorkflow();
-              setRoute("root");
+      <div ref={workspaceContainerRef} className="workspace_manager">
+        <Portal containerRef={workspaceContainerRef}>
+          <Box
+            style={{
+              width: "100vh",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              lineHeight: "24px",
             }}
-          />
-        )}
-        {route === "gallery" && (
-          <GalleryModal onclose={() => setRoute("root")} />
-        )}
-      </Box>
+            zIndex={1000}
+            draggable={false}
+          >
+            <Topbar
+              curFlowName={curFlowName}
+              setCurFlowName={setCurFlowName}
+              updatePanelPosition={updatePanelPosition}
+              positionStyle={positionStyle}
+            />
+            {route === "recentFlows" && (
+              <RecentFilesDrawer
+                onClose={onCloseDrawer}
+                onClickNewFlow={() => {
+                  loadNewWorkflow();
+                  setRoute("root");
+                }}
+              />
+            )}
+            {route === "gallery" && (
+              <GalleryModal onclose={() => setRoute("root")} />
+            )}
+          </Box>
+        </Portal>
+      </div>
     </WorkspaceContext.Provider>
   );
 }

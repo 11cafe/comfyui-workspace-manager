@@ -2,14 +2,13 @@
 import { deleteFile } from "./Api";
 import { ESortTypes } from "./RecentFilesDrawer/types";
 import {
-  deleteJsonFileMyWorkflows,
-  Folder,
-  generateFilePathAbsolute,
   listWorkflows,
   saveJsonFileMyWorkflows,
   userSettingsTable,
   Workflow,
-} from "./WorkspaceDB";
+} from "./db-tables/WorkspaceDB";
+import { generateFilePathAbsolute } from "./db-tables/DiskFileUtils";
+import { Folder } from "./types/dbTypes";
 // @ts-ignore
 import { app, ComfyApp } from "/scripts/app.js";
 
@@ -145,13 +144,14 @@ export function sortFlows(
 
   return copyFlows;
 }
-export function validateOrSaveAllJsonFileMyWorkflows() {
+export function validateOrSaveAllJsonFileMyWorkflows(deleteEmptyFolder = true) {
   listWorkflows().forEach((workflow) => {
     const fullPath = generateFilePathAbsolute(workflow);
     // @ts-ignore
     if (workflow.filePath != fullPath) {
       // file path changed
-      workflow.filePath != null && deleteFile(workflow.filePath);
+      workflow.filePath != null &&
+        deleteFile(workflow.filePath, deleteEmptyFolder);
       saveJsonFileMyWorkflows(workflow);
     }
   });

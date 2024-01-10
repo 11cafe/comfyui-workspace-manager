@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { useContext, useState } from "react";
 import { RecentFilesContext } from "../WorkspaceContext";
-import { Folder, createFlow, foldersTable } from "../WorkspaceDB";
+import { Folder, createFlow, foldersTable } from "../db-tables/WorkspaceDB";
 import EditFolderNameModal from "../components/EditFolderName";
 import { defaultGraph } from "../defaultGraph";
 import ImportFilesSelector from "../components/ImportFilesSelector";

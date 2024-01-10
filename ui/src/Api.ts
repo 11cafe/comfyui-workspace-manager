@@ -1,4 +1,4 @@
-import { Table } from "./WorkspaceDB";
+import { Table } from "./db-tables/WorkspaceDB";
 
 export async function getDB(table: Table): Promise<string | undefined> {
   try {
@@ -52,7 +52,7 @@ export async function updateFile(file_path: string, jsonData: string) {
   }
 }
 
-export async function deleteFile(file_path: string) {
+export async function deleteFile(file_path: string, deleteEmptyFolder = true) {
   try {
     const response = await fetch("/workspace/delete_file", {
       method: "POST",
@@ -61,6 +61,7 @@ export async function deleteFile(file_path: string) {
       },
       body: JSON.stringify({
         file_path: file_path,
+        deleteEmptyFolder,
       }),
     });
     const result = await response.text();
