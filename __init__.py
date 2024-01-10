@@ -13,7 +13,7 @@ import os
 import json
 from .version_control import update_version_if_outdated
 
-WEB_DIRECTORY = "dist"
+WEB_DIRECTORY = "dist/entry"
 NODE_CLASS_MAPPINGS = {}
 __all__ = ['NODE_CLASS_MAPPINGS']
 version = "V1.0.0"
@@ -23,6 +23,12 @@ workspace_path = os.path.join(os.path.dirname(__file__))
 comfy_path = os.path.dirname(folder_paths.__file__)
 db_dir_path = os.path.join(workspace_path, "db")
 
+
+workspace_app = web.Application()
+workspace_app.add_routes([
+    web.static("/", os.path.join(workspace_path, 'dist/workspace')),
+])
+server.PromptServer.instance.app.add_subapp("/extensions/workspace/", workspace_app)
 
 @server.PromptServer.instance.routes.post("/workspace/save_db")
 async def save_db(request):
