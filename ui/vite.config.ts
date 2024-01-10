@@ -12,17 +12,17 @@ export default defineConfig({
     watch: {
       include: ["src/**"],
     },
+    // minify: false, // ___DEBUG__MODE only
+    // sourcemap: true, // ___DEBUG___MODE only
     emptyOutDir: true,
     rollupOptions: {
-      // make sure to externalize deps that shouldn't be bundled
-      // into your library
+      // externalize deps that shouldn't be bundled into your library
       external: ["/scripts/app.js", "/scripts/api.js"],
       input: {
         input: "/src/entry.ts",
       },
       output: {
-        // Provide global variables to use in the UMD build
-        // for externalized deps
+        // Provide global variables to use in the UMD build for externalized deps
         globals: {
           app: "app",
           Litegraph: "LiteGraph",

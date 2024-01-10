@@ -5,9 +5,6 @@ import {
   ModalHeader,
   ModalCloseButton,
   ModalBody,
-  MenuItem,
-  Menu,
-  MenuList,
   AccordionButton,
   Accordion,
   AccordionItem,
@@ -15,11 +12,10 @@ import {
   AccordionIcon,
   AccordionPanel,
 } from "@chakra-ui/react";
-import { IconBurger, IconHistory, IconMenu2 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
-import { listBackup } from "./Api";
-import { formatTimestamp } from "./utils";
-import { Workflows } from "./db-tables/WorkspaceDB";
+import { listBackup } from "../Api";
+import { formatTimestamp } from "../utils";
+import { Workflows } from "../db-tables/WorkspaceDB";
 
 type Props = {
   onclose: () => void;
