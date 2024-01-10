@@ -374,7 +374,11 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
               searchValue={searchValue}
               onUpdateSearchValue={onUpdateSearchValue}
             />
-            <RenameFlow handleClose={handleCloseRenameId}/>
+
+            {renameFlowId !== null && (
+              <RenameFlow handleClose={handleCloseRenameId}/>
+            )}
+
             <Flex overflowY={"auto"} overflowX={"hidden"} direction="column">
               {currentRenderingData.map((n) => {
                 if (isFolder(n)) {

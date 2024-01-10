@@ -70,7 +70,7 @@ export default function RenameFlow({
 
   return (
     <HStack>
-      <Modal isOpen={renameFlowId !== null} onClose={onCloseModal}>
+      <Modal isOpen={true} onClose={onCloseModal}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Edit workflow name</ModalHeader>
