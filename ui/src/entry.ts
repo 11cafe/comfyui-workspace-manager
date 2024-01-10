@@ -10,10 +10,10 @@ const callback = function (mutationsList, observer) {
       // @ts-ignore
       mutation.addedNodes.forEach((node) => {
         if (node.nodeName === "CANVAS") {
-          console.log("Canvas element added to the DOM:", node);
           import("./main.tsx").then(({ setupReact }) => {
             setupReact();
           });
+          observer.disconnect();
         }
       });
     }
@@ -25,6 +25,3 @@ const observer = new MutationObserver(callback);
 
 // Start observing the target node for configured mutations
 observer.observe(targetNode, config);
-
-// Remember to disconnect the observer when it's no longer needed
-// observer.disconnect();

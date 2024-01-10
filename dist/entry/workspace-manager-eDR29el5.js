@@ -1,7 +1,0 @@
-const f="modulepreload",h=function(s){return"/"+s},d={},m=function(a,r,i){if(!r||r.length===0)return a();const c=document.getElementsByTagName("link");return Promise.all(r.map(e=>{if(e=h(e),e in d)return;d[e]=!0;const t=e.endsWith(".css"),u=t?'[rel="stylesheet"]':"";if(!!i)for(let o=c.length-1;o>=0;o--){const l=c[o];if(l.href===e&&(!t||l.rel==="stylesheet"))return}else if(document.querySelector(`link[href="${e}"]${u}`))return;const n=document.createElement("link");if(n.rel=t?"stylesheet":f,t||(n.as="script",n.crossOrigin=""),n.href=e,document.head.appendChild(n),t)return new Promise((o,l)=>{n.addEventListener("load",o),n.addEventListener("error",()=>l(new Error(`Unable to preload CSS for ${e}`)))})})).then(()=>a()).catch(e=>{const t=new Event("vite:preloadError",{cancelable:!0});if(t.payload=e,window.dispatchEvent(t),!t.defaultPrevented)throw e})},v=document.body,E={childList:!0,subtree:!0},b=function(s,a){for(const r of s)r.type==="childList"&&r.addedNodes.forEach(i=>{i.nodeName==="CANVAS"&&(console.log("Canvas element added to the DOM:",i),m(()=>import("../workspace/main-6OHalDvy.js"),__vite__mapDeps([])).then(({setupReact:c})=>{c()}))})},g=new MutationObserver(b);g.observe(v,E);
-function __vite__mapDeps(indexes) {
-  if (!__vite__mapDeps.viteFileDeps) {
-    __vite__mapDeps.viteFileDeps = []
-  }
-  return indexes.map((i) => __vite__mapDeps.viteFileDeps[i])
-}
