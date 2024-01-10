@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { useContext, useState } from "react";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
-import { Folder, foldersTable } from "../WorkspaceDB";
+import { Folder, foldersTable } from "../db-tables/WorkspaceDB";
 import EditFolderNameModal from "../components/EditFolderName";
 import DeleteConfirm from "../components/DeleteConfirm";
 

@@ -1,5 +1,6 @@
 import { getDB, saveDB } from "../Api";
-import { Folder, listWorkflows, updateFlow } from "../WorkspaceDB";
+import { listWorkflows, updateFlow } from "./WorkspaceDB";
+import { Folder } from "../types/dbTypes";
 import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
 import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
 import { v4 as uuidv4 } from "uuid";

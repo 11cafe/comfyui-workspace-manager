@@ -22,7 +22,7 @@ import {
 import { IconEdit, IconFolder } from "@tabler/icons-react";
 import { useRef, useState } from "react";
 import { getSystemDir } from "../Api";
-import { userSettingsTable } from "../WorkspaceDB";
+import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { ShortcutSettings } from "../settings/ShortcutSettings";
 import { validate } from "uuid";
 import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";

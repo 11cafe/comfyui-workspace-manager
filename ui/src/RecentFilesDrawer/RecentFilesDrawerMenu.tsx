@@ -16,7 +16,7 @@ import {
   IconSun,
   IconTag,
 } from "@tabler/icons-react";
-import ViewBackupsModal from "../ViewBackupsModal";
+import ViewBackupsModal from "../modals/ViewBackupsModal";
 import ManageTagsModal from "./ManageTagsModal";
 import { useState } from "react";
 import WorkspaceSettingsModal from "./WorkspaceSettingsModal";

@@ -15,9 +15,10 @@
     "@emotion/styled": "^11.11.0",
     "@tabler/icons-react": "^2.42.0",
     "chakra-react-select": "^4.7.6",
+    "dexie": "^3.2.4",
+    "dexie-react-hooks": "^1.1.7",
     "framer-motion": "^10.16.12",
     "jszip": "^3.10.1",
-    "lodash.throttle": "^4.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "uuid": "^9.0.1"

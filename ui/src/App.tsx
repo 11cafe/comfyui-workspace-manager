@@ -13,11 +13,9 @@ import {
   updateFlow,
   workspace,
   userSettingsTable,
-  PanelPosition,
   changelogsTable,
   mediaTable,
-  Workflow,
-} from "./WorkspaceDB";
+} from "./db-tables/WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
 import {
@@ -29,6 +27,11 @@ import {
 import GalleryModal from "./gallery/GalleryModal";
 import { Topbar } from "./topbar/Topbar";
 import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
+import { PanelPosition } from "./types/dbTypes";
+import { useDialog } from "./components/AlertDialogProvider";
+// const RecentFilesDrawer = React.lazy(
+//   () => import("./RecentFilesDrawer/RecentFilesDrawer")
+// );
 
 export default function App() {
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
@@ -40,7 +43,7 @@ export default function App() {
   const [positionStyle, setPositionStyle] = useState<PanelPosition>();
   const [isDirty, setIsDirty] = useState(false);
   const workspaceContainerRef = useRef(null);
-
+  const { showDialog } = useDialog();
   const saveCurWorkflow = useCallback(() => {
     if (curFlowID.current) {
       const graphJson = JSON.stringify(app.graph.serialize());
@@ -111,7 +114,11 @@ export default function App() {
     const latestWf = latest != null ? getWorkflow(latest) : null;
 
     if (latestWf) {
-      latestWf && localStorage.setItem("workflow", latestWf.json);
+      latestWf &&
+        localStorage.setItem(
+          "workflow",
+          latestWf.lastSavedJson ?? latestWf.json
+        );
       setCurFlowID(latestWf.id ?? null);
       setCurFlowName(latestWf.name ?? null);
     }
@@ -120,26 +127,21 @@ export default function App() {
   useEffect(() => {
     graphAppSetup();
     setInterval(() => {
-      if (curFlowID.current != null) {
-        const graphJson = JSON.stringify(app.graph.serialize());
-        graphJson != null &&
-          updateFlow(curFlowID.current, {
-            json: graphJson,
-          });
-
-        const curWorkflow = curFlowID.current
-          ? getWorkflow(curFlowID.current)
-          : undefined;
-        if (curWorkflow == null || graphJson === curWorkflow?.lastSavedJson) {
-          setIsDirty(false);
-        } else {
-          setIsDirty(true);
-        }
-      }
+      setIsDirty(() => checkIsDirty());
     }, 1000);
     pullAuthTokenCloseIfExist();
   }, []);
-  const loadWorkflowID = (id: string) => {
+  const checkIsDirty = () => {
+    if (curFlowID.current != null) {
+      const graphJson = JSON.stringify(app.graph.serialize());
+      const curWorkflow = curFlowID.current
+        ? getWorkflow(curFlowID.current)
+        : undefined;
+      return graphJson !== curWorkflow?.lastSavedJson;
+    }
+    return false;
+  };
+  const loadWorkflowIDImpl = (id: string) => {
     if (app.graph == null) {
       console.error("app.graph is null cannot load workflow");
       return;
@@ -152,9 +154,32 @@ export default function App() {
     }
     app.ui.dialog.close();
 
-    app.loadGraphData(JSON.parse(flow.json));
+    app.loadGraphData(JSON.parse(flow.lastSavedJson ?? flow.json));
     setCurFlowName(flow.name);
     setRoute("root");
+  };
+  const loadWorkflowID = (id: string) => {
+    if (!isDirty) {
+      loadWorkflowIDImpl(id);
+      return;
+    }
+    showDialog(`Do you want to save the current workflow, ${curFlowName}?`, [
+      {
+        label: "Save",
+        colorScheme: "teal",
+        onClick: () => {
+          saveCurWorkflow();
+          loadWorkflowIDImpl(id);
+        },
+      },
+      {
+        label: "Discard",
+        colorScheme: "red",
+        onClick: () => {
+          loadWorkflowIDImpl(id);
+        },
+      },
+    ]);
   };
   const loadNewWorkflow = (input?: { json?: string; name?: string }) => {
     const jsonStr = input?.json ?? JSON.stringify(defaultGraph);
@@ -191,7 +216,7 @@ export default function App() {
       return;
     }
     const flow = createFlow({
-      json: workflow.json,
+      json: workflow.lastSavedJson ?? workflow.json,
       name: newFlowName || workflow.name,
       parentFolderID: workflow.parentFolderID,
       tags: workflow.tags,
@@ -248,10 +273,11 @@ export default function App() {
     window.addEventListener("keydown", shortcutListener);
     window.addEventListener("message", authTokenListener);
 
-    const fileInput = document.getElementById("comfy-file-input");
-    fileInput?.addEventListener("change", () => {
-      // @ts-ignore
-      if (fileInput.files && fileInput.files.length > 0) {
+    const fileInput = document.getElementById(
+      "comfy-file-input"
+    ) as HTMLInputElement;
+    const fileInputListener = () => {
+      if (fileInput && fileInput.files && fileInput.files.length > 0) {
         const flow = createFlow({
           // @ts-ignore
           name: fileInput.files[0].name,
@@ -260,7 +286,17 @@ export default function App() {
         setCurFlowID(flow.id);
         setCurFlowName(flow.name ?? "Unknown name");
       }
-    });
+    };
+    fileInput?.addEventListener("change", fileInputListener);
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (checkIsDirty()) {
+        e.preventDefault(); // For modern browsers
+        e.returnValue = "You have unsaved changes"; // For older browsers
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
     api.addEventListener("executed", (e: any) => {
       e.detail?.output?.images?.forEach(
@@ -281,6 +317,8 @@ export default function App() {
     return () => {
       window.removeEventListener("message", authTokenListener);
       window.removeEventListener("keydown", shortcutListener);
+      window.removeEventListener("change", fileInputListener);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, []);
 

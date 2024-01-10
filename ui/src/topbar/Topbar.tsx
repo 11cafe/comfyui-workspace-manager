@@ -10,9 +10,9 @@ import {
 } from "@tabler/icons-react";
 import DropdownTitle from "../components/DropdownTitle";
 import { useContext, useState } from "react";
-import { PanelPosition } from "../WorkspaceDB";
 import EditFlowName from "../components/EditFlowName";
 import { WorkspaceContext } from "../WorkspaceContext";
+import { PanelPosition } from "../types/dbTypes";
 interface Props {
   positionStyle: PanelPosition;
   updatePanelPosition: (

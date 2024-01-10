@@ -12,25 +12,26 @@ export default defineConfig({
     watch: {
       include: ["src/**"],
     },
-    outDir: "../../dist",
+    // minify: false, // ___DEBUG__MODE only
+    // sourcemap: true, // ___DEBUG___MODE only
     emptyOutDir: true,
     rollupOptions: {
-      // make sure to externalize deps that shouldn't be bundled
-      // into your library
+      // externalize deps that shouldn't be bundled into your library
       external: ["/scripts/app.js", "/scripts/api.js"],
       input: {
-        input: "entry.js",
+        input: "/src/entry.ts",
       },
       output: {
-        // Provide global variables to use in the UMD build
-        // for externalized deps
+        // Provide global variables to use in the UMD build for externalized deps
         globals: {
           app: "app",
           Litegraph: "LiteGraph",
         },
         dir: "../dist",
-        assetFileNames: "[name]-[hash][extname]",
-        entryFileNames: "workspace-manager-[hash].js",
+        // assetFileNames: "[name]-[hash][extname]",
+        entryFileNames: "entry/workspace-manager-[hash].js",
+        chunkFileNames: `workspace/[name]-[hash].js`,
+        assetFileNames: `assets/[name]-[hash].[ext]`,
       },
     },
   },
