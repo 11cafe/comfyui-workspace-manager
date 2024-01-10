@@ -24,11 +24,11 @@ comfy_path = os.path.dirname(folder_paths.__file__)
 db_dir_path = os.path.join(workspace_path, "db")
 
 
-browser_app = web.Application()
-browser_app.add_routes([
+workspace_app = web.Application()
+workspace_app.add_routes([
     web.static("/", os.path.join(workspace_path, 'dist/workspace')),
 ])
-server.PromptServer.instance.app.add_subapp("/extensions/workspace/", browser_app)
+server.PromptServer.instance.app.add_subapp("/extensions/workspace/", workspace_app)
 
 @server.PromptServer.instance.routes.post("/workspace/save_db")
 async def save_db(request):
