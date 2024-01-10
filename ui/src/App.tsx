@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 // @ts-ignore
 import { app } from "/scripts/app.js";
+import isEqual from "lodash/isEqual";
 // @ts-ignore
 import { api } from "/scripts/api.js";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
@@ -29,6 +30,7 @@ import { Topbar } from "./topbar/Topbar";
 import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
 import { PanelPosition } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
+import { isDeepEqual } from "./utils/isDeepEqual";
 // const RecentFilesDrawer = React.lazy(
 //   () => import("./RecentFilesDrawer/RecentFilesDrawer")
 // );
@@ -127,17 +129,29 @@ export default function App() {
   useEffect(() => {
     graphAppSetup();
     setInterval(() => {
-      setIsDirty(() => checkIsDirty());
+      setIsDirty(checkIsDirty());
     }, 1000);
     pullAuthTokenCloseIfExist();
   }, []);
   const checkIsDirty = () => {
     if (curFlowID.current != null) {
-      const graphJson = JSON.stringify(app.graph.serialize());
+      const graphJson = app.graph.serialize();
       const curWorkflow = curFlowID.current
         ? getWorkflow(curFlowID.current)
         : undefined;
-      return graphJson !== curWorkflow?.lastSavedJson;
+      let lastSaved = null;
+      try {
+        lastSaved = curWorkflow?.lastSavedJson
+          ? JSON.parse(curWorkflow?.lastSavedJson)
+          : null;
+      } catch (e) {
+        console.error("error parsing json", e);
+      }
+      // console.log("graphJson", graphJson);
+      // console.log("lastSaved", lastSaved);
+      const equal = JSON.stringify(graphJson) === JSON.stringify(lastSaved);
+      // console.log("equal", equal);
+      return !equal;
     }
     return false;
   };
