@@ -15,8 +15,8 @@ export async function getDB(table: Table): Promise<string | undefined> {
 }
 
 export async function saveDB(table: Table, jsonData: string) {
-  const tableBackupFile = table + "/" + Date.now() + ".json";
-  saveBackup(tableBackupFile, jsonData);
+  // const tableBackupFile = table + "/" + Date.now() + ".json";
+  // saveBackup(tableBackupFile, jsonData);
   try {
     const response = await fetch("/workspace/save_db", {
       method: "POST",
