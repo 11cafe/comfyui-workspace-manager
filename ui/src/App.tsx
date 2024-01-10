@@ -127,20 +127,20 @@ export default function App() {
   useEffect(() => {
     graphAppSetup();
     setInterval(() => {
-      if (curFlowID.current != null) {
-        const graphJson = JSON.stringify(app.graph.serialize());
-        const curWorkflow = curFlowID.current
-          ? getWorkflow(curFlowID.current)
-          : undefined;
-        if (curWorkflow == null || graphJson === curWorkflow?.lastSavedJson) {
-          setIsDirty(false);
-        } else {
-          setIsDirty(true);
-        }
-      }
+      setIsDirty(() => checkIsDirty());
     }, 1000);
     pullAuthTokenCloseIfExist();
   }, []);
+  const checkIsDirty = () => {
+    if (curFlowID.current != null) {
+      const graphJson = JSON.stringify(app.graph.serialize());
+      const curWorkflow = curFlowID.current
+        ? getWorkflow(curFlowID.current)
+        : undefined;
+      return graphJson !== curWorkflow?.lastSavedJson;
+    }
+    return false;
+  };
   const loadWorkflowIDImpl = (id: string) => {
     if (app.graph == null) {
       console.error("app.graph is null cannot load workflow");
@@ -289,6 +289,15 @@ export default function App() {
     };
     fileInput?.addEventListener("change", fileInputListener);
 
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (checkIsDirty()) {
+        e.preventDefault(); // For modern browsers
+        e.returnValue = "You have unsaved changes"; // For older browsers
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
     api.addEventListener("executed", (e: any) => {
       e.detail?.output?.images?.forEach(
         (im: { filename: string; subfolder: string; type: string }) => {
@@ -309,6 +318,7 @@ export default function App() {
       window.removeEventListener("message", authTokenListener);
       window.removeEventListener("keydown", shortcutListener);
       window.removeEventListener("change", fileInputListener);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, []);
 
