@@ -5,7 +5,7 @@ import { app } from "/scripts/app.js";
 import { api } from "/scripts/api.js";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
 import { Box, Portal } from "@chakra-ui/react";
-// import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
+import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
 import {
   createFlow,
   getWorkflow,
@@ -30,9 +30,9 @@ import { Topbar } from "./topbar/Topbar";
 import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
 import { PanelPosition } from "./types/dbTypes";
 import React from "react";
-const RecentFilesDrawer = React.lazy(
-  () => import("./RecentFilesDrawer/RecentFilesDrawer")
-);
+// const RecentFilesDrawer = React.lazy(
+//   () => import("./RecentFilesDrawer/RecentFilesDrawer")
+// );
 
 export default function App() {
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
