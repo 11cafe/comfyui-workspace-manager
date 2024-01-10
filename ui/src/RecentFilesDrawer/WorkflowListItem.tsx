@@ -33,6 +33,7 @@ export default function WorkflowListItem({ workflow }: Props) {
     onRefreshFilesList,
     draggingFile,
   } = useContext(RecentFilesContext);
+
   const isChecked =
     multiSelectedFlowsID &&
     multiSelectedFlowsID.length > 0 &&

@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { useContext, useState } from "react";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
-import { Folder, foldersTable } from "../db-tables/WorkspaceDB";
+import { Folder, foldersTable, listWorkflows } from "../db-tables/WorkspaceDB";
 import EditFolderNameModal from "../components/EditFolderName";
 import DeleteConfirm from "../components/DeleteConfirm";
 
@@ -32,7 +32,24 @@ export default function FilesListFolderItemRightClickMenu({
 }: Props) {
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const { onRefreshFilesList } = useContext(RecentFilesContext);
+  const { onRefreshFilesList, onDeleteFlow } = useContext(RecentFilesContext);
+
+  const handleDeleteFolderWithItems = () => {
+    const flowsInFolder = listWorkflows()
+      .filter(flow => flow.parentFolderID === folder.id);
+
+    flowsInFolder.forEach(flow => { onDeleteFlow?.(flow.id) })
+
+    handleDeleteFolderWithoutFiles();
+  }
+
+  const handleDeleteFolderWithoutFiles = () => {
+    setIsDeleteOpen(false);
+    onClose();
+    foldersTable?.delete(folder.id);
+    onRefreshFilesList && onRefreshFilesList();
+  }
+
   return (
     <>
       <Box position="absolute" top={menuPosition.y} left={menuPosition.x}>
@@ -62,7 +79,6 @@ export default function FilesListFolderItemRightClickMenu({
           returnFocusOnClose={false}
           isOpen={true}
           onClose={() => setIsDeleteOpen(false)}
-          // placement="right"
           closeOnBlur={false}
         >
           <PopoverTrigger>
@@ -76,22 +92,29 @@ export default function FilesListFolderItemRightClickMenu({
                 Are you sure you want to delete this folder,
                 <b> {folder.name}</b>?
               </Text>
-              <Text color={"GrayText"} mb={5}>
-                This will NOT delete any files in the folder. The files will be
-                moved to the root folder.
-              </Text>
-              <Button
-                colorScheme="red"
-                size={"sm"}
-                onClick={() => {
-                  setIsDeleteOpen(false);
-                  onClose();
-                  foldersTable?.delete(folder.id);
-                  onRefreshFilesList && onRefreshFilesList();
-                }}
-              >
-                Yes, delete
-              </Button>
+              <Box display="flex" justifyContent="space-between">
+                <Button
+                  colorScheme="yellow"
+                  size={"sm"}
+                  whiteSpace="normal"
+                  width={140}
+                  height={70}
+                  onClick={() => handleDeleteFolderWithoutFiles()}
+                >
+                  Keep subitems and move to root dir
+                </Button>
+
+                <Button
+                  colorScheme="red"
+                  size="sm"
+                  whiteSpace="normal"
+                  width={140}
+                  height={70}
+                  onClick={() => handleDeleteFolderWithItems()}
+                >
+                  Delete all items under folder
+                </Button>
+              </Box>
             </PopoverBody>
           </PopoverContent>
         </Popover>
