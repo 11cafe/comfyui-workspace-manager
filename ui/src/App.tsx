@@ -135,15 +135,15 @@ export default function App() {
   }, []);
   const checkIsDirty = () => {
     if (curFlowID.current != null) {
-      const graphJson = app.graph.serialize();
+      const graphJson = app.graph.serialize() ?? {};
       const curWorkflow = curFlowID.current
         ? getWorkflow(curFlowID.current)
         : null;
-      let lastSaved = null;
+      let lastSaved = {};
       try {
         lastSaved = curWorkflow?.lastSavedJson
           ? JSON.parse(curWorkflow?.lastSavedJson)
-          : null;
+          : {};
       } catch (e) {
         console.error("error parsing json", e);
       }
