@@ -30,7 +30,6 @@ import { Topbar } from "./topbar/Topbar";
 import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
 import { PanelPosition } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
-import { isDeepEqual } from "./utils/isDeepEqual";
 // const RecentFilesDrawer = React.lazy(
 //   () => import("./RecentFilesDrawer/RecentFilesDrawer")
 // );
@@ -51,6 +50,7 @@ export default function App() {
       const graphJson = JSON.stringify(app.graph.serialize());
       updateFlow(curFlowID.current, {
         lastSavedJson: graphJson,
+        json: graphJson,
       });
 
       changelogsTable?.create({
@@ -138,7 +138,7 @@ export default function App() {
       const graphJson = app.graph.serialize();
       const curWorkflow = curFlowID.current
         ? getWorkflow(curFlowID.current)
-        : undefined;
+        : null;
       let lastSaved = null;
       try {
         lastSaved = curWorkflow?.lastSavedJson
