@@ -4,6 +4,8 @@ A ComfyUI workflow management extension to **organize and manage all your workfl
 
 If you have questions or suggestions, please [Join our Discord](https://discord.gg/HHvfEurv2Z)
 
+for collaboration, email: weixuanfu01@gmail.com 
+
 ## Installation
 
 ### [Option 1] via ComfyUI Manager (Preferred)

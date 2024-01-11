@@ -49,6 +49,7 @@ export default function App() {
       const graphJson = JSON.stringify(app.graph.serialize());
       updateFlow(curFlowID.current, {
         lastSavedJson: graphJson,
+        json: graphJson,
       });
 
       changelogsTable?.create({
@@ -127,17 +128,26 @@ export default function App() {
   useEffect(() => {
     graphAppSetup();
     setInterval(() => {
-      setIsDirty(() => checkIsDirty());
+      setIsDirty(checkIsDirty());
     }, 1000);
     pullAuthTokenCloseIfExist();
   }, []);
   const checkIsDirty = () => {
     if (curFlowID.current != null) {
-      const graphJson = JSON.stringify(app.graph.serialize());
+      const graphJson = app.graph.serialize() ?? {};
       const curWorkflow = curFlowID.current
         ? getWorkflow(curFlowID.current)
-        : undefined;
-      return graphJson !== curWorkflow?.lastSavedJson;
+        : null;
+      let lastSaved = {};
+      try {
+        lastSaved = curWorkflow?.lastSavedJson
+          ? JSON.parse(curWorkflow?.lastSavedJson)
+          : {};
+      } catch (e) {
+        console.error("error parsing json", e);
+      }
+      const equal = JSON.stringify(graphJson) === JSON.stringify(lastSaved);
+      return !equal;
     }
     return false;
   };
