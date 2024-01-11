@@ -133,7 +133,6 @@ export function updateFlow(id: string, input: Partial<Workflow>) {
     // no change detected
     return;
   }
-  console.log("updateFlow", before, after);
   let newWorkflow: Workflow = after;
   // When modifying the associated tag or modifying the directory, updateTime is not modified.
   const updateKey = Object.keys(input);
