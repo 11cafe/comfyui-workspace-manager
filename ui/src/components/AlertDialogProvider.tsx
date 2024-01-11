@@ -14,6 +14,7 @@ import {
   AlertDialogOverlay,
   Button,
   AlertDialogCloseButton,
+  DarkMode,
 } from "@chakra-ui/react";
 
 interface DialogButton {
@@ -64,33 +65,35 @@ export const AlertDialogProvider: React.FC<{ children: ReactNode }> = ({
           onClose={handleClose}
           size={"lg"}
         >
-          <AlertDialogOverlay>
-            <AlertDialogContent className="workspace_manager">
-              <AlertDialogHeader
-                fontSize="lg"
-                fontWeight="bold"
-              ></AlertDialogHeader>
-              <AlertDialogCloseButton />
+          <DarkMode>
+            <AlertDialogOverlay>
+              <AlertDialogContent className="workspace_manager">
+                <AlertDialogHeader
+                  fontSize="lg"
+                  fontWeight="bold"
+                ></AlertDialogHeader>
+                <AlertDialogCloseButton />
 
-              <AlertDialogBody>{message}</AlertDialogBody>
+                <AlertDialogBody>{message}</AlertDialogBody>
 
-              <AlertDialogFooter>
-                {buttons.map((button, index) => (
-                  <Button
-                    colorScheme={button.colorScheme ?? "gray"}
-                    onClick={() => {
-                      button.onClick();
-                      handleClose();
-                    }}
-                    ml={3}
-                    key={index}
-                  >
-                    {button.label}
-                  </Button>
-                ))}
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialogOverlay>
+                <AlertDialogFooter>
+                  {buttons.map((button, index) => (
+                    <Button
+                      colorScheme={button.colorScheme ?? "gray"}
+                      onClick={() => {
+                        button.onClick();
+                        handleClose();
+                      }}
+                      ml={3}
+                      key={index}
+                    >
+                      {button.label}
+                    </Button>
+                  ))}
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialogOverlay>
+          </DarkMode>
         </AlertDialog>
       )}
     </DialogContext.Provider>

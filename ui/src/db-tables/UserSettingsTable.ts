@@ -15,6 +15,7 @@ export class UserSettingsTable {
       shortcuts: {
         save: "Shift+S",
       },
+      autoSave: true,
     };
   }
   public listSettings() {

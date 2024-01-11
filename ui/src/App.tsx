@@ -115,11 +115,7 @@ export default function App() {
     const latestWf = latest != null ? getWorkflow(latest) : null;
 
     if (latestWf) {
-      latestWf &&
-        localStorage.setItem(
-          "workflow",
-          latestWf.lastSavedJson ?? latestWf.json
-        );
+      latestWf && localStorage.setItem("workflow", latestWf.json);
       setCurFlowID(latestWf.id ?? null);
       setCurFlowName(latestWf.name ?? null);
     }
@@ -128,6 +124,16 @@ export default function App() {
   useEffect(() => {
     graphAppSetup();
     setInterval(() => {
+      const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
+
+      if (curFlowID.current != null && autoSaveEnabled) {
+        // autosave workflow if enabled
+        const graphJson = JSON.stringify(app.graph.serialize());
+        graphJson != null &&
+          updateFlow(curFlowID.current, {
+            json: graphJson,
+          });
+      }
       setIsDirty(checkIsDirty());
     }, 1000);
     pullAuthTokenCloseIfExist();
@@ -163,13 +169,13 @@ export default function App() {
       return;
     }
     app.ui.dialog.close();
-
-    app.loadGraphData(JSON.parse(flow.lastSavedJson ?? flow.json));
+    app.loadGraphData(JSON.parse(flow.json));
     setCurFlowName(flow.name);
     setRoute("root");
   };
   const loadWorkflowID = (id: string) => {
-    if (!isDirty) {
+    const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
+    if (autoSaveEnabled || !isDirty) {
       loadWorkflowIDImpl(id);
       return;
     }
@@ -226,7 +232,7 @@ export default function App() {
       return;
     }
     const flow = createFlow({
-      json: workflow.lastSavedJson ?? workflow.json,
+      json: workflow.json,
       name: newFlowName || workflow.name,
       parentFolderID: workflow.parentFolderID,
       tags: workflow.tags,
@@ -300,7 +306,9 @@ export default function App() {
     fileInput?.addEventListener("change", fileInputListener);
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (checkIsDirty()) {
+      const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
+
+      if (!autoSaveEnabled && checkIsDirty()) {
         e.preventDefault(); // For modern browsers
         e.returnValue = "You have unsaved changes"; // For older browsers
       }
