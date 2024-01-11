@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 // @ts-ignore
 import { app } from "/scripts/app.js";
-import isEqual from "lodash/isEqual";
 // @ts-ignore
 import { api } from "/scripts/api.js";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
