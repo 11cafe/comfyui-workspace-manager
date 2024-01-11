@@ -181,13 +181,6 @@ export function saveJsonFileMyWorkflows(workflow: Workflow) {
   updateFile(file_path, JSON.stringify(flow));
 }
 
-export function getFlow(id: string): Workflow | undefined {
-  if (workspace == null) {
-    return undefined;
-  }
-  return workspace[id];
-}
-
 export function createFlow({
   json,
   name,

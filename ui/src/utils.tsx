@@ -144,7 +144,9 @@ export function sortFlows(
 
   return copyFlows;
 }
-export function validateOrSaveAllJsonFileMyWorkflows(deleteEmptyFolder = true) {
+export function validateOrSaveAllJsonFileMyWorkflows(
+  deleteEmptyFolder = false
+) {
   listWorkflows().forEach((workflow) => {
     const fullPath = generateFilePathAbsolute(workflow);
     // @ts-ignore
