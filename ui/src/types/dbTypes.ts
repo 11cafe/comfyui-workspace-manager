@@ -24,6 +24,7 @@ export type UserSettings = {
   shortcuts: {
     save: string;
   };
+  autoSave?: boolean;
 };
 
 export interface PanelPosition {

@@ -26,6 +26,7 @@ import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { ShortcutSettings } from "../settings/ShortcutSettings";
 import { validate } from "uuid";
 import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
+import { AutoSaveSettings } from "../settings/AutosaveSettings";
 
 export default function WorkspaceSettingsModal({
   onClose,
@@ -162,7 +163,7 @@ export default function WorkspaceSettingsModal({
         <ModalContent>
           <ModalHeader>Settings</ModalHeader>
           <ModalCloseButton />
-          <ModalBody>
+          <ModalBody pb={14}>
             <HStack>
               <VStack
                 divider={<StackDivider borderColor="gray.200" />}
@@ -265,6 +266,7 @@ export default function WorkspaceSettingsModal({
                   )}
                 </Box>
                 <ShortcutSettings />
+                <AutoSaveSettings />
               </VStack>
             </HStack>
           </ModalBody>
