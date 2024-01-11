@@ -175,7 +175,6 @@ export default function App() {
   };
   const loadWorkflowID = (id: string) => {
     const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
-    console.log("loadWorkflowID", id, autoSaveEnabled, isDirty);
     if (autoSaveEnabled || !isDirty) {
       loadWorkflowIDImpl(id);
       return;
