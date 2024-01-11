@@ -115,7 +115,6 @@ export function listFolderContent(
 
 /** Class Workflow: below will be migrated to a class */
 export function updateFlow(id: string, input: Partial<Workflow>) {
-  console.log("updateFlow", id, input);
   if (workspace == null) {
     return;
   }
