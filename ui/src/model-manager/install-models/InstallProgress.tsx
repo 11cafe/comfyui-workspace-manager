@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Text } from "@chakra-ui/react";
+import { Button, HStack, Text } from "@chakra-ui/react";
+import { setCancelInstall } from "../api/modelsApi";
 
 export default function InstallProgress() {
   const [progress, setProgress] = useState("");
@@ -24,8 +25,13 @@ export default function InstallProgress() {
   }, []);
 
   return (
-    <Text fontWeight={"500"} fontSize={18} py={2}>
-      {progress}
-    </Text>
+    <HStack>
+      <Text fontWeight={"500"} fontSize={18} py={2}>
+        {progress}
+      </Text>
+      {/* {progress !== "" && (
+        <Button onClick={() => setCancelInstall(true)}>Cancel</Button>
+      )} */}
+    </HStack>
   );
 }

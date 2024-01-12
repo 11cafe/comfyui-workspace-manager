@@ -109,11 +109,15 @@ async def install_model_stream(request):
     await response.write_eof()
     return response
 
-async def download_url_with_agent(url, save_path, progress_callback=None):
-    print(f"Downloading {url} to {save_path} ...")
+def download_url_with_agent(url, save_path, progress_callback=None):
+    print('download_url_with_agent', url, save_path)
+
+    temp_save_path = save_path + ".temp"  # Temporary file
+
     try:
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
+        print(f"Downloading {url} to {temp_save_path} ...")
 
         req = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(req) as response:
@@ -121,10 +125,10 @@ async def download_url_with_agent(url, save_path, progress_callback=None):
             chunk_size = 1024  # 1KB per chunk
             downloaded = 0
 
-            if not os.path.exists(os.path.dirname(save_path)):
-                os.makedirs(os.path.dirname(save_path))
+            if not os.path.exists(os.path.dirname(temp_save_path)):
+                os.makedirs(os.path.dirname(temp_save_path))
 
-            with open(save_path, 'wb') as f:
+            with open(temp_save_path, 'wb') as f:
                 while True:
                     chunk = response.read(chunk_size)
                     if not chunk:
@@ -133,14 +137,20 @@ async def download_url_with_agent(url, save_path, progress_callback=None):
                     downloaded += len(chunk)
                     progress = (downloaded / file_size) * 100
                     print(f'\rProgress: {progress:.2f}%', end='')
-                    if progress_callback:
-                        await progress_callback(progress)
+
+                    # if progress_callback:
+                    #     progress_callback(progress)
+
+        # Rename temp file to final filename after successful download
+        os.rename(temp_save_path, save_path)
 
     except Exception as e:
-        print(f"Download error: {url} / {e}", file=sys.stderr)
+        print(f"\nDownload error: {url} / {e}", file=sys.stderr)
+        if os.path.exists(temp_save_path):
+            os.remove(temp_save_path)  # Clean up the temporary file in case of failure
         return False
 
-    print("Installation was successful.")
+    print("\nDownload complete. File saved as:", save_path)
     return True
 
 def get_model_dir(data):
