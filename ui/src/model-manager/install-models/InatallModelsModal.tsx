@@ -62,6 +62,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
   const [modelType, setModelType] = useState<MODEL_TYPE | undefined>(
     "Checkpoint"
   );
+  const [installing, setInstalling] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -100,6 +101,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
     if (folderPath == null) {
       return;
     }
+    file.name != null && setInstalling((cur) => [...cur, file.name ?? ""]);
     installModelsApi({
       filename: file.name,
       name: file.name,
@@ -183,6 +185,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
                   model={model}
                   key={model.id}
                   onClickInstallModel={onClickInstallModel}
+                  installing={installing}
                 />
               );
             })}

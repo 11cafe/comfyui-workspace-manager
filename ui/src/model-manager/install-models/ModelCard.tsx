@@ -21,10 +21,12 @@ interface ModelCardProps {
     file: CivitiModelFileVersion,
     model: CivitiModel
   ) => void;
+  installing: string[];
 }
 export default function ModelCard({
   model,
   onClickInstallModel,
+  installing,
 }: ModelCardProps) {
   const modelPhoto = model.modelVersions?.at(0)?.images?.at(0)?.url;
   const versions = model.modelVersions;
@@ -87,6 +89,9 @@ export default function ModelCard({
             colorScheme="teal"
             type="submit"
             onClick={() => installHandler()}
+            isDisabled={Boolean(
+              selectedFile && installing.includes(selectedFile)
+            )}
           >
             Install
           </Button>
