@@ -1,7 +1,6 @@
 import { Table } from "./db-tables/WorkspaceDB";
 
 export async function getDB(table: Table): Promise<string | undefined> {
-  console.warn("getDB ntable", table);
   try {
     const response = await fetch(`/workspace/get_db?table=${table}`);
     if (!response.ok) {

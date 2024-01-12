@@ -30,7 +30,7 @@ export default defineConfig({
         dir: "../dist",
         // assetFileNames: "[name]-[hash][extname]",
         entryFileNames: "workspace_web/[name].js",
-        chunkFileNames: `workspace_web/[name].js`,
+        chunkFileNames: `workspace_web/[name]-[hash].js`,
         assetFileNames: `assets/[name]-[hash].[ext]`,
       },
     },

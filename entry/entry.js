@@ -10,6 +10,7 @@ const callback = function (mutationsList, observer) {
       // @ts-ignore
       mutation.addedNodes.forEach((node) => {
         if (node.nodeName === "CANVAS") {
+          // @ts-ignore
           import("/workspace_web/input.js");
           observer.disconnect();
         }
