@@ -21,46 +21,36 @@ import { InstallModelsApiInput, installModelsApi } from "../api/modelsApi";
 import ModelCard from "./ModelCard";
 import InstallProgress from "./InstallProgress";
 import InstallModelSearchBar from "./InstallModelSearchBar";
-const IMAGE_SIZE = 200;
-type MODEL_TYPE =
-  | "Checkpoint"
-  | "TextualInversion"
-  | "Hypernetwork"
-  | "AestheticGradient"
-  | "LORA"
-  | "LoCon"
-  | "Controlnet"
-  | "Upscaler"
-  | "MotionModule"
-  | "VAE"
-  | "Poses"
-  | "Wildcards"
-  | "Workflows";
+
 type CivitModelQueryParams = {
   types?: MODEL_TYPE;
   query?: string;
   limit?: string;
   nsfw?: "false";
 };
-const ALL_MODEL_TYPES: MODEL_TYPE[] = [
+const ALL_MODEL_TYPES = [
   "Checkpoint",
   "TextualInversion",
   "Hypernetwork",
-  "AestheticGradient",
   "LORA",
   "Controlnet",
   "Upscaler",
   "VAE",
-  "Poses",
-];
+  // "Poses",
+  // "MotionModule",
+  // "LoCon",
+  // "AestheticGradient",
+  // "Wildcards",
+] as const; // `as const` makes the array readonly and its elements literal types
+
+// Infer MODEL_TYPE from the ALL_MODEL_TYPES array
+type MODEL_TYPE = (typeof ALL_MODEL_TYPES)[number];
 const MODEL_TYPE_TO_FOLDER_MAPPING: Record<MODEL_TYPE, string> = {
   Checkpoint: "checkpoints",
   TextualInversion: "embeddings",
   Hypernetwork: "hypernetworks",
-  // AestheticGradient: "aesthetic_gradients", // not sure where this is
   LORA: "loras",
   Controlnet: "controlnet",
-  Poses: "poses",
   Upscaler: "upscale_models",
   VAE: "vae",
 };

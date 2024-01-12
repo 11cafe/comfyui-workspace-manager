@@ -14,12 +14,6 @@ import os
 import json
 import urllib.request
 
-WEB_DIRECTORY = "dist"
-NODE_CLASS_MAPPINGS = {}
-__all__ = ['NODE_CLASS_MAPPINGS']
-version = "V1.0.0"
-
-print(f"### Loading: Workspace Manager ({version})")
 workspace_path = os.path.join(os.path.dirname(__file__))
 comfy_path = os.path.dirname(folder_paths.__file__)
 
