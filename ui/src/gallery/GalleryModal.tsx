@@ -18,13 +18,7 @@ import {
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState } from "react";
 import { getWorkflow, mediaTable, updateFlow } from "../db-tables/WorkspaceDB";
-import {
-  IconDownload,
-  IconPin,
-  IconPinFilled,
-  IconTrash,
-  IconX,
-} from "@tabler/icons-react";
+import { IconPin, IconPinFilled, IconTrash, IconX } from "@tabler/icons-react";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { formatTimestamp, isImageFormat } from "../utils";
 import { useDialog } from "../components/AlertDialogProvider";
@@ -221,20 +215,6 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
                     >
                       Load
                     </Button>
-                    <Tooltip label="Download image">
-                      <Link
-                        href={`/workspace/view_media?filename=${media.localPath}`}
-                        download={media.localPath}
-                      >
-                        <IconButton
-                          size={"sm"}
-                          variant={"ghost"}
-                          icon={<IconDownload size={19} />}
-                          aria-label="remove image from gallery"
-                          colorScheme="red"
-                        />
-                      </Link>
-                    </Tooltip>
                     <Tooltip label="Remove image from gallery">
                       <IconButton
                         size={"sm"}
