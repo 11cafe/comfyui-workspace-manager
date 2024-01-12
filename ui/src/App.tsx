@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 // @ts-ignore
 import { app } from "/scripts/app.js";
 // @ts-ignore
 import { api } from "/scripts/api.js";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
 import { Box, Portal } from "@chakra-ui/react";
-import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
 import {
   createFlow,
   getWorkflow,
@@ -29,9 +28,13 @@ import { Topbar } from "./topbar/Topbar";
 import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
 import { PanelPosition } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
-// const RecentFilesDrawer = React.lazy(
-//   () => import("./RecentFilesDrawer/RecentFilesDrawer")
-// );
+import React from "react";
+// import ModelManager from "./model-manager/ModelManager";
+// import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
+const ModelManager = React.lazy(() => import("./model-manager/ModelManager"));
+const RecentFilesDrawer = React.lazy(
+  () => import("./RecentFilesDrawer/RecentFilesDrawer")
+);
 
 export default function App() {
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
@@ -44,6 +47,7 @@ export default function App() {
   const [isDirty, setIsDirty] = useState(false);
   const workspaceContainerRef = useRef(null);
   const { showDialog } = useDialog();
+  const [loadChild, setLoadChild] = useState(false);
   const saveCurWorkflow = useCallback(() => {
     if (curFlowID.current) {
       const graphJson = JSON.stringify(app.graph.serialize());
@@ -123,6 +127,7 @@ export default function App() {
   };
   useEffect(() => {
     graphAppSetup();
+    setLoadChild(true);
     setInterval(() => {
       const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
 
@@ -359,6 +364,11 @@ export default function App() {
     >
       <div ref={workspaceContainerRef} className="workspace_manager">
         <Portal containerRef={workspaceContainerRef}>
+          {loadChild && (
+            <Suspense>
+              <ModelManager />
+            </Suspense>
+          )}
           <Box
             style={{
               width: "100vh",
@@ -376,14 +386,16 @@ export default function App() {
               updatePanelPosition={updatePanelPosition}
               positionStyle={positionStyle}
             />
-            {route === "recentFlows" && (
-              <RecentFilesDrawer
-                onClose={onCloseDrawer}
-                onClickNewFlow={() => {
-                  loadNewWorkflow();
-                  setRoute("root");
-                }}
-              />
+            {loadChild && route === "recentFlows" && (
+              <Suspense>
+                <RecentFilesDrawer
+                  onClose={onCloseDrawer}
+                  onClickNewFlow={() => {
+                    loadNewWorkflow();
+                    setRoute("root");
+                  }}
+                />
+              </Suspense>
             )}
             {route === "gallery" && (
               <GalleryModal onclose={() => setRoute("root")} />

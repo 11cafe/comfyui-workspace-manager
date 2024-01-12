@@ -12,8 +12,9 @@ import subprocess
 import os
 import json
 from .version_control import update_version_if_outdated
+from .service.model_manager.model_installer import download_url_with_wget
 
-WEB_DIRECTORY = "dist/entry"
+WEB_DIRECTORY = "entry"
 NODE_CLASS_MAPPINGS = {}
 __all__ = ['NODE_CLASS_MAPPINGS']
 version = "V1.0.0"
@@ -26,9 +27,9 @@ db_dir_path = os.path.join(workspace_path, "db")
 
 workspace_app = web.Application()
 workspace_app.add_routes([
-    web.static("/", os.path.join(workspace_path, 'dist/workspace')),
+    web.static("/", os.path.join(workspace_path, 'dist/workspace_web')),
 ])
-server.PromptServer.instance.app.add_subapp("/extensions/workspace/", workspace_app)
+server.PromptServer.instance.app.add_subapp("/workspace_web/", workspace_app)
 
 @server.PromptServer.instance.routes.post("/workspace/save_db")
 async def save_db(request):
