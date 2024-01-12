@@ -73,7 +73,7 @@ async def install_model(request):
         loop = asyncio.get_running_loop()
         result = await loop.run_in_executor(executor, download_wrapper)
 
-    return web.Response(text="Download complete." if result else "Download failed.")
+    return web.Response(text=f"Download complete. {save_path}" if result else "Download failed.")
 
 
 @server.PromptServer.instance.routes.post("/model_manager/install_model_stream")

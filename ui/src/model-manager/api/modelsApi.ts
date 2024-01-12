@@ -13,18 +13,25 @@ export const setCancelInstall = (value: boolean) => {
   cancelInstall = value;
 };
 export const installModelsApi = async (target: InstallModelsApiInput) => {
+  window.dispatchEvent(
+    new CustomEvent("model_install_message", {
+      detail: `Installing model ${target.filename} to ${target.save_path}, check progress in the server console.`,
+    })
+  );
   try {
     const response = await api.fetchApi("/model_manager/install_model", {
       method: "POST",
-      //   headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(target),
     });
-    console.log("install model response", response);
+    // ****NON Streaming version*****
+    const text = await response.text();
     window.dispatchEvent(
       new CustomEvent("model_install_message", {
-        detail: "Please check the server for progress logs",
+        detail: text,
       })
     );
+    // **** Streaming version*****
     // const reader = response.body.getReader();
     // while (true) {
     //   if (cancelInstall) {

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Button, Flex, Input, Text } from "@chakra-ui/react";
-import { useDebounce } from "../customHooks/useDebaunce";
 
 export default function InstallModelSearchBar({
   setSearchQuery,

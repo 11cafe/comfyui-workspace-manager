@@ -26,6 +26,17 @@ export function formatTimestamp(
 }
 
 export function KBtoGB(kilobytes: number, decimalPlaces: number = 1) {
-  var sizeInGB = kilobytes / 1048576; // 1024 * 1024
-  return Number(sizeInGB.toFixed(decimalPlaces));
+  const KB_IN_MB = 1024;
+  const MB_IN_GB = 1024;
+  // Convert KB to MB
+  const sizeInMB = kilobytes / KB_IN_MB;
+
+  // If size is larger than or equal to 1 GB, format it in GB
+  if (sizeInMB >= MB_IN_GB) {
+    return (sizeInMB / MB_IN_GB).toFixed(decimalPlaces) + " GB";
+  }
+  // Otherwise, format it in MB
+  else {
+    return sizeInMB.toFixed(decimalPlaces) + " MB";
+  }
 }

@@ -120,9 +120,9 @@ export default function ModelCard({
             })}
           </Select>
           {curFile?.sizeKB && (
-            <Tooltip label={KBtoGB(curFile.sizeKB) + "GB"}>
+            <Tooltip label={KBtoGB(curFile.sizeKB)}>
               <Text flexShrink={1} noOfLines={1} width={"40%"}>
-                {KBtoGB(curFile.sizeKB)} GB
+                {KBtoGB(curFile.sizeKB)}
               </Text>
             </Tooltip>
           )}

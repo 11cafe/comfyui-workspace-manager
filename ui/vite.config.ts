@@ -17,7 +17,7 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       // externalize deps that shouldn't be bundled into your library
-      external: ["/scripts/app.js", "/scripts/api.js", "/workspace/main.js"],
+      external: ["/scripts/app.js", "/scripts/api.js"],
       input: {
         input: "/src/main.tsx",
       },
