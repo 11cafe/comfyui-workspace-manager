@@ -21,6 +21,7 @@ import { InstallModelsApiInput, installModelsApi } from "../api/modelsApi";
 import ModelCard from "./ModelCard";
 import InstallProgress from "./InstallProgress";
 import InstallModelSearchBar from "./InstallModelSearchBar";
+import { useToast } from "@chakra-ui/react";
 
 type CivitModelQueryParams = {
   types?: MODEL_TYPE;
@@ -62,6 +63,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
   const [modelType, setModelType] = useState<MODEL_TYPE | undefined>(
     "Checkpoint"
   );
+  const toast = useToast();
   const [installing, setInstalling] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const loadData = useCallback(async () => {
@@ -101,6 +103,14 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
     if (folderPath == null) {
       return;
     }
+    toast({
+      title:
+        "Installing...Please check the progress in your python server console",
+      description: file.name,
+      status: "info",
+      duration: 4000,
+      isClosable: true,
+    });
     file.name != null && setInstalling((cur) => [...cur, file.name ?? ""]);
     installModelsApi({
       filename: file.name,
@@ -110,7 +120,6 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
     });
   };
   useEffect(() => {
-    console.log("searchQuery", searchQuery);
     loadData();
   }, [searchQuery, modelType]);
 

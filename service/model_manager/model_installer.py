@@ -55,28 +55,26 @@ def parse_wget_output(output):
     match = re.search(r'\d+%|\d+K \d+Kb/s', output)
     return match.group(0) if match else ""
 
-server.PromptServer.instance.routes.post("/model_manager/install_model")
+from concurrent.futures import ThreadPoolExecutor
+import asyncio
+
+@server.PromptServer.instance.routes.post("/model_manager/install_model")
 async def install_model(request):
     json_data = await request.json()
+    url = json_data['url']
+    save_path = get_model_path(json_data)
 
-    model_path = get_model_path(json_data)
+    # Define the wrapper function for the executor
+    def download_wrapper():
+        return download_url_with_agent(url, save_path)
 
-    res = False
+    # Run the download function in a separate thread
+    with ThreadPoolExecutor() as executor:
+        loop = asyncio.get_running_loop()
+        result = await loop.run_in_executor(executor, download_wrapper)
 
-    try:
-        if model_path is not None:
-            print(f"🖌️Model Manager: Installing model '{json_data['name']}' into '{model_path}' ...")
-            res = download_url_with_agent(json_data['url'], model_path)
-        else:
-            print(f"Model installation error: invalid model type - {json_data['type']}")
+    return web.Response(text="Download complete." if result else "Download failed.")
 
-        if res:
-            return web.json_response({}, content_type='application/json')
-    except Exception as e:
-        print(f"[ERROR] {e}", file=sys.stderr)
-        pass
-
-    return web.Response(status=400)
 
 @server.PromptServer.instance.routes.post("/model_manager/install_model_stream")
 async def install_model_stream(request):
