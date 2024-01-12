@@ -14,11 +14,13 @@ import {
   userSettingsTable,
   changelogsTable,
   mediaTable,
+  listWorkflows,
 } from "./db-tables/WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
 import {
   Route,
+  syncNewFlowOfLocalDisk,
   getFileUrl,
   matchSaveWorkflowShortcut,
   validateOrSaveAllJsonFileMyWorkflows,
@@ -29,14 +31,13 @@ import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
 import { PanelPosition } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
 import React from "react";
-// import ModelManager from "./model-manager/ModelManager";
-// import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
 const ModelManager = React.lazy(() => import("./model-manager/ModelManager"));
 const RecentFilesDrawer = React.lazy(
   () => import("./RecentFilesDrawer/RecentFilesDrawer")
 );
-
+import { scanLocalNewFiles } from "./Api";
 export default function App() {
+  const scanLocalFileTimer = useRef(0);
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
   const [route, setRoute] = useState<Route>("root");
@@ -124,6 +125,17 @@ export default function App() {
       setCurFlowName(latestWf.name ?? null);
     }
     validateOrSaveAllJsonFileMyWorkflows();
+
+    // Execute after 10s to avoid conflict with validateOrSaveAllJsonFileMyWorkflows
+    scanLocalFileTimer.current = setTimeout(async () => {
+      const myWorkflowsDir = userSettingsTable?.getSetting("myWorkflowsDir");
+      const existFlowIds = listWorkflows().map((flow) => flow.id);
+      const { fileList, folderList } = await scanLocalNewFiles(
+        myWorkflowsDir!,
+        existFlowIds
+      );
+      syncNewFlowOfLocalDisk(fileList, folderList);
+    }, 2000);
   };
   useEffect(() => {
     graphAppSetup();
@@ -142,6 +154,10 @@ export default function App() {
       setIsDirty(checkIsDirty());
     }, 1000);
     pullAuthTokenCloseIfExist();
+
+    return () => {
+      clearTimeout(scanLocalFileTimer.current);
+    };
   }, []);
   const checkIsDirty = () => {
     if (curFlowID.current != null) {

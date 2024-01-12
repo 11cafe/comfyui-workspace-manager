@@ -140,3 +140,22 @@ export async function openWorkflowsFolder() {
     console.error("Error open workflows folder:", error);
   }
 }
+
+export async function scanLocalNewFiles(path: string, existFlowIds: string[]) {
+  try {
+    const response = await fetch("/workspace/scan_local_new_files", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        path,
+        existFlowIds
+      }),
+    });
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error scan local new files:", error);
+  }
+}

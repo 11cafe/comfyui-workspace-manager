@@ -221,20 +221,30 @@ export function createFlow({
   return workspace[uuid];
 }
 
+/**
+ * Add flows in batches
+ * @param flowList Need to add a new flow list
+ * @param isOverwriteExistingFile By automatically scanning the newly added flow on the local disk, when synchronizing the DB, the flow on the local disk needs to be rewritten because extra.comfyspace_tracking.id needs to be appended to json.
+ * @param parentFolderID If you are adding batches to the specified files, provide the folder id.
+ * @returns 
+ */
 export async function batchCreateFlows(
-  flowList: ImportWorkflow[]
+  flowList: ImportWorkflow[] = [],
+  isOverwriteExistingFile: boolean = false,
+  parentFolderID?: string
 ): Promise<string | undefined> {
   flowList.forEach((flow) => {
     if (workspace == null) {
       return;
     }
-    const newFlowName = generateUniqueName(flow.name);
+    const newFlowName = flow.name && isOverwriteExistingFile ? flow.name : generateUniqueName(flow.name);
     const uuid = uuidv4();
     const time = Date.now();
     workspace[uuid] = {
       id: uuid,
       name: newFlowName,
       json: flow.json,
+      parentFolderID: parentFolderID,
       updateTime: time,
       createTime: time,
       tags: [],

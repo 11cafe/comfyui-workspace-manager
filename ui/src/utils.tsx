@@ -2,6 +2,8 @@
 import { deleteFile } from "./Api";
 import { ESortTypes } from "./RecentFilesDrawer/types";
 import {
+  batchCreateFlows,
+  foldersTable,
   listWorkflows,
   saveJsonFileMyWorkflows,
   userSettingsTable,
@@ -330,4 +332,39 @@ export function isVideoFormat(fileName: string) {
 
 export function getFileUrl(relativePath: string) {
   return `/workspace/view_media?filename=${relativePath}`;
+}
+
+export async function syncNewFlowOfLocalDisk(
+  singleFlowList: Workflow[],
+  folderList: {
+    name: string;
+    list: Workflow[];
+  }[]
+) {
+  if (singleFlowList.length) {
+    await batchCreateFlows(singleFlowList, true);
+  }
+
+  if (folderList.length) {
+    const currentFolderList = foldersTable?.listAll();
+
+    folderList.forEach(async (folder) => {
+      const existFolder = currentFolderList?.find(
+        (f) => f.name === folder.name
+      );
+
+      let folderId;
+
+      if (existFolder) {
+        folderId = existFolder.id;
+      } else {
+        const newFolder = foldersTable?.create({
+          name: folder.name,
+        });
+        folderId = newFolder?.id;
+      }
+
+      await batchCreateFlows(folder.list, true, folderId);
+    });
+  }
 }

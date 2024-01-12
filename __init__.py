@@ -255,3 +255,49 @@ async def open_workflow_file_browser(request):
         return web.Response(text=json.dumps('open successfully'), content_type='application/json')
     except Exception as e:
         return web.Response(text=json.dumps({"error": str(e)}), status=500)
+
+
+def file_handle(name, file, existFlowIds, fileList):
+    json_data = json.load(file)
+    fileInfo = {
+        'json': json.dumps(json_data),
+        'name': name.split(".")[0],
+    }
+    if 'extra' in json_data and 'comfyspace_tracking' in json_data['extra'] and 'id' in json_data['extra']['comfyspace_tracking']:
+        if json_data['extra']['comfyspace_tracking']['id'] not in existFlowIds:
+            fileList.append(fileInfo) 
+    else:
+        fileList.append(fileInfo)
+
+# Scan all files and subfolders in the local save directory.
+# For files, compare the extra.comfyspace_tracking.id in the json format file with the flow of the current DB to determine whether it is a flow that needs to be added;
+# For subfolders, scan the json files in the subfolder and use the same processing method as the file to determine whether it is a flow that needs to be added;
+@server.PromptServer.instance.routes.post("/workspace/scan_local_new_files")
+async def scan_local_new_files(request):
+    reqJson = await request.json()
+    path = reqJson['path']
+    existFlowIds = reqJson['existFlowIds']
+
+    fileList = []
+    folderList = []
+
+    for item in os.listdir(path):
+        item_path = os.path.join(path, item)
+        if os.path.isfile(item_path) and item_path.endswith('.json'):
+            with open(item_path, 'r') as f:
+                file_handle(item, f, existFlowIds, fileList)
+               
+        elif os.path.isdir(item_path):
+            folder = {
+                'name': item,
+                'list': []
+            }
+            for sub_item in os.listdir(item_path):
+                sub_item_path = os.path.join(item_path, sub_item)
+                if os.path.isfile(sub_item_path) and sub_item_path.endswith('.json'):
+                    with open(sub_item_path, 'r') as f: 
+                        file_handle(sub_item, f, existFlowIds, folder['list'])
+
+            if len(folder['list']) > 0:
+                folderList.append(folder)
+    return web.Response(text=json.dumps({'fileList': fileList, 'folderList': folderList}), content_type='application/json')
