@@ -79,7 +79,6 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
 
     const data = await fetch(fullURL);
     const json = await data.json();
-    console.log("json", json);
     setModels(json.items);
     setLoading(false);
   }, [searchQuery, modelType]);
@@ -87,7 +86,6 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
     file: CivitiModelFileVersion,
     model: CivitiModel
   ) => {
-    console.log("file", file);
     if (file.downloadUrl == null || file.name == null) {
       console.error("file.downloadUrl or file.name is null");
       return;
