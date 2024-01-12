@@ -29,6 +29,7 @@ import { Topbar } from "./topbar/Topbar";
 import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
 import { PanelPosition } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
+import ModelManager from "./model_manager/ModelManager";
 // const RecentFilesDrawer = React.lazy(
 //   () => import("./RecentFilesDrawer/RecentFilesDrawer")
 // );
@@ -359,6 +360,7 @@ export default function App() {
     >
       <div ref={workspaceContainerRef} className="workspace_manager">
         <Portal containerRef={workspaceContainerRef}>
+          <ModelManager />
           <Box
             style={{
               width: "100vh",

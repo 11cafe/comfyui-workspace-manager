@@ -24,9 +24,8 @@ import { useRef, useState } from "react";
 import { getSystemDir } from "../Api";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { ShortcutSettings } from "../settings/ShortcutSettings";
-import { validate } from "uuid";
 import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
-import { AutoSaveSettings } from "../settings/AutosaveSettings";
+import AutoSaveSettings from "../settings/AutoSaveSettings";
 
 export default function WorkspaceSettingsModal({
   onClose,

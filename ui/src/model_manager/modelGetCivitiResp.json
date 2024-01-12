@@ -1,0 +1,124 @@
+{
+  "id": 6174,
+  "name": "DivineEleganceMix",
+  "description": "<p>If you ran into any troubles with my mix, please read description below. There is plenty of useful information.</p><p>Если вы столкнулись с каким-либо проблемами при использовании моего микса, пожалуйста, прочитайте описание ниже. Там есть много полезной информации.</p><p><span style=\"color:rgb(193, 194, 197)\">Also try: </span><a target=\"_blank\" rel=\"ugc\" href=\"https://civitai.com/models/95587/divineanimemix\">DivineAnimeMix!</a></p><p></p><hr /><p></p><p><strong>Introduction:</strong></p><p></p><p>All models i've used before first release of DIvineElegance did not fit my requirements. I've decided to do something on my own to fix this issue. There was a lot of different mixes based on Anything v3 or v4 and i've taken it as a base as well.</p><p>At the beginning, it was a mix for my personal use, but it was warmly received by Unstable Diffusion discord community and some time later i've decided to share it here, on CivitAI.</p><p>Right now Divine series is my favorite models and quite unique thing for me. The main goal of DivineElegance - anime characters with as many details as it could have. Hair, clothes, backgrounds, all of this things should be beautiful, slightly more realistic and detailed.</p><p>I hope you also would like DivineElegance, so, stay tuned for newer versions of mix!</p><p></p><hr /><p></p><p><strong>Recommendations:</strong></p><ul><li><p>Use danbooru tagging for prompts</p></li><li><p>Do -&gt;not&lt;- use \"masterpiece\" or \"best quality\" tags (v9+)</p></li><li><p>Sampler: \"Euler a\" at / 30-50 steps</p></li><li><p>Cfg scale: 8</p></li><li><p>Clip Skip: 2 &lt;---- VERY IMPORTANT</p></li><li><p>ENSD (Eta noise seed delta) - leave blank</p></li><li><p><a target=\"_blank\" rel=\"ugc\" href=\"https://huggingface.co/hakurei/waifu-diffusion-v1-4/blob/main/vae/kl-f8-anime2.ckpt\">kl-f8-anime2 VAE</a></p></li><li><p>Negative: <code>(EasyNegative:0.8), (worst quality, low quality:1.2), blurry, bokeh, dof, fog</code></p></li></ul><p></p><p><strong>Recommendations (Hires Fix)</strong>:</p><ul><li><p>Upscaler: <a target=\"_blank\" rel=\"ugc\" href=\"https://huggingface.co/FacehugmanIII/4x_foolhardy_Remacri/resolve/main/4x_foolhardy_Remacri.pth\">Remacri</a></p></li><li><p>Hires steps: 10-15</p></li><li><p>Denoising strength: 0.3</p></li><li><p>Upscale by: <em>any</em></p></li></ul><p></p><hr /><p></p><p><strong>Troubleshoot:</strong></p><p>My colors are bleached out. What should i do?</p><ul><li><p>You're missing a VAE file. For this mix i would recommend kl-f8-anime2 VAE. Just put it into SD folder -&gt; models -&gt; VAE folder. Then go to your WebUI, Settings -&gt; Stable Diffusion on the left list -&gt; SD VAE, choose your downloaded VAE.</p></li></ul><p></p><p>If you want to get mostly the same results, you definitely will need negative embedding:</p><ul><li><p><a target=\"_blank\" rel=\"ugc\" href=\"https://civitai.com/models/7808/easynegative\">EasyNegative</a>, it's better to use it at 0.8 weight.</p></li></ul><p></p><p><strong>Don't use</strong> EasyNegative (or other embeddings) with Style LoRAs, it may ruin the style!</p><ul><li><p>Until you like the result, of course.</p></li></ul><p></p><p><strong>Don't use</strong> a lot negative embeddings at the same time. It definitely will ruin any possible output on all models! If you want to use negative embeddings - use one for quality, and one for hands (if you want a placebo for hands).</p><p></p><hr /><p></p><p><strong>Technical support:</strong></p><p><span style=\"color:rgb(134, 142, 150)\">If you're ran into any problem with my mix, you can DM me on </span><strong><span style=\"color:rgb(134, 142, 150)\">discord</span></strong><span style=\"color:rgb(134, 142, 150)\">:</span></p><p><strong>troubledarkness</strong> - <span style=\"color:rgb(134, 142, 150)\">discord nickname.</span></p><p></p><p>I'll be glad to help | Буду рад помочь.</p><p></p><hr /><p></p><p><strong>Credits:</strong></p><p></p><p><a target=\"_blank\" rel=\"ugc\" href=\"https://docs.google.com/document/d/1Mc3x-EKSrOFgIo6tBxQZZprFZWnAb9J0Jms_-CUZ1Oo/edit?usp=sharing\">DivineEleganceMix Recipes (pre-v6)</a></p><p></p><p>Really BIG thanks to:</p><ul><li><p>Nigurumi for<a target=\"_blank\" rel=\"ugc\" href=\"https://huggingface.co/nuigurumi/basil_mix\"> BasilMix</a></p></li><li><p>WarriorMama777 for <a target=\"_blank\" rel=\"ugc\" href=\"https://huggingface.co/WarriorMama777/OrangeMixs\">AbyssOrangeMixes</a> and recipes</p></li><li><p>andite for <a target=\"_blank\" rel=\"ugc\" href=\"https://huggingface.co/andite/anything-v4.0/blob/main/anything-v4.5.ckpt\">Anything4.5</a>/<a target=\"_blank\" rel=\"ugc\" href=\"https://huggingface.co/andite/yohan-diffusion/blob/main/Cocoa.ckpt\">Cocoa</a>/<a target=\"_blank\" rel=\"ugc\" href=\"https://huggingface.co/andite/pastel-mix\">PastelMix</a></p></li><li><p>Ikena for <a target=\"_blank\" rel=\"ugc\" href=\"https://civitai.com/models/2583/grapefruit-hentai-model\">Grapefruit</a></p></li><li><p>Cyria for <a target=\"_blank\" rel=\"ugc\" href=\"https://civitai.com/models/16161/zerotolerances\">ZeroTolerances</a></p></li><li><p>devdevice545734 for <a target=\"_blank\" rel=\"ugc\" href=\"https://civitai.com/models/7152/facebombmix\">FaceBombMix</a></p></li><li><p>You, for reading, downloading and reviewing this mix</p></li></ul>",
+  "type": "Checkpoint",
+  "poi": false,
+  "nsfw": false,
+  "allowNoCredit": true,
+  "allowCommercialUse": "None",
+  "allowDerivatives": true,
+  "allowDifferentLicense": false,
+  "stats": {
+    "downloadCount": 98039,
+    "favoriteCount": 10001,
+    "commentCount": 119,
+    "ratingCount": 511,
+    "rating": 4.97,
+    "tippedAmountCount": 44
+  },
+  "creator": {
+    "username": "TroubleDarkness",
+    "image": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/5183ecd0-4879-40f0-b529-9029a4ee1232/width=96/TroubleDarkness.jpeg"
+  },
+  "tags": [
+    "anime",
+    "landscapes",
+    "interiors",
+    "mix",
+    "base model",
+    "portrait",
+    "model",
+    "illustration",
+    "artstyle",
+    "portraits",
+    "semi-realistic",
+    "портрет",
+    "аниме",
+    "модель",
+    "полу-реализм",
+    "иллюстрация",
+    "интерьеры",
+    "ландшафт",
+    "микс",
+    "портреты"
+  ],
+  "modelVersions": [
+    {
+      "id": 238656,
+      "modelId": 6174,
+      "name": "DivineEleganceMix v9",
+      "createdAt": "2023-11-25T14:46:14.004Z",
+      "updatedAt": "2023-11-26T10:13:36.470Z",
+      "status": "Published",
+      "publishedAt": "2023-11-25T15:00:10.234Z",
+      "trainedWords": [],
+      "trainingStatus": null,
+      "trainingDetails": null,
+      "baseModel": "SD 1.5",
+      "baseModelType": "Standard",
+      "earlyAccessTimeFrame": 0,
+      "description": "<p>I've started to working on an update immediately after v8 update to investigate layers deeper. But force majeure circumstances happened and i needed to put this update aside for a while. Anyway.</p><p>New version has came out, so, lets find out what changed:</p><p><strong>Mix:</strong></p><p>- Changed block merge recipe to improve visuals and restore some broken concepts</p><p>- Updated LoRA merged in, now it has less art with brush-like strokes to keep more clean artstyle</p><p><strong>Visuals:</strong></p><p>- Adjusted style to be less anime (less Anything5-like)</p><p>- Adjusted textures, should be slightly more detailed than before (v7 - v8)</p><p>- More digital style of art like on some previous versions of model (v5 - v6)</p><p><strong>Characters: </strong></p><p>- Fixed some really weird underwear being generated, it still can be a little funky, but regular panties is working okay now</p><p>- Fixed some simple NSFW concepts like regular cleft of venus, anus, pubic hair and nipples, was broken on v8 on wide range on generations</p><p>- Better hands and fingers in some situations like \"arms up\" or while lying on back</p><p><strong>Lighting:</strong></p><p>- Fixed too bright lighting being applied to characters </p><p>- More warm lighting, absolute zero begone</p><p>Thanks for keeping an eye on Divine series models and thanks for reading this changes, i hope you'll like new version of DivineElengaceMix as well.</p>",
+      "vaeId": null,
+      "stats": {
+        "downloadCount": 20950,
+        "ratingCount": 97,
+        "rating": 4.97
+      },
+      "files": [
+        {
+          "id": 184476,
+          "sizeKB": 2082642.666015625,
+          "name": "divineelegancemix_V9.safetensors",
+          "type": "Model",
+          "metadata": {
+            "fp": "fp16",
+            "size": "pruned",
+            "format": "SafeTensor"
+          },
+          "pickleScanResult": "Success",
+          "pickleScanMessage": "No Pickle imports",
+          "virusScanResult": "Success",
+          "virusScanMessage": null,
+          "scannedAt": "2023-11-25T14:56:39.641Z",
+          "hashes": {
+            "AutoV1": "F4D857F2",
+            "AutoV2": "6E8E316B68",
+            "SHA256": "6E8E316B68BD18E3E5137276FAB4CC36C5EA21BA21B46D68CC2DA91E263E19E5",
+            "CRC32": "FE76C684",
+            "BLAKE3": "89E3EABF8E73B386BBDA575A01974FB4DB73F19F95AFCC03CF558E1439EA03E5",
+            "AutoV3": "DD03BDD34D479DAFE4754AFE6639B35DFACDCF5BEDCF3873232DED0A9DF5B81F"
+          },
+          "downloadUrl": "https://civitai.com/api/download/models/238656",
+          "primary": true
+        }
+      ],
+      "images": [
+        {
+          "id": 3915360,
+          "url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/2d7f1859-e066-43b9-b591-465bc9ecb673/width=450/3915360.jpeg",
+          "nsfw": "None",
+          "width": 1024,
+          "height": 1536,
+          "hash": "UFDbKN=|0eIU~W%LIVM{kWt7ELRQOYR+RQni",
+          "type": "image",
+          "metadata": {
+            "hash": "UFDbKN=|0eIU~W%LIVM{kWt7ELRQOYR+RQni",
+            "size": 1603388,
+            "width": 1024,
+            "height": 1536
+          },
+          "meta": {
+            "seed": 1381636027,
+            "steps": 30,
+            "prompt": "light particles, soft lighting, volumetric lighting, intricate details, finely detailed,\n\n1girl, solo,\n\nblonde hair, long hair, high ponytail,\n\nred eyes, long eyelashes, thick eyelashes, looking at viewer,\n\nred dress, ornate dress, backless dress, puffy sleeves, juliet sleeves, (long sleeves:1.2), red bow,\n\nblack background, simple background, from behind,\n\n<lora:Add Detail:0.4>",
+            "sampler": "Euler a",
+            "cfgScale": 8,
+            "negativePrompt": "(EasyNegative:0.8), (worst quality, low quality:1.2),\n\ntight, skin tight, impossible clothes, off shoulder, bare shoulders, bare arms, nude, naked, black dress, white dress, red background,"
+          }
+        }
+      ],
+      "downloadUrl": "https://civitai.com/api/download/models/238656"
+    }
+  ]
+}

@@ -12,6 +12,7 @@ import subprocess
 import os
 import json
 from .version_control import update_version_if_outdated
+from .service.model_manager.model_installer import download_url_with_wget
 
 WEB_DIRECTORY = "dist/entry"
 NODE_CLASS_MAPPINGS = {}
