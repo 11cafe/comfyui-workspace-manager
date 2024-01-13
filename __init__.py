@@ -263,14 +263,14 @@ def file_handle(name, file, existFlowIds, fileList):
         'json': json.dumps(json_data),
         'name': name.split(".")[0],
     }
-    if 'extra' in json_data and 'comfyspace_tracking' in json_data['extra'] and 'id' in json_data['extra']['comfyspace_tracking']:
-        if json_data['extra']['comfyspace_tracking']['id'] not in existFlowIds:
+    if 'extra' in json_data and 'workspace_info' in json_data['extra'] and 'id' in json_data['extra']['workspace_info']:
+        if json_data['extra']['workspace_info']['id'] not in existFlowIds:
             fileList.append(fileInfo) 
     else:
         fileList.append(fileInfo)
 
 # Scan all files and subfolders in the local save directory.
-# For files, compare the extra.comfyspace_tracking.id in the json format file with the flow of the current DB to determine whether it is a flow that needs to be added;
+# For files, compare the extra.workspace_info.id in the json format file with the flow of the current DB to determine whether it is a flow that needs to be added;
 # For subfolders, scan the json files in the subfolder and use the same processing method as the file to determine whether it is a flow that needs to be added;
 @server.PromptServer.instance.routes.post("/workspace/scan_local_new_files")
 async def scan_local_new_files(request):

@@ -73,7 +73,9 @@ export class FoldersTable {
     saveDB("folders", JSON.stringify(this.records));
     updateWorkspaceIndexDB();
     // move or rename all workflows to the right directory(not required when folded state changes)
-    input.name != null && validateOrSaveAllJsonFileMyWorkflows(true);
+    if (input.name != null || input.parentFolderID != null) {
+      validateOrSaveAllJsonFileMyWorkflows(true);
+    }
   }
   public delete(id: string) {
     delete this.records[id];

@@ -37,7 +37,6 @@ const RecentFilesDrawer = React.lazy(
 );
 import { scanLocalNewFiles } from "./Api";
 export default function App() {
-  const scanLocalFileTimer = useRef(0);
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
   const [route, setRoute] = useState<Route>("root");
@@ -153,10 +152,6 @@ export default function App() {
       setIsDirty(checkIsDirty());
     }, 1000);
     pullAuthTokenCloseIfExist();
-
-    return () => {
-      clearTimeout(scanLocalFileTimer.current);
-    };
   }, []);
 
   const checkIsDirty = () => {
