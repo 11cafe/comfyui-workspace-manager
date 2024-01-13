@@ -215,14 +215,13 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
                     >
                       Load
                     </Button>
-                    <Tooltip label="Remove image from gallery">
+                    <Tooltip label="Donwload image from gallery">
                       <Link href={`/workspace/view_media?filename=${media.localPath}`} download={media.localPath} >
                         <IconButton
                             size={"sm"}
                             variant={"ghost"}
                             icon={<IconDownload size={19} />}
-                            aria-label="remove image from gallery"
-                            colorScheme="red"
+                            aria-label="donwload image from gallery"
                         />
                       </Link>
                     </Tooltip>
