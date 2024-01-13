@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import {
@@ -106,6 +107,21 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
     URL.revokeObjectURL(url);
   }, [curFlowID]);
   const saveShortcut = userSettingsTable?.getSetting("shortcuts")?.save;
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  const handleMouseEnter = () => {
+    // 如果 MenuButton 的引用存在，则打开下拉菜单
+    if (menuButtonRef.current) {
+      menuButtonRef.current.click();
+    }
+  };
+
+  const handleMouseLeave = () => {
+    // 如果 MenuButton 的引用存在，则关闭下拉菜单
+    if (menuButtonRef.current) {
+      menuButtonRef.current.click();
+    }
+  };
   return (
     <>
       <Menu isLazy={true}>
@@ -113,8 +129,8 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
           <>
             <MenuButton
               onClick={onClick}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onMouseEnter={(e: any) => (e.target as any).click()}
+              ref={menuButtonRef}
+              onMouseEnter={handleMouseEnter}
             >
               <IconButton
                 icon={<IconChevronDown size={20} />}
@@ -125,7 +141,11 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
               />
             </MenuButton>
             <Portal>
-              <MenuList minWidth={150} zIndex={1000}>
+              <MenuList
+                minWidth={150}
+                zIndex={1000}
+                onMouseLeave={handleMouseLeave}
+              >
                 <MenuItem
                   onClick={saveCurWorkflow}
                   icon={<IconDeviceFloppy size={20} />}
