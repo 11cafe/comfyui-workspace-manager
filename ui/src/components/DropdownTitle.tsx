@@ -111,7 +111,11 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
       <Menu isLazy={true}>
         {({ isOpen }) => (
           <>
-            <MenuButton onClick={onClick}>
+            <MenuButton
+              onClick={onClick}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onMouseEnter={(e: any) => (e.target as any).click()}
+            >
               <IconButton
                 icon={<IconChevronDown size={20} />}
                 aria-label="menu"
