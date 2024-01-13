@@ -1,3 +1,4 @@
+import asyncio
 import server
 from aiohttp import web
 import aiohttp
@@ -43,15 +44,17 @@ async def save_db(request):
     json_data = data['json']
 
     file_name = f'{db_dir_path}/{table}.json'
+    # Offload file writing to a separate thread
+    await asyncio.to_thread(write_json_string_to_db, file_name, json_data)
+    return web.Response(text=f"JSON saved to {file_name}")
+
+def write_json_string_to_db(file_name, json_data):
     if not os.path.exists(db_dir_path):
         os.makedirs(db_dir_path)
 
     # Write the JSON data to the specified file
     with open(file_name, 'w') as file:
         file.write(json.dumps(json_data, indent=4))
-
-    return web.Response(text=f"JSON saved to {file_name}")
-
 
 def read_table(table):
     if not table:
@@ -172,13 +175,18 @@ async def update_file(request):
     json_str = data['json_str']
     my_workflows_dir = get_my_workflows_dir()
     full_path = os.path.join(my_workflows_dir, file_path)
+
+    # Offload the file update to a separate thread
+    await asyncio.to_thread(write_json_to_file, full_path, json_str)
+    return web.Response(text="File updated successfully")
+
+def write_json_to_file(full_path, json_str):
     # Create the directory if it doesn't exist
     os.makedirs(os.path.dirname(full_path), exist_ok=True)
 
+    # Perform the file writing
     with open(full_path, 'w', encoding='utf-8') as file:
         file.write(json_str)
-    return web.Response(text="File updated successfully")
-
 
 @server.PromptServer.instance.routes.post("/workspace/delete_file")
 async def delete_file(request):
