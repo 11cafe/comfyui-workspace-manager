@@ -15,6 +15,7 @@ import {
   changelogsTable,
   mediaTable,
   listWorkflows,
+  rewriteAllLocalFiles,
 } from "./db-tables/WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
@@ -123,7 +124,19 @@ export default function App() {
       setCurFlowID(latestWf.id ?? null);
       setCurFlowName(latestWf.name ?? null);
     }
-    await validateOrSaveAllJsonFileMyWorkflows();
+
+    /**
+     * Due to the new two-way synchronization function below,
+     * In order to be compatible with older version users, workspace_info does not exist in the json structure of local files,
+     * and will be mistaken for new local files, resulting in duplicate data in the DB.
+     * Therefore, in order to increase workspace_info, a full rewrite of the local file is required.
+     */
+    if (localStorage.getItem("REWRITTEN_ALL_LOCAL_DISK_FILE") === "true") {
+      await validateOrSaveAllJsonFileMyWorkflows();
+    } else {
+      await rewriteAllLocalFiles();
+      localStorage.setItem("REWRITTEN_ALL_LOCAL_DISK_FILE", "true");
+    }
 
     // Scan all files and subfolders in the local storage directory, compare and find the data that needs to be added in the DB, and perform the new operation
     const myWorkflowsDir = userSettingsTable?.getSetting("myWorkflowsDir");
@@ -180,6 +193,7 @@ export default function App() {
     }
     setCurFlowID(id);
     const flow = getWorkflow(id);
+
     if (flow == null) {
       alert("Error: Workflow not found! id: " + id);
       return;

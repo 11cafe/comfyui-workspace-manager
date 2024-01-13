@@ -181,6 +181,18 @@ export async function saveJsonFileMyWorkflows(workflow: Workflow) {
   await updateFile(file_path, JSON.stringify(flow));
 }
 
+export async function rewriteAllLocalFiles() {
+  for (const workflow of listWorkflows()) {
+    const fullPath = generateFilePathAbsolute(workflow);
+    const flow = JSON.parse(workflow.json);
+    flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {
+      id: workflow.id,
+      name: workflow.name,
+    };
+    fullPath && await updateFile(fullPath, JSON.stringify(flow));
+  }
+}
+
 export function createFlow({
   json,
   name,
