@@ -124,19 +124,18 @@ export default function App() {
       setCurFlowID(latestWf.id ?? null);
       setCurFlowName(latestWf.name ?? null);
     }
-    validateOrSaveAllJsonFileMyWorkflows();
+    await validateOrSaveAllJsonFileMyWorkflows();
 
-    // Execute after 10s to avoid conflict with validateOrSaveAllJsonFileMyWorkflows
-    scanLocalFileTimer.current = setTimeout(async () => {
-      const myWorkflowsDir = userSettingsTable?.getSetting("myWorkflowsDir");
-      const existFlowIds = listWorkflows().map((flow) => flow.id);
-      const { fileList, folderList } = await scanLocalNewFiles(
-        myWorkflowsDir!,
-        existFlowIds
-      );
-      syncNewFlowOfLocalDisk(fileList, folderList);
-    }, 2000);
+    // Scan all files and subfolders in the local storage directory, compare and find the data that needs to be added in the DB, and perform the new operation
+    const myWorkflowsDir = userSettingsTable?.getSetting("myWorkflowsDir");
+    const existFlowIds = listWorkflows().map((flow) => flow.id);
+    const { fileList, folderList } = await scanLocalNewFiles(
+      myWorkflowsDir!,
+      existFlowIds
+    );
+    await syncNewFlowOfLocalDisk(fileList, folderList);
   };
+
   useEffect(() => {
     graphAppSetup();
     setLoadChild(true);
@@ -159,6 +158,7 @@ export default function App() {
       clearTimeout(scanLocalFileTimer.current);
     };
   }, []);
+
   const checkIsDirty = () => {
     if (curFlowID.current != null) {
       const graphJson = app.graph.serialize() ?? {};

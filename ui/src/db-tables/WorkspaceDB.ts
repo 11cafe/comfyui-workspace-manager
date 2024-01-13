@@ -161,7 +161,7 @@ export function updateFlow(id: string, input: Partial<Workflow>) {
   }
 }
 
-export function saveJsonFileMyWorkflows(workflow: Workflow) {
+export async function saveJsonFileMyWorkflows(workflow: Workflow) {
   const file_path = generateFilePath(workflow);
   if (file_path == null) {
     return;
@@ -169,8 +169,8 @@ export function saveJsonFileMyWorkflows(workflow: Workflow) {
   if (workspace != null) {
     const fullPath = generateFilePathAbsolute(workflow);
     workspace[workflow.id].filePath = fullPath ?? undefined;
-    updateWorkspaceIndexDB();
-    saveDB("workflows", JSON.stringify(workspace));
+    await updateWorkspaceIndexDB();
+    await saveDB("workflows", JSON.stringify(workspace));
   }
   const json = workflow.json;
   const flow = JSON.parse(json);
@@ -178,7 +178,7 @@ export function saveJsonFileMyWorkflows(workflow: Workflow) {
     id: workflow.id,
     name: workflow.name,
   };
-  updateFile(file_path, JSON.stringify(flow));
+  await updateFile(file_path, JSON.stringify(flow));
 }
 
 export function createFlow({
