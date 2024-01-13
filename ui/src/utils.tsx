@@ -151,12 +151,13 @@ export async function validateOrSaveAllJsonFileMyWorkflows(
 ) {
   for (const workflow of listWorkflows()) {
     const fullPath = generateFilePathAbsolute(workflow);
-    if (workflow.filePath != fullPath) {
-      // file path changed
-      workflow.filePath != null &&
-        (await deleteFile(workflow.filePath, deleteEmptyFolder));
-      await saveJsonFileMyWorkflows(workflow);
-    }
+    // temporarily disable this check to overwrite all /my_workflows
+    // if (workflow.filePath != fullPath) {
+    // file path changed
+    workflow.filePath != null &&
+      (await deleteFile(workflow.filePath, deleteEmptyFolder));
+    await saveJsonFileMyWorkflows(workflow);
+    // }
   }
 }
 
