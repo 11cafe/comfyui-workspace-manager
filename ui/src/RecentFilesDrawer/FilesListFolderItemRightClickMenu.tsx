@@ -13,10 +13,11 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useContext, useState } from "react";
-import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
-import { Folder, foldersTable } from "../db-tables/WorkspaceDB";
+import { RecentFilesContext } from "../WorkspaceContext";
+import { foldersTable } from "../db-tables/WorkspaceDB";
 import EditFolderNameModal from "../components/EditFolderName";
-import DeleteConfirm from "../components/DeleteConfirm";
+import { IconFolderPlus } from "@tabler/icons-react";
+import { Folder } from "../types/dbTypes";
 
 type Props = {
   menuPosition: { x: number; y: number };
@@ -33,6 +34,13 @@ export default function FilesListFolderItemRightClickMenu({
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const { onRefreshFilesList } = useContext(RecentFilesContext);
+  const onClickNewFolder = () => {
+    foldersTable?.create({
+      name: "New folder",
+      parentFolderID: folder.id,
+    });
+    onRefreshFilesList && onRefreshFilesList();
+  };
   return (
     <>
       <Box position="absolute" top={menuPosition.y} left={menuPosition.x}>
@@ -40,7 +48,6 @@ export default function FilesListFolderItemRightClickMenu({
           <MenuList>
             <MenuItem
               onClick={(e) => {
-                console.log("onclick rename");
                 e.preventDefault();
                 setIsRenameOpen(true);
               }}
@@ -48,6 +55,12 @@ export default function FilesListFolderItemRightClickMenu({
               Rename
             </MenuItem>
             <MenuItem onClick={() => setIsDeleteOpen(true)}>Delete</MenuItem>
+            <MenuItem
+              onClick={onClickNewFolder}
+              icon={<IconFolderPlus size={19} />}
+            >
+              New folder
+            </MenuItem>
           </MenuList>
         </Menu>
       </Box>
