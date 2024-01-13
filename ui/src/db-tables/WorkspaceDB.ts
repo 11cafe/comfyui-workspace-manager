@@ -6,7 +6,10 @@ import { ChangelogsTable } from "./ChangelogsTable";
 import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
 import { FoldersTable } from "./FoldersTable";
 import { MediaTable } from "./MediaTable";
-import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
+import {
+  COMFYSPACE_TRACKING_FIELD_NAME,
+  LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
+} from "../const";
 import {
   deleteJsonFileMyWorkflows,
   generateFilePath,
@@ -185,6 +188,19 @@ export async function saveJsonFileMyWorkflows(workflow: Workflow) {
     name: workflow.name,
   };
   await updateFile(file_path, JSON.stringify(flow));
+}
+
+export async function rewriteAllLocalFiles() {
+  for (const workflow of listWorkflows()) {
+    const fullPath = generateFilePathAbsolute(workflow);
+    const flow = JSON.parse(workflow.json);
+    flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {
+      id: workflow.id,
+      name: workflow.name,
+    };
+    delete flow.extra[LEGACY_COMFYSPACE_TRACKING_FIELD_NAME];
+    fullPath && (await updateFile(fullPath, JSON.stringify(flow)));
+  }
 }
 
 export function createFlow({

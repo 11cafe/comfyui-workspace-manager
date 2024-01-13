@@ -15,6 +15,7 @@ import {
   changelogsTable,
   mediaTable,
   listWorkflows,
+  rewriteAllLocalFiles,
 } from "./db-tables/WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
@@ -24,10 +25,12 @@ import {
   getFileUrl,
   matchSaveWorkflowShortcut,
   validateOrSaveAllJsonFileMyWorkflows,
+  getWorkflowIdInUrlHash,
+  generateUrlHashWithFlowId,
 } from "./utils";
 import GalleryModal from "./gallery/GalleryModal";
 import { Topbar } from "./topbar/Topbar";
-import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
+// import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
 import { PanelPosition } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
 import React from "react";
@@ -35,6 +38,7 @@ const RecentFilesDrawer = React.lazy(
   () => import("./RecentFilesDrawer/RecentFilesDrawer")
 );
 import { scanLocalNewFiles } from "./Api";
+
 export default function App() {
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
@@ -77,13 +81,15 @@ export default function App() {
     }
   };
 
-  const setCurFlowID = (id: string) => {
+  const setCurFlowIDAndName = (id: string, name: string) => {
     curFlowID.current = id;
     setFlowID(id);
-    const workflow = getWorkflow(id);
-    if (workflow) {
+    setCurFlowName(name);
+    if (getWorkflowIdInUrlHash()) {
+      const newUrlHash = generateUrlHashWithFlowId(id);
+      window.location.hash = newUrlHash;
+    } else {
       localStorage.setItem("curFlowID", id);
-      // localStorage.setItem("comfy_workspace_workflow", workflow.json);
     }
   };
 
@@ -114,18 +120,36 @@ export default function App() {
       console.error("error loading db", error);
     }
     setLoadingDB(false);
-    const latest = localStorage.getItem("curFlowID");
-    const latestWf = latest != null ? getWorkflow(latest) : null;
-    console.log("lastestWf", latestWf);
+
+    let latestWf = null;
+    const urlHashFlowId = getWorkflowIdInUrlHash();
+    if (urlHashFlowId && getWorkflow(urlHashFlowId)) {
+      latestWf = getWorkflow(urlHashFlowId);
+    } else {
+      const localStorageFlowId = localStorage.getItem("curFlowID");
+      if (localStorageFlowId && getWorkflow(localStorageFlowId)) {
+        latestWf = getWorkflow(localStorageFlowId);
+      }
+    }
+
     if (latestWf) {
-      // latestWf && localStorage.setItem("workflow", latestWf.json);
-      // setCurFlowID(latestWf.id ?? null);
-      // setCurFlowName(latestWf.name ?? null);
       // since we changed to lazy load our component, app.configureGraph will come before our app loading,
       // localStorage.setItem("workflow") will not take effect anymore and will result different workflow appearing bug when refreshing
       loadWorkflowIDImpl(latestWf.id);
     }
-    await validateOrSaveAllJsonFileMyWorkflows();
+
+    /**
+     * Due to the new two-way synchronization function below,
+     * In order to be compatible with older version users, workspace_info does not exist in the json structure of local files,
+     * and will be mistaken for new local files, resulting in duplicate data in the DB.
+     * Therefore, in order to increase workspace_info, a full rewrite of the local file is required.
+     */
+    if (localStorage.getItem("REWRITTEN_ALL_LOCAL_DISK_FILE") === "true") {
+      await validateOrSaveAllJsonFileMyWorkflows();
+    } else {
+      await rewriteAllLocalFiles();
+      localStorage.setItem("REWRITTEN_ALL_LOCAL_DISK_FILE", "true");
+    }
 
     if (userSettingsTable?.getSetting("twoWaySync") === true) {
       // Scan all files and subfolders in the local storage directory, compare and find the data that needs to be added in the DB, and perform the new operation
@@ -155,7 +179,7 @@ export default function App() {
       }
       setIsDirty(checkIsDirty());
     }, 1000);
-    pullAuthTokenCloseIfExist();
+    // pullAuthTokenCloseIfExist();
   }, []);
 
   const checkIsDirty = () => {
@@ -182,15 +206,16 @@ export default function App() {
       console.error("app.graph is null cannot load workflow");
       return;
     }
-    setCurFlowID(id);
+
     const flow = getWorkflow(id);
+
     if (flow == null) {
       alert("Error: Workflow not found! id: " + id);
       return;
     }
+    setCurFlowIDAndName(id, flow.name);
     app.ui.dialog.close();
     app.loadGraphData(JSON.parse(flow.json));
-    setCurFlowName(flow.name);
     setRoute("root");
   };
   const loadWorkflowID = (id: string) => {
@@ -307,7 +332,7 @@ export default function App() {
 
   useEffect(() => {
     window.addEventListener("keydown", shortcutListener);
-    window.addEventListener("message", authTokenListener);
+    // window.addEventListener("message", authTokenListener);
 
     const fileInput = document.getElementById(
       "comfy-file-input"
@@ -319,8 +344,8 @@ export default function App() {
           name: fileInput.files[0].name,
           json: JSON.stringify(defaultGraph),
         });
-        setCurFlowID(flow.id);
-        setCurFlowName(flow.name ?? "Unknown name");
+
+        setCurFlowIDAndName(flow.id, flow.name ?? "Unknown name");
       }
     };
     fileInput?.addEventListener("change", fileInputListener);
@@ -353,7 +378,7 @@ export default function App() {
       );
     });
     return () => {
-      window.removeEventListener("message", authTokenListener);
+      // window.removeEventListener("message", authTokenListener);
       window.removeEventListener("keydown", shortcutListener);
       window.removeEventListener("change", fileInputListener);
       window.removeEventListener("beforeunload", handleBeforeUnload);
@@ -363,6 +388,7 @@ export default function App() {
   if (loadingDB || !positionStyle) {
     return null;
   }
+
   return (
     <WorkspaceContext.Provider
       value={{
