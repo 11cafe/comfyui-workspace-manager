@@ -7,7 +7,9 @@ import {
   Flex,
   Image,
   Stack,
+  IconButton,
 } from "@chakra-ui/react";
+import { IconExternalLink } from "@tabler/icons-react";
 import { Workflow, isFolder, updateFlow } from "../db-tables/WorkspaceDB";
 import { formatTimestamp, isImageFormat } from "../utils";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
@@ -15,6 +17,7 @@ import { useState, memo, ChangeEvent, useContext } from "react";
 import WorkflowListItemRightClickMenu from "./WorkflowListItemRightClickMenu";
 import DeleteConfirm from "../components/DeleteConfirm";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
+import { NEW_TAB_OPEN_SPECIFIED_FLOW_ID } from "../const";
 
 type Props = {
   workflow: Workflow;
@@ -49,6 +52,11 @@ export default function WorkflowListItem({ workflow }: Props) {
     setIsMenuOpen(false);
   };
   const hoverBgColor = colorMode === "light" ? "gray.200" : "#4A5568";
+
+  const openNewTab = () => {
+    window.localStorage.setItem(NEW_TAB_OPEN_SPECIFIED_FLOW_ID, workflow.id);
+    window.open(window.location.href);
+  };
 
   const basicInfoComp = (
     <Box
@@ -143,7 +151,14 @@ export default function WorkflowListItem({ workflow }: Props) {
       ) : (
         <>
           {basicInfoComp}
-          <Flex width={"60px"}>
+          <Flex width={"96px"}>
+            <IconButton
+              aria-label="Open in new tab"
+              size={"sm"}
+              variant="ghost"
+              onClick={openNewTab}
+              icon={<IconExternalLink color={"#718096"} />}
+            />
             <AddTagToWorkflowPopover workflow={workflow} />
             <DeleteConfirm
               promptMessage="Are you sure you want to delete this workflow?"

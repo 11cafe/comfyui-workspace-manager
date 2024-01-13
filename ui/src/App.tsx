@@ -28,7 +28,7 @@ import {
 } from "./utils";
 import GalleryModal from "./gallery/GalleryModal";
 import { Topbar } from "./topbar/Topbar";
-import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
+// import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
 import { PanelPosition } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
 import React from "react";
@@ -37,6 +37,11 @@ const RecentFilesDrawer = React.lazy(
   () => import("./RecentFilesDrawer/RecentFilesDrawer")
 );
 import { scanLocalNewFiles } from "./Api";
+import { NEW_TAB_OPEN_SPECIFIED_FLOW_ID } from "./const";
+// const RecentFilesDrawer = React.lazy(
+//   () => import("./RecentFilesDrawer/RecentFilesDrawer")
+// );
+
 export default function App() {
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
@@ -116,13 +121,21 @@ export default function App() {
       console.error("error loading db", error);
     }
     setLoadingDB(false);
-    const latest = localStorage.getItem("curFlowID");
+
+    const specifiedFlowId = localStorage.getItem(
+      NEW_TAB_OPEN_SPECIFIED_FLOW_ID
+    );
+    const latest = specifiedFlowId ?? localStorage.getItem("curFlowID");
     const latestWf = latest != null ? getWorkflow(latest) : null;
 
     if (latestWf) {
       latestWf && localStorage.setItem("workflow", latestWf.json);
       setCurFlowID(latestWf.id ?? null);
       setCurFlowName(latestWf.name ?? null);
+    }
+
+    if (specifiedFlowId) {
+      localStorage.removeItem(NEW_TAB_OPEN_SPECIFIED_FLOW_ID);
     }
 
     /**
@@ -164,7 +177,7 @@ export default function App() {
       }
       setIsDirty(checkIsDirty());
     }, 1000);
-    pullAuthTokenCloseIfExist();
+    // pullAuthTokenCloseIfExist();
   }, []);
 
   const checkIsDirty = () => {
@@ -317,7 +330,7 @@ export default function App() {
 
   useEffect(() => {
     window.addEventListener("keydown", shortcutListener);
-    window.addEventListener("message", authTokenListener);
+    // window.addEventListener("message", authTokenListener);
 
     const fileInput = document.getElementById(
       "comfy-file-input"
@@ -363,7 +376,7 @@ export default function App() {
       );
     });
     return () => {
-      window.removeEventListener("message", authTokenListener);
+      // window.removeEventListener("message", authTokenListener);
       window.removeEventListener("keydown", shortcutListener);
       window.removeEventListener("change", fileInputListener);
       window.removeEventListener("beforeunload", handleBeforeUnload);
@@ -373,6 +386,7 @@ export default function App() {
   if (loadingDB || !positionStyle) {
     return null;
   }
+
   return (
     <WorkspaceContext.Provider
       value={{
