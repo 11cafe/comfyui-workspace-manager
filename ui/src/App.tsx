@@ -14,11 +14,13 @@ import {
   userSettingsTable,
   changelogsTable,
   mediaTable,
+  listWorkflows,
 } from "./db-tables/WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
 import {
   Route,
+  syncNewFlowOfLocalDisk,
   getFileUrl,
   matchSaveWorkflowShortcut,
   validateOrSaveAllJsonFileMyWorkflows,
@@ -29,13 +31,11 @@ import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
 import { PanelPosition } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
 import React from "react";
-// import ModelManager from "./model-manager/ModelManager";
-// import RecentFilesDrawer from "./RecentFilesDrawer/RecentFilesDrawer";
 const ModelManager = React.lazy(() => import("./model-manager/ModelManager"));
 const RecentFilesDrawer = React.lazy(
   () => import("./RecentFilesDrawer/RecentFilesDrawer")
 );
-
+import { scanLocalNewFiles } from "./Api";
 export default function App() {
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
@@ -123,8 +123,18 @@ export default function App() {
       setCurFlowID(latestWf.id ?? null);
       setCurFlowName(latestWf.name ?? null);
     }
-    validateOrSaveAllJsonFileMyWorkflows();
+    await validateOrSaveAllJsonFileMyWorkflows();
+
+    // Scan all files and subfolders in the local storage directory, compare and find the data that needs to be added in the DB, and perform the new operation
+    const myWorkflowsDir = userSettingsTable?.getSetting("myWorkflowsDir");
+    const existFlowIds = listWorkflows().map((flow) => flow.id);
+    const { fileList, folderList } = await scanLocalNewFiles(
+      myWorkflowsDir!,
+      existFlowIds
+    );
+    await syncNewFlowOfLocalDisk(fileList, folderList);
   };
+
   useEffect(() => {
     graphAppSetup();
     setLoadChild(true);
@@ -143,6 +153,7 @@ export default function App() {
     }, 1000);
     pullAuthTokenCloseIfExist();
   }, []);
+
   const checkIsDirty = () => {
     if (curFlowID.current != null) {
       const graphJson = app.graph.serialize() ?? {};
