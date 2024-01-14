@@ -39,9 +39,6 @@ const RecentFilesDrawer = React.lazy(
   () => import("./RecentFilesDrawer/RecentFilesDrawer")
 );
 import { scanLocalNewFiles } from "./Api";
-// const RecentFilesDrawer = React.lazy(
-//   () => import("./RecentFilesDrawer/RecentFilesDrawer")
-// );
 
 export default function App() {
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
@@ -85,6 +82,11 @@ export default function App() {
     }
   };
 
+  const setCurFlowID = (id: string) => {
+    curFlowID.current = id;
+    setFlowID(id);
+  };
+
   const graphAppSetup = async () => {
     const ext: ComfyExtension = {
       // Unique name for the extension
@@ -126,8 +128,7 @@ export default function App() {
 
     if (latestWf) {
       latestWf && localStorage.setItem("workflow", latestWf.json);
-      curFlowID.current = latestWf.id;
-      setFlowID(latestWf.id);
+      setCurFlowID(latestWf.id);
       setCurFlowName(latestWf.name ?? null);
     }
 
@@ -212,8 +213,7 @@ export default function App() {
       localStorage.setItem("curFlowID", id);
     }
 
-    curFlowID.current = id;
-    setFlowID(id);
+    setCurFlowID(id);
 
     app.ui.dialog.close();
     app.loadGraphData(JSON.parse(flow.json));
@@ -346,8 +346,7 @@ export default function App() {
           name: fileInput.files[0].name,
           json: JSON.stringify(defaultGraph),
         });
-        curFlowID.current = flow.id;
-        setFlowID(flow.id);
+        setCurFlowID(flow.id);
         localStorage.setItem("curFlowID", flow.id);
         setCurFlowName(flow.name ?? "Unknown name");
       }

@@ -6,7 +6,7 @@ import { ChangelogsTable } from "./ChangelogsTable";
 import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
 import { FoldersTable } from "./FoldersTable";
 import { MediaTable } from "./MediaTable";
-import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
+import { COMFYSPACE_TRACKING_FIELD_NAME, LEGACY_COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
 import { indexdb } from "./indexdb";
 import {
   deleteJsonFileMyWorkflows,
@@ -189,6 +189,7 @@ export async function rewriteAllLocalFiles() {
       id: workflow.id,
       name: workflow.name,
     };
+    delete flow.extra[LEGACY_COMFYSPACE_TRACKING_FIELD_NAME];
     fullPath && await updateFile(fullPath, JSON.stringify(flow));
   }
 }
