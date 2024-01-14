@@ -413,6 +413,10 @@ export default function App() {
             {route === "gallery" && (
               <GalleryModal onclose={() => setRoute("root")} />
             )}
+
+            {route === "myModels" && (
+              <ModelsListDrawer onClose={() => setRoute("root")} />
+            )}
           </Box>
         </Portal>
       </div>
