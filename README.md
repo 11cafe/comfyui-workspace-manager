@@ -32,9 +32,8 @@ Every image/video you generate will be saved in the gallery of the current workf
 <img width="394" alt="Screenshot 2024-01-03 at 7 35 20 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/ae818652-8680-48a2-bdd3-bd02cb20ad16">
 
 ### 📣Update 12/29/2023 - Manual save, version history
-Finally, you can **manually save** your workflow by either click the 💾 floppy disk icon beside the workflow name or Shift+S shortcut (you can customize this shortcut in Settings)
-Everytime you save, it will create a new record in **Version History** (you can access this in the dropdown menu on the left side of the name topbar)
-You can go back and switch versions in version history. You won't need to worry about losing any changes from now on!
+**Manually save** your workflow by either click the 💾 floppy disk icon button or Shift+S shortcut (customize this shortcut in Settings)
+Everytime you save, it will create a new record in **Version History**. You can go back and switch versions in version history like git.
 
 <img width="400" alt="Screenshot 2023-12-29 at 9 59 57 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/88c82672-ebf2-4feb-bf5b-74b447843c2c">
 
