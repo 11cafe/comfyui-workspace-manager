@@ -15,11 +15,11 @@ export default function ModelManagerTopbar({}: Props) {
     <>
       <Button
         size={"sm"}
-        variant={"outline"}
-        colorScheme="teal"
+        colorScheme="blue"
         aria-label="My models"
         onClick={() => setShowMyModels(true)}
         px={2}
+        ml={4}
       >
         Models
       </Button>

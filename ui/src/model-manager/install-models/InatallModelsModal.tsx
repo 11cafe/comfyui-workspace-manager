@@ -15,7 +15,6 @@ import {
 } from "@chakra-ui/react";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { IconX } from "@tabler/icons-react";
-import { useDialog } from "../components/AlertDialogProvider";
 import { CivitiModel, CivitiModelFileVersion } from "../types";
 import { InstallModelsApiInput, installModelsApi } from "../api/modelsApi";
 import ModelCard from "./ModelCard";
