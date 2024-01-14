@@ -16,6 +16,7 @@ export class UserSettingsTable {
         save: "Shift+S",
       },
       autoSave: true,
+      twoWaySync: false,
     };
   }
   public listSettings() {

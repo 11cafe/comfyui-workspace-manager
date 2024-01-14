@@ -145,14 +145,16 @@ export default function App() {
       localStorage.setItem("REWRITTEN_ALL_LOCAL_DISK_FILE", "true");
     }
 
-    // Scan all files and subfolders in the local storage directory, compare and find the data that needs to be added in the DB, and perform the new operation
-    const myWorkflowsDir = userSettingsTable?.getSetting("myWorkflowsDir");
-    const existFlowIds = listWorkflows().map((flow) => flow.id);
-    const { fileList, folderList } = await scanLocalNewFiles(
-      myWorkflowsDir!,
-      existFlowIds
-    );
-    await syncNewFlowOfLocalDisk(fileList, folderList);
+    if (userSettingsTable?.getSetting("twoWaySync")) {
+      // Scan all files and subfolders in the local storage directory, compare and find the data that needs to be added in the DB, and perform the new operation
+      const myWorkflowsDir = userSettingsTable?.getSetting("myWorkflowsDir");
+      const existFlowIds = listWorkflows().map((flow) => flow.id);
+      const { fileList, folderList } = await scanLocalNewFiles(
+        myWorkflowsDir!,
+        existFlowIds
+      );
+      await syncNewFlowOfLocalDisk(fileList, folderList);
+    }
   };
 
   useEffect(() => {
@@ -408,11 +410,11 @@ export default function App() {
     >
       <div ref={workspaceContainerRef} className="workspace_manager">
         <Portal containerRef={workspaceContainerRef}>
-          {loadChild && (
+          {/* {loadChild && (
             <Suspense>
               <ModelManager />
             </Suspense>
-          )}
+          )} */}
           <Box
             style={{
               width: "100vh",

@@ -7,7 +7,6 @@ import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
 import { FoldersTable } from "./FoldersTable";
 import { MediaTable } from "./MediaTable";
 import { COMFYSPACE_TRACKING_FIELD_NAME, LEGACY_COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
-import { indexdb } from "./indexdb";
 import {
   deleteJsonFileMyWorkflows,
   generateFilePath,
@@ -157,6 +156,13 @@ export function updateFlow(id: string, input: Partial<Workflow>) {
     return;
   }
   if (input.json != null) {
+    if (newWorkflow.parentFolderID != null) {
+      // update parent folder updateTime
+      foldersTable?.update({
+        id: newWorkflow.parentFolderID,
+        updateTime: Date.now(),
+      });
+    }
     saveJsonFileMyWorkflows(after);
   }
 }

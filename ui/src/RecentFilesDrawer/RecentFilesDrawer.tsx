@@ -36,7 +36,6 @@ import { RecentFilesContext } from "../WorkspaceContext";
 import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
 import { sortFileItem } from "../utils";
 import WorkflowListItem from "./WorkflowListItem";
-import ImportJsonFlows from "./ImportJsonFlows";
 import MultipleSelectionOperation from "./MultipleSelectionOperation";
 import { ESortTypes, sortTypeLocalStorageKey } from "./types";
 // @ts-ignore
@@ -47,6 +46,7 @@ import { useDebounce } from "../customHooks/useDebounce";
 import SearchInput from "../components/SearchInput";
 import { openWorkflowsFolder } from "../Api";
 import { Folder } from "../types/dbTypes";
+import ImportFileButton from "./ImportFileButton";
 
 const MAX_TAGS_TO_SHOW = 6;
 type Props = {
@@ -228,7 +228,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
                   <Link onClick={openCognitoPopup}>Login</Link>
                 </Tooltip> */}
               </HStack>
-              <ImportJsonFlows />
+              <ImportFileButton />
               <Tooltip label="Open workspace save directory">
                 <IconButton
                   aria-label="Open workspace save directory"

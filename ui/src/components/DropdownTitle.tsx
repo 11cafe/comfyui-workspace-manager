@@ -107,31 +107,13 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
     URL.revokeObjectURL(url);
   }, [curFlowID]);
   const saveShortcut = userSettingsTable?.getSetting("shortcuts")?.save;
-  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
-  const handleMouseEnter = () => {
-    // 如果 MenuButton 的引用存在，则打开下拉菜单
-    if (menuButtonRef.current) {
-      menuButtonRef.current.click();
-    }
-  };
-
-  const handleMouseLeave = () => {
-    // 如果 MenuButton 的引用存在，则关闭下拉菜单
-    if (menuButtonRef.current) {
-      menuButtonRef.current.click();
-    }
-  };
   return (
     <>
       <Menu isLazy={true}>
         {({ isOpen }) => (
           <>
-            <MenuButton
-              onClick={onClick}
-              ref={menuButtonRef}
-              onMouseEnter={handleMouseEnter}
-            >
+            <MenuButton onClick={onClick}>
               <IconButton
                 icon={<IconChevronDown size={20} />}
                 aria-label="menu"
@@ -141,11 +123,7 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
               />
             </MenuButton>
             <Portal>
-              <MenuList
-                minWidth={150}
-                zIndex={1000}
-                onMouseLeave={handleMouseLeave}
-              >
+              <MenuList minWidth={150} zIndex={1000}>
                 <MenuItem
                   onClick={saveCurWorkflow}
                   icon={<IconDeviceFloppy size={20} />}

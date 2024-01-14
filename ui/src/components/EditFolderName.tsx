@@ -13,8 +13,9 @@ import {
   Input,
 } from "@chakra-ui/react";
 import { useContext, ChangeEvent, useState } from "react";
-import { Folder, foldersTable } from "../db-tables/WorkspaceDB";
+import { foldersTable } from "../db-tables/WorkspaceDB";
 import { RecentFilesContext } from "../WorkspaceContext";
+import { Folder } from "../types/dbTypes";
 
 type Props = {
   folder: Folder;
