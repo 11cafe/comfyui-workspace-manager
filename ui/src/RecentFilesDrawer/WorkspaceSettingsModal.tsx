@@ -26,6 +26,7 @@ import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { ShortcutSettings } from "../settings/ShortcutSettings";
 import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
 import AutoSaveSettings from "../settings/AutoSaveSettings";
+import TwoWaySyncSettings from "../settings/TwoWaySyncSettings";
 
 export default function WorkspaceSettingsModal({
   onClose,
@@ -165,7 +166,7 @@ export default function WorkspaceSettingsModal({
           <ModalBody pb={14}>
             <HStack>
               <VStack
-                divider={<StackDivider borderColor="gray.200" />}
+                divider={<StackDivider borderColor="gray.500" />}
                 spacing={4}
                 align="stretch"
                 w="100%"
@@ -266,6 +267,7 @@ export default function WorkspaceSettingsModal({
                 </Box>
                 <ShortcutSettings />
                 <AutoSaveSettings />
+                <TwoWaySyncSettings />
               </VStack>
             </HStack>
           </ModalBody>
