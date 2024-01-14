@@ -4,10 +4,15 @@ import { IconGripVertical } from "@tabler/icons-react";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { ManagerContext } from "../ManagerContext";
 import { PanelPosition } from "../types";
+import React from "react";
+
+const AddMissingModelsButton = React.lazy(
+  () => import("./InstallMissingModelsButton")
+);
 interface Props {}
 
 const WIDTH = 200;
-export function Topbar({}: Props) {
+export default function ModelManagerTopbar({}: Props) {
   const [positionStyle, setPositionStyle] = useState<PanelPosition>({
     top: 0,
     left: 0,
@@ -94,6 +99,7 @@ export function Topbar({}: Props) {
         >
           Models
         </Button>
+        <AddMissingModelsButton />
       </HStack>
     </Draggable>
   );
