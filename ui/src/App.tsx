@@ -29,6 +29,7 @@ import { Topbar } from "./topbar/Topbar";
 import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
 import { PanelPosition } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
+import { ModelsListDrawer } from "./model-manager/models-list-drawer/ModelsListDrawer";
 // const RecentFilesDrawer = React.lazy(
 //   () => import("./RecentFilesDrawer/RecentFilesDrawer")
 // );
@@ -387,6 +388,10 @@ export default function App() {
             )}
             {route === "gallery" && (
               <GalleryModal onclose={() => setRoute("root")} />
+            )}
+
+            {route === "myModels" && (
+              <ModelsListDrawer onClose={() => setRoute("root")} />
             )}
           </Box>
         </Portal>

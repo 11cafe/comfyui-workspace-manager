@@ -31,6 +31,7 @@ export function Topbar({
   const [isHovered, setIsHovered] = useState(false);
   const { isDirty, loadNewWorkflow, saveCurWorkflow, setRoute, curFlowID } =
     useContext(WorkspaceContext);
+
   return (
     <Draggable
       onDragEnd={(position: { x: number; y: number }) => {
@@ -112,6 +113,22 @@ export function Topbar({
             />
           </Tooltip>
         )}
+
+        <Button
+          size={"sm"}
+          variant={"outline"}
+          colorScheme="teal"
+          aria-label="My models"
+          onClick={() => setRoute("myModels")}
+          px={2}
+        >
+          <HStack gap={1}>
+            <Text color={"white"} fontSize={"sm"}>
+              My models
+            </Text>
+          </HStack>
+        </Button>
+
         {isHovered && (
           <IconGripVertical
             id="dragPanelIcon"
