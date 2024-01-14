@@ -7,7 +7,6 @@ import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
 import { FoldersTable } from "./FoldersTable";
 import { MediaTable } from "./MediaTable";
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
-import { indexdb } from "./indexdb";
 import {
   deleteJsonFileMyWorkflows,
   generateFilePath,
@@ -157,11 +156,18 @@ export function updateFlow(id: string, input: Partial<Workflow>) {
     return;
   }
   if (input.json != null) {
+    if (newWorkflow.parentFolderID != null) {
+      // update parent folder updateTime
+      foldersTable?.update({
+        id: newWorkflow.parentFolderID,
+        updateTime: Date.now(),
+      });
+    }
     saveJsonFileMyWorkflows(after);
   }
 }
 
-export function saveJsonFileMyWorkflows(workflow: Workflow) {
+export async function saveJsonFileMyWorkflows(workflow: Workflow) {
   const file_path = generateFilePath(workflow);
   if (file_path == null) {
     return;
@@ -169,8 +175,8 @@ export function saveJsonFileMyWorkflows(workflow: Workflow) {
   if (workspace != null) {
     const fullPath = generateFilePathAbsolute(workflow);
     workspace[workflow.id].filePath = fullPath ?? undefined;
-    updateWorkspaceIndexDB();
-    saveDB("workflows", JSON.stringify(workspace));
+    await updateWorkspaceIndexDB();
+    await saveDB("workflows", JSON.stringify(workspace));
   }
   const json = workflow.json;
   const flow = JSON.parse(json);
@@ -178,14 +184,7 @@ export function saveJsonFileMyWorkflows(workflow: Workflow) {
     id: workflow.id,
     name: workflow.name,
   };
-  updateFile(file_path, JSON.stringify(flow));
-}
-
-export function getFlow(id: string): Workflow | undefined {
-  if (workspace == null) {
-    return undefined;
-  }
-  return workspace[id];
+  await updateFile(file_path, JSON.stringify(flow));
 }
 
 export function createFlow({
@@ -228,20 +227,35 @@ export function createFlow({
   return workspace[uuid];
 }
 
+/**
+ * Add flows in batches
+ * @param flowList Need to add a new flow list
+ * @param isOverwriteExistingFile By automatically scanning the newly added flow on the local disk,
+ *  when synchronizing the DB, the flow on the local disk needs to be rewritten
+ * because extra.comfyspace_tracking.id needs to be appended to json.
+ * @param parentFolderID If you are adding batches to the specified files, provide the folder id.
+ * @returns
+ */
 export async function batchCreateFlows(
-  flowList: ImportWorkflow[]
+  flowList: ImportWorkflow[] = [],
+  isOverwriteExistingFile: boolean = false,
+  parentFolderID?: string
 ): Promise<string | undefined> {
   flowList.forEach((flow) => {
     if (workspace == null) {
       return;
     }
-    const newFlowName = generateUniqueName(flow.name);
+    const newFlowName =
+      flow.name && isOverwriteExistingFile
+        ? flow.name
+        : generateUniqueName(flow.name);
     const uuid = uuidv4();
     const time = Date.now();
     workspace[uuid] = {
       id: uuid,
       name: newFlowName,
       json: flow.json,
+      parentFolderID: parentFolderID,
       updateTime: time,
       createTime: time,
       tags: [],

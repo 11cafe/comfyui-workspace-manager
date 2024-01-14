@@ -25,6 +25,7 @@ export type UserSettings = {
     save: string;
   };
   autoSave?: boolean;
+  twoWaySync?: boolean;
 };
 
 export interface PanelPosition {

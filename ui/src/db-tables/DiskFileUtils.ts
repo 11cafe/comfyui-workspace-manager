@@ -1,6 +1,9 @@
 import { deleteFile, saveDB, updateFile } from "../Api";
 import { Workflow, foldersTable, userSettingsTable } from "./WorkspaceDB";
-import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
+import {
+  COMFYSPACE_TRACKING_FIELD_NAME,
+  LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
+} from "../const";
 
 import { toFileNameFriendly } from "../utils";
 
@@ -17,9 +20,9 @@ export function saveJsonFileMyWorkflows(
 
   const json = workflow.json;
   const flow = JSON.parse(json);
+  delete flow.extra[LEGACY_COMFYSPACE_TRACKING_FIELD_NAME];
   flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {
     id: workflow.id,
-    name: workflow.name,
   };
   updateFile(file_path, JSON.stringify(flow));
 }

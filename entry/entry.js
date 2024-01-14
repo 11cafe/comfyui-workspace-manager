@@ -10,9 +10,8 @@ const callback = function (mutationsList, observer) {
       // @ts-ignore
       mutation.addedNodes.forEach((node) => {
         if (node.nodeName === "CANVAS") {
-          import("./main.tsx").then(({ setupReact }) => {
-            setupReact();
-          });
+          // @ts-ignore
+          import("/workspace_web/input.js");
           observer.disconnect();
         }
       });
