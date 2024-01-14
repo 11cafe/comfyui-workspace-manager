@@ -9,10 +9,14 @@ import {
   IconTriangleInvertedFilled,
 } from "@tabler/icons-react";
 import DropdownTitle from "../components/DropdownTitle";
-import { useContext, useState } from "react";
+import { Suspense, useContext, useEffect, useState } from "react";
 import EditFlowName from "../components/EditFlowName";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { PanelPosition } from "../types/dbTypes";
+import React from "react";
+const ModelManagerTopbar = React.lazy(
+  () => import("../model-manager/topbar/ModelManagerTopbar")
+);
 interface Props {
   positionStyle: PanelPosition;
   updatePanelPosition: (
@@ -31,7 +35,10 @@ export function Topbar({
   const [isHovered, setIsHovered] = useState(false);
   const { isDirty, loadNewWorkflow, saveCurWorkflow, setRoute, curFlowID } =
     useContext(WorkspaceContext);
-
+  const [loadChild, setLoadChild] = useState(false);
+  useEffect(() => {
+    setLoadChild(true);
+  }, []);
   return (
     <Draggable
       onDragEnd={(position: { x: number; y: number }) => {
@@ -113,22 +120,11 @@ export function Topbar({
             />
           </Tooltip>
         )}
-
-        <Button
-          size={"sm"}
-          variant={"outline"}
-          colorScheme="teal"
-          aria-label="My models"
-          onClick={() => setRoute("myModels")}
-          px={2}
-        >
-          <HStack gap={1}>
-            <Text color={"white"} fontSize={"sm"}>
-              My models
-            </Text>
-          </HStack>
-        </Button>
-
+        {/* {loadChild && (
+          <Suspense>
+            <ModelManagerTopbar />
+          </Suspense>
+        )} */}
         {isHovered && (
           <IconGripVertical
             id="dragPanelIcon"

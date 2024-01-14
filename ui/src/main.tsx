@@ -1,6 +1,5 @@
-import React from "react";
+import React, { Suspense } from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.tsx";
 import { ColorModeScript } from "@chakra-ui/react";
 import { ChakraProvider } from "@chakra-ui/react";
 import { AlertDialogProvider } from "./components/AlertDialogProvider.tsx";
@@ -8,6 +7,11 @@ import CSSReset from "./MyCSSReset.tsx";
 
 const topbar = document.createElement("div");
 document.body.append(topbar);
+const App = React.lazy(() =>
+  import("./App.tsx").then(({ default: App }) => ({
+    default: App,
+  }))
+);
 
 ReactDOM.createRoot(topbar).render(
   <React.StrictMode>
@@ -15,7 +19,9 @@ ReactDOM.createRoot(topbar).render(
       <CSSReset scope=".workspace_manager" />
       <ColorModeScript />
       <AlertDialogProvider>
-        <App />
+        <Suspense>
+          <App />
+        </Suspense>
       </AlertDialogProvider>
     </ChakraProvider>
   </React.StrictMode>
