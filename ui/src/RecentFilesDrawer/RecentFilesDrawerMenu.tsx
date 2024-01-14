@@ -4,19 +4,15 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
-  useDisclosure,
   useColorMode,
 } from "@chakra-ui/react";
 import {
-  IconBurger,
-  IconHistory,
   IconMenu2,
   IconMoon,
   IconSettings,
   IconSun,
   IconTag,
 } from "@tabler/icons-react";
-import ViewBackupsModal from "../modals/ViewBackupsModal";
 import ManageTagsModal from "./ManageTagsModal";
 import { useState } from "react";
 import WorkspaceSettingsModal from "./WorkspaceSettingsModal";
@@ -25,7 +21,6 @@ type Props = {
   //   onclose: () => void;
 };
 export default function RecentFilesDrawerMenu({}: Props) {
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [isManageTagsOpen, setIsManageTagsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { colorMode, toggleColorMode } = useColorMode();
@@ -68,13 +63,6 @@ export default function RecentFilesDrawerMenu({}: Props) {
           >
             {colorMode === "light" ? "Dark" : "Light"} Mode
           </MenuItem>
-          <MenuItem
-            onClick={onOpen}
-            icon={<IconHistory size={ICON_SIZE} />}
-            fontSize={16}
-          >
-            Backups (Experimental)
-          </MenuItem>
         </MenuList>
       </Menu>
       {isManageTagsOpen && (
@@ -83,7 +71,6 @@ export default function RecentFilesDrawerMenu({}: Props) {
       {isSettingsOpen && (
         <WorkspaceSettingsModal onClose={() => setIsSettingsOpen(false)} />
       )}
-      {isOpen && <ViewBackupsModal onclose={onClose} />}
     </>
   );
 }

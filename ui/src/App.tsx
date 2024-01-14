@@ -377,11 +377,11 @@ export default function App() {
     >
       <div ref={workspaceContainerRef} className="workspace_manager">
         <Portal containerRef={workspaceContainerRef}>
-          {loadChild && (
+          {/* {loadChild && (
             <Suspense>
               <ModelManager />
             </Suspense>
-          )}
+          )} */}
           <Box
             style={{
               width: "100vh",
