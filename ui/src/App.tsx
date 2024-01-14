@@ -25,6 +25,8 @@ import {
   getFileUrl,
   matchSaveWorkflowShortcut,
   validateOrSaveAllJsonFileMyWorkflows,
+  getWorkflowIdInUrlHash,
+  generateUrlHashWithFlowId,
 } from "./utils";
 import GalleryModal from "./gallery/GalleryModal";
 import { Topbar } from "./topbar/Topbar";
@@ -37,7 +39,6 @@ const RecentFilesDrawer = React.lazy(
   () => import("./RecentFilesDrawer/RecentFilesDrawer")
 );
 import { scanLocalNewFiles } from "./Api";
-import { NEW_TAB_OPEN_SPECIFIED_FLOW_ID } from "./const";
 // const RecentFilesDrawer = React.lazy(
 //   () => import("./RecentFilesDrawer/RecentFilesDrawer")
 // );
@@ -84,16 +85,6 @@ export default function App() {
     }
   };
 
-  const setCurFlowID = (id: string) => {
-    curFlowID.current = id;
-    setFlowID(id);
-    const workflow = getWorkflow(id);
-    if (workflow) {
-      localStorage.setItem("curFlowID", id);
-      // localStorage.setItem("comfy_workspace_workflow", workflow.json);
-    }
-  };
-
   const graphAppSetup = async () => {
     const ext: ComfyExtension = {
       // Unique name for the extension
@@ -122,20 +113,22 @@ export default function App() {
     }
     setLoadingDB(false);
 
-    const specifiedFlowId = localStorage.getItem(
-      NEW_TAB_OPEN_SPECIFIED_FLOW_ID
-    );
-    const latest = specifiedFlowId ?? localStorage.getItem("curFlowID");
-    const latestWf = latest != null ? getWorkflow(latest) : null;
+    let latestWf = null;
+    const urlHashFlowId = getWorkflowIdInUrlHash();
+    if (urlHashFlowId && getWorkflow(urlHashFlowId)) {
+      latestWf = getWorkflow(urlHashFlowId);
+    } else {
+      const localStorageFlowId = localStorage.getItem("curFlowID");
+      if (localStorageFlowId && getWorkflow(localStorageFlowId)) {
+        latestWf = getWorkflow(localStorageFlowId);
+      }
+    }
 
     if (latestWf) {
       latestWf && localStorage.setItem("workflow", latestWf.json);
-      setCurFlowID(latestWf.id ?? null);
+      curFlowID.current = latestWf.id;
+      setFlowID(latestWf.id);
       setCurFlowName(latestWf.name ?? null);
-    }
-
-    if (specifiedFlowId) {
-      localStorage.removeItem(NEW_TAB_OPEN_SPECIFIED_FLOW_ID);
     }
 
     /**
@@ -204,13 +197,24 @@ export default function App() {
       console.error("app.graph is null cannot load workflow");
       return;
     }
-    setCurFlowID(id);
+
     const flow = getWorkflow(id);
 
     if (flow == null) {
       alert("Error: Workflow not found! id: " + id);
       return;
     }
+
+    if (getWorkflowIdInUrlHash()) {
+      const newUrlHash = generateUrlHashWithFlowId(id);
+      window.location.hash = newUrlHash;
+    } else {
+      localStorage.setItem("curFlowID", id);
+    }
+
+    curFlowID.current = id;
+    setFlowID(id);
+
     app.ui.dialog.close();
     app.loadGraphData(JSON.parse(flow.json));
     setCurFlowName(flow.name);
@@ -342,7 +346,9 @@ export default function App() {
           name: fileInput.files[0].name,
           json: JSON.stringify(defaultGraph),
         });
-        setCurFlowID(flow.id);
+        curFlowID.current = flow.id;
+        setFlowID(flow.id);
+        localStorage.setItem("curFlowID", flow.id);
         setCurFlowName(flow.name ?? "Unknown name");
       }
     };

@@ -11,13 +11,16 @@ import {
 } from "@chakra-ui/react";
 import { IconExternalLink } from "@tabler/icons-react";
 import { Workflow, isFolder, updateFlow } from "../db-tables/WorkspaceDB";
-import { formatTimestamp, isImageFormat } from "../utils";
+import {
+  formatTimestamp,
+  generateUrlHashWithFlowId,
+  isImageFormat,
+} from "../utils";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import { useState, memo, ChangeEvent, useContext } from "react";
 import WorkflowListItemRightClickMenu from "./WorkflowListItemRightClickMenu";
 import DeleteConfirm from "../components/DeleteConfirm";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
-import { NEW_TAB_OPEN_SPECIFIED_FLOW_ID } from "../const";
 
 type Props = {
   workflow: Workflow;
@@ -54,8 +57,8 @@ export default function WorkflowListItem({ workflow }: Props) {
   const hoverBgColor = colorMode === "light" ? "gray.200" : "#4A5568";
 
   const openNewTab = () => {
-    window.localStorage.setItem(NEW_TAB_OPEN_SPECIFIED_FLOW_ID, workflow.id);
-    window.open(window.location.href);
+    const newHash = generateUrlHashWithFlowId(workflow.id);
+    window.open(`${window.location.origin}/#${newHash}`);
   };
 
   const basicInfoComp = (
