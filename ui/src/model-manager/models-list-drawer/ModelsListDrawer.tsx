@@ -1,10 +1,19 @@
-import { Box, Card, Input } from "@chakra-ui/react";
+import {
+  Box,
+  Card,
+  CardHeader,
+  Flex,
+  Heading,
+  Input,
+  Portal,
+} from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { ModelsTags } from "./ModelsTags";
 import { ModelsList } from "./ModelsList";
 import SearchInput from "../../components/SearchInput";
 // @ts-ignore
 import { app } from "/scripts/app.js";
+import InstallModelsButton from "../install-models/InstallModelsButton";
 interface Props {
   onClose: () => void;
 }
@@ -60,32 +69,36 @@ export default function ModelsListDrawer({ onClose }: Props) {
 
   const DRAWER_WIDTH = 440;
   return (
-    <Box style={{ width: DRAWER_WIDTH }}>
-      <Card
-        width={DRAWER_WIDTH}
-        height={"100vh"}
-        pl={4}
-        pr={5}
-        pt={4}
-        gap={4}
-        position={"absolute"}
-        top={0}
-        left={0}
-        shadow={"xl"}
-        zIndex={1000}
-        overflow="auto"
-      >
-        {/* <SearchInput
-          searchValue={searchValue}
-          onUpdateSearchValue={setSearchValue}
-        /> */}
-        <ModelsTags
-          modelTypeList={modelTypeList}
-          setSelectedModel={setSelectedModel}
-          selectedModel={selectedModel}
-        />
-        <ModelsList list={curModelList} />
-      </Card>
-    </Box>
+    <Portal>
+      <Box style={{ width: DRAWER_WIDTH }}>
+        <Card
+          width={DRAWER_WIDTH}
+          height={"100vh"}
+          p={4}
+          gap={2}
+          position={"fixed"}
+          top={0}
+          left={0}
+          shadow={"xl"}
+          zIndex={1000}
+          overflowY={"auto"}
+        >
+          <CardHeader>
+            <Flex justifyContent={"space-between"} alignContent={"center"}>
+              <Heading size={"md"} mr={2}>
+                Models
+              </Heading>
+              <InstallModelsButton />
+            </Flex>
+          </CardHeader>
+          <ModelsTags
+            modelTypeList={modelTypeList}
+            setSelectedModel={setSelectedModel}
+            selectedModel={selectedModel}
+          />
+          <ModelsList list={curModelList} />
+        </Card>
+      </Box>
+    </Portal>
   );
 }

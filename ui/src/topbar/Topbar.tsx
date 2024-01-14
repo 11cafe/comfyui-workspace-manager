@@ -120,11 +120,11 @@ export function Topbar({
             />
           </Tooltip>
         )}
-        {/* {loadChild && (
+        {loadChild && (
           <Suspense>
             <ModelManagerTopbar />
           </Suspense>
-        )} */}
+        )}
         {isHovered && (
           <IconGripVertical
             id="dragPanelIcon"
