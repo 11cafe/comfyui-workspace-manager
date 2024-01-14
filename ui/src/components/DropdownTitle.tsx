@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import {
@@ -106,6 +107,7 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
     URL.revokeObjectURL(url);
   }, [curFlowID]);
   const saveShortcut = userSettingsTable?.getSetting("shortcuts")?.save;
+
   return (
     <>
       <Menu isLazy={true}>

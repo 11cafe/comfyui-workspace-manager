@@ -1,15 +1,18 @@
-import { Button } from "@chakra-ui/react";
-import { IconFileImport } from "@tabler/icons-react";
 import { ChangeEvent, useContext, useRef } from "react";
 import { batchCreateFlows } from "../db-tables/WorkspaceDB";
 import { RecentFilesContext } from "../WorkspaceContext";
 import { getPngMetadata } from "../utils";
 import { ImportWorkflow } from "./types";
 
-export default function ImportJsonFlows() {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+interface Props {
+  fileInputRef: React.RefObject<HTMLInputElement>;
+  parentFolderID?: string;
+}
+export default function ImportFlowsFileInput({
+  parentFolderID,
+  fileInputRef,
+}: Props) {
   const { onRefreshFilesList } = useContext(RecentFilesContext);
-
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
@@ -54,31 +57,22 @@ export default function ImportJsonFlows() {
     }
 
     if (parsedFileList.length) {
-      await batchCreateFlows(parsedFileList);
+      await batchCreateFlows(parsedFileList, undefined, parentFolderID);
       onRefreshFilesList && onRefreshFilesList();
     }
   };
 
   return (
-    <Button
-      leftIcon={<IconFileImport size={18} />}
-      variant="outline"
-      iconSpacing={1}
-      size={"sm"}
-      colorScheme="teal"
-      onClick={() => {
-        fileInputRef.current?.click();
+    <input
+      style={{ display: "none" }}
+      ref={fileInputRef}
+      type="file"
+      accept=".json,image/png"
+      multiple
+      onChange={handleFileChange}
+      onClick={(e) => {
+        e.stopPropagation();
       }}
-    >
-      Import
-      <input
-        style={{ display: "none" }}
-        ref={fileInputRef}
-        type="file"
-        accept=".json,image/png"
-        multiple
-        onChange={handleFileChange}
-      />
-    </Button>
+    />
   );
 }

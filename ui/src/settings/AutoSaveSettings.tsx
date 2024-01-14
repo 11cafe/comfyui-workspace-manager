@@ -2,7 +2,7 @@ import { Checkbox, Input, Stack, Text } from "@chakra-ui/react";
 import { useState } from "react";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 
-export function AutoSaveSettings() {
+export default function AutoSaveSettings() {
   const curSetting = userSettingsTable?.getSetting("autoSave");
 
   const [checked, setChecked] = useState(curSetting ?? true);
