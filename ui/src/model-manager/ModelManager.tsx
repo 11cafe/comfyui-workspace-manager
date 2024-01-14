@@ -5,7 +5,7 @@ import { app } from "/scripts/app.js";
 import { api } from "/scripts/api.js";
 import { Box, Portal } from "@chakra-ui/react";
 
-import { Topbar } from "./topbar/ModelManagerTopbar";
+import ModelManagerTopbar from "./topbar/ModelManagerTopbar";
 import { Route } from "./types";
 import InatallModelsModal from "./install-models/InatallModelsModal";
 import { ManagerContext } from "./ManagerContext";
@@ -26,7 +26,7 @@ export default function ModelManager() {
         zIndex={1000}
         draggable={false}
       >
-        <Topbar />
+        <ModelManagerTopbar />
 
         {route === "models" && (
           <InatallModelsModal onclose={() => setRoute("root")} />

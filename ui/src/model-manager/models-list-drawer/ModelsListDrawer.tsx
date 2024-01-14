@@ -9,7 +9,7 @@ interface Props {
   onClose: () => void;
 }
 
-export function ModelsListDrawer({ onClose }: Props) {
+export default function ModelsListDrawer({ onClose }: Props) {
   const [selectedModel, setSelectedModel] = useState("checkpoints");
 
   // all model types
