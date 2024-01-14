@@ -55,7 +55,6 @@ export default function ImportFlowsFileInput({
         });
       }
     }
-    console.log("parsedFileList", parsedFileList);
 
     if (parsedFileList.length) {
       await batchCreateFlows(parsedFileList, undefined, parentFolderID);

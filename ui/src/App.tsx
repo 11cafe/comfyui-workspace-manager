@@ -31,7 +31,6 @@ import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
 import { PanelPosition } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
 import React from "react";
-const ModelManager = React.lazy(() => import("./model-manager/ModelManager"));
 const RecentFilesDrawer = React.lazy(
   () => import("./RecentFilesDrawer/RecentFilesDrawer")
 );
@@ -377,11 +376,6 @@ export default function App() {
     >
       <div ref={workspaceContainerRef} className="workspace_manager">
         <Portal containerRef={workspaceContainerRef}>
-          {/* {loadChild && (
-            <Suspense>
-              <ModelManager />
-            </Suspense>
-          )} */}
           <Box
             style={{
               width: "100vh",
