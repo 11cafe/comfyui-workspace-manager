@@ -14,12 +14,7 @@ import { Folder } from "./types/dbTypes";
 // @ts-ignore
 import { app, ComfyApp } from "/scripts/app.js";
 
-export type Route =
-  | "root"
-  | "customNodes"
-  | "recentFlows"
-  | "gallery"
-  | "myModels";
+export type Route = "root" | "customNodes" | "recentFlows" | "gallery";
 
 // copied from app.js
 function sanitizeNodeName(string: string): string {

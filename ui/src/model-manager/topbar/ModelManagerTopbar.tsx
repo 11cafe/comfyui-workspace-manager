@@ -1,9 +1,5 @@
-import { Box, Button, HStack } from "@chakra-ui/react";
-import Draggable from "../components/Draggable";
-import { IconGripVertical } from "@tabler/icons-react";
+import { Button } from "@chakra-ui/react";
 import { useCallback, useContext, useEffect, useState } from "react";
-import { ManagerContext } from "../ManagerContext";
-import { PanelPosition } from "../types";
 import React from "react";
 import ModelsListDrawer from "../models-list-drawer/ModelsListDrawer";
 
@@ -19,13 +15,13 @@ export default function ModelManagerTopbar({}: Props) {
     <>
       <Button
         size={"sm"}
-        variant={"outline"}
-        colorScheme="teal"
+        colorScheme="blue"
         aria-label="My models"
         onClick={() => setShowMyModels(true)}
         px={2}
+        ml={4}
       >
-        My models
+        Models
       </Button>
       {showMyModels && (
         <ModelsListDrawer onClose={() => setShowMyModels(false)} />

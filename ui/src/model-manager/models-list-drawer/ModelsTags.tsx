@@ -21,7 +21,7 @@ export function ModelsTags({
         return (
           <WrapItem>
             <Button
-              colorScheme="teal"
+              colorScheme="blue"
               variant={selectedModel === v ? "solid" : "outline"}
               onClick={() => clickHanlder(v)}
               size={"sm"}

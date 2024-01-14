@@ -15,7 +15,6 @@ import {
 } from "@chakra-ui/react";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { IconX } from "@tabler/icons-react";
-import { useDialog } from "../components/AlertDialogProvider";
 import { CivitiModel, CivitiModelFileVersion } from "../types";
 import { InstallModelsApiInput, installModelsApi } from "../api/modelsApi";
 import ModelCard from "./ModelCard";
@@ -55,7 +54,11 @@ const MODEL_TYPE_TO_FOLDER_MAPPING: Record<MODEL_TYPE, string> = {
   Upscaler: "upscale_models",
   VAE: "vae",
 };
-export default function GalleryModal({ onclose }: { onclose: () => void }) {
+export default function InatallModelsModal({
+  onclose,
+}: {
+  onclose: () => void;
+}) {
   const [selectedID, setSelectedID] = useState<string[]>([]);
   const [isSelecting, setIsSelecting] = useState(false);
   const [models, setModels] = useState<CivitiModel[]>([]);
@@ -71,10 +74,12 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
     const params: CivitModelQueryParams = {
       limit: "30",
       nsfw: "false",
-      types: modelType,
     };
     if (searchQuery !== "") {
       params.query = searchQuery;
+    }
+    if (modelType != null) {
+      params.types = modelType;
     }
 
     const queryString = new URLSearchParams(params).toString();
@@ -176,9 +181,6 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
               />
             </HStack>
           )}
-        </ModalHeader>
-        <ModalCloseButton />
-        <ModalBody overflowY={"auto"}>
           {loading && (
             <Spinner
               thickness="4px"
@@ -187,6 +189,9 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
               size="lg"
             />
           )}
+        </ModalHeader>
+        <ModalCloseButton />
+        <ModalBody overflowY={"auto"}>
           <HStack wrap={"wrap"}>
             {models?.map((model) => {
               return (

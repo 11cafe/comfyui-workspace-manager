@@ -77,6 +77,7 @@ export function Topbar({
           aria-label="new workflow"
           onClick={() => loadNewWorkflow()}
           px={2}
+          py={2}
         >
           <HStack gap={1}>
             <IconPlus size={16} color={"white"} />
@@ -109,9 +110,10 @@ export function Topbar({
             <DropdownTitle onClick={() => setIsHovered(false)} />
           </HStack>
         )}
-        {curFlowID && isDirty && (
+        {curFlowID && isDirty ? (
           <Tooltip label="Save workflow">
             <IconButton
+              style={{ width: 22 }}
               onClick={saveCurWorkflow}
               icon={<IconDeviceFloppy size={22} color="white" />}
               size={"xs"}
@@ -119,12 +121,14 @@ export function Topbar({
               variant={"ghost"}
             />
           </Tooltip>
+        ) : (
+          <div style={{ width: 22 }} />
         )}
-        {/* {loadChild && (
+        {loadChild && (
           <Suspense>
             <ModelManagerTopbar />
           </Suspense>
-        )} */}
+        )}
         {isHovered && (
           <IconGripVertical
             id="dragPanelIcon"
