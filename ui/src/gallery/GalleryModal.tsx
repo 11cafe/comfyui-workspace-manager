@@ -18,14 +18,15 @@ import {
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState } from "react";
 import { getWorkflow, mediaTable, updateFlow } from "../db-tables/WorkspaceDB";
-import { IconDownload, IconPin, IconPinFilled, IconTrash, IconX } from "@tabler/icons-react";
+import {IconArrowLeft, IconDownload, IconPin, IconPinFilled, IconTrash, IconX} from '@tabler/icons-react'
 import { WorkspaceContext } from "../WorkspaceContext";
 import { formatTimestamp, isImageFormat } from "../utils";
 import { useDialog } from "../components/AlertDialogProvider";
 import { Media } from "../types/dbTypes";
+import {MetaDataInfo} from './components/MetaDataInfo.tsx'
 const IMAGE_SIZE = 200;
 export default function GalleryModal({ onclose }: { onclose: () => void }) {
-  const { curFlowID, loadNewWorkflow, loadFilePath } =
+  const { curFlowID, loadFilePath } =
     useContext(WorkspaceContext);
   const workflow = curFlowID != null ? getWorkflow(curFlowID) : null;
   const [selectedID, setSelectedID] = useState<string[]>([]);
@@ -33,6 +34,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
   const [coverPath, setCoverPath] = useState(workflow?.coverMediaPath);
   const [images, setImages] = useState<Media[]>([]);
   const { showDialog } = useDialog();
+  const [metaData, setMetaData] = useState<Media>()
   const loadData = async () => {
     if (curFlowID == null) return;
 
@@ -59,7 +61,8 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
       }
       return;
     }
-    window.open(`/workspace/view_media?filename=${media.localPath}`);
+    setMetaData(media)
+    // window.open(`/workspace/view_media?filename=${media.localPath}`);
   };
   const isAllSelected =
     images.length > 0 && selectedID.length === images.length;
@@ -70,6 +73,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
         <ModalHeader>
           <HStack gap={2} mb={2}>
             <Heading size={"md"} mr={2}>
+              {!!metaData && <IconButton onClick={() => setMetaData(undefined)} variant={'ghost'} mr={1} aria-label={'back'} icon={<IconArrowLeft />} />}
               Gallery - {workflow?.name}
             </Heading>
             {/* <Button
@@ -110,7 +114,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody overflowY={"auto"}>
-          <HStack wrap={"wrap"}>
+          {!metaData ? <HStack wrap={"wrap"}>
             {images.map((media) => {
               if (media.localPath == null) {
                 return null;
@@ -252,7 +256,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
                 </Stack>
               );
             })}
-          </HStack>
+          </HStack> : <MetaDataInfo mediaList={images} media={metaData} />}
         </ModalBody>
       </ModalContent>
     </Modal>
