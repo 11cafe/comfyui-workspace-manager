@@ -81,9 +81,16 @@ export default function App() {
     }
   };
 
-  const setCurFlowID = (id: string) => {
+  const setCurFlowIDAndName = (id: string, name: string) => {
     curFlowID.current = id;
     setFlowID(id);
+    setCurFlowName(name);
+    if (getWorkflowIdInUrlHash()) {
+      const newUrlHash = generateUrlHashWithFlowId(id);
+      window.location.hash = newUrlHash;
+    } else {
+      localStorage.setItem("curFlowID", id);
+    }
   };
 
   const graphAppSetup = async () => {
@@ -126,9 +133,7 @@ export default function App() {
     }
 
     if (latestWf) {
-      latestWf && localStorage.setItem("workflow", latestWf.json);
-      setCurFlowID(latestWf.id);
-      setCurFlowName(latestWf.name ?? null);
+      setCurFlowIDAndName(latestWf.id, latestWf.name);
     }
 
     /**
@@ -206,19 +211,9 @@ export default function App() {
       alert("Error: Workflow not found! id: " + id);
       return;
     }
-
-    if (getWorkflowIdInUrlHash()) {
-      const newUrlHash = generateUrlHashWithFlowId(id);
-      window.location.hash = newUrlHash;
-    } else {
-      localStorage.setItem("curFlowID", id);
-    }
-
-    setCurFlowID(id);
-
+    setCurFlowIDAndName(id, flow.name);
     app.ui.dialog.close();
     app.loadGraphData(JSON.parse(flow.json));
-    setCurFlowName(flow.name);
     setRoute("root");
   };
   const loadWorkflowID = (id: string) => {
@@ -347,9 +342,8 @@ export default function App() {
           name: fileInput.files[0].name,
           json: JSON.stringify(defaultGraph),
         });
-        setCurFlowID(flow.id);
-        localStorage.setItem("curFlowID", flow.id);
-        setCurFlowName(flow.name ?? "Unknown name");
+
+        setCurFlowIDAndName(flow.id, flow.name ?? "Unknown name");
       }
     };
     fileInput?.addEventListener("change", fileInputListener);
