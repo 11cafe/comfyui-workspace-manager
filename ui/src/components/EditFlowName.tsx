@@ -83,7 +83,9 @@ export default function EditFlowName({
           overflow="hidden"
           textOverflow="ellipsis"
         >
-          {isDirty && "* "}
+          <div style={{ width: 8, display: "inline-block" }}>
+            <Text as="span">{isDirty && "* "}</Text>
+          </div>
           {displayName}
         </Text>
       </Tooltip>

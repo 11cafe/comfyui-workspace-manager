@@ -188,7 +188,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
     setSearchValue(newValue);
   };
 
-  const DRAWER_WIDTH = 440;
+  const DRAWER_WIDTH = 450;
   return (
     <RecentFilesContext.Provider
       value={{
