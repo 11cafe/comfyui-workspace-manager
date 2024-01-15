@@ -6,8 +6,20 @@ interface Props {}
 
 export default function InstallMissingModelsButton({}: Props) {
   useEffect(() => {
-    const graphJson = app.graph.serialize();
-    console.log(graphJson);
+    setTimeout(() => {
+      const graphJson = app.graph.serialize();
+      console.log(graphJson);
+      fetch("/model_manager/find_missing_models", {
+        method: "POST",
+        body: JSON.stringify({
+          workflow: graphJson,
+        }),
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          console.log(res);
+        });
+    }, 2000);
   }, []);
   return (
     <Button size={"sm"} aria-label="missing models" px={2}>

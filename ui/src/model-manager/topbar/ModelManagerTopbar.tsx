@@ -23,6 +23,7 @@ export default function ModelManagerTopbar({}: Props) {
       >
         Models
       </Button>
+      <AddMissingModelsButton />
       {showMyModels && (
         <ModelsListDrawer onClose={() => setShowMyModels(false)} />
       )}
