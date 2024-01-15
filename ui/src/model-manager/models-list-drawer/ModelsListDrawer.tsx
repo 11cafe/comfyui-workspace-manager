@@ -12,12 +12,13 @@ import { ModelsTags } from "./ModelsTags";
 import { ModelsList } from "./ModelsList";
 import SearchInput from "../../components/SearchInput";
 // @ts-ignore
-import { app } from "/scripts/app.js";
+// const app = window.app;
 import InstallModelsButton from "../install-models/InstallModelsButton";
 interface Props {
   onClose: () => void;
 }
 
+const app = window.app;
 export default function ModelsListDrawer({ onClose }: Props) {
   const [selectedModel, setSelectedModel] = useState("checkpoints");
 

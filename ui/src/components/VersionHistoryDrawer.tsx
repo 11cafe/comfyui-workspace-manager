@@ -21,9 +21,9 @@ import { useContext, useEffect, useState } from "react";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { formatTimestamp } from "../utils";
 // @ts-ignore
-import { app } from "/scripts/app.js";
+// const app = window.app;
 import { Changelog } from "../types/dbTypes";
-
+const app = window.app;
 export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
   const { curFlowID, isDirty } = useContext(WorkspaceContext);
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);

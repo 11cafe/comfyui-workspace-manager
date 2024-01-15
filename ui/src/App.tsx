@@ -1,8 +1,8 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 // @ts-ignore
-import { app } from "/scripts/app.js";
+// import { app } from "../../../../web/scripts/app.js";
 // @ts-ignore
-import { api } from "/scripts/api.js";
+import { api } from "../../../../web/scripts/api.js";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
 import { Box, Portal } from "@chakra-ui/react";
 import {
@@ -35,6 +35,8 @@ const RecentFilesDrawer = React.lazy(
   () => import("./RecentFilesDrawer/RecentFilesDrawer")
 );
 import { scanLocalNewFiles } from "./Api";
+
+const app = window.app;
 export default function App() {
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
@@ -88,6 +90,7 @@ export default function App() {
   };
 
   const graphAppSetup = async () => {
+    console.log("graphAppSetup");
     const ext: ComfyExtension = {
       // Unique name for the extension
       name: "WorkspaceManager",
@@ -387,6 +390,7 @@ export default function App() {
             zIndex={1000}
             draggable={false}
           >
+            2222
             <Topbar
               curFlowName={curFlowName}
               setCurFlowName={setCurFlowName}

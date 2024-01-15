@@ -1,6 +1,6 @@
 import { Box, Button, HStack } from "@chakra-ui/react";
 // @ts-ignore
-import { app } from "/scripts/app.js";
+const app = window.app;
 import { useEffect } from "react";
 interface Props {}
 

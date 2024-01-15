@@ -1,5 +1,5 @@
 // @ts-ignore
-import { api } from "/scripts/api.js";
+const app = window.app;
 
 export type InstallModelsApiInput = {
   save_path: string;

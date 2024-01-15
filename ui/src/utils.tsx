@@ -12,7 +12,8 @@ import {
 import { generateFilePathAbsolute } from "./db-tables/DiskFileUtils";
 import { Folder } from "./types/dbTypes";
 // @ts-ignore
-import { app, ComfyApp } from "/scripts/app.js";
+// import { app } from "../../../../web/scripts/app.js";
+const app = window.app;
 
 export type Route = "root" | "customNodes" | "recentFlows" | "gallery";
 

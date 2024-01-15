@@ -39,7 +39,7 @@ import WorkflowListItem from "./WorkflowListItem";
 import MultipleSelectionOperation from "./MultipleSelectionOperation";
 import { ESortTypes, sortTypeLocalStorageKey } from "./types";
 // @ts-ignore
-import { app } from "/scripts/app.js";
+const app = window.app;
 import { insertWorkflowToCanvas3 } from "./InsertWorkflowToCanvas";
 import FilesListFolderItem from "./FilesListFolderItem";
 import { useDebounce } from "../customHooks/useDebounce";
