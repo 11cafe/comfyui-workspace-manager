@@ -159,3 +159,18 @@ export async function scanLocalNewFiles(path: string, existFlowIds: string[]) {
     console.error("Error scan local new files:", error);
   }
 }
+
+export async function getAllModelsList() {
+  try {
+    const response = await fetch("/model_manager/get_model_list", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error get all models list:", error);
+  }
+}
