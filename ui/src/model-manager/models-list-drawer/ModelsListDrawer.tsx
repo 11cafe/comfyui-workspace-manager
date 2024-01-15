@@ -58,6 +58,12 @@ export default function ModelsListDrawer({ onClose }: Props) {
     const modelTypeList = Array.from(
       new Set(res.map((item) => item.model_type))
     );
+    // checkpoints must be in first
+    const index = modelTypeList.indexOf("checkpoints");
+    if (index > 0) {
+      modelTypeList.splice(index, 1);
+      modelTypeList.unshift("checkpoints");
+    }
     setModelTypeList(modelTypeList);
     setModelsList(res);
   };

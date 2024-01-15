@@ -49,7 +49,7 @@ export function ModelItem({ data }: Props) {
 
   return (
     <Box position="relative" borderRadius={4}>
-      <Image src={url} boxSize="100%" objectFit="cover" borderRadius={4} />
+      <Image src={url} boxSize="100%" height={178} objectFit="cover" borderRadius={4} />
       <Text
         position="absolute"
         bottom="0"
