@@ -11,8 +11,10 @@ export class TableBase<T> {
   }
 
   public async listAll(): Promise<T[]> {
-    const records = await this.getRecords();
-    return Object.values(records);
+    const objs = await indexdb[this.tableName].toArray();
+    if (objs?.length) return objs as T[];
+    // const records = await this.getRecords();
+    // return Object.values(records);
   }
 
   public async getRecords(): Promise<Record<string, T>> {

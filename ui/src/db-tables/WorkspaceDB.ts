@@ -10,10 +10,10 @@ import {
   deleteJsonFileMyWorkflows,
   saveJsonFileMyWorkflows,
 } from "./DiskFileUtils";
-import { Folder, TagsTable } from "../types/dbTypes";
-import { loadTagsTable } from "./tagsTable";
+import { Folder } from "../types/dbTypes";
 import { UserSettingsTable } from "./UserSettingsTable";
 import { indexdb } from "./indexdb";
+import { TagsTable } from "./TagsTable";
 
 export type Table =
   | "workflows"
@@ -76,7 +76,7 @@ export async function loadDBs() {
     workspace = await loadTable("workflows");
   };
   const loadTags = async () => {
-    tagsTable = await loadTagsTable();
+    tagsTable = await TagsTable.load();
   };
   const loadUserSettings = async () => {
     userSettingsTable = await UserSettingsTable.load();
@@ -312,7 +312,7 @@ export async function curComfyspaceJson(): Promise<string> {
   const media = await mediaTable?.getRecords();
   return JSON.stringify({
     [UserSettingsTable.TABLE_NAME]: userSettingsTable?.records,
-    ["tags"]: tagsTable?.tags,
+    ["tags"]: {},
     ["workflows"]: workspace,
     [FoldersTable.TABLE_NAME]: foldersTable?.getRecords(),
     [ChangelogsTable.TABLE_NAME]: changeLogs,

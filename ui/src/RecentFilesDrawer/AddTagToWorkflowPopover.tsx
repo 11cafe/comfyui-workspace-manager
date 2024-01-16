@@ -12,10 +12,11 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import { useEffect, useState, useContext } from "react";
-import { Tag, Workflow, tagsTable, updateFlow } from "../db-tables/WorkspaceDB";
+import { Workflow, tagsTable, updateFlow } from "../db-tables/WorkspaceDB";
 import { IconPlus, IconTag } from "@tabler/icons-react";
 import { MultiValue, Select } from "chakra-react-select";
 import { RecentFilesContext } from "../WorkspaceContext";
+import { Tag } from "../types/dbTypes";
 
 type Props = {
   workflow: Workflow;
@@ -32,7 +33,11 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
   const [selectedTags, setSelectedTags] =
     useState<MultiValue<{ value: string; label: string }>>(initialTags);
   useEffect(() => {
-    tagsTable && setAllTags(tagsTable.listAll() ?? []);
+    const loadTags = async () => {
+      const tags = await tagsTable?.listAll();
+      setAllTags(tags ?? []);
+    };
+    loadTags();
   }, []);
   useEffect(() => {
     setSelectedTags(
@@ -121,9 +126,9 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
               size={"xs"}
               px={5}
               isDisabled={newTagName.length === 0}
-              onClick={() => {
-                tagsTable?.upsert(newTagName);
-                setAllTags(tagsTable?.listAll() ?? []);
+              onClick={async () => {
+                await tagsTable?.upsert(newTagName);
+                tagsTable?.listAll().then((tags) => setAllTags(tags ?? []));
                 setNewTagName("");
               }}
             >
