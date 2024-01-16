@@ -192,14 +192,18 @@ export async function saveJsonFileMyWorkflows(workflow: Workflow) {
 
 export async function rewriteAllLocalFiles() {
   for (const workflow of listWorkflows()) {
-    const fullPath = generateFilePathAbsolute(workflow);
-    const flow = JSON.parse(workflow.json);
-    flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {
-      id: workflow.id,
-      name: workflow.name,
-    };
-    delete flow.extra[LEGACY_COMFYSPACE_TRACKING_FIELD_NAME];
-    fullPath && (await updateFile(fullPath, JSON.stringify(flow)));
+    try {
+      const fullPath = generateFilePathAbsolute(workflow);
+      const flow = JSON.parse(workflow.json);
+      flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {
+        id: workflow.id,
+        name: workflow.name,
+      };
+      delete flow.extra[LEGACY_COMFYSPACE_TRACKING_FIELD_NAME];
+      fullPath && (await updateFile(fullPath, JSON.stringify(flow)));
+    } catch (error) {
+      console.error(error);
+    }
   }
 }
 
