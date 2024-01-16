@@ -1,8 +1,4 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
-// @ts-ignore
-// import { app } from "../../../../web/scripts/app.js";
-// @ts-ignore
-import { api } from "../../../../web/scripts/api.js";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
 import { Box, Portal } from "@chakra-ui/react";
 import {
@@ -36,7 +32,6 @@ const RecentFilesDrawer = React.lazy(
 );
 import { scanLocalNewFiles } from "./Api";
 
-const app = window.app;
 export default function App() {
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
@@ -49,9 +44,13 @@ export default function App() {
   const workspaceContainerRef = useRef(null);
   const { showDialog } = useDialog();
   const [loadChild, setLoadChild] = useState(false);
+  const developmentEnvLoadFirst = useRef(true);
+  const workspaceAppRegistered = useRef(false);
+
+  console.log("workspaceAppRegistered", workspaceAppRegistered.current);
   const saveCurWorkflow = useCallback(() => {
     if (curFlowID.current) {
-      const graphJson = JSON.stringify(app.graph.serialize());
+      const graphJson = JSON.stringify(window.app.graph.serialize());
       updateFlow(curFlowID.current, {
         lastSavedJson: graphJson,
         json: graphJson,
@@ -73,7 +72,7 @@ export default function App() {
       if (curFlowID.current) {
         const flow = getWorkflow(curFlowID.current);
         if (flow && flow.lastSavedJson) {
-          app.loadGraphData(JSON.parse(flow.lastSavedJson));
+          window.app.loadGraphData(JSON.parse(flow.lastSavedJson));
         }
       }
     }
@@ -90,11 +89,10 @@ export default function App() {
   };
 
   const graphAppSetup = async () => {
-    console.log("graphAppSetup");
     const ext: ComfyExtension = {
       // Unique name for the extension
       name: "WorkspaceManager",
-      async setup(app) {
+      async setup() {
         // clean up legacy localStorage
         localStorage.removeItem("workspace");
         localStorage.removeItem("comfyspace");
@@ -106,10 +104,13 @@ export default function App() {
       async afterConfigureGraph() {
         // to avoid the bug after switching workflow using comfyspace,
         // immediately refresh browser, resulting in latest workflow not updated
-        localStorage.setItem("workflow", JSON.stringify(app.graph.serialize()));
+        localStorage.setItem(
+          "workflow",
+          JSON.stringify(window.app.graph.serialize())
+        );
       },
     };
-    app.registerExtension(ext);
+    window.app.registerExtension(ext);
     try {
       await loadDBs();
       updatePanelPosition(userSettingsTable?.getSetting("topBarStyle"), false);
@@ -137,30 +138,12 @@ export default function App() {
       );
       await syncNewFlowOfLocalDisk(fileList, folderList);
     }
+    workspaceAppRegistered.current = true;
   };
-
-  useEffect(() => {
-    graphAppSetup();
-    setLoadChild(true);
-    setInterval(() => {
-      const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
-
-      if (curFlowID.current != null && autoSaveEnabled) {
-        // autosave workflow if enabled
-        const graphJson = JSON.stringify(app.graph.serialize());
-        graphJson != null &&
-          updateFlow(curFlowID.current, {
-            json: graphJson,
-          });
-      }
-      setIsDirty(checkIsDirty());
-    }, 1000);
-    pullAuthTokenCloseIfExist();
-  }, []);
 
   const checkIsDirty = () => {
     if (curFlowID.current != null) {
-      const graphJson = app.graph.serialize() ?? {};
+      const graphJson = window.app.graph.serialize() ?? {};
       const curWorkflow = curFlowID.current
         ? getWorkflow(curFlowID.current)
         : null;
@@ -178,8 +161,8 @@ export default function App() {
     return false;
   };
   const loadWorkflowIDImpl = (id: string) => {
-    if (app.graph == null) {
-      console.error("app.graph is null cannot load workflow");
+    if (window.app.graph == null) {
+      console.error("window.app.graph is null cannot load workflow");
       return;
     }
     setCurFlowID(id);
@@ -188,8 +171,8 @@ export default function App() {
       alert("Error: Workflow not found! id: " + id);
       return;
     }
-    app.ui.dialog.close();
-    app.loadGraphData(JSON.parse(flow.json));
+    window.app.ui.dialog.close();
+    window.app.loadGraphData(JSON.parse(flow.json));
     setCurFlowName(flow.name);
     setRoute("root");
   };
@@ -239,7 +222,7 @@ export default function App() {
     const fileObj = new File([blob], fileName, {
       type: res.headers.get("Content-Type") || "",
     });
-    await app.handleFile(fileObj);
+    await window.app.handleFile(fileObj);
     setRoute("root");
   };
 
@@ -306,6 +289,39 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    /**
+     * Because we have enabled strict mode, useEffect will be executed twice in strict mode,
+     * causing the app to be registered twice. So in development environment mode,
+     * the first execution is skipped.
+     */
+    if (
+      process.env.NODE_ENV === "development" &&
+      developmentEnvLoadFirst.current
+    ) {
+      developmentEnvLoadFirst.current = false;
+      return;
+    }
+
+    if (workspaceAppRegistered.current) {
+      return;
+    }
+    graphAppSetup();
+    setLoadChild(true);
+    setInterval(() => {
+      const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
+
+      if (curFlowID.current != null && autoSaveEnabled) {
+        // autosave workflow if enabled
+        const graphJson = JSON.stringify(window.app.graph.serialize());
+        graphJson != null &&
+          updateFlow(curFlowID.current, {
+            json: graphJson,
+          });
+      }
+      setIsDirty(checkIsDirty());
+    }, 1000);
+    pullAuthTokenCloseIfExist();
+
     window.addEventListener("keydown", shortcutListener);
     window.addEventListener("message", authTokenListener);
 
@@ -336,22 +352,35 @@ export default function App() {
 
     window.addEventListener("beforeunload", handleBeforeUnload);
 
-    api.addEventListener("executed", (e: any) => {
-      e.detail?.output?.images?.forEach(
-        (im: { filename: string; subfolder: string; type: string }) => {
-          if (im.type === "output") {
-            onExecutedCreateMedia(im);
-          }
-        }
-      );
-      e.detail?.output?.gifs?.forEach(
-        (im: { filename: string; subfolder: string; type: string }) => {
-          if (im.type === "output") {
-            onExecutedCreateMedia(im);
-          }
-        }
-      );
-    });
+    import(
+      process.env.NODE_ENV === "development"
+        ? "../../../../web/scripts/api.js"
+        : "/scripts/api.js"
+    )
+      .then((module) => {
+        console.log("module", module);
+        module?.api.addEventListener("executed", (e: any) => {
+          console.log(111123123123);
+          e.detail?.output?.images?.forEach(
+            (im: { filename: string; subfolder: string; type: string }) => {
+              if (im.type === "output") {
+                onExecutedCreateMedia(im);
+              }
+            }
+          );
+          e.detail?.output?.gifs?.forEach(
+            (im: { filename: string; subfolder: string; type: string }) => {
+              if (im.type === "output") {
+                onExecutedCreateMedia(im);
+              }
+            }
+          );
+        });
+      })
+      .catch((err) => {
+        console.error("Error: ComfyUI app failed to mount", err);
+      });
+
     return () => {
       window.removeEventListener("message", authTokenListener);
       window.removeEventListener("keydown", shortcutListener);
@@ -390,7 +419,7 @@ export default function App() {
             zIndex={1000}
             draggable={false}
           >
-            2222
+            55234324
             <Topbar
               curFlowName={curFlowName}
               setCurFlowName={setCurFlowName}

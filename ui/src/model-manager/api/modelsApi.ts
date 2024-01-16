@@ -1,6 +1,3 @@
-// @ts-ignore
-const app = window.app;
-
 export type InstallModelsApiInput = {
   save_path: string;
   url: string;

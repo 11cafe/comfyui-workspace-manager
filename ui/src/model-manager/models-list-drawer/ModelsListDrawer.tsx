@@ -11,14 +11,11 @@ import { useEffect, useState } from "react";
 import { ModelsTags } from "./ModelsTags";
 import { ModelsList } from "./ModelsList";
 import SearchInput from "../../components/SearchInput";
-// @ts-ignore
-// const app = window.app;
 import InstallModelsButton from "../install-models/InstallModelsButton";
 interface Props {
   onClose: () => void;
 }
 
-const app = window.app;
 export default function ModelsListDrawer({ onClose }: Props) {
   const [selectedModel, setSelectedModel] = useState("checkpoints");
 
@@ -59,9 +56,9 @@ export default function ModelsListDrawer({ onClose }: Props) {
   }, [selectedModel]);
 
   useEffect(() => {
-    app.canvasEl.addEventListener("click", onClose);
+    window.app.canvasEl.addEventListener("click", onClose);
     return () => {
-      app.canvasEl.removeEventListener("click", onClose);
+      window.app.canvasEl.removeEventListener("click", onClose);
     };
   }, []);
 

@@ -11,15 +11,12 @@ import {
 } from "./db-tables/WorkspaceDB";
 import { generateFilePathAbsolute } from "./db-tables/DiskFileUtils";
 import { Folder } from "./types/dbTypes";
-// @ts-ignore
-// import { app } from "../../../../web/scripts/app.js";
-const app = window.app;
 
 export type Route = "root" | "customNodes" | "recentFlows" | "gallery";
 
 // copied from app.js
 function sanitizeNodeName(string: string): string {
-  let entityMap: Record<string, string> = {
+  const entityMap: Record<string, string> = {
     "&": "",
     "<": "",
     ">": "",
@@ -34,7 +31,7 @@ function sanitizeNodeName(string: string): string {
 }
 export function findMissingNodes(): string[] {
   const missingNodeTypes = [];
-  for (let n of app.graph._nodes) {
+  for (const n of window.app.graph._nodes) {
     // Patch T2IAdapterLoader to ControlNetLoader since they are the same node now
     if (n.type == "T2IAdapterLoader") n.type = "ControlNetLoader";
     if (n.type == "ConditioningAverage ") n.type = "ConditioningAverage"; //typo fix
@@ -200,14 +197,14 @@ export function insertWorkflowToCanvas(json: string, insertPos?: number[]) {
   let canvas = new LGraphCanvas(tempCanvas, tempGraph);
   canvas.selectNodes(tempGraph._nodes);
   canvas.copyToClipboard(tempGraph._nodes);
-  const priorPos = app.canvas.graph_mouse;
+  const priorPos = window.app.canvas.graph_mouse;
   if (insertPos) {
     insertPos[0] -= 15;
     insertPos[1] -= 15;
-    app.canvas.graph_mouse = insertPos;
+    window.app.canvas.graph_mouse = insertPos;
   }
-  app.canvas.pasteFromClipboard();
-  app.canvas.graph_mouse = priorPos;
+  window.app.canvas.pasteFromClipboard();
+  window.app.canvas.graph_mouse = priorPos;
   if (prevClipboard) {
     localStorage.setItem("litegrapheditor_clipboard", prevClipboard);
   }

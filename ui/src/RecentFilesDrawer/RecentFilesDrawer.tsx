@@ -38,8 +38,6 @@ import { sortFileItem } from "../utils";
 import WorkflowListItem from "./WorkflowListItem";
 import MultipleSelectionOperation from "./MultipleSelectionOperation";
 import { ESortTypes, sortTypeLocalStorageKey } from "./types";
-// @ts-ignore
-const app = window.app;
 import { insertWorkflowToCanvas3 } from "./InsertWorkflowToCanvas";
 import FilesListFolderItem from "./FilesListFolderItem";
 import { useDebounce } from "../customHooks/useDebounce";
@@ -141,12 +139,12 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
         ]);
     };
 
-    app.canvasEl.addEventListener("drop", handleDrop);
-    app.canvasEl.addEventListener("click", onClose);
+    window.app.canvasEl.addEventListener("drop", handleDrop);
+    window.app.canvasEl.addEventListener("click", onClose);
     // Cleanup function to remove event listeners
     return () => {
-      app.canvasEl.removeEventListener("drop", handleDrop);
-      app.canvasEl.removeEventListener("click", onClose);
+      window.app.canvasEl.removeEventListener("drop", handleDrop);
+      window.app.canvasEl.removeEventListener("click", onClose);
     };
   }, []);
 
