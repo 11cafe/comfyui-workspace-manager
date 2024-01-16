@@ -45,16 +45,14 @@ async def save_db(request):
 
     file_name = f'{db_dir_path}/{table}.json'
     # Offload file writing to a separate thread
+    def write_json_string_to_db(file_name, json_data):
+        if not os.path.exists(db_dir_path):
+            os.makedirs(db_dir_path)
+        # Write the JSON data to the specified file
+        with open(file_name, 'w') as file:
+            file.write(json.dumps(json_data, indent=4))
     await asyncio.to_thread(write_json_string_to_db, file_name, json_data)
     return web.Response(text=f"JSON saved to {file_name}")
-
-def write_json_string_to_db(file_name, json_data):
-    if not os.path.exists(db_dir_path):
-        os.makedirs(db_dir_path)
-
-    # Write the JSON data to the specified file
-    with open(file_name, 'w') as file:
-        file.write(json.dumps(json_data, indent=4))
 
 def read_table(table):
     if not table:
@@ -273,7 +271,7 @@ def file_handle(name, file, existFlowIds, fileList):
     json_data = json.load(file)
     fileInfo = {
         'json': json.dumps(json_data),
-        'name': '.'.join(name.split('.')[:-1])
+        'name': name.split(".")[0],
     }
     if 'extra' in json_data and 'workspace_info' in json_data['extra'] and 'id' in json_data['extra']['workspace_info']:
         if json_data['extra']['workspace_info']['id'] not in existFlowIds:
