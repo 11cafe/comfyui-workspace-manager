@@ -1,14 +1,18 @@
 import { getDB, getSystemDir, saveDB } from "../Api";
 import { UserSettings } from "../types/dbTypes";
 import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
+import { TableBase } from "./TableBase";
+import { indexdb } from "./indexdb";
 
-export class UserSettingsTable {
+const DEFAULT_USER = "guest";
+
+export class UserSettingsTable extends TableBase<UserSettings> {
   public records: UserSettings;
   static readonly TABLE_NAME = "userSettings";
-  public defaultUser = "guest";
-  private constructor() {
+  constructor() {
+    super("userSettings");
     this.records = {
-      userID: this.defaultUser,
+      userID: DEFAULT_USER,
       topBarStyle: {
         top: 0,
         left: 0,
@@ -21,9 +25,7 @@ export class UserSettingsTable {
       twoWaySync: false,
     };
   }
-  public listSettings() {
-    return this.records;
-  }
+
   public getSetting<K extends keyof UserSettings>(key: K): UserSettings[K] {
     return this.records[key];
   }
@@ -32,27 +34,35 @@ export class UserSettingsTable {
       ...this.records,
       ...newPairs,
     };
+    indexdb.userSettings.put(this.records);
     saveDB(UserSettingsTable.TABLE_NAME, JSON.stringify(this.records));
     updateWorkspaceIndexDB();
   }
 
   static async load(): Promise<UserSettingsTable> {
     const instance = new UserSettingsTable();
-    const jsonStr = await getDB(UserSettingsTable.TABLE_NAME);
-    let json = jsonStr != null ? JSON.parse(jsonStr) : null;
-    if (json == null) {
-      const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
-      const comfyspaceData = JSON.parse(comfyspace);
-      json = comfyspaceData[UserSettingsTable.TABLE_NAME] || {};
+    let settings = await indexdb.userSettings.get(DEFAULT_USER);
+    if (settings == null) {
+      // throw new Error("User settings not found");
+      const jsonStr = await getDB(UserSettingsTable.TABLE_NAME);
+      let settings = jsonStr != null ? JSON.parse(jsonStr) : null;
+      if (settings == null) {
+        const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
+        const comfyspaceData = JSON.parse(comfyspace);
+        settings = comfyspaceData[UserSettingsTable.TABLE_NAME] || {};
+      }
     }
-    if (!json.myWorkflowsDir) {
+    if (settings == null) {
+      settings = instance.records;
+    }
+    if (!settings.myWorkflowsDir) {
       const getDir = await getSystemDir();
-      json.myWorkflowsDir = `${getDir.dir_path}/my_workflows`;
+      settings.myWorkflowsDir = `${getDir.dir_path}/my_workflows`;
     }
-    if (!json.userID) {
-      json.userID = instance.defaultUser;
+    if (!settings.userID) {
+      settings.userID = DEFAULT_USER;
     }
-    instance.records = json;
+    instance.records = settings;
     return instance;
   }
 }

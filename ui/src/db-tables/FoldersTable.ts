@@ -4,6 +4,7 @@ import { Folder } from "../types/dbTypes";
 import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
 import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
 import { v4 as uuidv4 } from "uuid";
+import { TableBase } from "./TableBase";
 
 export class FoldersTable {
   static readonly TABLE_NAME = "folders";
