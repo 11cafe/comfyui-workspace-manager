@@ -1,3 +1,5 @@
+// Legacy indexdb backup, to be deleted after indexdb migration is done
+
 import { curComfyspaceJson } from "./WorkspaceDB";
 const WORKSPACE_KEY = "backup";
 const WORKSPACE_TABLE = "workspace";

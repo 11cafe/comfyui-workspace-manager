@@ -3,7 +3,7 @@ import Dexie, { Table } from "dexie";
 import { Workflow } from "./WorkspaceDB";
 import { Changelog, Folder, Media, Tag, UserSettings } from "../types/dbTypes";
 
-class WorkspaceDB extends Dexie {
+class ManagerDB extends Dexie {
   workflows!: Table<Workflow, string>;
   changelogs!: Table<Changelog, string>;
   media!: Table<Media, string>;
@@ -28,4 +28,4 @@ class WorkspaceDB extends Dexie {
   }
 }
 
-export const indexdb = new WorkspaceDB();
+export const indexdb = new ManagerDB();

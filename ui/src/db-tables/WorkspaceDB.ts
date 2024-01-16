@@ -7,13 +7,8 @@ import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
 import { FoldersTable } from "./FoldersTable";
 import { MediaTable } from "./MediaTable";
 import {
-  COMFYSPACE_TRACKING_FIELD_NAME,
-  LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
-} from "../const";
-import {
   deleteJsonFileMyWorkflows,
-  generateFilePath,
-  generateFilePathAbsolute,
+  saveJsonFileMyWorkflows,
 } from "./DiskFileUtils";
 import { Folder, TagsTable } from "../types/dbTypes";
 import { loadTagsTable } from "./tagsTable";
@@ -150,6 +145,13 @@ export function updateFlow(id: string, input: Partial<Workflow>) {
     updateKey.length === 1 && ["tags", "parentFolderID"].includes(updateKey[0]);
   if (!isModifyingTagOrFolder) {
     newWorkflow.updateTime = Date.now();
+    // update parent folder updateTime
+    if (newWorkflow.parentFolderID != null) {
+      foldersTable?.update({
+        id: newWorkflow.parentFolderID,
+        updateTime: Date.now(),
+      });
+    }
   }
   // update memory
   workspace[id] = newWorkflow;
@@ -166,52 +168,8 @@ export function updateFlow(id: string, input: Partial<Workflow>) {
     saveJsonFileMyWorkflows(after);
     return;
   }
-  if (input.json != null) {
-    if (newWorkflow.parentFolderID != null) {
-      // update parent folder updateTime
-      foldersTable?.update({
-        id: newWorkflow.parentFolderID,
-        updateTime: Date.now(),
-      });
-    }
+  if (input.lastSavedJson != null) {
     saveJsonFileMyWorkflows(after);
-  }
-}
-
-export async function saveJsonFileMyWorkflows(workflow: Workflow) {
-  const file_path = generateFilePath(workflow);
-  if (file_path == null) {
-    return;
-  }
-  if (workspace != null) {
-    const fullPath = generateFilePathAbsolute(workflow);
-    workspace[workflow.id].filePath = fullPath ?? undefined;
-    await updateWorkspaceIndexDB();
-    await saveDB("workflows", JSON.stringify(workspace));
-  }
-  const json = workflow.json;
-  const flow = JSON.parse(json);
-  flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {
-    id: workflow.id,
-    name: workflow.name,
-  };
-  await updateFile(file_path, JSON.stringify(flow));
-}
-
-export async function rewriteAllLocalFiles() {
-  for (const workflow of listWorkflows()) {
-    try {
-      const fullPath = generateFilePathAbsolute(workflow);
-      const flow = JSON.parse(workflow.json);
-      flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {
-        id: workflow.id,
-        name: workflow.name,
-      };
-      delete flow.extra[LEGACY_COMFYSPACE_TRACKING_FIELD_NAME];
-      fullPath && (await updateFile(fullPath, JSON.stringify(flow)));
-    } catch (error) {
-      console.error(error);
-    }
   }
 }
 
@@ -251,8 +209,8 @@ export function createFlow({
   // legacy index cache
   updateWorkspaceIndexDB();
   // add to my_workflows/
-  saveJsonFileMyWorkflows(workspace[uuid]);
-  return workspace[uuid];
+  saveJsonFileMyWorkflows(newWorkflow);
+  return newWorkflow;
 }
 
 /**
@@ -269,6 +227,7 @@ export async function batchCreateFlows(
   isOverwriteExistingFile: boolean = false,
   parentFolderID?: string
 ): Promise<string | undefined> {
+  let newWorkflows: Workflow[] = [];
   flowList.forEach((flow) => {
     if (workspace == null) {
       return;
@@ -279,7 +238,7 @@ export async function batchCreateFlows(
         : generateUniqueName(flow.name);
     const uuid = uuidv4();
     const time = Date.now();
-    workspace[uuid] = {
+    const newWorkflow: Workflow = {
       id: uuid,
       name: newFlowName,
       json: flow.json,
@@ -288,9 +247,11 @@ export async function batchCreateFlows(
       createTime: time,
       tags: [],
     };
+    newWorkflows.push(newWorkflow);
+    workspace[uuid] = newWorkflow;
     saveJsonFileMyWorkflows(workspace[uuid]);
   });
-
+  await indexdb.workflows.bulkAdd(Object.values(newWorkflows));
   const stringifyWorkspace = JSON.stringify(workspace);
   updateWorkspaceIndexDB();
   return await saveDB("workflows", stringifyWorkspace);
@@ -339,7 +300,7 @@ export function batchDeleteFlow(ids: string[]) {
     }
     workspace && delete workspace[id];
   });
-
+  indexdb.workflows.bulkDelete(ids);
   const stringifyWorkspace = JSON.stringify(workspace);
   updateWorkspaceIndexDB();
   saveDB("workflows", stringifyWorkspace);

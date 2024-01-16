@@ -15,7 +15,6 @@ import {
   changelogsTable,
   mediaTable,
   listWorkflows,
-  rewriteAllLocalFiles,
   backfillIndexdb,
 } from "./db-tables/WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
@@ -28,6 +27,7 @@ import {
   validateOrSaveAllJsonFileMyWorkflows,
   getWorkflowIdInUrlHash,
   generateUrlHashWithFlowId,
+  rewriteAllLocalFiles,
 } from "./utils";
 import GalleryModal from "./gallery/GalleryModal";
 import { Topbar } from "./topbar/Topbar";
@@ -89,6 +89,7 @@ export default function App() {
     if (getWorkflowIdInUrlHash()) {
       const newUrlHash = generateUrlHashWithFlowId(id);
       window.location.hash = newUrlHash;
+      document.title = name + " - ComfyUI";
     } else {
       localStorage.setItem("curFlowID", id);
     }
@@ -268,7 +269,7 @@ export default function App() {
     if (workspace == null) {
       return;
     }
-    const workflow = workspace[workflowID];
+    const workflow = getWorkflow(workflowID);
     if (workflow == null) {
       return;
     }
