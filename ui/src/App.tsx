@@ -127,7 +127,7 @@ export default function App() {
     }
     await validateOrSaveAllJsonFileMyWorkflows();
 
-    if (userSettingsTable?.getSetting("twoWaySync")) {
+    if (userSettingsTable?.getSetting("twoWaySync") === true) {
       // Scan all files and subfolders in the local storage directory, compare and find the data that needs to be added in the DB, and perform the new operation
       const myWorkflowsDir = userSettingsTable?.getSetting("myWorkflowsDir");
       const existFlowIds = listWorkflows().map((flow) => flow.id);

@@ -6,20 +6,63 @@ import nodes
 import ast
 import inspect
 
+async def validate_prompt_input_in_list():
+    obj_class = nodes.NODE_CLASS_MAPPINGS[class_type]
+    print('object class',obj_class.__name__)
+    class_inputs = obj_class.INPUT_TYPES()
+    required_inputs = class_inputs['required']
+
+    errors = []
+    valid = True
+
+    validate_function_inputs = []
+    if hasattr(obj_class, "VALIDATE_INPUTS"):
+        print('obj_class.VALIDATE_INPUTS',obj_class.VALIDATE_INPUTS)
+        validate_function_inputs = inspect.getfullargspec(obj_class.VALIDATE_INPUTS).args
+
+    for x in required_inputs:
+        val = inputs[x]
+        info = required_inputs[x]
+        type_input = info[0]
+        if not isinstance(val, list):
+            if x not in validate_function_inputs:
+                if isinstance(type_input, list):
+                    if val not in type_input:
+                        input_config = info
+                        list_info = ""
+
+                        # Don't send back gigantic lists like if they're lots of
+                        # scanned model filepaths
+                        if len(type_input) > 20:
+                            list_info = f"(list of length {len(type_input)})"
+                            input_config = None
+                        else:
+                            list_info = str(type_input)
+
+                        error = {
+                            "type": "value_not_in_list",
+                            "message": "Value not in list",
+                            "details": f"{x}: '{val}' not in {list_info}",
+                            "extra_info": {
+                                "input_name": x,
+                                "input_config": input_config,
+                                "received_value": val,
+                            }
+                        }
+                        errors.append(error)
+                        continue
+
 @server.PromptServer.instance.routes.post("/model_manager/find_missing_models")
 async def find_missing_models(request):
-    print('find_missing_models',request)
     json_data = await request.json()
     workflow = json_data['workflow']
-    print('find_missing_models workflow', workflow)
 
     # def missing_nodes_in_workflow():
     models_nodes = {}
     for node in workflow['nodes']:
         try:
             node_type = node['type']
-            obj_class = nodes.NODE_CLASS_MAPPINGS[node_type]
-            models_dir=  extract_folder_paths_arguments_with_key(obj_class)
+            models_dir=  extract_folder_paths_arguments_with_key(node_type)
             if(models_dir):
                 models_nodes[node['id']] = {
                     'type': node_type,
@@ -34,7 +77,8 @@ async def find_missing_models(request):
     # return web.Response(json=models_nodes)
     return web.Response(text=json.dumps(models_nodes), status=500)
 
-def extract_folder_paths_argument(class_def):
+def extract_folder_paths_argument(node_type: str):
+    class_def = nodes.NODE_CLASS_MAPPINGS[node_type]
     source = inspect.getsource(class_def)
     tree = ast.parse(source)
 
@@ -50,7 +94,8 @@ def extract_folder_paths_argument(class_def):
                             return sub_node.args[0].s  # Assuming it's a string argument
     return None
 
-def extract_folder_paths_arguments_with_key(class_def):
+def extract_folder_paths_arguments_with_key(node_type: str):
+    class_def = nodes.NODE_CLASS_MAPPINGS[node_type]
     source = inspect.getsource(class_def)
     tree = ast.parse(source)
 
@@ -69,9 +114,9 @@ def extract_folder_paths_arguments_with_key(class_def):
                                 if call_node.func.attr == 'get_filename_list':
                                     if call_node.args:
                                         key_name = key.s  # Extract the key name
-                                        print('key_name', key_name)
+                                        # print('key_name', key_name)
                                         folder_name = call_node.args[0].s  # Extract the argument
-                                        print('folder_name', folder_name)
+                                        # print('folder_name', folder_name)
                                         arguments[key_name] = folder_name
     return arguments
 
