@@ -14,7 +14,7 @@ export default function ModelManagerTopbar({}: Props) {
   return (
     <>
       <Button
-        size={"sm"}
+        size={"xs"}
         colorScheme="blue"
         aria-label="My models"
         onClick={() => setShowMyModels(true)}
@@ -23,6 +23,7 @@ export default function ModelManagerTopbar({}: Props) {
       >
         Models
       </Button>
+      <AddMissingModelsButton />
       {showMyModels && (
         <ModelsListDrawer onClose={() => setShowMyModels(false)} />
       )}

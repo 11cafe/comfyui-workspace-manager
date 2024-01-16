@@ -70,22 +70,24 @@ export function Topbar({
             <IconTriangleInvertedFilled size={8} />
           </HStack>
         </Button>
-        <Button
-          size={"sm"}
-          variant={"outline"}
-          colorScheme="teal"
-          aria-label="new workflow"
-          onClick={() => loadNewWorkflow()}
-          px={2}
-          py={2}
-        >
-          <HStack gap={1}>
-            <IconPlus size={16} color={"white"} />
-            <Text color={"white"} fontSize={"sm"}>
+        <Tooltip label="New workflow">
+          <Button
+            size={"sm"}
+            variant={"outline"}
+            colorScheme="teal"
+            aria-label="new workflow"
+            onClick={() => loadNewWorkflow()}
+            px={2}
+            py={2}
+          >
+            <HStack gap={0}>
+              <IconPlus size={16} color={"white"} />
+              {/* <Text color={"white"} fontSize={"sm"}>
               New
-            </Text>
-          </HStack>
-        </Button>
+            </Text> */}
+            </HStack>
+          </Button>
+        </Tooltip>
         <EditFlowName
           isDirty={isDirty}
           displayName={curFlowName ?? ""}

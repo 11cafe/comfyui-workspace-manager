@@ -116,15 +116,18 @@ export default function App() {
     setLoadingDB(false);
     const latest = localStorage.getItem("curFlowID");
     const latestWf = latest != null ? getWorkflow(latest) : null;
-
+    console.log("lastestWf", latestWf);
     if (latestWf) {
-      latestWf && localStorage.setItem("workflow", latestWf.json);
-      setCurFlowID(latestWf.id ?? null);
-      setCurFlowName(latestWf.name ?? null);
+      // latestWf && localStorage.setItem("workflow", latestWf.json);
+      // setCurFlowID(latestWf.id ?? null);
+      // setCurFlowName(latestWf.name ?? null);
+      // since we changed to lazy load our component, app.configureGraph will come before our app loading,
+      // localStorage.setItem("workflow") will not take effect anymore and will result different workflow appearing bug when refreshing
+      loadWorkflowIDImpl(latestWf.id);
     }
     await validateOrSaveAllJsonFileMyWorkflows();
 
-    if (userSettingsTable?.getSetting("twoWaySync")) {
+    if (userSettingsTable?.getSetting("twoWaySync") === true) {
       // Scan all files and subfolders in the local storage directory, compare and find the data that needs to be added in the DB, and perform the new operation
       const myWorkflowsDir = userSettingsTable?.getSetting("myWorkflowsDir");
       const existFlowIds = listWorkflows().map((flow) => flow.id);

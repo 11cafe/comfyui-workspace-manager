@@ -8,6 +8,7 @@ import folder_paths
 import urllib.request
 import server
 import server
+from .missing_models import find_missing_models
 
 comfy_path = os.path.dirname(folder_paths.__file__)
 def download_url_with_wget(url, save_path):
