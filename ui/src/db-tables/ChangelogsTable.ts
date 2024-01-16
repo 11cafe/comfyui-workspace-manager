@@ -1,9 +1,10 @@
-import { getDB, saveDB } from "../Api";
+import { saveDB } from "../Api";
 import { v4 as uuidv4 } from "uuid";
-import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
+import { updateWorkspaceIndexDB } from "./IndexDBUtils";
 import { Table } from "./WorkspaceDB";
 import { Changelog } from "../types/dbTypes";
 import { TableBase } from "./TableBase";
+import { indexdb } from "./indexdb";
 
 export class ChangelogsTable extends TableBase<Changelog> {
   static readonly TABLE_NAME: Table = "changelogs";
@@ -16,12 +17,21 @@ export class ChangelogsTable extends TableBase<Changelog> {
   }
 
   public async listByWorkflowID(workflowID: string): Promise<Changelog[]> {
+    const objects = await indexdb["changelogs"]
+      .where("workflowID")
+      .equals(workflowID)
+      .reverse()
+      .sortBy("createTime");
+    if (objects?.length) return objects;
+
     const records = await this.getRecords();
     return Object.values(records)
       .filter((c) => c.workflowID === workflowID)
       .sort((a, b) => b.createTime - a.createTime);
   }
   public async getLastestByWorkflowID(workflowID: string): Promise<Changelog> {
+    const objects = await this.listByWorkflowID(workflowID);
+    if (objects?.length) return objects[0];
     const records = await this.getRecords();
     const all = Object.values(records)
       .filter((c) => c.workflowID === workflowID)
@@ -43,6 +53,7 @@ export class ChangelogsTable extends TableBase<Changelog> {
       workflowID: input.workflowID,
       createTime: Date.now(),
     };
+    await indexdb.changelogs.add(change);
     const records = await this.getRecords();
     records[change.id] = change;
     saveDB(ChangelogsTable.TABLE_NAME, JSON.stringify(records));
