@@ -1,6 +1,7 @@
 import { saveDB } from "../Api";
 import { updateWorkspaceIndexDB } from "./IndexDBUtils";
 import { Table, loadTable } from "./WorkspaceDB";
+import { indexdb } from "./indexdb";
 
 export class TableBase<T> {
   public readonly tableName: Table;
@@ -23,6 +24,7 @@ export class TableBase<T> {
   }
 
   public async delete(id: string) {
+    await indexdb[this.tableName].delete(id);
     const records = await this.getRecords();
     delete records[id];
     saveDB(this.tableName, JSON.stringify(records));

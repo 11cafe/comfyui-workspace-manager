@@ -168,7 +168,7 @@ export function updateFlow(id: string, input: Partial<Workflow>) {
     saveJsonFileMyWorkflows(after);
     return;
   }
-  if (input.lastSavedJson != null) {
+  if (input.json != null) {
     saveJsonFileMyWorkflows(after);
   }
 }
