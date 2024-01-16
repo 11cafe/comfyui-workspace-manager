@@ -121,21 +121,15 @@ export default function App() {
     }
     setLoadingDB(false);
 
-    let latestWf = null;
-    const urlHashFlowId = getWorkflowIdInUrlHash();
-    if (urlHashFlowId && getWorkflow(urlHashFlowId)) {
-      latestWf = getWorkflow(urlHashFlowId);
-    } else {
-      const localStorageFlowId = localStorage.getItem("curFlowID");
-      if (localStorageFlowId && getWorkflow(localStorageFlowId)) {
-        latestWf = getWorkflow(localStorageFlowId);
-      }
+    let latestWfID = null;
+    latestWfID = getWorkflowIdInUrlHash();
+    if (latestWfID == null) {
+      latestWfID = localStorage.getItem("curFlowID");
     }
-
-    if (latestWf) {
+    if (latestWfID) {
       // since we changed to lazy load our component, app.configureGraph will come before our app loading,
       // localStorage.setItem("workflow") will not take effect anymore and will result different workflow appearing bug when refreshing
-      loadWorkflowIDImpl(latestWf.id);
+      loadWorkflowIDImpl(latestWfID);
     }
 
     /**
