@@ -271,7 +271,7 @@ def file_handle(name, file, existFlowIds, fileList):
     json_data = json.load(file)
     fileInfo = {
         'json': json.dumps(json_data),
-        'name': name.split(".")[0],
+        'name': '.'.join(name.split('.')[:-1])
     }
     if 'extra' in json_data and 'workspace_info' in json_data['extra'] and 'id' in json_data['extra']['workspace_info']:
         if json_data['extra']['workspace_info']['id'] not in existFlowIds:
