@@ -367,3 +367,26 @@ export async function syncNewFlowOfLocalDisk(
     });
   }
 }
+
+export function getWorkflowIdInUrlHash() {
+  const hashArr = window.location.hash.slice(1).split("/");
+  const workspaceId = hashArr.find((h) => h.includes("workspaceId@"));
+  return workspaceId ? workspaceId.split("@")[1] : null;
+}
+
+/**
+ * Generate url hash containing workflowId;
+ * If workspaceId@ exists, replace it, if it does not exist, append it.
+ * This operation will not damage the original hash.
+ */
+export function generateUrlHashWithFlowId(id: string) {
+  const hashArr = window.location.hash.slice(1).split("/");
+  const workspaceIdIndex = hashArr.findIndex((h) => h.includes("workspaceId@"));
+  const newWorkflowId = `workspaceId@${id}`;
+  if (workspaceIdIndex >= 0) {
+    hashArr[workspaceIdIndex] = newWorkflowId;
+  } else {
+    hashArr.push(newWorkflowId);
+  }
+  return `${hashArr.join("/")}`;
+}
