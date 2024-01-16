@@ -18,6 +18,7 @@ import {
 import { Folder, TagsTable } from "../types/dbTypes";
 import { loadTagsTable } from "./tagsTable";
 import { UserSettingsTable } from "./UserSettingsTable";
+import { indexdb } from "./indexdb";
 
 export type Table =
   | "workflows"
@@ -146,7 +147,7 @@ export function updateFlow(id: string, input: Partial<Workflow>) {
   // update memory
   workspace[id] = newWorkflow;
   //update indexdb
-  // indexdb.workflows.update(id, newWorkflow);
+  indexdb.workflows.update(id, newWorkflow);
   //update legacy indexdb backup
   updateWorkspaceIndexDB();
   // update disk file db
@@ -237,7 +238,7 @@ export function createFlow({
   //add to cache
   workspace[uuid] = newWorkflow;
   //add to IndexDB
-  // indexdb.workflows.add(newWorkflow);
+  indexdb.workflows.add(newWorkflow);
   // add to disk file db
   saveDB("workflows", JSON.stringify(workspace));
   // legacy index cache
@@ -312,8 +313,12 @@ export function deleteFlow(id: string) {
     deleteJsonFileMyWorkflows({ ...workflow });
   }
   delete workspace[id];
-  updateWorkspaceIndexDB();
+  //add to IndexDB
+  indexdb.workflows.delete(id);
+  // add to disk file db
   saveDB("workflows", JSON.stringify(workspace));
+  // legacy index cache
+  updateWorkspaceIndexDB();
 }
 
 export function batchDeleteFlow(ids: string[]) {
@@ -345,4 +350,63 @@ export async function curComfyspaceJson(): Promise<string> {
     [ChangelogsTable.TABLE_NAME]: changeLogs,
     [MediaTable.TABLE_NAME]: media,
   });
+}
+
+export async function backfillIndexdb() {
+  const backfillWorkflows = async () => {
+    try {
+      const all = listWorkflows();
+      all && (await indexdb.workflows.bulkPut(all));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const backfillFolders = async () => {
+    try {
+      const all = foldersTable?.listAll();
+      all && (await indexdb.folders.bulkPut(all));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const backfillMedia = async () => {
+    try {
+      const all = await mediaTable?.listAll();
+      all && (await indexdb.media.bulkPut(all));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const backfillChangelogs = async () => {
+    try {
+      const all = await changelogsTable?.listAll();
+      all && (await indexdb.changelogs.bulkPut(all));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const backfillTags = async () => {
+    try {
+      const all = await tagsTable?.listAll();
+      all && (await indexdb.tags.bulkPut(all));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const backfillUserSettings = async () => {
+    try {
+      const all = await userSettingsTable?.listSettings();
+      all && (await indexdb.userSettings.put(all));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  await Promise.all([
+    backfillWorkflows(),
+    backfillFolders(),
+    backfillMedia(),
+    backfillChangelogs(),
+    backfillTags(),
+    backfillUserSettings(),
+  ]);
 }

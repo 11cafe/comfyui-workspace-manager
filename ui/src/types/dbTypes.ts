@@ -19,6 +19,7 @@ export type TagsTable = {
 };
 
 export type UserSettings = {
+  userID: string;
   myWorkflowsDir: string;
   topBarStyle: PanelPosition;
   shortcuts: {

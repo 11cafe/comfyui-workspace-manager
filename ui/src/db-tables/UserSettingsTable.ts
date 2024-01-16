@@ -5,8 +5,10 @@ import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
 export class UserSettingsTable {
   public records: UserSettings;
   static readonly TABLE_NAME = "userSettings";
+  public defaultUser = "guest";
   private constructor() {
     this.records = {
+      userID: this.defaultUser,
       topBarStyle: {
         top: 0,
         left: 0,
@@ -46,6 +48,9 @@ export class UserSettingsTable {
     if (!json.myWorkflowsDir) {
       const getDir = await getSystemDir();
       json.myWorkflowsDir = `${getDir.dir_path}/my_workflows`;
+    }
+    if (!json.userID) {
+      json.userID = instance.defaultUser;
     }
     instance.records = json;
     return instance;

@@ -3,15 +3,13 @@ import { v4 as uuidv4 } from "uuid";
 import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
 import { Table } from "./WorkspaceDB";
 import { Changelog } from "../types/dbTypes";
+import { TableBase } from "./TableBase";
 
-type ChangelogRecords = {
-  [id: string]: Changelog;
-};
-export class ChangelogsTable {
+export class ChangelogsTable extends TableBase<Changelog> {
   static readonly TABLE_NAME: Table = "changelogs";
-
-  private constructor() {}
-
+  constructor() {
+    super("changelogs");
+  }
   static async load(): Promise<ChangelogsTable> {
     const instance = new ChangelogsTable();
     return instance;
@@ -22,20 +20,6 @@ export class ChangelogsTable {
     return Object.values(records)
       .filter((c) => c.workflowID === workflowID)
       .sort((a, b) => b.createTime - a.createTime);
-  }
-  public async getRecords(): Promise<ChangelogRecords> {
-    let jsonStr = await getDB(ChangelogsTable.TABLE_NAME);
-    let json = jsonStr != null ? JSON.parse(jsonStr) : null;
-    if (json == null) {
-      const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
-      const comfyspaceData = JSON.parse(comfyspace);
-      json = comfyspaceData[ChangelogsTable.TABLE_NAME];
-    }
-    return json ?? {};
-  }
-  public async get(id: string): Promise<Changelog | undefined> {
-    const records = await this.getRecords();
-    return records[id];
   }
   public async getLastestByWorkflowID(workflowID: string): Promise<Changelog> {
     const records = await this.getRecords();

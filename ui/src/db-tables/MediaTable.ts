@@ -47,7 +47,7 @@ export class MediaTable extends TableBase<Media> {
       coverMediaPath: md.localPath,
     });
     // save indexdb
-    // indexdb.media.add(md);
+    indexdb.media.add(md);
     const records = await this.getRecords();
     records[md.id] = md;
     // save disk file db

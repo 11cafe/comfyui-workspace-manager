@@ -16,6 +16,7 @@ import {
   mediaTable,
   listWorkflows,
   rewriteAllLocalFiles,
+  backfillIndexdb,
 } from "./db-tables/WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
@@ -132,11 +133,12 @@ export default function App() {
       loadWorkflowIDImpl(latestWfID);
     }
 
+    // if (localStorage.getItem("WORKSPACE_INDEXDB_BACKFILL") === "true") {
+    await backfillIndexdb();
+    localStorage.setItem("WORKSPACE_INDEXDB_BACKFILL", "true");
+    // }
     /**
-     * Due to the new two-way synchronization function below,
-     * In order to be compatible with older version users, workspace_info does not exist in the json structure of local files,
-     * and will be mistaken for new local files, resulting in duplicate data in the DB.
-     * Therefore, in order to increase workspace_info, a full rewrite of the local file is required.
+     * For two-way sync, one-time rewrite all /my_workflows files to the database
      */
     if (localStorage.getItem("REWRITTEN_ALL_LOCAL_DISK_FILE") === "true") {
       await validateOrSaveAllJsonFileMyWorkflows();
