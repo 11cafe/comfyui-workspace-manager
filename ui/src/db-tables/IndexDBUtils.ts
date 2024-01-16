@@ -79,7 +79,6 @@ async function readDataFromDatabase(): Promise<string | undefined> {
   }
 }
 
-// Usage example
 export async function getWorkspaceIndexDB() {
   try {
     const comfyspaceData = await readDataFromDatabase();

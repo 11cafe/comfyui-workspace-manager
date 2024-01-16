@@ -133,10 +133,10 @@ export default function App() {
       loadWorkflowIDImpl(latestWfID);
     }
 
-    // if (localStorage.getItem("WORKSPACE_INDEXDB_BACKFILL") === "true") {
-    await backfillIndexdb();
-    localStorage.setItem("WORKSPACE_INDEXDB_BACKFILL", "true");
-    // }
+    if (localStorage.getItem("WORKSPACE_INDEXDB_BACKFILL") !== "true") {
+      await backfillIndexdb();
+      localStorage.setItem("WORKSPACE_INDEXDB_BACKFILL", "true");
+    }
     /**
      * For two-way sync, one-time rewrite all /my_workflows files to the database
      */
