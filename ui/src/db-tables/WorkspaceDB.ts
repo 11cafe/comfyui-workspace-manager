@@ -58,6 +58,7 @@ export let changelogsTable: ChangelogsTable | null = null;
 export let mediaTable: MediaTable | null = null;
 
 export const loadTable = async (name: Table) => {
+  const records = await indexdb[name].toCollection();
   let jsonStr = await getDB(name);
   let json: any;
   try {
