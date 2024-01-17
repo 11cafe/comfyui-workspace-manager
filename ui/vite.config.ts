@@ -12,8 +12,8 @@ export default defineConfig({
     watch: {
       include: ["src/**"],
     },
-    // minify: false, // ___DEBUG__MODE only
-    // sourcemap: true, // ___DEBUG___MODE only
+    minify: false, // ___DEBUG__MODE only
+    sourcemap: true, // ___DEBUG___MODE only
     emptyOutDir: true,
     rollupOptions: {
       // externalize deps that shouldn't be bundled into your library

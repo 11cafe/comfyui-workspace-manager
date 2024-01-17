@@ -156,7 +156,7 @@ export async function validateOrSaveAllJsonFileMyWorkflows(
   deleteEmptyFolder = false
 ) {
   for (const workflow of listWorkflows()) {
-    const fullPath = generateFilePathAbsolute(workflow);
+    const fullPath = await generateFilePathAbsolute(workflow);
     if (workflow.filePath != fullPath) {
       // file path changed
       workflow.filePath != null &&
@@ -400,7 +400,7 @@ export function generateUrlHashWithFlowId(id: string) {
 export async function rewriteAllLocalFiles() {
   for (const workflow of listWorkflows()) {
     try {
-      const fullPath = generateFilePathAbsolute(workflow);
+      const fullPath = await generateFilePathAbsolute(workflow);
       const flow = JSON.parse(workflow.json);
       flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {
         id: workflow.id,

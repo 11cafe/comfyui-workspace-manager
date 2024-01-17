@@ -92,6 +92,7 @@ export default function App() {
       document.title = name + " - ComfyUI";
     } else {
       localStorage.setItem("curFlowID", id);
+      document.title = "ComfyUI - " + name;
     }
   };
 
