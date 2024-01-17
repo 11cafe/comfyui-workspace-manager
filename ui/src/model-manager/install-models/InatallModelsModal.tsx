@@ -14,15 +14,20 @@ import {
   Heading,
   Checkbox,
   Spinner,
+  useToast,
+  Progress,
+  Stack
 } from "@chakra-ui/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { IconX } from "@tabler/icons-react";
 import { CivitiModel, CivitiModelFileVersion } from "../types";
 import { installModelsApi } from "../api/modelsApi";
 import ModelCard from "./ModelCard";
 import InstallProgress from "./InstallProgress";
 import InstallModelSearchBar from "./InstallModelSearchBar";
-import { useToast } from "@chakra-ui/react";
+
+
+type Queue = { save_path: string, progress: number };
 
 type CivitModelQueryParams = {
   types?: MODEL_TYPE;
@@ -71,6 +76,7 @@ export default function InatallModelsModal({
   const toast = useToast();
   const [installing, setInstalling] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [queue, setQueue] = useState<Queue[]>([]);
   const loadData = useCallback(async () => {
     setLoading(true);
     const params: CivitModelQueryParams = {
@@ -112,7 +118,7 @@ export default function InatallModelsModal({
     }
     toast({
       title:
-        "Installing...Please check the progress in your python server console",
+        "Installing...",
       description: file.name,
       status: "info",
       duration: 4000,
@@ -131,20 +137,20 @@ export default function InatallModelsModal({
     loadData();
   }, [searchQuery, modelType]);
 
-  async function refreshHistory() {
-    const res = await api.fetchApi('/model_manager/download_progress');
-    const ret = await res.text();
-    console.log(ret);
-    window.dispatchEvent(
-      new CustomEvent("model_install_message", {
-        detail: ret,
-      })
-    );
-  }
-
   useEffect(() => {
-    const autoRefreshInterval = setInterval(refreshHistory, 1000);
-    return () => clearInterval(autoRefreshInterval);
+    api.addEventListener("download_progress", (e: { detail: Queue[] }) => {
+      setQueue(e.detail);
+    });
+    api.addEventListener("download_error", (e: { detail: string }) => {
+      toast({
+        title:
+          "Download Error",
+        description: e.detail,
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+      });
+    });
   }, []);
 
   const isAllSelected =
@@ -223,6 +229,14 @@ export default function InatallModelsModal({
               );
             })}
           </HStack>
+          <Stack spacing={5} pos="absolute" bottom="0" left="0" width="50%" zIndex={80} backgroundColor="white" paddingX={5}>
+            {queue.map(({ save_path, progress }) => (
+              <HStack>
+                <Text fontSize={16} width="40%">{save_path.replace(/^.*[\\/]/, '')}</Text>
+                <Progress isIndeterminate={!progress} hasStripe width="60%" value={progress} />
+              </HStack>
+            ))}
+          </Stack>
         </ModalBody>
       </ModalContent>
     </Modal>

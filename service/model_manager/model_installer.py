@@ -6,9 +6,9 @@ import sys
 from aiohttp import web
 import folder_paths
 import urllib.request
+import threading
 import server
-import server
-from .missing_models import find_missing_models
+import time
 
 comfy_path = os.path.dirname(folder_paths.__file__)
 def download_url_with_wget(url, save_path):
@@ -56,32 +56,29 @@ def parse_wget_output(output):
     match = re.search(r'\d+%|\d+K \d+Kb/s', output)
     return match.group(0) if match else ""
 
-import queue
-import threading
-
-# Create a Queue object
-download_queue = queue.Queue()
+# Create a dictionary to store download tasks
+download_tasks = []
+# Create a lock object to synchronize access to the dictionary
+download_tasks_lock = threading.Lock()
 # Create a thread that will execute the download tasks
 download_thread = None
-# Create a Condition object to share the download progress
-download_progress = threading.Condition()
-download_progress.value = {'progress': "", 'error': None}
 
 def download_worker():
-    while not download_queue.empty():
-        # Get a download task from the queue
-        (url, save_path) = download_queue.get()
+    while True:
+        task = None
+        with download_tasks_lock:
+            # Get a task from the list
+            if download_tasks:
+                task = download_tasks.pop(0)
 
-        # Execute the download task and update the download progress
-        download_url_with_agent(url, save_path)
-
-        # Indicate that the task is done
-        download_queue.task_done()
-
-    # If all tasks are done, reset the progress and exit
-    with download_progress:
-        download_progress.value['progress'] = ""
-        download_progress.notify_all()
+        if task is not None:
+            # Execute the download task and update the download progress
+            download_url_with_agent(task['url'], task['save_path'])
+                
+        else:
+            # No more tasks, break the loop
+            send_ws('download_progress', [])
+            break
 
 @server.PromptServer.instance.routes.post("/model_manager/install_model")
 async def install_model(request):
@@ -91,7 +88,9 @@ async def install_model(request):
     url = json_data['url']
     save_path = get_model_path(json_data)
 
-    download_queue.put((url, save_path))
+    with download_tasks_lock:
+        # Add the task to the list
+        download_tasks.append({ 'url': url, 'save_path': save_path })
 
     # If the previous thread is not active, start a new one
     if download_thread is None or not download_thread.is_alive():
@@ -100,16 +99,6 @@ async def install_model(request):
         download_thread.start()
 
     return web.Response(text=f"Downloading {url} to {save_path} ...")
-
-@server.PromptServer.instance.routes.get("/model_manager/download_progress")
-def get_download_progress(request):
-    with download_progress:
-        if download_progress.value['error'] is not None:
-            error = download_progress.value['error']
-            download_progress.value['error'] = None
-            return web.Response(text=error)
-        else:
-            return web.Response(text=download_progress.value['progress'])
 
 @server.PromptServer.instance.routes.post("/model_manager/install_model_stream")
 async def install_model_stream(request):
@@ -170,9 +159,7 @@ def download_url_with_agent(url, save_path, progress_callback=None):
                     downloaded += len(chunk)
                     progress = (downloaded / file_size) * 100
                     print(f'\rProgress: {progress:.2f}%', end='')
-                    with download_progress:
-                        download_progress.value['progress'] = f'Downloading {os.path.basename(save_path)}: {progress:.2f}%'  # Update the download progress
-                        download_progress.notify_all()
+                    send_download_status({'save_path': save_path, 'progress': progress})
 
                     # if progress_callback:
                     #     progress_callback(progress)
@@ -182,9 +169,7 @@ def download_url_with_agent(url, save_path, progress_callback=None):
 
     except Exception as e:
         print(f"\nDownload error: {url} / {e}", file=sys.stderr)
-        with download_progress:
-            download_progress.value['error'] = f"\nDownload error: {url} / {e}"  # Update the download progress
-            download_progress.notify_all()
+        send_ws('download_error', f"{url} / {e}")
         if os.path.exists(temp_save_path):
             os.remove(temp_save_path)  # Clean up the temporary file in case of failure
         return False
@@ -235,3 +220,22 @@ def get_model_dir(data):
 def get_model_path(data):
     base_model = get_model_dir(data)
     return os.path.join(base_model, data['filename'])
+
+
+last_call_time = 0
+def send_download_status(data):
+    global last_call_time
+    current_time = time.time()
+    if current_time - last_call_time < 0.1:
+        return
+    last_call_time = time.time()
+    with download_tasks_lock:
+        progress_list = [data]
+        for task in download_tasks:
+            progress_list.append({'save_path': task['save_path'], 'progress': 0})
+        send_ws('download_progress', progress_list)
+
+loop = asyncio.get_event_loop()
+def send_ws(event, data):
+    asyncio.run_coroutine_threadsafe(server.PromptServer.instance.send(event, data) , loop)
+    
