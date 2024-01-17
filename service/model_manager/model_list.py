@@ -15,16 +15,18 @@ file_hash_dict = {}
 @server.PromptServer.instance.routes.get("/model_manager/get_model_list")
 def get_model_list(request):
     file_list = []
-    folders = [folder for folder in os.listdir(model_root_dir) if os.path.isdir(os.path.join(model_root_dir, folder))]
-    for folder in folders:
-        if (folder == "configs"):
+    model_dir = folder_paths.models_dir
+
+    for folder in folder_paths.folder_names_and_paths:
+        # if model_dir not in folder_paths.folder_names_and_paths[folder][0]:
+        #     continue
+        if (folder == "configs" or folder == "custom_nodes"):
             continue
-        model_dir = os.path.join(model_root_dir, folder)
        
         files = folder_paths.get_filename_list(folder)
         for file in files:
 
-            file_path = os.path.join(model_dir, file)
+            file_path = folder_paths.get_full_path(folder, file)
             # check if the file hash is already calculated
             if (file_path in file_hash_dict):
                 file_hash = file_hash_dict[file_path]
