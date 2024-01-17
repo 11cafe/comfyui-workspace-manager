@@ -61,21 +61,53 @@ const startWorkspace = () => {
   observer.observe(targetNode, observerConfig);
 };
 
-console.log("window.app1", window.app);
-if (!window.app) {
-  import(
-    process.env.NODE_ENV === "development"
-      ? "../../../../web/scripts/app.js"
-      : "/scripts/app.js"
-  )
-    .then((module) => {
-      window.app = module.app;
-      console.log("window.app2", window.app);
-      startWorkspace();
+/**
+   1. The workspace needs to use app.js and api.js provided by comfyui. These two js files are in the ComfyUI/web/scripts directory.
+   2. In a production environment, you need to obtain the reference to app/api through import xxx from "/scripts/xxx.js".
+   3. In the development environment, since the dev server is started in the workspace/ui directory, you need to obtain the reference
+      to app/api by importing xxx from "../../../../scripts/xxx.js".
+   4. Therefore, the two environments need to use asynchronous import respectively. However, in the development environment, 
+      the app/  api reference obtained through asynchronous import is not the same one used by ComfyUI, but there is no problem in the production environment.
+   5. So in the development environment, we modify the ComfyUI/web/index.html file and mount the reference to the app/api on the   
+      window in index.html. And ComfyUI itself has mounted the app on the window in the scripts of index.html. In the production environment, use the following code to perform asynchronous import.
+ */
+if (process.env.NODE_ENV === "production") {
+  const promiseList = [];
+  if (!window.app) {
+    promiseList.push(
+      new Promise((resolve, reject) => {
+        import("/scripts/app.js")
+          .then((module) => {
+            window.app = module.app;
+            console.log("window.app-import()", window.app);
+            resolve(true);
+          })
+          .catch((err) => {
+            console.error("Error: ComfyUI app failed to mount", err);
+            reject(err);
+          });
+      })
+    );
+  }
+
+  promiseList.push(
+    new Promise((resolve, reject) => {
+      import("/scripts/api.js")
+        .then((module) => {
+          window.api = module.api;
+          console.log("window.api-import()", window.app);
+          resolve(true);
+        })
+        .catch((err) => {
+          console.error("Error: ComfyUI api failed to mount", err);
+          reject(err);
+        });
     })
-    .catch((err) => {
-      console.error("Error: ComfyUI app failed to mount", err);
-    });
+  );
+
+  Promise.all(promiseList).then(() => {
+    startWorkspace();
+  });
 } else {
   startWorkspace();
 }

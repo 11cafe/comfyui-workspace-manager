@@ -352,34 +352,21 @@ export default function App() {
 
     window.addEventListener("beforeunload", handleBeforeUnload);
 
-    import(
-      process.env.NODE_ENV === "development"
-        ? "../../../../web/scripts/api.js"
-        : "/scripts/api.js"
-    )
-      .then((module) => {
-        console.log("module", module);
-        module?.api.addEventListener("executed", (e: any) => {
-          console.log(111123123123);
-          e.detail?.output?.images?.forEach(
-            (im: { filename: string; subfolder: string; type: string }) => {
-              if (im.type === "output") {
-                onExecutedCreateMedia(im);
-              }
-            }
-          );
-          e.detail?.output?.gifs?.forEach(
-            (im: { filename: string; subfolder: string; type: string }) => {
-              if (im.type === "output") {
-                onExecutedCreateMedia(im);
-              }
-            }
-          );
-        });
-      })
-      .catch((err) => {
-        console.error("Error: ComfyUI app failed to mount", err);
-      });
+    window.api.addEventListener("executed", (e: any) => {
+      e.detail?.output?.images?.forEach(
+        (im: { filename: string; subfolder: string; type: string }) => {
+          if (im.type === "output") {
+            onExecutedCreateMedia(im);
+          }
+        }
+      );
+      e.detail?.output?.gifs?.forEach(
+        (im: { filename: string; subfolder: string; type: string }) => {
+          if (im.type === "output") {
+            onExecutedCreateMedia(im);
+          }
+        }
+      );
 
     return () => {
       window.removeEventListener("message", authTokenListener);
