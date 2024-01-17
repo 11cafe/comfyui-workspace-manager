@@ -1,3 +1,5 @@
+// @ts-ignore
+import { api } from "/scripts/api.js";
 import {
   Button,
   HStack,
@@ -13,10 +15,10 @@ import {
   Checkbox,
   Spinner,
 } from "@chakra-ui/react";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { IconX } from "@tabler/icons-react";
 import { CivitiModel, CivitiModelFileVersion } from "../types";
-import { InstallModelsApiInput, installModelsApi } from "../api/modelsApi";
+import { installModelsApi } from "../api/modelsApi";
 import ModelCard from "./ModelCard";
 import InstallProgress from "./InstallProgress";
 import InstallModelSearchBar from "./InstallModelSearchBar";
@@ -124,9 +126,26 @@ export default function InatallModelsModal({
       url: file.downloadUrl,
     });
   };
+
   useEffect(() => {
     loadData();
   }, [searchQuery, modelType]);
+
+  async function refreshHistory() {
+    const res = await api.fetchApi('/model_manager/download_progress');
+    const ret = await res.text();
+    console.log(ret);
+    window.dispatchEvent(
+      new CustomEvent("model_install_message", {
+        detail: ret,
+      })
+    );
+  }
+
+  useEffect(() => {
+    const autoRefreshInterval = setInterval(refreshHistory, 1000);
+    return () => clearInterval(autoRefreshInterval);
+  }, []);
 
   const isAllSelected =
     models.length > 0 && selectedID.length === models.length;
