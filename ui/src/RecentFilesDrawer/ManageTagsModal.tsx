@@ -1,7 +1,5 @@
 import {
-  Button,
   HStack,
-  useDisclosure,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -12,8 +10,8 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { Workflow, tagsTable, updateFlow } from "../db-tables/WorkspaceDB";
-import { IconSettings, IconTrash } from "@tabler/icons-react";
+import { tagsTable } from "../db-tables/WorkspaceDB";
+import { IconTrash } from "@tabler/icons-react";
 import { Tag } from "../types/dbTypes";
 
 export default function ManageTagsModal({ onclose }: { onclose: () => void }) {

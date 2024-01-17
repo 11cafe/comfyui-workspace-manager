@@ -240,9 +240,9 @@ export default function App() {
       },
     ]);
   };
-  const loadNewWorkflow = (input?: { json?: string; name?: string }) => {
+  const loadNewWorkflow = async (input?: { json?: string; name?: string }) => {
     const jsonStr = input?.json ?? JSON.stringify(defaultGraph);
-    const flow = createFlow({ json: jsonStr, name: input?.name });
+    const flow = await createFlow({ json: jsonStr, name: input?.name });
     loadWorkflowID(flow.id);
     setRoute("root");
   };
@@ -266,7 +266,10 @@ export default function App() {
     setRoute("root");
   };
 
-  const onDuplicateWorkflow = (workflowID: string, newFlowName?: string) => {
+  const onDuplicateWorkflow = async (
+    workflowID: string,
+    newFlowName?: string
+  ) => {
     if (workspace == null) {
       return;
     }
@@ -274,7 +277,7 @@ export default function App() {
     if (workflow == null) {
       return;
     }
-    const flow = createFlow({
+    const flow = await createFlow({
       json: workflow.json,
       name: newFlowName || workflow.name,
       parentFolderID: workflow.parentFolderID,
@@ -335,9 +338,9 @@ export default function App() {
     const fileInput = document.getElementById(
       "comfy-file-input"
     ) as HTMLInputElement;
-    const fileInputListener = () => {
+    const fileInputListener = async () => {
       if (fileInput && fileInput.files && fileInput.files.length > 0) {
-        const flow = createFlow({
+        const flow = await createFlow({
           // @ts-ignore
           name: fileInput.files[0].name,
           json: JSON.stringify(defaultGraph),

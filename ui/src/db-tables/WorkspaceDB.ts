@@ -181,7 +181,7 @@ export function updateFlow(id: string, input: Partial<Workflow>) {
   }
 }
 
-export function createFlow({
+export async function createFlow({
   json,
   name,
   parentFolderID,
@@ -191,7 +191,7 @@ export function createFlow({
   name?: string;
   parentFolderID?: string;
   tags?: string[];
-}): Workflow {
+}): Promise<Workflow> {
   if (workspace == null) {
     throw new Error("workspace is not loaded");
   }
@@ -211,7 +211,7 @@ export function createFlow({
   //add to cache
   workspace[uuid] = newWorkflow;
   //add to IndexDB
-  indexdb.workflows.add(newWorkflow);
+  await indexdb.workflows.add(newWorkflow);
   // add to disk file db
   saveDB("workflows", JSON.stringify(workspace));
   // legacy index cache
