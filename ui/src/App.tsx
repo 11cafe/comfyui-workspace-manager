@@ -47,7 +47,6 @@ export default function App() {
   const developmentEnvLoadFirst = useRef(true);
   const workspaceAppRegistered = useRef(false);
 
-  console.log("workspaceAppRegistered", workspaceAppRegistered.current);
   const saveCurWorkflow = useCallback(() => {
     if (curFlowID.current) {
       const graphJson = JSON.stringify(window.app.graph.serialize());
@@ -302,6 +301,7 @@ export default function App() {
       return;
     }
 
+    // When the development environment is hot updated, useEffect may be executed repeatedly, and repeated registration needs to be avoided.
     if (workspaceAppRegistered.current) {
       return;
     }
@@ -406,7 +406,6 @@ export default function App() {
             zIndex={1000}
             draggable={false}
           >
-            55234324
             <Topbar
               curFlowName={curFlowName}
               setCurFlowName={setCurFlowName}
