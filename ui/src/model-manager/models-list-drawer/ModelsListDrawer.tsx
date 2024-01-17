@@ -4,7 +4,7 @@ import {
   CardHeader,
   Flex,
   Heading,
-  Input,
+  Spinner,
   Portal,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
@@ -14,6 +14,8 @@ import SearchInput from "../../components/SearchInput";
 // @ts-ignore
 import { app } from "/scripts/app.js";
 import InstallModelsButton from "../install-models/InstallModelsButton";
+import { getAllModelsList } from "../../Api";
+import { ModelsListRespItem } from "../types";
 interface Props {
   onClose: () => void;
 }
@@ -22,52 +24,72 @@ export default function ModelsListDrawer({ onClose }: Props) {
   const [selectedModel, setSelectedModel] = useState("checkpoints");
 
   // all model types
-  const [modelTypeList, setModelTypeList] = useState<string[]>([
-    "checkpoints",
-    "clip",
-    "clip_vision",
-    "configs",
-    "controlnet",
-    "diffusers",
-    "embeddings",
-    "gligen",
-    "hypernetworks",
-    "loras",
-  ]);
+  const [modelTypeList, setModelTypeList] = useState<string[]>([]);
 
   // all models
-  const [modelList, setModelList] = useState<string[]>([
-    "checkpoints",
-    "checkpoints2",
-    "checkpoints3",
-    "checkpoints4",
-    "checkpoints5",
-    "checkpoints6",
-    "checkpoints7",
-    "checkpoints8",
-    "checkpoints9",
-    "checkpoints10",
-  ]);
+  const [modelsList, setModelsList] = useState<ModelsListRespItem[]>([]);
 
   // current render models
-  const [curModelList, setCurModelList] = useState<string[]>([]);
+  const [curModelList, setCurModelList] = useState<ModelsListRespItem[]>([]);
 
-  // search models
+  // loading status
+  const [loading, setLoading] = useState(false);
+
+  // filter by model type
   useEffect(() => {
-    // filter by model type
-  }, [selectedModel]);
+    const res = modelsList.filter((item) => {
+      return item.model_type === selectedModel;
+    });
+    setCurModelList(res);
+  }, [selectedModel, modelsList]);
 
   useEffect(() => {
+    initData();
     app.canvasEl.addEventListener("click", onClose);
     return () => {
       app.canvasEl.removeEventListener("click", onClose);
     };
   }, []);
 
-  // input text
-  // const [searchValue, setSearchValue] = useState("");
+  const initData = async () => {
+    setLoading(true);
+    const res = (await getAllModelsList()) as Array<ModelsListRespItem>;
+    setLoading(false);
+    const modelTypeList = Array.from(
+      new Set(res.map((item) => item.model_type))
+    );
+    // checkpoints must be in first
+    const index = modelTypeList.indexOf("checkpoints");
+    if (index > 0) {
+      modelTypeList.splice(index, 1);
+      modelTypeList.unshift("checkpoints");
+    }
+    setModelTypeList(modelTypeList);
+    setModelsList(res);
+  };
 
   const DRAWER_WIDTH = 440;
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <Flex justifyContent={"center"} alignItems={"center"} height={"100%"}>
+          <Spinner />
+        </Flex>
+      );
+    }
+    return (
+      <>
+        <ModelsTags
+          modelTypeList={modelTypeList}
+          setSelectedModel={setSelectedModel}
+          selectedModel={selectedModel}
+        />
+        <ModelsList list={curModelList} />
+      </>
+    );
+  };
+
   return (
     <Portal>
       <Box style={{ width: DRAWER_WIDTH }}>
@@ -91,12 +113,7 @@ export default function ModelsListDrawer({ onClose }: Props) {
               <InstallModelsButton />
             </Flex>
           </CardHeader>
-          <ModelsTags
-            modelTypeList={modelTypeList}
-            setSelectedModel={setSelectedModel}
-            selectedModel={selectedModel}
-          />
-          <ModelsList list={curModelList} />
+          {renderContent()}
         </Card>
       </Box>
     </Portal>
