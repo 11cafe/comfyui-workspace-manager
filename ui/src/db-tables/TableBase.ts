@@ -13,14 +13,20 @@ export class TableBase<T> {
   public async listAll(): Promise<T[]> {
     const objs = await indexdb[this.tableName].toArray();
     if (objs?.length) return objs as T[];
+    console.warn("indexdb not found", this.tableName, "fallback to legacy db");
     const records = await this.getRecords();
     return Object.values(records);
   }
 
   public async getRecords(): Promise<Record<string, T>> {
+    console.warn("[DEPRECATED]getRecords() call", this.tableName);
+
     return await loadTable(this.tableName);
   }
   public async get(id: string): Promise<T | undefined> {
+    const obj = await indexdb[this.tableName].get(id);
+    if (obj) return obj as T;
+    console.warn("indexdb not found", this.tableName, "fallback to legacy db");
     const records = await this.getRecords();
     return records[id];
   }

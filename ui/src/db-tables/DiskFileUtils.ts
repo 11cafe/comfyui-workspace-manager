@@ -12,11 +12,11 @@ import {
 import { toFileNameFriendly } from "../utils";
 
 export async function saveJsonFileMyWorkflows(workflow: Workflow) {
-  const file_path = generateFilePath(workflow);
+  const file_path = await generateFilePath(workflow);
   if (file_path == null) {
     return;
   }
-  const fullPath = generateFilePathAbsolute(workflow);
+  const fullPath = await generateFilePathAbsolute(workflow);
   updateFlow(workflow.id, {
     filePath: fullPath ?? undefined,
   });
@@ -31,15 +31,17 @@ export async function saveJsonFileMyWorkflows(workflow: Workflow) {
   await updateFile(file_path, JSON.stringify(flow));
 }
 
-export function deleteJsonFileMyWorkflows(workflow: Workflow) {
+export async function deleteJsonFileMyWorkflows(workflow: Workflow) {
   if (workflow.name == null) {
     return;
   }
-  const file_path = generateFilePath(workflow);
+  const file_path = await generateFilePath(workflow);
   file_path != null && deleteFile(file_path);
 }
 
-export function generateFilePath(workflow: Workflow): string | null {
+export async function generateFilePath(
+  workflow: Workflow
+): Promise<string | null> {
   let filePath = toFileNameFriendly(workflow.name) + ".json";
   let curFolderID = workflow.parentFolderID;
   while (curFolderID != null) {
@@ -55,8 +57,10 @@ export function generateFilePath(workflow: Workflow): string | null {
   return filePath ?? null;
 }
 
-export function generateFilePathAbsolute(workflow: Workflow): string | null {
-  const subPath = generateFilePath(workflow);
+export async function generateFilePathAbsolute(
+  workflow: Workflow
+): Promise<string | null> {
+  const subPath = await generateFilePath(workflow);
   let myWorkflowsDir = userSettingsTable?.getSetting("myWorkflowsDir");
   if (myWorkflowsDir == null) {
     console.error("myWorkflowsDir is not set");

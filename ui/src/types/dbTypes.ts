@@ -11,12 +11,6 @@ export type Tag = {
   workflowIDs: string[];
   updateTime: number;
 };
-export type TagsTable = {
-  tags: Tags;
-  listAll(): Tag[];
-  upsert(name: string): Tag;
-  delete(name: string): void;
-};
 
 export type UserSettings = {
   userID: string;

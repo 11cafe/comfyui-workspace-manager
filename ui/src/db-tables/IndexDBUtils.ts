@@ -47,6 +47,8 @@ async function writeWorkspaceTable(data: string): Promise<void> {
 }
 
 export async function updateWorkspaceIndexDB() {
+  // since we migrated to indexdb, disabling updating this legacy indexdb backup
+  return;
   try {
     const comfyspaceData = await curComfyspaceJson();
     await writeWorkspaceTable(comfyspaceData);
