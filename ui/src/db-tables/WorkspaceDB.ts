@@ -73,6 +73,14 @@ export const loadTable = async (name: Table) => {
 
 export async function loadDBs() {
   const loadWorkflows = async () => {
+    const objs = await indexdb.workflows.toArray();
+    if (objs.length > 0) {
+      workspace = {};
+      objs.forEach((obj) => {
+        workspace && (workspace[obj.id] = obj);
+      });
+      return;
+    }
     workspace = await loadTable("workflows");
   };
   const loadTags = async () => {

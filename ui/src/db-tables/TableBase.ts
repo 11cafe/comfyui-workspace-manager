@@ -19,7 +19,7 @@ export class TableBase<T> {
   }
 
   public async getRecords(): Promise<Record<string, T>> {
-    console.error("[DEPRECATED]getRecords() call", this.tableName);
+    console.warn("[DEPRECATED]getRecords() call", this.tableName);
 
     return await loadTable(this.tableName);
   }
