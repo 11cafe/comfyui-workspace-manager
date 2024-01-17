@@ -1,10 +1,11 @@
-import { getDB, saveDB } from "../Api";
+import { saveDB } from "../Api";
 import { listWorkflows, loadTable, updateFlow } from "./WorkspaceDB";
 import { Folder } from "../types/dbTypes";
 import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
 import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
 import { v4 as uuidv4 } from "uuid";
 import { TableBase } from "./TableBase";
+import { indexdb } from "./indexdb";
 
 export class FoldersTable {
   static readonly TABLE_NAME = "folders";
@@ -17,6 +18,13 @@ export class FoldersTable {
 
   static async load(): Promise<FoldersTable> {
     const instance = new FoldersTable();
+    const folders = await indexdb.folders.toArray();
+    if (folders.length > 0) {
+      folders.forEach((folder) => {
+        instance.records[folder.id] = folder;
+      });
+      return instance;
+    }
     const json = await loadTable(FoldersTable.TABLE_NAME);
     if (json != null) {
       instance.records = json;
@@ -43,6 +51,7 @@ export class FoldersTable {
       type: "folder",
     };
     this.records[folder.id] = folder;
+    indexdb.folders.add(folder);
     saveDB("folders", JSON.stringify(this.records));
     updateWorkspaceIndexDB();
 
@@ -65,9 +74,10 @@ export class FoldersTable {
       newRecord.updateTime = Date.now();
     }
     this.records[input.id] = newRecord;
+    indexdb.folders.update(input.id, input);
     saveDB("folders", JSON.stringify(this.records));
     updateWorkspaceIndexDB();
-    // move or rename all workflows to the right directory(not required when folded state changes)
+    // folder moved or renamed - move all workflows to the right directory(not required when folded state changes)
     if (input.name != null || input.parentFolderID != null) {
       validateOrSaveAllJsonFileMyWorkflows(true);
     }
@@ -80,6 +90,7 @@ export class FoldersTable {
     childrenFlows.forEach((flow) =>
       updateFlow(flow.id, { parentFolderID: undefined })
     );
+    indexdb.folders.delete(id);
     saveDB("folders", JSON.stringify(this.records));
     updateWorkspaceIndexDB();
     validateOrSaveAllJsonFileMyWorkflows();

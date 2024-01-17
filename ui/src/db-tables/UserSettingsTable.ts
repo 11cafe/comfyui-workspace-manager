@@ -43,7 +43,6 @@ export class UserSettingsTable extends TableBase<UserSettings> {
     const instance = new UserSettingsTable();
     let settings = await indexdb.userSettings.get(DEFAULT_USER);
     if (settings == null) {
-      // throw new Error("User settings not found");
       const jsonStr = await getDB(UserSettingsTable.TABLE_NAME);
       let settings = jsonStr != null ? JSON.parse(jsonStr) : null;
       if (settings == null) {
