@@ -1,14 +1,14 @@
 # ☕️ ComfyUI Workspace Manager - Comfyspace
 
-A ComfyUI workflow management extension to **organize and manage all your workflows in one place**. Seamlessly switch between workflows, track version history and image generation history within a single workspace, like Google Docs.
+A ComfyUI workflow management extension to **organize and manage all your workflows and generated images in one place**. Seamlessly switch between workflows, track version history and image generation history within a single workspace. We are reimagining the way to manage all your resources as a whole, workflows, models and custom nodes.
 
-If you have questions or suggestions, please
+If you have questions or suggestions, please [join our Discord](https://discord.gg/HHvfEurv2Z)! You will receive latest feature updates and discussions! 🤩 
 
 <a href="https://discord.gg/HHvfEurv2Z">
   <img src="https://animeartmagazine.com/wp-content/uploads/2022/05/discord-button600.webp" alt="Join Discord" width="120"/>
 </a> 
 
-[Discord Channel](https://discord.gg/HHvfEurv2Z)
+
 
 for collaboration, email: weixuanfu01@gmail.com 
 
