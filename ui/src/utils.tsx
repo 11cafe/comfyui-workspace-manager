@@ -1,18 +1,24 @@
 // @ts-ignore
-import { deleteFile } from "./Api";
+import { deleteFile, updateFile } from "./Api";
 import { ESortTypes } from "./RecentFilesDrawer/types";
 import {
   batchCreateFlows,
   foldersTable,
   listWorkflows,
-  saveJsonFileMyWorkflows,
   userSettingsTable,
   Workflow,
 } from "./db-tables/WorkspaceDB";
-import { generateFilePathAbsolute } from "./db-tables/DiskFileUtils";
+import {
+  generateFilePathAbsolute,
+  saveJsonFileMyWorkflows,
+} from "./db-tables/DiskFileUtils";
 import { Folder } from "./types/dbTypes";
 // @ts-ignore
 import { app, ComfyApp } from "/scripts/app.js";
+import {
+  COMFYSPACE_TRACKING_FIELD_NAME,
+  LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
+} from "./const";
 
 export type Route = "root" | "customNodes" | "recentFlows" | "gallery";
 
@@ -389,4 +395,21 @@ export function generateUrlHashWithFlowId(id: string) {
     hashArr.push(newWorkflowId);
   }
   return `${hashArr.join("/")}`;
+}
+
+export async function rewriteAllLocalFiles() {
+  for (const workflow of listWorkflows()) {
+    try {
+      const fullPath = generateFilePathAbsolute(workflow);
+      const flow = JSON.parse(workflow.json);
+      flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {
+        id: workflow.id,
+        name: workflow.name,
+      };
+      delete flow.extra[LEGACY_COMFYSPACE_TRACKING_FIELD_NAME];
+      fullPath && (await updateFile(fullPath, JSON.stringify(flow)));
+    } catch (error) {
+      console.error(error);
+    }
+  }
 }

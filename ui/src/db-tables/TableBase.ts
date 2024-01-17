@@ -1,6 +1,7 @@
-import { getDB, saveDB } from "../Api";
-import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
-import { Table } from "./WorkspaceDB";
+import { saveDB } from "../Api";
+import { updateWorkspaceIndexDB } from "./IndexDBUtils";
+import { Table, loadTable } from "./WorkspaceDB";
+import { indexdb } from "./indexdb";
 
 export class TableBase<T> {
   public readonly tableName: Table;
@@ -10,23 +11,14 @@ export class TableBase<T> {
   }
 
   public async listAll(): Promise<T[]> {
+    const objs = await indexdb[this.tableName].toArray();
+    if (objs?.length) return objs as T[];
     const records = await this.getRecords();
-    const workflows = Object.values(records);
-    return workflows;
+    return Object.values(records);
   }
 
   public async getRecords(): Promise<Record<string, T>> {
-    let jsonStr = await getDB(this.tableName);
-    let json: any;
-    try {
-      json = jsonStr != null ? JSON.parse(jsonStr) : null;
-    } catch (e) {}
-    if (json == null) {
-      const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
-      const comfyspaceData = JSON.parse(comfyspace);
-      json = comfyspaceData[this.tableName];
-    }
-    return json ?? {};
+    return await loadTable(this.tableName);
   }
   public async get(id: string): Promise<T | undefined> {
     const records = await this.getRecords();
@@ -34,6 +26,7 @@ export class TableBase<T> {
   }
 
   public async delete(id: string) {
+    await indexdb[this.tableName].delete(id);
     const records = await this.getRecords();
     delete records[id];
     saveDB(this.tableName, JSON.stringify(records));

@@ -1,9 +1,10 @@
 import { getDB, saveDB } from "../Api";
-import { listWorkflows, updateFlow } from "./WorkspaceDB";
+import { listWorkflows, loadTable, updateFlow } from "./WorkspaceDB";
 import { Folder } from "../types/dbTypes";
 import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
 import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
 import { v4 as uuidv4 } from "uuid";
+import { TableBase } from "./TableBase";
 
 export class FoldersTable {
   static readonly TABLE_NAME = "folders";
@@ -16,13 +17,7 @@ export class FoldersTable {
 
   static async load(): Promise<FoldersTable> {
     const instance = new FoldersTable();
-    let jsonStr = await getDB(FoldersTable.TABLE_NAME);
-    let json = jsonStr != null ? JSON.parse(jsonStr) : null;
-    if (json == null) {
-      const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
-      const comfyspaceData = JSON.parse(comfyspace);
-      json = comfyspaceData[FoldersTable.TABLE_NAME];
-    }
+    const json = await loadTable(FoldersTable.TABLE_NAME);
     if (json != null) {
       instance.records = json;
     }
