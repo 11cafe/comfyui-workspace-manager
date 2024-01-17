@@ -10,8 +10,6 @@ If you have questions or suggestions, please [join our Discord](https://discord.
 
 
 
-for collaboration, email: weixuanfu01@gmail.com 
-
 ## Installation
 
 ### [Option 1] via ComfyUI Manager (Preferred)
