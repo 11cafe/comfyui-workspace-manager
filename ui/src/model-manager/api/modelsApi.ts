@@ -1,3 +1,6 @@
+// @ts-ignore
+import { api } from "/scripts/api.js";
+
 export type InstallModelsApiInput = {
   save_path: string;
   url: string;

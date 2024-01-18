@@ -1,6 +1,7 @@
 import { Table } from "./db-tables/WorkspaceDB";
 
 export async function getDB(table: Table): Promise<string | undefined> {
+  console.warn("[workspace deprecated] getDB is deprecated", table);
   try {
     const response = await fetch(`/workspace/get_db?table=${table}`);
     if (!response.ok) {
@@ -150,12 +151,27 @@ export async function scanLocalNewFiles(path: string, existFlowIds: string[]) {
       },
       body: JSON.stringify({
         path,
-        existFlowIds
+        existFlowIds,
       }),
     });
     const result = await response.json();
     return result;
   } catch (error) {
     console.error("Error scan local new files:", error);
+  }
+}
+
+export async function getAllModelsList() {
+  try {
+    const response = await fetch("/model_manager/get_model_list", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error get all models list:", error);
   }
 }

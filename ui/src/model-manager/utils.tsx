@@ -1,7 +1,7 @@
 // @ts-ignore
 import { deleteFile } from "./Api";
 // @ts-ignore
-// import { app, ComfyApp } from "/scripts/app.js";
+import { app, ComfyApp } from "/scripts/app.js";
 
 export function formatTimestamp(
   unixTimestamp: number,

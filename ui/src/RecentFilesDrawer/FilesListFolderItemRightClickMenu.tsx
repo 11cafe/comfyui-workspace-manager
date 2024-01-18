@@ -14,16 +14,19 @@ import {
 } from "@chakra-ui/react";
 import { MouseEvent, useContext, useRef, useState } from "react";
 import { RecentFilesContext } from "../WorkspaceContext";
-import { foldersTable } from "../db-tables/WorkspaceDB";
+import { createFlow, foldersTable } from "../db-tables/WorkspaceDB";
 import EditFolderNameModal from "../components/EditFolderName";
 import {
   IconFileImport,
+  IconFilePlus,
   IconFolderPlus,
   IconPencil,
+  IconPlus,
   IconTrash,
 } from "@tabler/icons-react";
 import { Folder } from "../types/dbTypes";
 import ImportFlowsFileInput from "./ImportFlowsFileInput";
+import { defaultGraph } from "../defaultGraph";
 
 type Props = {
   menuPosition: { x: number; y: number };
@@ -44,6 +47,14 @@ export default function FilesListFolderItemRightClickMenu({
     e.stopPropagation();
     foldersTable?.create({
       name: "New folder",
+      parentFolderID: folder.id,
+    });
+    onRefreshFilesList && onRefreshFilesList();
+  };
+  const onClickNewFile = async (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    await createFlow({
+      json: JSON.stringify(defaultGraph),
       parentFolderID: folder.id,
     });
     onRefreshFilesList && onRefreshFilesList();
@@ -76,6 +87,9 @@ export default function FilesListFolderItemRightClickMenu({
               icon={<IconFolderPlus size={19} />}
             >
               New folder
+            </MenuItem>
+            <MenuItem onClick={onClickNewFile} icon={<IconPlus size={19} />}>
+              New file
             </MenuItem>
             <MenuItem
               onClick={(e) => {

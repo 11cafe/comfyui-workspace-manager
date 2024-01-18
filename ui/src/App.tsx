@@ -1,4 +1,8 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+// @ts-ignore
+import { app } from "http://127.0.0.1:8188/scripts/app.js";
+// @ts-ignore
+import { api } from "http://127.0.0.1:8188/scripts/api.js";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
 import { Box, Portal } from "@chakra-ui/react";
 import {
@@ -11,6 +15,7 @@ import {
   changelogsTable,
   mediaTable,
   listWorkflows,
+  backfillIndexdb,
 } from "./db-tables/WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
@@ -20,10 +25,13 @@ import {
   getFileUrl,
   matchSaveWorkflowShortcut,
   validateOrSaveAllJsonFileMyWorkflows,
+  getWorkflowIdInUrlHash,
+  generateUrlHashWithFlowId,
+  rewriteAllLocalFiles,
 } from "./utils";
 import GalleryModal from "./gallery/GalleryModal";
 import { Topbar } from "./topbar/Topbar";
-import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
+// import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
 import { PanelPosition } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
 import React from "react";
@@ -44,12 +52,9 @@ export default function App() {
   const workspaceContainerRef = useRef(null);
   const { showDialog } = useDialog();
   const [loadChild, setLoadChild] = useState(false);
-  const developmentEnvLoadFirst = useRef(true);
-  const workspaceAppRegistered = useRef(false);
-
   const saveCurWorkflow = useCallback(() => {
     if (curFlowID.current) {
-      const graphJson = JSON.stringify(window.app.graph.serialize());
+      const graphJson = JSON.stringify(app.graph.serialize());
       updateFlow(curFlowID.current, {
         lastSavedJson: graphJson,
         json: graphJson,
@@ -71,19 +76,23 @@ export default function App() {
       if (curFlowID.current) {
         const flow = getWorkflow(curFlowID.current);
         if (flow && flow.lastSavedJson) {
-          window.app.loadGraphData(JSON.parse(flow.lastSavedJson));
+          app.loadGraphData(JSON.parse(flow.lastSavedJson));
         }
       }
     }
   };
 
-  const setCurFlowID = (id: string) => {
+  const setCurFlowIDAndName = (id: string, name: string) => {
     curFlowID.current = id;
     setFlowID(id);
-    const workflow = getWorkflow(id);
-    if (workflow) {
+    setCurFlowName(name);
+    if (getWorkflowIdInUrlHash()) {
+      const newUrlHash = generateUrlHashWithFlowId(id);
+      window.location.hash = newUrlHash;
+      document.title = name + " - ComfyUI";
+    } else {
       localStorage.setItem("curFlowID", id);
-      // localStorage.setItem("comfy_workspace_workflow", workflow.json);
+      document.title = "ComfyUI - " + name;
     }
   };
 
@@ -91,7 +100,7 @@ export default function App() {
     const ext: ComfyExtension = {
       // Unique name for the extension
       name: "WorkspaceManager",
-      async setup() {
+      async setup(app) {
         // clean up legacy localStorage
         localStorage.removeItem("workspace");
         localStorage.removeItem("comfyspace");
@@ -103,13 +112,10 @@ export default function App() {
       async afterConfigureGraph() {
         // to avoid the bug after switching workflow using comfyspace,
         // immediately refresh browser, resulting in latest workflow not updated
-        localStorage.setItem(
-          "workflow",
-          JSON.stringify(window.app.graph.serialize())
-        );
+        localStorage.setItem("workflow", JSON.stringify(app.graph.serialize()));
       },
     };
-    window.app.registerExtension(ext);
+    app.registerExtension(ext);
     try {
       await loadDBs();
       updatePanelPosition(userSettingsTable?.getSetting("topBarStyle"), false);
@@ -117,17 +123,33 @@ export default function App() {
       console.error("error loading db", error);
     }
     setLoadingDB(false);
-    const latest = localStorage.getItem("curFlowID");
-    const latestWf = latest != null ? getWorkflow(latest) : null;
 
-    if (latestWf) {
-      latestWf && localStorage.setItem("workflow", latestWf.json);
-      setCurFlowID(latestWf.id ?? null);
-      setCurFlowName(latestWf.name ?? null);
+    let latestWfID = null;
+    latestWfID = getWorkflowIdInUrlHash();
+    if (latestWfID == null) {
+      latestWfID = localStorage.getItem("curFlowID");
     }
-    await validateOrSaveAllJsonFileMyWorkflows();
+    if (latestWfID) {
+      // since we changed to lazy load our component, app.configureGraph will come before our app loading,
+      // localStorage.setItem("workflow") will not take effect anymore and will result different workflow appearing bug when refreshing
+      loadWorkflowIDImpl(latestWfID);
+    }
 
-    if (userSettingsTable?.getSetting("twoWaySync")) {
+    if (localStorage.getItem("WORKSPACE_INDEXDB_BACKFILL") !== "true") {
+      await backfillIndexdb();
+      localStorage.setItem("WORKSPACE_INDEXDB_BACKFILL", "true");
+    }
+    /**
+     * For two-way sync, one-time rewrite all /my_workflows files to the database
+     */
+    if (localStorage.getItem("REWRITTEN_ALL_LOCAL_DISK_FILE") === "true") {
+      await validateOrSaveAllJsonFileMyWorkflows();
+    } else {
+      await rewriteAllLocalFiles();
+      localStorage.setItem("REWRITTEN_ALL_LOCAL_DISK_FILE", "true");
+    }
+
+    if (userSettingsTable?.getSetting("twoWaySync") === true) {
       // Scan all files and subfolders in the local storage directory, compare and find the data that needs to be added in the DB, and perform the new operation
       const myWorkflowsDir = userSettingsTable?.getSetting("myWorkflowsDir");
       const existFlowIds = listWorkflows().map((flow) => flow.id);
@@ -137,12 +159,30 @@ export default function App() {
       );
       await syncNewFlowOfLocalDisk(fileList, folderList);
     }
-    workspaceAppRegistered.current = true;
   };
+
+  useEffect(() => {
+    graphAppSetup();
+    setLoadChild(true);
+    setInterval(() => {
+      const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
+
+      if (curFlowID.current != null && autoSaveEnabled) {
+        // autosave workflow if enabled
+        const graphJson = JSON.stringify(app.graph.serialize());
+        graphJson != null &&
+          updateFlow(curFlowID.current, {
+            json: graphJson,
+          });
+      }
+      setIsDirty(checkIsDirty());
+    }, 1000);
+    // pullAuthTokenCloseIfExist();
+  }, []);
 
   const checkIsDirty = () => {
     if (curFlowID.current != null) {
-      const graphJson = window.app.graph.serialize() ?? {};
+      const graphJson = app.graph.serialize() ?? {};
       const curWorkflow = curFlowID.current
         ? getWorkflow(curFlowID.current)
         : null;
@@ -160,19 +200,20 @@ export default function App() {
     return false;
   };
   const loadWorkflowIDImpl = (id: string) => {
-    if (window.app.graph == null) {
-      console.error("window.app.graph is null cannot load workflow");
+    if (app.graph == null) {
+      console.error("app.graph is null cannot load workflow");
       return;
     }
-    setCurFlowID(id);
+
     const flow = getWorkflow(id);
+
     if (flow == null) {
       alert("Error: Workflow not found! id: " + id);
       return;
     }
-    window.app.ui.dialog.close();
-    window.app.loadGraphData(JSON.parse(flow.json));
-    setCurFlowName(flow.name);
+    setCurFlowIDAndName(id, flow.name);
+    app.ui.dialog.close();
+    app.loadGraphData(JSON.parse(flow.json));
     setRoute("root");
   };
   const loadWorkflowID = (id: string) => {
@@ -199,9 +240,9 @@ export default function App() {
       },
     ]);
   };
-  const loadNewWorkflow = (input?: { json?: string; name?: string }) => {
+  const loadNewWorkflow = async (input?: { json?: string; name?: string }) => {
     const jsonStr = input?.json ?? JSON.stringify(defaultGraph);
-    const flow = createFlow({ json: jsonStr, name: input?.name });
+    const flow = await createFlow({ json: jsonStr, name: input?.name });
     loadWorkflowID(flow.id);
     setRoute("root");
   };
@@ -221,19 +262,22 @@ export default function App() {
     const fileObj = new File([blob], fileName, {
       type: res.headers.get("Content-Type") || "",
     });
-    await window.app.handleFile(fileObj);
+    await app.handleFile(fileObj);
     setRoute("root");
   };
 
-  const onDuplicateWorkflow = (workflowID: string, newFlowName?: string) => {
+  const onDuplicateWorkflow = async (
+    workflowID: string,
+    newFlowName?: string
+  ) => {
     if (workspace == null) {
       return;
     }
-    const workflow = workspace[workflowID];
+    const workflow = getWorkflow(workflowID);
     if (workflow == null) {
       return;
     }
-    const flow = createFlow({
+    const flow = await createFlow({
       json: workflow.json,
       name: newFlowName || workflow.name,
       parentFolderID: workflow.parentFolderID,
@@ -288,55 +332,21 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    /**
-     * Because we have enabled strict mode, useEffect will be executed twice in strict mode,
-     * causing the app to be registered twice. So in development environment mode,
-     * the first execution is skipped.
-     */
-    if (
-      process.env.NODE_ENV === "development" &&
-      developmentEnvLoadFirst.current
-    ) {
-      developmentEnvLoadFirst.current = false;
-      return;
-    }
-
-    // When the development environment is hot updated, useEffect may be executed repeatedly, and repeated registration needs to be avoided.
-    if (workspaceAppRegistered.current) {
-      return;
-    }
-    graphAppSetup();
-    setLoadChild(true);
-    setInterval(() => {
-      const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
-
-      if (curFlowID.current != null && autoSaveEnabled) {
-        // autosave workflow if enabled
-        const graphJson = JSON.stringify(window.app.graph.serialize());
-        graphJson != null &&
-          updateFlow(curFlowID.current, {
-            json: graphJson,
-          });
-      }
-      setIsDirty(checkIsDirty());
-    }, 1000);
-    pullAuthTokenCloseIfExist();
-
     window.addEventListener("keydown", shortcutListener);
-    window.addEventListener("message", authTokenListener);
+    // window.addEventListener("message", authTokenListener);
 
     const fileInput = document.getElementById(
       "comfy-file-input"
     ) as HTMLInputElement;
-    const fileInputListener = () => {
+    const fileInputListener = async () => {
       if (fileInput && fileInput.files && fileInput.files.length > 0) {
-        const flow = createFlow({
+        const flow = await createFlow({
           // @ts-ignore
           name: fileInput.files[0].name,
           json: JSON.stringify(defaultGraph),
         });
-        setCurFlowID(flow.id);
-        setCurFlowName(flow.name ?? "Unknown name");
+
+        setCurFlowIDAndName(flow.id, flow.name ?? "Unknown name");
       }
     };
     fileInput?.addEventListener("change", fileInputListener);
@@ -352,7 +362,7 @@ export default function App() {
 
     window.addEventListener("beforeunload", handleBeforeUnload);
 
-    window.api.addEventListener("executed", (e: any) => {
+    api.addEventListener("executed", (e: any) => {
       e.detail?.output?.images?.forEach(
         (im: { filename: string; subfolder: string; type: string }) => {
           if (im.type === "output") {
@@ -369,7 +379,7 @@ export default function App() {
       );
     });
     return () => {
-      window.removeEventListener("message", authTokenListener);
+      // window.removeEventListener("message", authTokenListener);
       window.removeEventListener("keydown", shortcutListener);
       window.removeEventListener("change", fileInputListener);
       window.removeEventListener("beforeunload", handleBeforeUnload);
@@ -379,6 +389,7 @@ export default function App() {
   if (loadingDB || !positionStyle) {
     return null;
   }
+
   return (
     <WorkspaceContext.Provider
       value={{

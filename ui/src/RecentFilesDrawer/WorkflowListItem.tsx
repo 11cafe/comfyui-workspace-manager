@@ -7,9 +7,16 @@ import {
   Flex,
   Image,
   Stack,
+  IconButton,
+  Tooltip,
 } from "@chakra-ui/react";
+import { IconExternalLink } from "@tabler/icons-react";
 import { Workflow, isFolder, updateFlow } from "../db-tables/WorkspaceDB";
-import { formatTimestamp, isImageFormat } from "../utils";
+import {
+  formatTimestamp,
+  generateUrlHashWithFlowId,
+  isImageFormat,
+} from "../utils";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import { useState, memo, ChangeEvent, useContext } from "react";
 import WorkflowListItemRightClickMenu from "./WorkflowListItemRightClickMenu";
@@ -44,11 +51,16 @@ export default function WorkflowListItem({ workflow }: Props) {
     setMenuPosition({ x: event.clientX, y: event.clientY });
     setIsMenuOpen(true);
   };
-
+  const [isHovered, setIsHovered] = useState(false);
   const handleClose = () => {
     setIsMenuOpen(false);
   };
   const hoverBgColor = colorMode === "light" ? "gray.200" : "#4A5568";
+
+  const openNewTab = () => {
+    const newHash = generateUrlHashWithFlowId(workflow.id);
+    window.open(`${window.location.origin}/#${newHash}`);
+  };
 
   const basicInfoComp = (
     <Box
@@ -128,6 +140,12 @@ export default function WorkflowListItem({ workflow }: Props) {
       mb={1}
       justify={"space-between"}
       onContextMenu={handleContextMenu}
+      onMouseEnter={() => {
+        setIsHovered(true);
+      }}
+      onMouseLeave={() => {
+        setIsHovered(false);
+      }}
     >
       {isMultiSelecting ? (
         <Checkbox
@@ -143,8 +161,19 @@ export default function WorkflowListItem({ workflow }: Props) {
       ) : (
         <>
           {basicInfoComp}
-          <Flex width={"60px"}>
-            <AddTagToWorkflowPopover workflow={workflow} />
+          <Flex width={"90px"} justifyContent={"flex-end"}>
+            {isHovered && <AddTagToWorkflowPopover workflow={workflow} />}
+
+            <Tooltip label="Open in new tab">
+              <IconButton
+                aria-label="Open in new tab"
+                size={"sm"}
+                variant="ghost"
+                onClick={openNewTab}
+                icon={<IconExternalLink color={"#718096"} />}
+              />
+            </Tooltip>
+
             <DeleteConfirm
               promptMessage="Are you sure you want to delete this workflow?"
               onDelete={() => {

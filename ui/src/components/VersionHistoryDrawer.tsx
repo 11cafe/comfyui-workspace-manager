@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Card,
   CardBody,
@@ -19,12 +20,19 @@ import {
 import { useContext, useEffect, useState } from "react";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { formatTimestamp } from "../utils";
+// @ts-ignore
+import { app } from "/scripts/app.js";
 import { Changelog } from "../types/dbTypes";
+
 export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
   const { curFlowID, isDirty } = useContext(WorkspaceContext);
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
   const curWorkflow = curFlowID != null ? getWorkflow(curFlowID) : null;
   const [changelogs, setChangelogs] = useState<Changelog[]>([]);
+  if (curFlowID == null || curWorkflow == null) {
+    alert("No current workflow found!");
+    return null;
+  }
 
   useEffect(() => {
     const loadData = async () => {
@@ -36,14 +44,8 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
       const selectedChangelogID = selectedChangelog?.[0]?.id;
       selectedChangelogID && setSelectedVersion(selectedChangelogID);
     };
-    curFlowID && loadData();
+    loadData();
   }, []);
-
-  if (curFlowID == null || curWorkflow == null) {
-    alert("No current workflow found!");
-    return null;
-  }
-
   return (
     <Card
       width={400}
@@ -84,7 +86,7 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
                     );
                     return;
                   }
-                  window.app.loadGraphData(JSON.parse(c.json));
+                  app.loadGraphData(JSON.parse(c.json));
                   updateFlow(curFlowID, { lastSavedJson: c.json });
                   onClose();
                 }}

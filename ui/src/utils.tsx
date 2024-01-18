@@ -1,22 +1,30 @@
 // @ts-ignore
-import { deleteFile } from "./Api";
+import { deleteFile, updateFile } from "./Api";
 import { ESortTypes } from "./RecentFilesDrawer/types";
 import {
   batchCreateFlows,
   foldersTable,
   listWorkflows,
-  saveJsonFileMyWorkflows,
   userSettingsTable,
   Workflow,
 } from "./db-tables/WorkspaceDB";
-import { generateFilePathAbsolute } from "./db-tables/DiskFileUtils";
+import {
+  generateFilePathAbsolute,
+  saveJsonFileMyWorkflows,
+} from "./db-tables/DiskFileUtils";
 import { Folder } from "./types/dbTypes";
+// @ts-ignore
+import { app, ComfyApp } from "/scripts/app.js";
+import {
+  COMFYSPACE_TRACKING_FIELD_NAME,
+  LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
+} from "./const";
 
 export type Route = "root" | "customNodes" | "recentFlows" | "gallery";
 
 // copied from app.js
 function sanitizeNodeName(string: string): string {
-  const entityMap: Record<string, string> = {
+  let entityMap: Record<string, string> = {
     "&": "",
     "<": "",
     ">": "",
@@ -31,7 +39,7 @@ function sanitizeNodeName(string: string): string {
 }
 export function findMissingNodes(): string[] {
   const missingNodeTypes = [];
-  for (const n of window.app.graph._nodes) {
+  for (let n of app.graph._nodes) {
     // Patch T2IAdapterLoader to ControlNetLoader since they are the same node now
     if (n.type == "T2IAdapterLoader") n.type = "ControlNetLoader";
     if (n.type == "ConditioningAverage ") n.type = "ConditioningAverage"; //typo fix
@@ -148,7 +156,7 @@ export async function validateOrSaveAllJsonFileMyWorkflows(
   deleteEmptyFolder = false
 ) {
   for (const workflow of listWorkflows()) {
-    const fullPath = generateFilePathAbsolute(workflow);
+    const fullPath = await generateFilePathAbsolute(workflow);
     if (workflow.filePath != fullPath) {
       // file path changed
       workflow.filePath != null &&
@@ -197,14 +205,14 @@ export function insertWorkflowToCanvas(json: string, insertPos?: number[]) {
   let canvas = new LGraphCanvas(tempCanvas, tempGraph);
   canvas.selectNodes(tempGraph._nodes);
   canvas.copyToClipboard(tempGraph._nodes);
-  const priorPos = window.app.canvas.graph_mouse;
+  const priorPos = app.canvas.graph_mouse;
   if (insertPos) {
     insertPos[0] -= 15;
     insertPos[1] -= 15;
-    window.app.canvas.graph_mouse = insertPos;
+    app.canvas.graph_mouse = insertPos;
   }
-  window.app.canvas.pasteFromClipboard();
-  window.app.canvas.graph_mouse = priorPos;
+  app.canvas.pasteFromClipboard();
+  app.canvas.graph_mouse = priorPos;
   if (prevClipboard) {
     localStorage.setItem("litegrapheditor_clipboard", prevClipboard);
   }
@@ -363,5 +371,45 @@ export async function syncNewFlowOfLocalDisk(
 
       await batchCreateFlows(folder.list, true, folderId);
     });
+  }
+}
+
+export function getWorkflowIdInUrlHash() {
+  const hashArr = window.location.hash.slice(1).split("/");
+  const workspaceId = hashArr.find((h) => h.includes("workspaceId@"));
+  return workspaceId ? workspaceId.split("@")[1] : null;
+}
+
+/**
+ * Generate url hash containing workflowId;
+ * If workspaceId@ exists, replace it, if it does not exist, append it.
+ * This operation will not damage the original hash.
+ */
+export function generateUrlHashWithFlowId(id: string) {
+  const hashArr = window.location.hash.slice(1).split("/");
+  const workspaceIdIndex = hashArr.findIndex((h) => h.includes("workspaceId@"));
+  const newWorkflowId = `workspaceId@${id}`;
+  if (workspaceIdIndex >= 0) {
+    hashArr[workspaceIdIndex] = newWorkflowId;
+  } else {
+    hashArr.push(newWorkflowId);
+  }
+  return `${hashArr.join("/")}`;
+}
+
+export async function rewriteAllLocalFiles() {
+  for (const workflow of listWorkflows()) {
+    try {
+      const fullPath = await generateFilePathAbsolute(workflow);
+      const flow = JSON.parse(workflow.json);
+      flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {
+        id: workflow.id,
+        name: workflow.name,
+      };
+      delete flow.extra[LEGACY_COMFYSPACE_TRACKING_FIELD_NAME];
+      fullPath && (await updateFile(fullPath, JSON.stringify(flow)));
+    } catch (error) {
+      console.error(error);
+    }
   }
 }
