@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react'
 import {Button, Flex, Image} from '@chakra-ui/react'
 import {AnimatePresence, motion} from 'framer-motion'
+import {isImageFormat} from '../../utils.tsx'
 
 type Media = {
   id: string;
@@ -78,13 +79,23 @@ const Carousel: React.FC<CarouselProps> = ({ setMediaAct, media, currentNum }) =
               display: index === current ? "block" : "none",
             }}
           >
-            <Image
-              src={item.imageUrl}
-              alt={`image-${item.id}`}
-              width={'100%'}
-              height={'100%'}
-              objectFit="contain"
-            />
+            {isImageFormat(item.imageUrl) ? <Image
+                src={item.imageUrl}
+                alt={`image-${item.id}`}
+                width={'100%'}
+                height={'100%'}
+                objectFit="contain"
+            /> : <video
+                style={{objectFit: 'contain'}}
+                width={'100%'}
+                height={'100%'}
+                src={item.imageUrl}
+                loop={true}
+                autoPlay={true}
+                muted={true}
+            >
+              <track kind="captions"/>
+            </video>}
           </motion.div>
         ))}
       </AnimatePresence>

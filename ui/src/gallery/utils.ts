@@ -1,6 +1,12 @@
-import {getPngMetadata} from '../utils.tsx'
+/* eslint-disable */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+import {getPngMetadata, getVideoMetadata, getWebpMetadata, isVideoName} from '../utils.tsx'
+
+type MetaData<T = any> = {prompt: T, workflow: T}
 
 export function getPngMetadataFromUrl(url: string) {
+  const extension = url.split(".").pop();
   return fetch(url)
       .then(response => {
         if (!response.ok) {
@@ -8,11 +14,29 @@ export function getPngMetadataFromUrl(url: string) {
         }
         return response.blob();
       })
-      .then(blob => {
+      .then(async blob => {
         const fileName = url.split("/").pop() ?? '';
         const fileObj = new File([blob], fileName);
-        return getPngMetadata(fileObj) as Promise<{prompt: string, workflow: string}>;
+        if (isVideoName(url)) {
+          return getVideoMetadata(fileObj) as Promise<MetaData>
+        }
+        if (extension === 'webp') {
+          return getWebpMetadata(fileObj) as Promise<MetaData>
+        }
+        const metaData = await getPngMetadata(fileObj) as MetaData<string>;
+        const prompt = JSON.parse(metaData?.prompt)
+        const workflow = JSON.parse(metaData?.workflow)
+        return {
+          prompt,
+          workflow,
+        } as MetaData
       });
+}
+
+const ifString = (t: any) => {
+  if (typeof t === 'string') {
+    return t
+  }
 }
 
 export interface CalcPngMetadata {
@@ -21,14 +45,11 @@ export interface CalcPngMetadata {
   positive: string;
   [key: string]: string;
 }
-export function calcPngMetadata(metaData: {prompt: string, workflow: string}): CalcPngMetadata {
-  const prompt = JSON.parse(metaData?.prompt)
-  // const workflow = JSON.parse(metaData?.workflow)
-  // console.log(workflow)
+export function calcPngMetadata(metaData: MetaData): CalcPngMetadata {
+  const {prompt, workflow} = metaData
   // KSampler
   const kSampler = prompt?.[Object.keys(prompt)?.find((v: string) => prompt[v].class_type === 'KSampler') ?? '']
-  const checkpoint = prompt?.[kSampler?.inputs?.['model']?.[0]]
-  const ckptName = checkpoint?.inputs?.['ckpt_name']
+  const ckptName = ifString(prompt?.[kSampler?.inputs?.['model']?.[0]]?.inputs?.['ckpt_name']) ?? ifString(prompt?.[Object.keys(prompt)?.find((v: string) => prompt[v]?.inputs?.ckpt_name) ?? '']?.inputs?.ckpt_name) ?? ''
   const positive = prompt?.[kSampler?.inputs?.['positive']?.[0]]?.['inputs']?.['text']
   const negative = prompt?.[kSampler?.inputs?.['negative']?.[0]]?.['inputs']?.['text'];
   const commonFields = ['seed', 'sampler_name', 'scheduler', 'steps', 'cfg'].reduce((previousValue, currentValue) => {
@@ -40,12 +61,17 @@ export function calcPngMetadata(metaData: {prompt: string, workflow: string}): C
     }
     return previousValue
   }, {})
+  const latent_image = prompt?.[kSampler?.inputs?.['latent_image']?.[0]]?.['inputs'];
+  const width = latent_image?.['width']
+  const height = latent_image?.['height']
 
   return {
     ckptName,
     positive,
     negative,
     ...commonFields,
+    width,
+    height,
   }
 }
 
