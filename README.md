@@ -29,6 +29,9 @@ and restart your ComfyUI.
 It is recommended to do git clone than downloading zip folder, because you can get latest updates by `git pull`!
 
 ## Features
+### v1.6.0 preview
+muti browser tab switching
+
 ### 📣Update 01/03/2024 - Gallery and cover images
 Every image/video you generate will be saved in the gallery of the current workflow. You can set any image in the gallery as the cover photo of the workflow
 
