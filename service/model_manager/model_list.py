@@ -1,3 +1,4 @@
+import asyncio
 import os
 import folder_paths
 import server
@@ -38,6 +39,7 @@ def process_file(folder, file):
         file_hash_dict[file_path] = file_hash
     model_name = os.path.splitext(file)[0]
     file_list.append({"model_name": model_name, "model_type": folder, "model_extension": os.path.splitext(file)[1], "file_hash": file_hash})
+    send_ws('model_list', file_list)
 
 def populate_file_hash_dict():
     global populate_done
@@ -49,6 +51,7 @@ def populate_file_hash_dict():
             process_file(folder, file)
     # Set populate_done to True when done
     populate_done = True
+    send_ws('model_list', "done")
 
 def start_populate_file_hash_dict():
     global populate_thread, populate_started, populate_done, file_list
@@ -66,3 +69,7 @@ def get_model_list(request):
     if (populate_started == False):
         start_populate_file_hash_dict()
     return web.json_response({"file_list": file_list, "populate_done": populate_done}, content_type='application/json')
+
+loop = asyncio.get_event_loop()
+def send_ws(event, data):
+    asyncio.run_coroutine_threadsafe(server.PromptServer.instance.send(event, data) , loop)

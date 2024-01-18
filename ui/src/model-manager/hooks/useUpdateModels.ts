@@ -13,26 +13,17 @@ export const useUpdateModels = () => {
 
   // loading status
   const [loading, setLoading] = useState(true);
-  const initDataInterval = useRef<number>();
 
   useEffect(() => {
-    api.addEventListener("download_progress", (e: { detail: [] }) => {
-      if (e.detail.length === 0) { // if download_progress is empty, that means download is done, so re-fetch data
-        setLoading(true); // set loading to true to start interval
+    initData();
+    api.addEventListener("model_list", (e: { detail: ModelsListRespItem[] | "done" }) => {
+      if (e.detail === "done") {
+        setLoading(false);
+      } else {
+        setModelsList(e.detail);
       }
     });
   }, []);
-
-  useEffect(() => {
-    if (loading && !initDataInterval.current) { // if loading and interval not started, start interval
-      initDataInterval.current = setInterval(initData, 3000);
-    } else if (!loading && initDataInterval.current) { // if not loading and interval is running, clear interval
-      clearInterval(initDataInterval.current);
-      initDataInterval.current = undefined;
-    }
-
-    return () => clearInterval(initDataInterval.current);
-  }, [loading]);
 
   const initData = async () => {
     const res = await getAllModelsList();
@@ -52,14 +43,9 @@ export const useUpdateModels = () => {
     setModelsList(file_list);
   };
 
-  const reFetchData = () => {
-    setLoading(true);
-  };
-
   return {
     modelTypeList,
     modelsList,
     loading,
-    reFetchData,
   };
 };
