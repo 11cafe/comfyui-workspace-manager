@@ -1,8 +1,8 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 // @ts-ignore
-import { app } from "http://127.0.0.1:8188/scripts/app.js";
+import { app } from "/scripts/app.js";
 // @ts-ignore
-import { api } from "http://127.0.0.1:8188/scripts/api.js";
+import { api } from "/scripts/api.js";
 import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
 import { Box, Portal } from "@chakra-ui/react";
 import {
