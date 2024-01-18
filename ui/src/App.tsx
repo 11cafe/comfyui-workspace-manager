@@ -118,9 +118,7 @@ export default function App() {
     const latestWf = latest != null ? getWorkflow(latest) : null;
 
     if (latestWf) {
-      latestWf && localStorage.setItem("workflow", latestWf.json);
-      setCurFlowID(latestWf.id ?? null);
-      setCurFlowName(latestWf.name ?? null);
+      loadWorkflowID(latestWf.id);
     }
     await validateOrSaveAllJsonFileMyWorkflows();
 
