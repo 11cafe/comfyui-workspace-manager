@@ -1,10 +1,13 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-const rewriteImportPlugin = () => {
+const rewriteImportPlugin = ({ isDev }) => {
   return {
     name: "rewrite-import-plugin", // this name will show up in warnings and errors
     resolveId(source) {
+      if (!isDev) {
+        return;
+      }
       if (source === "/scripts/app.js") {
         // Change the path to the new host
         return "http://127.0.0.1:8188/scripts/app.js";
@@ -18,7 +21,7 @@ const rewriteImportPlugin = () => {
 };
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   define: {
     // a hacky resolution for reactDOM process is not defined error
     // "process.env.NODE_ENV": '"production"',
@@ -52,5 +55,5 @@ export default defineConfig({
     },
   },
   // plugins: [react(), watch({ dir: "public" })],
-  plugins: [react(), rewriteImportPlugin()],
-});
+  plugins: [react(), rewriteImportPlugin({ isDev: mode === "development" })],
+}));
