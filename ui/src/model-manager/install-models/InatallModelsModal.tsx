@@ -14,15 +14,21 @@ import {
   Heading,
   Checkbox,
   Spinner,
+  useToast,
+  Progress,
+  Stack,
+  useDisclosure
 } from "@chakra-ui/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { IconX } from "@tabler/icons-react";
 import { CivitiModel, CivitiModelFileVersion } from "../types";
 import { installModelsApi } from "../api/modelsApi";
 import ModelCard from "./ModelCard";
-import InstallProgress from "./InstallProgress";
 import InstallModelSearchBar from "./InstallModelSearchBar";
-import { useToast } from "@chakra-ui/react";
+import ChooseFolder from "./ChooseFolder";
+
+
+type Queue = { save_path: string, progress: number };
 
 type CivitModelQueryParams = {
   types?: MODEL_TYPE;
@@ -71,6 +77,9 @@ export default function InatallModelsModal({
   const toast = useToast();
   const [installing, setInstalling] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [queue, setQueue] = useState<Queue[]>([]);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const file = useRef<CivitiModelFileVersion>();
   const loadData = useCallback(async () => {
     setLoading(true);
     const params: CivitModelQueryParams = {
@@ -92,139 +101,175 @@ export default function InatallModelsModal({
     setModels(json.items);
     setLoading(false);
   }, [searchQuery, modelType]);
-  const onClickInstallModel = (
-    file: CivitiModelFileVersion,
-    model: CivitiModel
-  ) => {
-    if (file.downloadUrl == null || file.name == null) {
-      console.error("file.downloadUrl or file.name is null");
+
+  const downloadModels = (folderPath: string) => {
+    if (!file.current?.downloadUrl) {
+      console.error("file.downloadUrl is null");
       return;
     }
-    let folderPath: string | null =
-      MODEL_TYPE_TO_FOLDER_MAPPING[model.type as MODEL_TYPE];
-    if (folderPath == null) {
-      folderPath = prompt(
-        "What's the folder path under /ComfyUI/models you want to save the model? "
-      );
-    }
-    if (folderPath == null) {
-      return;
+    if (!file.current.name) {
+      file.current.name = file.current.downloadUrl.split("/").pop();
+      if (!file.current.name) {
+        console.error("file.downloadUrl is malformed");
+        return;
+      }
     }
     toast({
       title:
-        "Installing...Please check the progress in your python server console",
-      description: file.name,
+        "Installing...",
+      description: file.current.name,
       status: "info",
       duration: 4000,
       isClosable: true,
     });
-    file.name != null && setInstalling((cur) => [...cur, file.name ?? ""]);
+    file.current.name != null && setInstalling((cur) => [...cur, file.current?.name ?? ""]);
     installModelsApi({
-      filename: file.name,
-      name: file.name,
+      filename: file.current.name,
+      name: file.current.name,
       save_path: folderPath,
-      url: file.downloadUrl,
+      url: file.current.downloadUrl,
     });
+    onClose();
   };
+  const onClickInstallModel = (
+    _file: CivitiModelFileVersion,
+    model: CivitiModel
+  ) => {
+    let folderPath: string | null =
+      MODEL_TYPE_TO_FOLDER_MAPPING[model.type as MODEL_TYPE];
+    file.current = _file;
+    if (folderPath == null) {
+      onOpen();
+    } else {
+      downloadModels(folderPath);
+    }
+  };
+  const customUrlDownload = () => {
+    const downloadUrl = prompt("Enter the URL to download");
+    if (!downloadUrl) {
+      return;
+    }
+    file.current = ({ id: 0, downloadUrl });
+    onOpen();
+  }
 
   useEffect(() => {
     loadData();
   }, [searchQuery, modelType]);
 
-  async function refreshHistory() {
-    const res = await api.fetchApi('/model_manager/download_progress');
-    const ret = await res.text();
-    console.log(ret);
-    window.dispatchEvent(
-      new CustomEvent("model_install_message", {
-        detail: ret,
-      })
-    );
-  }
-
   useEffect(() => {
-    const autoRefreshInterval = setInterval(refreshHistory, 1000);
-    return () => clearInterval(autoRefreshInterval);
+    api.addEventListener("download_progress", (e: { detail: Queue[] }) => {
+      setQueue(e.detail);
+    });
+    api.addEventListener("download_error", (e: { detail: string }) => {
+      toast({
+        title:
+          "Download Error",
+        description: e.detail,
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+      });
+    });
   }, []);
 
   const isAllSelected =
     models.length > 0 && selectedID.length === models.length;
 
   return (
-    <Modal isOpen={true} onClose={onclose} blockScrollOnMount={true}>
-      <ModalOverlay />
-      <ModalContent width={"90%"} maxWidth={"90vw"} height={"90vh"}>
-        <ModalHeader>
-          <HStack gap={2} mb={2} alignItems={"center"}>
-            <Heading size={"md"} mr={2}>
-              Models
-            </Heading>
-            <InstallModelSearchBar setSearchQuery={setSearchQuery} />
-          </HStack>
-          <InstallProgress />
-          <HStack gap={2} mb={2} wrap={"wrap"}>
-            <Button
-              size={"sm"}
-              py={1}
-              onClick={() => {
-                setModelType(undefined);
-              }}
-              isActive={modelType == null}
-            >
-              All
-            </Button>
-            {ALL_MODEL_TYPES.map((type) => {
-              return (
-                <Button
-                  size={"sm"}
-                  py={1}
-                  isActive={modelType === type}
-                  onClick={() => {
-                    setModelType(type);
-                  }}
-                >
-                  {type}
-                </Button>
-              );
-            })}
-          </HStack>
-          {isSelecting && (
-            <HStack gap={3}>
-              <Checkbox isChecked={isAllSelected}>All</Checkbox>
-              <Text fontSize={16}>{selectedID.length} Selected</Text>
-              <IconButton
+    <>
+      <Modal isOpen={true} onClose={onclose} blockScrollOnMount={true}>
+        <ModalOverlay />
+        <ModalContent width={"90%"} maxWidth={"90vw"} height={"90vh"}>
+          <ModalHeader>
+            <HStack gap={2} mb={2} alignItems={"center"}>
+              <Heading size={"md"} mr={2}>
+                Models
+              </Heading>
+              <InstallModelSearchBar setSearchQuery={setSearchQuery} />
+              <Button
                 size={"sm"}
-                icon={<IconX size={19} />}
-                onClick={() => setIsSelecting(false)}
-                aria-label="cancel"
-              />
+                py={1}
+                mr={8}
+                onClick={customUrlDownload}
+              >
+                Custom URL Install
+              </Button>
             </HStack>
-          )}
-          {loading && (
-            <Spinner
-              thickness="4px"
-              emptyColor="gray.200"
-              color="pink.500"
-              size="lg"
-            />
-          )}
-        </ModalHeader>
-        <ModalCloseButton />
-        <ModalBody overflowY={"auto"}>
-          <HStack wrap={"wrap"}>
-            {models?.map((model) => {
-              return (
-                <ModelCard
-                  model={model}
-                  key={model.id}
-                  onClickInstallModel={onClickInstallModel}
-                  installing={installing}
+            <HStack gap={2} mb={2} wrap={"wrap"}>
+              <Button
+                size={"sm"}
+                py={1}
+                onClick={() => {
+                  setModelType(undefined);
+                }}
+                isActive={modelType == null}
+              >
+                All
+              </Button>
+              {ALL_MODEL_TYPES.map((type) => {
+                return (
+                  <Button
+                    size={"sm"}
+                    py={1}
+                    isActive={modelType === type}
+                    onClick={() => {
+                      setModelType(type);
+                    }}
+                  >
+                    {type}
+                  </Button>
+                );
+              })}
+            </HStack>
+            {isSelecting && (
+              <HStack gap={3}>
+                <Checkbox isChecked={isAllSelected}>All</Checkbox>
+                <Text fontSize={16}>{selectedID.length} Selected</Text>
+                <IconButton
+                  size={"sm"}
+                  icon={<IconX size={19} />}
+                  onClick={() => setIsSelecting(false)}
+                  aria-label="cancel"
                 />
-              );
-            })}
-          </HStack>
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+              </HStack>
+            )}
+            {loading && (
+              <Spinner
+                thickness="4px"
+                emptyColor="gray.200"
+                color="pink.500"
+                size="lg"
+              />
+            )}
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody overflowY={"auto"}>
+            <HStack wrap={"wrap"}>
+              {models?.map((model) => {
+                return (
+                  <ModelCard
+                    model={model}
+                    key={model.id}
+                    onClickInstallModel={onClickInstallModel}
+                    installing={installing}
+                  />
+                );
+              })}
+            </HStack>
+            <Stack spacing={5} pos="absolute" bottom="0" left="0" width="50%" zIndex={80} backgroundColor="white" paddingX={5}>
+              {queue.map(({ save_path, progress }) => (
+                <HStack>
+                  <Text fontSize={16} width="40%">{save_path.replace(/^.*[\\/]/, '')}</Text>
+                  <Progress isIndeterminate={!progress} hasStripe width="60%" value={progress} />
+                </HStack>
+              ))}
+            </Stack>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+      <ChooseFolder isOpen={isOpen} onClose={onClose} selectFolder={downloadModels} />
+    </>
   );
 }
+
