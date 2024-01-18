@@ -3,45 +3,66 @@ import folder_paths
 import server
 from aiohttp import web
 import hashlib
+import shelve
+import threading
+import os
 
-comfy_path = os.path.dirname(folder_paths.__file__)
+# The path to the file where file_hash_dict will be saved
+FILE_HASH_DICT_PATH = os.path.join(os.path.dirname(__file__),"../../hash/file_hash_dict")
 
-model_root_dir = os.path.join(comfy_path, 'models')
+# Use shelve to store file_hash_dict
+file_hash_dict = shelve.open(FILE_HASH_DICT_PATH)
+file_list = []
 
+# Add a global variable to track if populate_file_hash_dict is done
+populate_started = False
+populate_done = False
 
-# save file hash dict
-file_hash_dict = {}
+def compute_hash(file_path):
+    # sha256 hash of the file
+    sha256_hash = hashlib.sha256()
+    with open(file_path,"rb") as f:
+        # Read and update hash string value in blocks of 4K
+        for byte_block in iter(lambda: f.read(4096),b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()
+
+def process_file(folder, file):
+    global file_list
+    file_path = folder_paths.get_full_path(folder, file)
+    # check if the file hash is already calculated
+    if (file_path in file_hash_dict):
+        file_hash = file_hash_dict[file_path]
+    else:
+        file_hash = compute_hash(file_path)
+        file_hash_dict[file_path] = file_hash
+    model_name = os.path.splitext(file)[0]
+    file_list.append({"model_name": model_name, "model_type": folder, "model_extension": os.path.splitext(file)[1], "file_hash": file_hash})
+
+def populate_file_hash_dict():
+    global populate_done
+    for folder in folder_paths.folder_names_and_paths:
+        if (folder == "configs" or folder == "custom_nodes"):
+            continue
+        files = folder_paths.get_filename_list(folder)
+        for file in files:
+            process_file(folder, file)
+    # Set populate_done to True when done
+    populate_done = True
+
+def start_populate_file_hash_dict():
+    global populate_thread, populate_started, populate_done, file_list
+    populate_running = populate_started == True and populate_done == False
+    if (populate_running):
+        return
+    file_list = [] # reset file_list
+    populate_started = True
+    populate_thread = threading.Thread(target=populate_file_hash_dict)
+    populate_thread.daemon = True
+    populate_thread.start()
 
 @server.PromptServer.instance.routes.get("/model_manager/get_model_list")
 def get_model_list(request):
-    file_list = []
-    model_dir = folder_paths.models_dir
-
-    for folder in folder_paths.folder_names_and_paths:
-        # if model_dir not in folder_paths.folder_names_and_paths[folder][0]:
-        #     continue
-        if (folder == "configs" or folder == "custom_nodes"):
-            continue
-       
-        files = folder_paths.get_filename_list(folder)
-        for file in files:
-
-            file_path = folder_paths.get_full_path(folder, file)
-            # check if the file hash is already calculated
-            if (file_path in file_hash_dict):
-                file_hash = file_hash_dict[file_path]
-            else:
-                # sha256 hash of the file
-                sha256_hash = hashlib.sha256()
-                with open(file_path,"rb") as f:
-                    # Read and update hash string value in blocks of 4K
-                    for byte_block in iter(lambda: f.read(4096),b""):
-                        sha256_hash.update(byte_block)
-                    file_hash = sha256_hash.hexdigest()
-                    file_hash_dict[file_path] = file_hash
-            model_name = os.path.splitext(file)[0]
-            file_list.append({"model_name": model_name, "model_type": folder, "model_extension": os.path.splitext(file)[1], "file_hash": file_hash})
-    return web.json_response(file_list, content_type='application/json')
-
-  
-
+    if (populate_started == False):
+        start_populate_file_hash_dict()
+    return web.json_response({"file_list": file_list, "populate_done": populate_done}, content_type='application/json')

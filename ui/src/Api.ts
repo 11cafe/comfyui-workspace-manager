@@ -1,4 +1,5 @@
 import { Table } from "./db-tables/WorkspaceDB";
+import type { ModelsListRespItem } from "./model-manager/types";
 
 export async function getDB(table: Table): Promise<string | undefined> {
   console.warn("[workspace deprecated] getDB is deprecated", table);
@@ -170,7 +171,7 @@ export async function getAllModelsList() {
       },
     });
     const result = await response.json();
-    return result;
+    return result as {file_list: ModelsListRespItem[], populate_done: boolean};
   } catch (error) {
     console.error("Error get all models list:", error);
   }

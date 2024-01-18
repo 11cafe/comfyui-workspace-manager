@@ -1,4 +1,5 @@
 dist
+hash
 __pycache__
 dist
 .env
