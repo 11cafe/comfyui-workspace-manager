@@ -13,7 +13,7 @@ import os
 import json
 from .version_control import update_version_if_outdated
 from .service.model_manager.model_installer import download_url_with_wget
-
+from .service.model_manager.model_list import get_model_list
 WEB_DIRECTORY = "entry"
 NODE_CLASS_MAPPINGS = {}
 __all__ = ['NODE_CLASS_MAPPINGS']

@@ -6,8 +6,9 @@ import sys
 from aiohttp import web
 import folder_paths
 import urllib.request
+import threading
 import server
-import server
+import time
 
 comfy_path = os.path.dirname(folder_paths.__file__)
 def download_url_with_wget(url, save_path):
@@ -55,26 +56,49 @@ def parse_wget_output(output):
     match = re.search(r'\d+%|\d+K \d+Kb/s', output)
     return match.group(0) if match else ""
 
-from concurrent.futures import ThreadPoolExecutor
-import asyncio
+# Create a dictionary to store download tasks
+download_tasks = []
+# Create a lock object to synchronize access to the dictionary
+download_tasks_lock = threading.Lock()
+# Create a thread that will execute the download tasks
+download_thread = None
+
+def download_worker():
+    while True:
+        task = None
+        with download_tasks_lock:
+            # Get a task from the list
+            if download_tasks:
+                task = download_tasks.pop(0)
+
+        if task is not None:
+            # Execute the download task and update the download progress
+            download_url_with_agent(task['url'], task['save_path'])
+                
+        else:
+            # No more tasks, break the loop
+            send_ws('download_progress', [])
+            break
 
 @server.PromptServer.instance.routes.post("/model_manager/install_model")
 async def install_model(request):
+    global download_thread
+
     json_data = await request.json()
     url = json_data['url']
     save_path = get_model_path(json_data)
 
-    # Define the wrapper function for the executor
-    def download_wrapper():
-        return download_url_with_agent(url, save_path)
+    with download_tasks_lock:
+        # Add the task to the list
+        download_tasks.append({ 'url': url, 'save_path': save_path })
 
-    # Run the download function in a separate thread
-    with ThreadPoolExecutor() as executor:
-        loop = asyncio.get_running_loop()
-        result = await loop.run_in_executor(executor, download_wrapper)
+    # If the previous thread is not active, start a new one
+    if download_thread is None or not download_thread.is_alive():
+        download_thread = threading.Thread(target=download_worker)
+        download_thread.daemon = True
+        download_thread.start()
 
-    return web.Response(text=f"Download complete. {save_path}" if result else "Download failed.")
-
+    return web.Response(text=f"Downloading {url} to {save_path} ...")
 
 @server.PromptServer.instance.routes.post("/model_manager/install_model_stream")
 async def install_model_stream(request):
@@ -135,6 +159,7 @@ def download_url_with_agent(url, save_path, progress_callback=None):
                     downloaded += len(chunk)
                     progress = (downloaded / file_size) * 100
                     print(f'\rProgress: {progress:.2f}%', end='')
+                    send_download_status({'save_path': save_path, 'progress': progress})
 
                     # if progress_callback:
                     #     progress_callback(progress)
@@ -144,6 +169,7 @@ def download_url_with_agent(url, save_path, progress_callback=None):
 
     except Exception as e:
         print(f"\nDownload error: {url} / {e}", file=sys.stderr)
+        send_ws('download_error', f"{url} / {e}")
         if os.path.exists(temp_save_path):
             os.remove(temp_save_path)  # Clean up the temporary file in case of failure
         return False
@@ -194,3 +220,22 @@ def get_model_dir(data):
 def get_model_path(data):
     base_model = get_model_dir(data)
     return os.path.join(base_model, data['filename'])
+
+
+last_call_time = 0
+def send_download_status(data):
+    global last_call_time
+    current_time = time.time()
+    if current_time - last_call_time < 0.1:
+        return
+    last_call_time = time.time()
+    with download_tasks_lock:
+        progress_list = [data]
+        for task in download_tasks:
+            progress_list.append({'save_path': task['save_path'], 'progress': 0})
+        send_ws('download_progress', progress_list)
+
+loop = asyncio.get_event_loop()
+def send_ws(event, data):
+    asyncio.run_coroutine_threadsafe(server.PromptServer.instance.send(event, data) , loop)
+    
