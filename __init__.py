@@ -31,6 +31,7 @@ if os.path.exists(dist_path):
     workspace_app.add_routes([
         web.static("/", dist_path),
     ])
+
 server.PromptServer.instance.app.add_subapp("/workspace_web/", workspace_app)
 
 @server.PromptServer.instance.routes.post("/workspace/save_db")

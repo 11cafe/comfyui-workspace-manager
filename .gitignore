@@ -1,6 +1,4 @@
-dist
 __pycache__
-dist
 .env
 # Logs
 logs

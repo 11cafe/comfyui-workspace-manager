@@ -22,10 +22,6 @@ const rewriteImportPlugin = ({ isDev }) => {
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  define: {
-    // a hacky resolution for reactDOM process is not defined error
-    "process.env.NODE_ENV": '"production"',
-  },
   envDir: ".",
   build: {
     watch: {
@@ -54,6 +50,5 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
-  // plugins: [react(), watch({ dir: "public" })],
   plugins: [react(), rewriteImportPlugin({ isDev: mode === "development" })],
 }));
