@@ -45,6 +45,7 @@ import SearchInput from "../components/SearchInput";
 import { openWorkflowsFolder } from "../Api";
 import { Folder } from "../types/dbTypes";
 import ImportFileButton from "./ImportFileButton";
+const app = window.app;
 
 const MAX_TAGS_TO_SHOW = 6;
 type Props = {
@@ -139,12 +140,12 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
         ]);
     };
 
-    window.app.canvasEl.addEventListener("drop", handleDrop);
-    window.app.canvasEl.addEventListener("click", onClose);
+    app.canvasEl.addEventListener("drop", handleDrop);
+    app.canvasEl.addEventListener("click", onClose);
     // Cleanup function to remove event listeners
     return () => {
-      window.app.canvasEl.removeEventListener("drop", handleDrop);
-      window.app.canvasEl.removeEventListener("click", onClose);
+      app.canvasEl.removeEventListener("drop", handleDrop);
+      app.canvasEl.removeEventListener("click", onClose);
     };
   }, []);
 

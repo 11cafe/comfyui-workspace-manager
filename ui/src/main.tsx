@@ -95,7 +95,7 @@ if (process.env.NODE_ENV === "production") {
       import("/scripts/api.js")
         .then((module) => {
           window.api = module.api;
-          console.log("window.api-import()", window.app);
+          console.log("window.api-import()", window.api);
           resolve(true);
         })
         .catch((err) => {

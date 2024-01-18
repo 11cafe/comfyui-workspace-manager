@@ -12,6 +12,7 @@ import { ModelsTags } from "./ModelsTags";
 import { ModelsList } from "./ModelsList";
 import SearchInput from "../../components/SearchInput";
 import InstallModelsButton from "../install-models/InstallModelsButton";
+const app = window.app;
 interface Props {
   onClose: () => void;
 }
@@ -56,9 +57,9 @@ export default function ModelsListDrawer({ onClose }: Props) {
   }, [selectedModel]);
 
   useEffect(() => {
-    window.app.canvasEl.addEventListener("click", onClose);
+    app.canvasEl.addEventListener("click", onClose);
     return () => {
-      window.app.canvasEl.removeEventListener("click", onClose);
+      app.canvasEl.removeEventListener("click", onClose);
     };
   }, []);
 

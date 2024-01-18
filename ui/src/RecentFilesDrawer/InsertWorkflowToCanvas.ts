@@ -1,4 +1,5 @@
 // @ts-nocheck
+const app = window.app;
 
 // these code are extracted and combined from LGraph.prototype.configure and LGCanvas.pasteFromClipboard
 export function insertWorkflowToCanvas2(json: string, insertPos?: number[]) {
@@ -44,11 +45,11 @@ export function insertWorkflowToCanvas2(json: string, insertPos?: number[]) {
       //paste in last known mouse position
       let canvasPos = insertPos
         ? [insertPos[0] - 11, insertPos[1] - 11]
-        : window.app.canvas.graph_mouse;
+        : app.canvas.graph_mouse;
       newnode.pos[0] += canvasPos[0] - posMin[0]; //+= 5;
       newnode.pos[1] += canvasPos[1] - posMin[1]; //+= 5;
 
-      window.app.graph.add(newnode, { doProcessChange: false });
+      app.graph.add(newnode, { doProcessChange: false });
 
       copy_nodes[node_data.id] = newnode;
     }
@@ -86,13 +87,13 @@ export function insertWorkflowToCanvas3(json: string, insertPos?: number[]) {
   const LLink = LiteGraph.LLink;
   // LiteGraph.use_uuids = true;
   let old_new_node_ids_map: Record<string, string> = {};
-  let last_node_id = window.app.graph.last_node_id;
+  let last_node_id = app.graph.last_node_id;
   for (let i = 0; i < old_nodes.length; i++) {
     last_node_id++;
     old_new_node_ids_map[old_nodes[i].id] = last_node_id;
   }
   let old_new_link_ids_map: Record<string, string> = {};
-  let last_link_id = window.app.graph.last_link_id;
+  let last_link_id = app.graph.last_link_id;
   for (let i = 0; i < clipboard_info.links.length; i++) {
     last_link_id++;
     old_new_link_ids_map[clipboard_info.links[i][0]] = last_link_id;
@@ -110,9 +111,9 @@ export function insertWorkflowToCanvas3(json: string, insertPos?: number[]) {
       var llink = new LLink();
       llink.configure(new_link);
       links[llink.id] = llink;
-      window.app.graph.links[llink.id] = llink;
+      app.graph.links[llink.id] = llink;
     }
-    window.app.graph.last_link_id = last_link_id;
+    app.graph.last_link_id = last_link_id;
   }
   // calculate top-left node, could work without this processing but using diff with last node pos :: clipboard_info.nodes[clipboard_info.nodes.length-1].pos
   var posMin = false;
@@ -148,7 +149,7 @@ export function insertWorkflowToCanvas3(json: string, insertPos?: number[]) {
     //paste in last known mouse position
     let canvasPos = insertPos
       ? [insertPos[0] - 11, insertPos[1] - 11]
-      : window.app.canvas.graph_mouse;
+      : app.canvas.graph_mouse;
     new_node_data.pos[0] += canvasPos[0] - posMin[0]; //+= 5;
     new_node_data.pos[1] += canvasPos[1] - posMin[1]; //+= 5;
 
@@ -165,7 +166,7 @@ export function insertWorkflowToCanvas3(json: string, insertPos?: number[]) {
     }
 
     newnode.id = new_node_data.id;
-    window.app.graph.add(newnode, true);
+    app.graph.add(newnode, true);
     newNodes.push(newnode);
     newNodesInfo[newnode.id] = new_node_data;
   }

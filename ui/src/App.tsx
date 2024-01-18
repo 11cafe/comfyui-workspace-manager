@@ -31,7 +31,7 @@ const RecentFilesDrawer = React.lazy(
   () => import("./RecentFilesDrawer/RecentFilesDrawer")
 );
 import { scanLocalNewFiles } from "./Api";
-
+const app = window.app;
 export default function App() {
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
@@ -49,7 +49,7 @@ export default function App() {
 
   const saveCurWorkflow = useCallback(() => {
     if (curFlowID.current) {
-      const graphJson = JSON.stringify(window.app.graph.serialize());
+      const graphJson = JSON.stringify(app.graph.serialize());
       updateFlow(curFlowID.current, {
         lastSavedJson: graphJson,
         json: graphJson,
@@ -71,7 +71,7 @@ export default function App() {
       if (curFlowID.current) {
         const flow = getWorkflow(curFlowID.current);
         if (flow && flow.lastSavedJson) {
-          window.app.loadGraphData(JSON.parse(flow.lastSavedJson));
+          app.loadGraphData(JSON.parse(flow.lastSavedJson));
         }
       }
     }
@@ -103,13 +103,10 @@ export default function App() {
       async afterConfigureGraph() {
         // to avoid the bug after switching workflow using comfyspace,
         // immediately refresh browser, resulting in latest workflow not updated
-        localStorage.setItem(
-          "workflow",
-          JSON.stringify(window.app.graph.serialize())
-        );
+        localStorage.setItem("workflow", JSON.stringify(app.graph.serialize()));
       },
     };
-    window.app.registerExtension(ext);
+    app.registerExtension(ext);
     try {
       await loadDBs();
       updatePanelPosition(userSettingsTable?.getSetting("topBarStyle"), false);
@@ -142,7 +139,7 @@ export default function App() {
 
   const checkIsDirty = () => {
     if (curFlowID.current != null) {
-      const graphJson = window.app.graph.serialize() ?? {};
+      const graphJson = app.graph.serialize() ?? {};
       const curWorkflow = curFlowID.current
         ? getWorkflow(curFlowID.current)
         : null;
@@ -160,8 +157,8 @@ export default function App() {
     return false;
   };
   const loadWorkflowIDImpl = (id: string) => {
-    if (window.app.graph == null) {
-      console.error("window.app.graph is null cannot load workflow");
+    if (app.graph == null) {
+      console.error("app.graph is null cannot load workflow");
       return;
     }
     setCurFlowID(id);
@@ -170,8 +167,8 @@ export default function App() {
       alert("Error: Workflow not found! id: " + id);
       return;
     }
-    window.app.ui.dialog.close();
-    window.app.loadGraphData(JSON.parse(flow.json));
+    app.ui.dialog.close();
+    app.loadGraphData(JSON.parse(flow.json));
     setCurFlowName(flow.name);
     setRoute("root");
   };
@@ -221,7 +218,7 @@ export default function App() {
     const fileObj = new File([blob], fileName, {
       type: res.headers.get("Content-Type") || "",
     });
-    await window.app.handleFile(fileObj);
+    await app.handleFile(fileObj);
     setRoute("root");
   };
 
@@ -312,7 +309,7 @@ export default function App() {
 
       if (curFlowID.current != null && autoSaveEnabled) {
         // autosave workflow if enabled
-        const graphJson = JSON.stringify(window.app.graph.serialize());
+        const graphJson = JSON.stringify(app.graph.serialize());
         graphJson != null &&
           updateFlow(curFlowID.current, {
             json: graphJson,
@@ -367,6 +364,7 @@ export default function App() {
           }
         }
       );
+    });
 
     return () => {
       window.removeEventListener("message", authTokenListener);

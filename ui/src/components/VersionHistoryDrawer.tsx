@@ -20,6 +20,8 @@ import { useContext, useEffect, useState } from "react";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { formatTimestamp } from "../utils";
 import { Changelog } from "../types/dbTypes";
+const app = window.app;
+
 export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
   const { curFlowID, isDirty } = useContext(WorkspaceContext);
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
@@ -84,7 +86,7 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
                     );
                     return;
                   }
-                  window.app.loadGraphData(JSON.parse(c.json));
+                  app.loadGraphData(JSON.parse(c.json));
                   updateFlow(curFlowID, { lastSavedJson: c.json });
                   onClose();
                 }}
