@@ -11,6 +11,7 @@ import {
   changelogsTable,
   mediaTable,
   listWorkflows,
+  backfillIndexdb,
 } from "./db-tables/WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
@@ -20,10 +21,13 @@ import {
   getFileUrl,
   matchSaveWorkflowShortcut,
   validateOrSaveAllJsonFileMyWorkflows,
+  getWorkflowIdInUrlHash,
+  generateUrlHashWithFlowId,
+  rewriteAllLocalFiles,
 } from "./utils";
 import GalleryModal from "./gallery/GalleryModal";
 import { Topbar } from "./topbar/Topbar";
-import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
+// import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
 import { PanelPosition } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
 import React from "react";
@@ -32,6 +36,7 @@ const RecentFilesDrawer = React.lazy(
 );
 import { scanLocalNewFiles } from "./Api";
 const app = window.app;
+
 export default function App() {
   const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
@@ -77,13 +82,17 @@ export default function App() {
     }
   };
 
-  const setCurFlowID = (id: string) => {
+  const setCurFlowIDAndName = (id: string, name: string) => {
     curFlowID.current = id;
     setFlowID(id);
-    const workflow = getWorkflow(id);
-    if (workflow) {
+    setCurFlowName(name);
+    if (getWorkflowIdInUrlHash()) {
+      const newUrlHash = generateUrlHashWithFlowId(id);
+      window.location.hash = newUrlHash;
+      document.title = name + " - ComfyUI";
+    } else {
       localStorage.setItem("curFlowID", id);
-      // localStorage.setItem("comfy_workspace_workflow", workflow.json);
+      document.title = "ComfyUI - " + name;
     }
   };
 
@@ -114,17 +123,33 @@ export default function App() {
       console.error("error loading db", error);
     }
     setLoadingDB(false);
-    const latest = localStorage.getItem("curFlowID");
-    const latestWf = latest != null ? getWorkflow(latest) : null;
 
-    if (latestWf) {
-      latestWf && localStorage.setItem("workflow", latestWf.json);
-      setCurFlowID(latestWf.id ?? null);
-      setCurFlowName(latestWf.name ?? null);
+    let latestWfID = null;
+    latestWfID = getWorkflowIdInUrlHash();
+    if (latestWfID == null) {
+      latestWfID = localStorage.getItem("curFlowID");
     }
-    await validateOrSaveAllJsonFileMyWorkflows();
+    if (latestWfID) {
+      // since we changed to lazy load our component, app.configureGraph will come before our app loading,
+      // localStorage.setItem("workflow") will not take effect anymore and will result different workflow appearing bug when refreshing
+      loadWorkflowIDImpl(latestWfID);
+    }
 
-    if (userSettingsTable?.getSetting("twoWaySync")) {
+    if (localStorage.getItem("WORKSPACE_INDEXDB_BACKFILL") !== "true") {
+      await backfillIndexdb();
+      localStorage.setItem("WORKSPACE_INDEXDB_BACKFILL", "true");
+    }
+    /**
+     * For two-way sync, one-time rewrite all /my_workflows files to the database
+     */
+    if (localStorage.getItem("REWRITTEN_ALL_LOCAL_DISK_FILE") === "true") {
+      await validateOrSaveAllJsonFileMyWorkflows();
+    } else {
+      await rewriteAllLocalFiles();
+      localStorage.setItem("REWRITTEN_ALL_LOCAL_DISK_FILE", "true");
+    }
+
+    if (userSettingsTable?.getSetting("twoWaySync") === true) {
       // Scan all files and subfolders in the local storage directory, compare and find the data that needs to be added in the DB, and perform the new operation
       const myWorkflowsDir = userSettingsTable?.getSetting("myWorkflowsDir");
       const existFlowIds = listWorkflows().map((flow) => flow.id);
@@ -161,15 +186,16 @@ export default function App() {
       console.error("app.graph is null cannot load workflow");
       return;
     }
-    setCurFlowID(id);
+
     const flow = getWorkflow(id);
+
     if (flow == null) {
       alert("Error: Workflow not found! id: " + id);
       return;
     }
+    setCurFlowIDAndName(id, flow.name);
     app.ui.dialog.close();
     app.loadGraphData(JSON.parse(flow.json));
-    setCurFlowName(flow.name);
     setRoute("root");
   };
   const loadWorkflowID = (id: string) => {
@@ -196,9 +222,9 @@ export default function App() {
       },
     ]);
   };
-  const loadNewWorkflow = (input?: { json?: string; name?: string }) => {
+  const loadNewWorkflow = async (input?: { json?: string; name?: string }) => {
     const jsonStr = input?.json ?? JSON.stringify(defaultGraph);
-    const flow = createFlow({ json: jsonStr, name: input?.name });
+    const flow = await createFlow({ json: jsonStr, name: input?.name });
     loadWorkflowID(flow.id);
     setRoute("root");
   };
@@ -222,15 +248,18 @@ export default function App() {
     setRoute("root");
   };
 
-  const onDuplicateWorkflow = (workflowID: string, newFlowName?: string) => {
+  const onDuplicateWorkflow = async (
+    workflowID: string,
+    newFlowName?: string
+  ) => {
     if (workspace == null) {
       return;
     }
-    const workflow = workspace[workflowID];
+    const workflow = getWorkflow(workflowID);
     if (workflow == null) {
       return;
     }
-    const flow = createFlow({
+    const flow = await createFlow({
       json: workflow.json,
       name: newFlowName || workflow.name,
       parentFolderID: workflow.parentFolderID,
@@ -317,23 +346,23 @@ export default function App() {
       }
       setIsDirty(checkIsDirty());
     }, 1000);
-    pullAuthTokenCloseIfExist();
+    // pullAuthTokenCloseIfExist();
 
     window.addEventListener("keydown", shortcutListener);
-    window.addEventListener("message", authTokenListener);
+    // window.addEventListener("message", authTokenListener);
 
     const fileInput = document.getElementById(
       "comfy-file-input"
     ) as HTMLInputElement;
-    const fileInputListener = () => {
+    const fileInputListener = async () => {
       if (fileInput && fileInput.files && fileInput.files.length > 0) {
-        const flow = createFlow({
+        const flow = await createFlow({
           // @ts-ignore
           name: fileInput.files[0].name,
           json: JSON.stringify(defaultGraph),
         });
-        setCurFlowID(flow.id);
-        setCurFlowName(flow.name ?? "Unknown name");
+
+        setCurFlowIDAndName(flow.id, flow.name ?? "Unknown name");
       }
     };
     fileInput?.addEventListener("change", fileInputListener);
@@ -367,7 +396,7 @@ export default function App() {
     });
 
     return () => {
-      window.removeEventListener("message", authTokenListener);
+      // window.removeEventListener("message", authTokenListener);
       window.removeEventListener("keydown", shortcutListener);
       window.removeEventListener("change", fileInputListener);
       window.removeEventListener("beforeunload", handleBeforeUnload);
@@ -377,6 +406,7 @@ export default function App() {
   if (loadingDB || !positionStyle) {
     return null;
   }
+
   return (
     <WorkspaceContext.Provider
       value={{

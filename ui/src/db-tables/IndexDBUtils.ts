@@ -1,3 +1,5 @@
+// Legacy indexdb backup, to be deleted after indexdb migration is done
+
 import { curComfyspaceJson } from "./WorkspaceDB";
 const WORKSPACE_KEY = "backup";
 const WORKSPACE_TABLE = "workspace";
@@ -45,6 +47,8 @@ async function writeWorkspaceTable(data: string): Promise<void> {
 }
 
 export async function updateWorkspaceIndexDB() {
+  // since we migrated to indexdb, disabling updating this legacy indexdb backup
+  return;
   try {
     const comfyspaceData = await curComfyspaceJson();
     await writeWorkspaceTable(comfyspaceData);
@@ -79,7 +83,6 @@ async function readDataFromDatabase(): Promise<string | undefined> {
   }
 }
 
-// Usage example
 export async function getWorkspaceIndexDB() {
   try {
     const comfyspaceData = await readDataFromDatabase();

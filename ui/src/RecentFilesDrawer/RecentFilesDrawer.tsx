@@ -45,9 +45,9 @@ import SearchInput from "../components/SearchInput";
 import { openWorkflowsFolder } from "../Api";
 import { Folder } from "../types/dbTypes";
 import ImportFileButton from "./ImportFileButton";
+import MyTagsRow from "./MyTagsRow";
 const app = window.app;
 
-const MAX_TAGS_TO_SHOW = 6;
 type Props = {
   onClose: () => void;
   onClickNewFlow: () => void;
@@ -61,7 +61,6 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   const allFlowsRef = useRef<Array<Workflow>>([]);
 
   const [selectedTag, setSelectedTag] = useState<string>();
-  const [showAllTags, setShowAllTags] = useState(false);
   const [multipleState, setMultipleState] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   const [refreshFolderStamp, setRefreshFolderStamp] = useState(0);
@@ -255,45 +254,10 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
             </HStack>
           </Flex>
           <Flex direction="column" h="calc(100% - 64px)">
-            <HStack spacing={2} wrap={"wrap"} mb={0}>
-              {selectedTag != null && (
-                <IconButton
-                  aria-label="Close"
-                  size={"sm"}
-                  icon={<IconX />}
-                  onClick={() => {
-                    setSelectedTag(undefined);
-                  }}
-                />
-              )}
-              {tagsTable
-                ?.listAll()
-                .slice(0, showAllTags ? undefined : MAX_TAGS_TO_SHOW)
-                .map((tag) => (
-                  <Button
-                    variant="solid"
-                    width={"auto"}
-                    flexShrink={0}
-                    size={"sm"}
-                    borderRadius={15}
-                    py={4}
-                    onClick={() => {
-                      setSelectedTag(tag.name);
-                    }}
-                    isActive={selectedTag === tag.name}
-                  >
-                    {tag.name}
-                  </Button>
-                ))}
-              {(tagsTable?.listAll().length ?? 0) > MAX_TAGS_TO_SHOW && (
-                <IconButton
-                  aria-label="Show-all-tags"
-                  size={"sm"}
-                  icon={showAllTags ? <IconChevronUp /> : <IconChevronDown />}
-                  onClick={() => setShowAllTags(!showAllTags)}
-                />
-              )}
-            </HStack>
+            <MyTagsRow
+              selectedTag={selectedTag}
+              setSelectedTag={setSelectedTag}
+            />
             <HStack mb={2} mt={2} p={0} justifyContent="space-between">
               <HStack>
                 {allFlowsRef.current.length > 0 ? (

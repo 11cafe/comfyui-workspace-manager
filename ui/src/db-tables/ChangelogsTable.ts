@@ -1,43 +1,37 @@
-import { getDB, saveDB } from "../Api";
+import { saveDB } from "../Api";
 import { v4 as uuidv4 } from "uuid";
-import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
+import { updateWorkspaceIndexDB } from "./IndexDBUtils";
 import { Table } from "./WorkspaceDB";
 import { Changelog } from "../types/dbTypes";
+import { TableBase } from "./TableBase";
+import { indexdb } from "./indexdb";
 
-type ChangelogRecords = {
-  [id: string]: Changelog;
-};
-export class ChangelogsTable {
+export class ChangelogsTable extends TableBase<Changelog> {
   static readonly TABLE_NAME: Table = "changelogs";
-
-  private constructor() {}
-
+  constructor() {
+    super("changelogs");
+  }
   static async load(): Promise<ChangelogsTable> {
     const instance = new ChangelogsTable();
     return instance;
   }
 
   public async listByWorkflowID(workflowID: string): Promise<Changelog[]> {
+    const objects = await indexdb["changelogs"]
+      .where("workflowID")
+      .equals(workflowID)
+      .reverse()
+      .sortBy("createTime");
+    if (objects?.length) return objects;
+
     const records = await this.getRecords();
     return Object.values(records)
       .filter((c) => c.workflowID === workflowID)
       .sort((a, b) => b.createTime - a.createTime);
   }
-  public async getRecords(): Promise<ChangelogRecords> {
-    let jsonStr = await getDB(ChangelogsTable.TABLE_NAME);
-    let json = jsonStr != null ? JSON.parse(jsonStr) : null;
-    if (json == null) {
-      const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
-      const comfyspaceData = JSON.parse(comfyspace);
-      json = comfyspaceData[ChangelogsTable.TABLE_NAME];
-    }
-    return json ?? {};
-  }
-  public async get(id: string): Promise<Changelog | undefined> {
-    const records = await this.getRecords();
-    return records[id];
-  }
   public async getLastestByWorkflowID(workflowID: string): Promise<Changelog> {
+    const objects = await this.listByWorkflowID(workflowID);
+    if (objects?.length) return objects[0];
     const records = await this.getRecords();
     const all = Object.values(records)
       .filter((c) => c.workflowID === workflowID)
@@ -59,6 +53,7 @@ export class ChangelogsTable {
       workflowID: input.workflowID,
       createTime: Date.now(),
     };
+    await indexdb.changelogs.add(change);
     const records = await this.getRecords();
     records[change.id] = change;
     saveDB(ChangelogsTable.TABLE_NAME, JSON.stringify(records));

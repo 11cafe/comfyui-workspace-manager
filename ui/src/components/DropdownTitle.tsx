@@ -88,7 +88,7 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
       return;
     }
 
-    const json_data = workspace[curFlowID];
+    const json_data = getWorkflow(curFlowID);
 
     if (!json_data) {
       alert("Workspace does not exist");

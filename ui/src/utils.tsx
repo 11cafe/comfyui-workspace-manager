@@ -1,16 +1,22 @@
 // @ts-ignore
-import { deleteFile } from "./Api";
+import { deleteFile, updateFile } from "./Api";
 import { ESortTypes } from "./RecentFilesDrawer/types";
 import {
   batchCreateFlows,
   foldersTable,
   listWorkflows,
-  saveJsonFileMyWorkflows,
   userSettingsTable,
   Workflow,
 } from "./db-tables/WorkspaceDB";
-import { generateFilePathAbsolute } from "./db-tables/DiskFileUtils";
+import {
+  generateFilePathAbsolute,
+  saveJsonFileMyWorkflows,
+} from "./db-tables/DiskFileUtils";
 import { Folder } from "./types/dbTypes";
+import {
+  COMFYSPACE_TRACKING_FIELD_NAME,
+  LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
+} from "./const";
 const app = window.app;
 
 export type Route = "root" | "customNodes" | "recentFlows" | "gallery";
@@ -149,7 +155,7 @@ export async function validateOrSaveAllJsonFileMyWorkflows(
   deleteEmptyFolder = false
 ) {
   for (const workflow of listWorkflows()) {
-    const fullPath = generateFilePathAbsolute(workflow);
+    const fullPath = await generateFilePathAbsolute(workflow);
     if (workflow.filePath != fullPath) {
       // file path changed
       workflow.filePath != null &&
@@ -364,5 +370,45 @@ export async function syncNewFlowOfLocalDisk(
 
       await batchCreateFlows(folder.list, true, folderId);
     });
+  }
+}
+
+export function getWorkflowIdInUrlHash() {
+  const hashArr = window.location.hash.slice(1).split("/");
+  const workspaceId = hashArr.find((h) => h.includes("workspaceId@"));
+  return workspaceId ? workspaceId.split("@")[1] : null;
+}
+
+/**
+ * Generate url hash containing workflowId;
+ * If workspaceId@ exists, replace it, if it does not exist, append it.
+ * This operation will not damage the original hash.
+ */
+export function generateUrlHashWithFlowId(id: string) {
+  const hashArr = window.location.hash.slice(1).split("/");
+  const workspaceIdIndex = hashArr.findIndex((h) => h.includes("workspaceId@"));
+  const newWorkflowId = `workspaceId@${id}`;
+  if (workspaceIdIndex >= 0) {
+    hashArr[workspaceIdIndex] = newWorkflowId;
+  } else {
+    hashArr.push(newWorkflowId);
+  }
+  return `${hashArr.join("/")}`;
+}
+
+export async function rewriteAllLocalFiles() {
+  for (const workflow of listWorkflows()) {
+    try {
+      const fullPath = await generateFilePathAbsolute(workflow);
+      const flow = JSON.parse(workflow.json);
+      flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {
+        id: workflow.id,
+        name: workflow.name,
+      };
+      delete flow.extra[LEGACY_COMFYSPACE_TRACKING_FIELD_NAME];
+      fullPath && (await updateFile(fullPath, JSON.stringify(flow)));
+    } catch (error) {
+      console.error(error);
+    }
   }
 }
