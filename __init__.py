@@ -26,9 +26,11 @@ db_dir_path = os.path.join(workspace_path, "db")
 
 
 workspace_app = web.Application()
-workspace_app.add_routes([
-    web.static("/", os.path.join(workspace_path, 'dist/workspace_web')),
-])
+dist_path = os.path.join(workspace_path, 'dist/workspace_web')
+if os.path.exists(dist_path):
+    workspace_app.add_routes([
+        web.static("/", dist_path),
+    ])
 server.PromptServer.instance.app.add_subapp("/workspace_web/", workspace_app)
 
 @server.PromptServer.instance.routes.post("/workspace/save_db")
