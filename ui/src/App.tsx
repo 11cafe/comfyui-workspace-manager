@@ -367,7 +367,7 @@ export default function App() {
           }
         }
       );
-
+    });
     return () => {
       window.removeEventListener("message", authTokenListener);
       window.removeEventListener("keydown", shortcutListener);
