@@ -1,6 +1,6 @@
 # ☕️ ComfyUI Workspace Manager - Comfyspace
 
-A ComfyUI workflow management extension to **organize and manage all your workflows and generated images in one place**. Seamlessly switch between workflows, track version history and image generation history within a single workspace. We are reimagining the way to manage all your resources as a whole, workflows, models and custom nodes.
+A ComfyUI workflow management extension to **organize and manage all your workflows and generated images in one place**. Seamlessly switch between workflows, track version history and image generation history within a single workspace.
 
 If you have questions or suggestions, please [join our Discord](https://discord.gg/HHvfEurv2Z)! 
 
