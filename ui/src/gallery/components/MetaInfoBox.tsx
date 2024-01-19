@@ -1,7 +1,7 @@
 import { getMetadataFromUrl, MetaData } from "../utils.ts";
 import { Media } from "../../types/dbTypes.ts";
 import { useEffect, useState } from "react";
-import { OneKSampler } from "./MetaBoxByType/OneKSampler.tsx";
+import { OneKSampler } from "./MetaBoxByType/OneKSampler/OneKSampler.tsx";
 import {
   Flex,
   IconButton,
@@ -13,9 +13,9 @@ import {
 import { IconDownload } from "@tabler/icons-react";
 import { formatTimestamp } from "../../utils.tsx";
 import {
-  isMultiKSampler,
   MultiKSampler,
-} from "./MetaBoxByType/MultiKSampler.tsx";
+} from "./MetaBoxByType/MultiKSampler/MultiKSampler.tsx";
+import {isMultiKSampler} from './MetaBoxByType/MultiKSampler/multiKSamplerTool.tsx'
 
 export const MetaInfoBox = ({ media }: { media?: Media }) => {
   const [mediaMetaData, setMediaMetaData] = useState<MetaData>();
