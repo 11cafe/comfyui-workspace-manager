@@ -40,6 +40,14 @@ const RecentFilesDrawer = React.lazy(
 );
 import { scanLocalNewFiles } from "./Api";
 
+const usedWsEvents = [
+  // InstallProgress.tsx
+  "download_progress",
+  "download_error",
+  // useUpdateModels.ts
+  "model_list",
+]
+
 export default function App() {
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
   const [route, setRoute] = useState<Route>("root");
@@ -157,7 +165,14 @@ export default function App() {
     }
   };
 
+  const subsribeToWsToStopWarning = () =>  {
+    usedWsEvents.forEach((event) => {
+      api.addEventListener(event, () => null);
+    });
+  }
+
   useEffect(() => {
+    subsribeToWsToStopWarning();
     graphAppSetup();
     setLoadChild(true);
     setInterval(() => {
