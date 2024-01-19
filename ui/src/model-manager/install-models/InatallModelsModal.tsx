@@ -1,5 +1,3 @@
-// @ts-ignore
-import { api } from "/scripts/api.js";
 import {
   Button,
   HStack,
@@ -15,8 +13,6 @@ import {
   Checkbox,
   Spinner,
   useToast,
-  Progress,
-  Stack,
   useDisclosure
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -26,9 +22,7 @@ import { installModelsApi } from "../api/modelsApi";
 import ModelCard from "./ModelCard";
 import InstallModelSearchBar from "./InstallModelSearchBar";
 import ChooseFolder from "./ChooseFolder";
-
-
-type Queue = { save_path: string, progress: number };
+import InstallProgress from "./InstallProgress";
 
 type CivitModelQueryParams = {
   types?: MODEL_TYPE;
@@ -77,7 +71,6 @@ export default function InatallModelsModal({
   const toast = useToast();
   const [installing, setInstalling] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [queue, setQueue] = useState<Queue[]>([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const file = useRef<CivitiModelFileVersion>();
   const loadData = useCallback(async () => {
@@ -156,22 +149,6 @@ export default function InatallModelsModal({
   useEffect(() => {
     loadData();
   }, [searchQuery, modelType]);
-
-  useEffect(() => {
-    api.addEventListener("download_progress", (e: { detail: Queue[] }) => {
-      setQueue(e.detail);
-    });
-    api.addEventListener("download_error", (e: { detail: string }) => {
-      toast({
-        title:
-          "Download Error",
-        description: e.detail,
-        status: "error",
-        duration: 4000,
-        isClosable: true,
-      });
-    });
-  }, []);
 
   const isAllSelected =
     models.length > 0 && selectedID.length === models.length;
@@ -257,14 +234,7 @@ export default function InatallModelsModal({
                 );
               })}
             </HStack>
-            <Stack spacing={5} pos="absolute" bottom="0" left="0" width="50%" zIndex={80} backgroundColor="white" paddingX={5}>
-              {queue.map(({ save_path, progress }) => (
-                <HStack>
-                  <Text fontSize={16} width="40%">{save_path.replace(/^.*[\\/]/, '')}</Text>
-                  <Progress isIndeterminate={!progress} hasStripe width="60%" value={progress} />
-                </HStack>
-              ))}
-            </Stack>
+            <InstallProgress />
           </ModalBody>
         </ModalContent>
       </Modal>

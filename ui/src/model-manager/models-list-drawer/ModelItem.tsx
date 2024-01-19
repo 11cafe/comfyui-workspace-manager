@@ -32,24 +32,32 @@ export function ModelItem({ data }: Props) {
     if (thumbnail && valid_url) {
       setUrl(thumbnail);
     } else {
-      const resp = await fetch(
-        `https://civitai.com/api/v1/model-versions/by-hash/${data.file_hash}`
-      );
-      const json = await resp.json();
-      console.log(json);
-      const image = json?.images[0];
-      console.log(image);
-      const image_url = image?.url;
-      setUrl(image_url || url);
-      if (image_url) {
-        localStorage.setItem(key, image_url);
-      }
+      try {
+        const url = `https://civitai.com/api/v1/model-versions/by-hash/${data.file_hash}`;
+        const resp = await fetch(url);
+        if (!resp.ok) {
+          return;
+        }
+        const json = await resp.json();
+        const image = json?.images?.at(0);
+        const image_url = image?.url;
+        setUrl(image_url || url);
+        if (image_url) {
+          localStorage.setItem(key, image_url);
+        }
+      } catch (e) {}
     }
   };
 
   return (
     <Box position="relative" borderRadius={4}>
-      <Image src={url} boxSize="100%" height={178} objectFit="cover" borderRadius={4} />
+      <Image
+        src={url}
+        boxSize="100%"
+        height={178}
+        objectFit="cover"
+        borderRadius={4}
+      />
       <Text
         position="absolute"
         bottom="0"

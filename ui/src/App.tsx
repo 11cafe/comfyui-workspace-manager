@@ -41,7 +41,6 @@ const RecentFilesDrawer = React.lazy(
 import { scanLocalNewFiles } from "./Api";
 
 export default function App() {
-  const nodeDefs = useRef<Record<string, ComfyObjectInfo>>({});
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
   const [route, setRoute] = useState<Route>("root");
   const [loadingDB, setLoadingDB] = useState(true);
@@ -97,25 +96,22 @@ export default function App() {
   };
 
   const graphAppSetup = async () => {
-    const ext: ComfyExtension = {
-      // Unique name for the extension
-      name: "WorkspaceManager",
-      async setup(app) {
-        // clean up legacy localStorage
-        localStorage.removeItem("workspace");
-        localStorage.removeItem("comfyspace");
-      },
-      async addCustomNodeDefs(defs) {
-        nodeDefs.current = defs;
-      },
-      // @ts-ignore
-      async afterConfigureGraph() {
-        // to avoid the bug after switching workflow using comfyspace,
-        // immediately refresh browser, resulting in latest workflow not updated
-        localStorage.setItem("workflow", JSON.stringify(app.graph.serialize()));
-      },
-    };
-    app.registerExtension(ext);
+    // const ext: ComfyExtension = {
+    //   // Unique name for the extension
+    //   name: "WorkspaceManager",
+    //   async setup(app) {
+    //     // clean up legacy localStorage
+    //   },
+    //   // @ts-ignore
+    //   async afterConfigureGraph() {
+    //     // to avoid the bug after switching workflow using comfyspace,
+    //     // immediately refresh browser, resulting in latest workflow not updated
+    //     localStorage.setItem("workflow", JSON.stringify(app.graph.serialize()));
+    //   },
+    // };
+    // app.registerExtension(ext);
+    localStorage.removeItem("workspace");
+    localStorage.removeItem("comfyspace");
     try {
       await loadDBs();
       updatePanelPosition(userSettingsTable?.getSetting("topBarStyle"), false);

@@ -9,6 +9,8 @@ import urllib.request
 import threading
 import server
 import time
+from .missing_models import find_missing_models # type: ignore noqa
+from .model_list import start_populate_file_hash_dict 
 
 comfy_path = os.path.dirname(folder_paths.__file__)
 def download_url_with_wget(url, save_path):
@@ -74,6 +76,8 @@ def download_worker():
         if task is not None:
             # Execute the download task and update the download progress
             download_url_with_agent(task['url'], task['save_path'])
+            # calculate newly downloaded models' hash
+            start_populate_file_hash_dict()
                 
         else:
             # No more tasks, break the loop
