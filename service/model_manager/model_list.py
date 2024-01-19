@@ -10,7 +10,8 @@ import os
 
 # The path to the file where file_hash_dict will be saved
 FILE_HASH_DICT_PATH = os.path.join(os.path.dirname(__file__),"../../hash/file_hash_dict")
-
+if not os.path.exists(FILE_HASH_DICT_PATH):
+    os.makedirs(FILE_HASH_DICT_PATH)
 # Use shelve to store file_hash_dict
 file_hash_dict = shelve.open(FILE_HASH_DICT_PATH)
 file_list = []
