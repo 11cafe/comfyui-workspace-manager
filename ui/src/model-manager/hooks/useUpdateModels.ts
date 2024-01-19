@@ -20,7 +20,7 @@ export const useUpdateModels = () => {
       if (e.detail === "done") {
         setLoading(false);
       } else {
-        setModelsList(e.detail);
+        updateModels(e.detail);
       }
     });
   }, []);
@@ -30,6 +30,10 @@ export const useUpdateModels = () => {
     if (!res) return;
     const { file_list, populate_done } = res;
     if (populate_done) setLoading(false);
+    updateModels(file_list);
+  };
+
+  const updateModels = async (file_list: ModelsListRespItem[]) => {
     const modelTypeList = Array.from(
       new Set(file_list.map((item) => item.model_type))
     );
