@@ -29,7 +29,6 @@ import {
   generateUrlHashWithFlowId,
   rewriteAllLocalFiles,
 } from "./utils";
-import GalleryModal from "./gallery/GalleryModal";
 import { Topbar } from "./topbar/Topbar";
 // import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
 import { PanelPosition } from "./types/dbTypes";
@@ -38,6 +37,7 @@ import React from "react";
 const RecentFilesDrawer = React.lazy(
   () => import("./RecentFilesDrawer/RecentFilesDrawer")
 );
+const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
 import { scanLocalNewFiles } from "./Api";
 
 export default function App() {
