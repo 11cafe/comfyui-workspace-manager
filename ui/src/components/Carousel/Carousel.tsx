@@ -79,6 +79,7 @@ const Carousel: React.FC<CarouselProps> = ({
             }}
             style={{
               position: "absolute",
+              cursor: "pointer",
               width: "100%",
               height: "100%",
               display: index === current ? "block" : "none",
