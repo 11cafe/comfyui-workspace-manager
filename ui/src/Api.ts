@@ -171,8 +171,29 @@ export async function getAllModelsList() {
       },
     });
     const result = await response.json();
-    return result as {file_list: ModelsListRespItem[], populate_done: boolean};
+    return result as {
+      file_list: ModelsListRespItem[];
+      populate_done: boolean;
+    };
   } catch (error) {
     console.error("Error get all models list:", error);
+  }
+}
+
+export async function deleteLocalDiskFolder(folderPath: string) {
+  try {
+    const response = await fetch("/workspace/delete_folder", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        folder_path: folderPath,
+      }),
+    });
+    const result = await response.text();
+    return result;
+  } catch (error) {
+    console.error("Error move file:", error);
   }
 }

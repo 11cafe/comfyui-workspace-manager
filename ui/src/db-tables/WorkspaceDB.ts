@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { getDB, saveDB, updateFile } from "../Api";
+import { getDB, saveDB } from "../Api";
 import { generateUniqueName, sortFileItem, sortFlows } from "../utils";
 import { ESortTypes, ImportWorkflow } from "../RecentFilesDrawer/types";
 import { ChangelogsTable } from "./ChangelogsTable";
@@ -166,20 +166,21 @@ export async function updateFlow(id: string, input: Partial<Workflow>) {
   // update memory
   workspace[id] = newWorkflow;
   //update indexdb
-  indexdb.workflows.update(id, newWorkflow);
+  await indexdb.workflows.update(id, newWorkflow);
   //update legacy indexdb backup
   updateWorkspaceIndexDB();
   // update disk file db
-  saveDB("workflows", JSON.stringify(workspace));
+  await saveDB("workflows", JSON.stringify(workspace));
   // save to my_workflows/
-  if (input.name != null || input.parentFolderID != null) {
+  input.name != null || input.parentFolderID != null;
+  if (input.name !== null || input.parentFolderID !== null) {
     // renamed file or moved file folder
-    deleteJsonFileMyWorkflows(before);
-    saveJsonFileMyWorkflows(after);
+    await deleteJsonFileMyWorkflows(before);
+    await saveJsonFileMyWorkflows(after);
     return;
   }
   if (input.json != null) {
-    saveJsonFileMyWorkflows(after);
+    await saveJsonFileMyWorkflows(after);
   }
 }
 

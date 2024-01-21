@@ -1,10 +1,11 @@
-import { saveDB } from "../Api";
-import { listWorkflows, updateFlow } from "./WorkspaceDB";
-import { Folder } from "../types/dbTypes";
+import { saveDB, deleteLocalDiskFolder } from "../Api";
+import { deleteFlow, listWorkflows, updateFlow } from "./WorkspaceDB";
+import { EFlowOperationType, Folder } from "../types/dbTypes";
 import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
 import { v4 as uuidv4 } from "uuid";
 import { TableBase } from "./TableBase";
 import { indexdb } from "./indexdb";
+import { generateFolderPath } from "./DiskFileUtils";
 
 export class FoldersTable extends TableBase<Folder> {
   static readonly TABLE_NAME = "folders";
@@ -61,11 +62,16 @@ export class FoldersTable extends TableBase<Folder> {
       validateOrSaveAllJsonFileMyWorkflows(true);
     }
   }
-  public async deleteFolder(id: string) {
+  public async deleteFolder(
+    id: string,
+    fileCount: number = 0,
+    flowOperationType: EFlowOperationType = EFlowOperationType.DELETE,
+  ) {
+    const folderPath = await generateFolderPath(id);
+
     /**
-     * When deleting a folder,
-     * breadth traverses all nested folders and deletes them from the DB one by one.
-     * And modify the related flow synchronously, setting parentFolderId to undefined
+     * When deleting a folder, if there are files in the folder
+     * Breadth traverse all nested folders, find all files, move to root directory or delete as needed.
      */
     const allFlows = await listWorkflows();
     const allFolders = await this.listAll();
@@ -77,12 +83,19 @@ export class FoldersTable extends TableBase<Folder> {
       if (curFolderId) {
         for (const flow of allFlows) {
           if (flow.parentFolderID === curFolderId) {
-            await updateFlow(flow.id, { parentFolderID: undefined });
+            switch (flowOperationType) {
+              case EFlowOperationType.DELETE:
+                await deleteFlow(flow.id);
+                break;
+              case EFlowOperationType.MOVE_TO_ROOT_FOLDER:
+                await updateFlow(flow.id, { parentFolderID: undefined });
+                console.log("updateFlow");
+                break;
+            }
           }
         }
 
         await indexdb.folders.delete(curFolderId);
-
         const curNestedFolderIds = allFolders
           .filter((f) => f.parentFolderID === curFolderId)
           .map((f) => f.id);
@@ -92,11 +105,10 @@ export class FoldersTable extends TableBase<Folder> {
         }
       }
     }
-
+    fileCount > 0 &&
+      (await saveDB("workflows", JSON.stringify(await listWorkflows())));
+    folderPath && (await deleteLocalDiskFolder(folderPath));
     await saveDB("folders", JSON.stringify(await this.listAll()));
-
-    // TODO 在嵌套文件夹场景下，重建逻辑无法有效判断子文件夹是否为空，导致子文件夹为空时无法准确删除。
-    await validateOrSaveAllJsonFileMyWorkflows(true);
   }
 
   public async generateUniqueName(name?: string) {
