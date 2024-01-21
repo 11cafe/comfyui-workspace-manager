@@ -46,7 +46,7 @@ const usedWsEvents = [
   "download_error",
   // useUpdateModels.ts
   "model_list",
-]
+];
 
 export default function App() {
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
@@ -118,6 +118,7 @@ export default function App() {
     //   },
     // };
     // app.registerExtension(ext);
+    subsribeToWsToStopWarning();
     localStorage.removeItem("workspace");
     localStorage.removeItem("comfyspace");
     try {
@@ -165,14 +166,13 @@ export default function App() {
     }
   };
 
-  const subsribeToWsToStopWarning = () =>  {
+  const subsribeToWsToStopWarning = () => {
     usedWsEvents.forEach((event) => {
       api.addEventListener(event, () => null);
     });
-  }
+  };
 
   useEffect(() => {
-    subsribeToWsToStopWarning();
     graphAppSetup();
     setLoadChild(true);
     setInterval(() => {
