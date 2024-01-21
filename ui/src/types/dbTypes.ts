@@ -12,6 +12,16 @@ export type Tag = {
   updateTime: number;
 };
 
+export type Model = {
+  id: string;
+  fileName: string;
+  fileFolder: string;
+  fileHash: string;
+  civitModelID: string;
+  civitModelVersionID: string;
+  imageUrl?: string | null;
+};
+
 export type UserSettings = {
   userID: string;
   myWorkflowsDir: string;

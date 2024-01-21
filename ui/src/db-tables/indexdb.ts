@@ -1,7 +1,14 @@
 // db.ts
 import Dexie, { Table } from "dexie";
 import { Workflow } from "./WorkspaceDB";
-import { Changelog, Folder, Media, Tag, UserSettings } from "../types/dbTypes";
+import {
+  Changelog,
+  Folder,
+  Media,
+  Model,
+  Tag,
+  UserSettings,
+} from "../types/dbTypes";
 
 class ManagerDB extends Dexie {
   workflows!: Table<Workflow, string>;
@@ -10,10 +17,11 @@ class ManagerDB extends Dexie {
   folders!: Table<Folder, string>;
   tags!: Table<Tag, string>;
   userSettings!: Table<UserSettings, string>;
+  models!: Table<Model, string>;
 
   constructor() {
     super("WorkspaceManagerDB");
-    this.version(1)
+    this.version(2)
       .stores({
         workflows: "&id, name, parentFolderID", // Primary key and indexed props
         changelogs: "&id, workflowID",
@@ -21,6 +29,7 @@ class ManagerDB extends Dexie {
         folders: "&id, name, parentFolderID",
         tags: "&name",
         userSettings: "&userID",
+        models: "&id, fileName, fileHash",
       })
       .upgrade((trans) => {
         // Here you can write logic to initialize or migrate data to the new 'media' table, if necessary
