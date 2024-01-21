@@ -50,7 +50,9 @@ export default function App() {
   const workspaceContainerRef = useRef(null);
   const { showDialog } = useDialog();
   const [loadChild, setLoadChild] = useState(false);
-  const developmentEnvLoadFirst = useRef(true);
+  const developmentEnvLoadFirst = useRef(false);
+  const autoSaveTimer = useRef(0);
+
   const saveCurWorkflow = useCallback(() => {
     if (curFlowID.current) {
       const graphJson = JSON.stringify(app.graph.serialize());
@@ -156,37 +158,6 @@ export default function App() {
       await syncNewFlowOfLocalDisk(fileList, folderList);
     }
   };
-
-  useEffect(() => {
-    /**
-     * because we have turned on strict mode, useEffect will be executed twice in strict mode in the development environment.
-     * and graphAppSetup contains DB related operations, repeated execution will bring some bad results.
-     * so in development environment mode, the first execution is skipped.
-     */
-    if (
-      process.env.NODE_ENV === "development" &&
-      developmentEnvLoadFirst.current
-    ) {
-      developmentEnvLoadFirst.current = false;
-      return;
-    }
-    graphAppSetup();
-    setLoadChild(true);
-    setInterval(() => {
-      const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
-
-      if (curFlowID.current != null && autoSaveEnabled) {
-        // autosave workflow if enabled
-        const graphJson = JSON.stringify(app.graph.serialize());
-        graphJson != null &&
-          updateFlow(curFlowID.current, {
-            json: graphJson,
-          });
-      }
-      setIsDirty(checkIsDirty());
-    }, 1000);
-    // pullAuthTokenCloseIfExist();
-  }, []);
 
   const checkIsDirty = () => {
     if (curFlowID.current != null) {
@@ -340,6 +311,35 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    /**
+     * because we have turned on strict mode, useEffect will be executed twice in strict mode in the development environment.
+     * and graphAppSetup contains DB related operations, repeated execution will bring some bad results.
+     * so in development environment mode, the first execution is skipped.
+     */
+    if (
+      process.env.NODE_ENV === "development" &&
+      !developmentEnvLoadFirst.current
+    ) {
+      developmentEnvLoadFirst.current = true;
+      return;
+    }
+    graphAppSetup();
+    setLoadChild(true);
+    autoSaveTimer.current = setInterval(() => {
+      const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
+
+      if (curFlowID.current != null && autoSaveEnabled) {
+        // autosave workflow if enabled
+        const graphJson = JSON.stringify(app.graph.serialize());
+        graphJson != null &&
+          updateFlow(curFlowID.current, {
+            json: graphJson,
+          });
+      }
+      setIsDirty(checkIsDirty());
+    }, 1000);
+    // pullAuthTokenCloseIfExist();
+
     window.addEventListener("keydown", shortcutListener);
     // window.addEventListener("message", authTokenListener);
 
@@ -391,6 +391,7 @@ export default function App() {
       window.removeEventListener("keydown", shortcutListener);
       window.removeEventListener("change", fileInputListener);
       window.removeEventListener("beforeunload", handleBeforeUnload);
+      clearInterval(autoSaveTimer.current);
     };
   }, []);
 
