@@ -39,6 +39,14 @@ const RecentFilesDrawer = React.lazy(
 const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
 import { scanLocalNewFiles } from "./Api";
 
+const usedWsEvents = [
+  // InstallProgress.tsx
+  "download_progress",
+  "download_error",
+  // useUpdateModels.ts
+  "model_list",
+];
+
 export default function App() {
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
   const [route, setRoute] = useState<Route>("root");
@@ -112,6 +120,7 @@ export default function App() {
     //   },
     // };
     // app.registerExtension(ext);
+    subsribeToWsToStopWarning();
     localStorage.removeItem("workspace");
     localStorage.removeItem("comfyspace");
     try {
@@ -157,6 +166,12 @@ export default function App() {
       );
       await syncNewFlowOfLocalDisk(fileList, folderList);
     }
+  };
+
+  const subsribeToWsToStopWarning = () => {
+    usedWsEvents.forEach((event) => {
+      api.addEventListener(event, () => null);
+    });
   };
 
   const checkIsDirty = () => {

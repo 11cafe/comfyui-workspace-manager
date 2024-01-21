@@ -171,10 +171,7 @@ export async function getAllModelsList() {
       },
     });
     const result = await response.json();
-    return result as {
-      file_list: ModelsListRespItem[];
-      populate_done: boolean;
-    };
+    return result as ModelsListRespItem[];
   } catch (error) {
     console.error("Error get all models list:", error);
   }

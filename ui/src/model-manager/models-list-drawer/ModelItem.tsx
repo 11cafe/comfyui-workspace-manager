@@ -1,4 +1,4 @@
-import { Box, Image, Text } from "@chakra-ui/react";
+import { Box, Flex, Image, Spinner, Text } from "@chakra-ui/react";
 import { ModelsListRespItem } from "../types";
 import { useEffect, useState } from "react";
 
@@ -10,10 +10,12 @@ export function ModelItem({ data }: Props) {
   const [url, setUrl] = useState(
     "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/27fd7433-cb0a-4a87-88c1-21ccb2b1a842/width=450/00060-881622046.jpeg"
   );
+  const [hashing, setHashing] = useState(!data.file_hash);
 
   useEffect(() => {
+    setHashing(!data.file_hash);
     getThumbnail();
-  }, []);
+  }, [data.file_hash]);
 
   const getThumbnail = async () => {
     // if local storage has the thumbnail, use it
@@ -31,7 +33,7 @@ export function ModelItem({ data }: Props) {
 
     if (thumbnail && valid_url) {
       setUrl(thumbnail);
-    } else {
+    } else if (!hashing) {
       try {
         const url = `https://civitai.com/api/v1/model-versions/by-hash/${data.file_hash}`;
         const resp = await fetch(url);
@@ -45,9 +47,39 @@ export function ModelItem({ data }: Props) {
         if (image_url) {
           localStorage.setItem(key, image_url);
         }
-      } catch (e) {}
+      } catch (e) { }
     }
   };
+
+  if (hashing) {
+    return (
+      <Flex
+        position="relative"
+        borderRadius={4}
+        bg="rgba(0, 0, 0, 0.5)"
+        height={178}
+        justifyContent="center"
+        alignItems="center"
+      >
+        <Spinner />
+        <Text
+          position="absolute"
+          bottom="0"
+          left="0"
+          right="0"
+          bg="rgba(0, 0, 0, 0.5)"
+          color="white"
+          textAlign="center"
+          p="0"
+          fontSize={12}
+          borderBottomRightRadius={4}
+          borderBottomLeftRadius={4}
+        >
+          {data.model_name}
+        </Text>
+      </Flex>
+    );
+  }
 
   return (
     <Box position="relative" borderRadius={4}>
