@@ -146,3 +146,17 @@ cd custom_nodes && git clone https://github.com/11cafe/comfyui-workspace-manager
 5. run ComfyUI server
    inside `/ComfyUI`
    do `python main.py` or `python3 main.py` depending on your version
+
+#### IndexDB trouble shooting
+
+If you see indexdb version mismatch error in console that looks like:
+```
+VersionError: The requested version (10) is less than the existing version (30)."
+name
+: 
+"DatabaseClosedError"
+```
+please delete indexdb manually F12 Dev tools -> Application -> IndexDB -> WorkspaceManagerDB
+<img width="460" alt="Screenshot 2024-01-21 at 11 21 55 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/adcde47f-c620-42ad-9367-e16e5be92be1">
+
+
