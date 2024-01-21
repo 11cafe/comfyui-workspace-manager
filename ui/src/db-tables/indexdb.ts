@@ -21,7 +21,7 @@ class ManagerDB extends Dexie {
 
   constructor() {
     super("WorkspaceManagerDB");
-    this.version(2)
+    this.version(1)
       .stores({
         workflows: "&id, name, parentFolderID", // Primary key and indexed props
         changelogs: "&id, workflowID",
