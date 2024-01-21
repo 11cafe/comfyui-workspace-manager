@@ -69,15 +69,15 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   const debounceSearchValue = useDebounce(searchValue, 400);
   const draggingWorkflowID = useRef<string | null>(null);
   const [draggingFile, setDraggingFile] = useState<Workflow | Folder | null>(
-    null
+    null,
   );
   const sortTypeRef = useRef<ESortTypes>(
     (window.localStorage.getItem(sortTypeLocalStorageKey) as ESortTypes) ??
-      ESortTypes.RECENTLY_MODIFIED
+      ESortTypes.RECENTLY_MODIFIED,
   );
 
-  const loadLatestWorkflows = () => {
-    const all = listFolderContent();
+  const loadLatestWorkflows = async () => {
+    const all = await listFolderContent();
     aloneFlowsAndFoldersRef.current = all;
     allFlowsRef.current = listWorkflows();
     filterFlows();
@@ -105,7 +105,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
       setCurrentRenderingData(sortFileItem(filterResult, sortTypeRef.current));
     } else {
       setCurrentRenderingData(
-        sortFileItem(aloneFlowsAndFoldersRef.current, sortTypeRef.current)
+        sortFileItem(aloneFlowsAndFoldersRef.current, sortTypeRef.current),
       );
     }
   };
@@ -126,7 +126,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
       deleteFlow(id);
       loadLatestWorkflows();
     },
-    [selectedTag, debounceSearchValue]
+    [selectedTag, debounceSearchValue],
   );
 
   useEffect(() => {
@@ -170,7 +170,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
         return;
       case "selectAll":
         setSelectedKeys(
-          value ? allFlowsRef.current.map((flow) => flow.id) : []
+          value ? allFlowsRef.current.map((flow) => flow.id) : [],
         );
         return;
     }
@@ -283,8 +283,8 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
                       size={"sm"}
                       variant={"outline"}
                       icon={<IconFolderPlus size={21} />}
-                      onClick={() => {
-                        foldersTable?.create({
+                      onClick={async () => {
+                        await foldersTable?.create({
                           name: "New Folder",
                         });
                         loadLatestWorkflows();

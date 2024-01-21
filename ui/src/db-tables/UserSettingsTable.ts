@@ -1,6 +1,6 @@
 import { getDB, getSystemDir, saveDB } from "../Api";
 import { UserSettings } from "../types/dbTypes";
-import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
+import { getWorkspaceIndexDB } from "./IndexDBUtils";
 import { TableBase } from "./TableBase";
 import { indexdb } from "./indexdb";
 
@@ -36,7 +36,6 @@ export class UserSettingsTable extends TableBase<UserSettings> {
     };
     indexdb.userSettings.put(this.records);
     saveDB(UserSettingsTable.TABLE_NAME, JSON.stringify(this.records));
-    updateWorkspaceIndexDB();
   }
 
   static async load(): Promise<UserSettingsTable> {

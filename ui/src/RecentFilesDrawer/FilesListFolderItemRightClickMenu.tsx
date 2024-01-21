@@ -18,7 +18,6 @@ import { createFlow, foldersTable } from "../db-tables/WorkspaceDB";
 import EditFolderNameModal from "../components/EditFolderName";
 import {
   IconFileImport,
-  IconFilePlus,
   IconFolderPlus,
   IconPencil,
   IconPlus,
@@ -43,10 +42,10 @@ export default function FilesListFolderItemRightClickMenu({
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const { onRefreshFilesList } = useContext(RecentFilesContext);
-  const onClickNewFolder = (e: MouseEvent<HTMLButtonElement>) => {
+  const onClickNewFolder = async (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    foldersTable?.create({
-      name: "New folder",
+    await foldersTable?.create({
+      name: "New Folder",
       parentFolderID: folder.id,
     });
     onRefreshFilesList && onRefreshFilesList();
@@ -139,10 +138,10 @@ export default function FilesListFolderItemRightClickMenu({
               <Button
                 colorScheme="red"
                 size={"sm"}
-                onClick={() => {
+                onClick={async () => {
                   setIsDeleteOpen(false);
                   onClose();
-                  foldersTable?.delete(folder.id);
+                  await foldersTable?.deleteFolder(folder.id);
                   onRefreshFilesList && onRefreshFilesList();
                 }}
               >

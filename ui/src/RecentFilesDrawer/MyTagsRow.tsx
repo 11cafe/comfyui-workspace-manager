@@ -32,6 +32,7 @@ export default function MyTagsRow({ setSelectedTag, selectedTag }: Props) {
       )}
       {tags.slice(0, showAllTags ? undefined : MAX_TAGS_TO_SHOW).map((tag) => (
         <Button
+          key={tag.name}
           variant="solid"
           width={"auto"}
           flexShrink={0}

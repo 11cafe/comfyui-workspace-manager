@@ -20,9 +20,7 @@ type Props = {
 export default memo(function FilesListFolderItem({ folder }: Props) {
   const [isActive, setIsActive] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(folder.isCollapse ?? false);
-  const [children, setChildren] = useState<Array<Folder | Workflow>>(() =>
-    listFolderContent(folder.id)
-  );
+  const [children, setChildren] = useState<Array<Folder | Workflow>>([]);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { colorMode } = useColorMode();
@@ -32,14 +30,16 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
     colorMode === "light"
       ? { backgroundColor: "#E2E8F0" }
       : { backgroundColor: "#4A5568" };
+
   useEffect(() => {
-    setChildren(
-      listFolderContent(
-        folder.id,
-        window.localStorage.getItem(sortTypeLocalStorageKey) as ESortTypes
-      )
-    );
+    listFolderContent(
+      folder.id,
+      window.localStorage.getItem(sortTypeLocalStorageKey) as ESortTypes,
+    ).then((child) => {
+      setChildren(child);
+    });
   }, [folder.id, refreshFolderStamp]);
+
   const handleContextMenu = (event: MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
     setMenuPosition({ x: event.clientX, y: event.clientY });
@@ -109,9 +109,9 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
         <Stack ml={4} gap={0}>
           {children.map((file) => {
             if (isFolder(file)) {
-              return <FilesListFolderItem folder={file} />;
+              return <FilesListFolderItem key={file.id} folder={file} />;
             } else {
-              return <WorkflowListItem workflow={file} />;
+              return <WorkflowListItem key={file.id} workflow={file} />;
             }
           })}
         </Stack>

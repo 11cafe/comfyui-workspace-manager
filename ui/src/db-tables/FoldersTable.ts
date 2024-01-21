@@ -1,47 +1,28 @@
 import { saveDB } from "../Api";
-import { listWorkflows, loadTable, updateFlow } from "./WorkspaceDB";
+import { listWorkflows, updateFlow } from "./WorkspaceDB";
 import { Folder } from "../types/dbTypes";
 import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
-import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
 import { v4 as uuidv4 } from "uuid";
 import { TableBase } from "./TableBase";
 import { indexdb } from "./indexdb";
 
-export class FoldersTable {
+export class FoldersTable extends TableBase<Folder> {
   static readonly TABLE_NAME = "folders";
-  private records: {
-    [id: string]: Folder;
-  };
-  private constructor() {
-    this.records = {};
+
+  constructor() {
+    super("folders");
   }
 
   static async load(): Promise<FoldersTable> {
     const instance = new FoldersTable();
-    const folders = await indexdb.folders.toArray();
-    if (folders.length > 0) {
-      folders.forEach((folder) => {
-        instance.records[folder.id] = folder;
-      });
-      return instance;
-    }
-    const json = await loadTable(FoldersTable.TABLE_NAME);
-    if (json != null) {
-      instance.records = json;
-    }
     return instance;
   }
-  public listAll(): Folder[] {
-    return Object.values(this.records);
-  }
-  public getRecords() {
-    return this.records;
-  }
-  public get(id: string): Folder | undefined {
-    return this.records[id];
-  }
-  public create(input: { name: string; parentFolderID?: string }): Folder {
-    const uniqueName = this.generateUniqueName(input.name);
+
+  public async create(input: {
+    name: string;
+    parentFolderID?: string;
+  }): Promise<Folder> {
+    const uniqueName = await this.generateUniqueName(input.name);
     const folder: Folder = {
       id: uuidv4(),
       name: uniqueName,
@@ -50,19 +31,19 @@ export class FoldersTable {
       createTime: Date.now(),
       type: "folder",
     };
-    this.records[folder.id] = folder;
-    indexdb.folders.add(folder);
-    saveDB("folders", JSON.stringify(this.records));
-    updateWorkspaceIndexDB();
-
+    await indexdb.folders.add(folder);
+    await this.listAll().then((all) => {
+      saveDB("folders", JSON.stringify(all));
+    });
     return folder;
   }
-  public update(
+
+  public async update(
     input: {
       id: string;
-    } & Partial<Folder>
+    } & Partial<Folder>,
   ) {
-    const folder = this.records[input.id];
+    const folder = await this.get(input.id);
     if (folder == null) {
       return;
     }
@@ -73,31 +54,56 @@ export class FoldersTable {
     if (input.name != null) {
       newRecord.updateTime = Date.now();
     }
-    this.records[input.id] = newRecord;
-    indexdb.folders.update(input.id, input);
-    saveDB("folders", JSON.stringify(this.records));
-    updateWorkspaceIndexDB();
+    await indexdb.folders.update(input.id, input);
+    await saveDB("folders", JSON.stringify(await this.listAll()));
     // folder moved or renamed - move all workflows to the right directory(not required when folded state changes)
     if (input.name != null || input.parentFolderID != null) {
       validateOrSaveAllJsonFileMyWorkflows(true);
     }
   }
-  public delete(id: string) {
-    delete this.records[id];
-    const childrenFlows = listWorkflows().filter(
-      (flow) => flow.parentFolderID == id
-    );
-    childrenFlows.forEach((flow) =>
-      updateFlow(flow.id, { parentFolderID: undefined })
-    );
-    indexdb.folders.delete(id);
-    saveDB("folders", JSON.stringify(this.records));
-    updateWorkspaceIndexDB();
-    validateOrSaveAllJsonFileMyWorkflows();
+  public async deleteFolder(id: string) {
+    /**
+     * When deleting a folder,
+     * breadth traverses all nested folders and deletes them from the DB one by one.
+     * And modify the related flow synchronously, setting parentFolderId to undefined
+     */
+    const allFlows = await listWorkflows();
+    const allFolders = await this.listAll();
+    const nestedFolderIdStack = [id];
+
+    while (nestedFolderIdStack.length > 0) {
+      const curFolderId = nestedFolderIdStack.shift();
+
+      if (curFolderId) {
+        for (const flow of allFlows) {
+          if (flow.parentFolderID === curFolderId) {
+            await updateFlow(flow.id, { parentFolderID: undefined });
+          }
+        }
+
+        await indexdb.folders.delete(curFolderId);
+
+        const curNestedFolderIds = allFolders
+          .filter((f) => f.parentFolderID === curFolderId)
+          .map((f) => f.id);
+
+        if (curNestedFolderIds.length) {
+          nestedFolderIdStack.push(...curNestedFolderIds);
+        }
+      }
+    }
+
+    await saveDB("folders", JSON.stringify(await this.listAll()));
+
+    // TODO 在嵌套文件夹场景下，重建逻辑无法有效判断子文件夹是否为空，导致子文件夹为空时无法准确删除。
+    await validateOrSaveAllJsonFileMyWorkflows(true);
   }
-  public generateUniqueName(name?: string) {
+
+  public async generateUniqueName(name?: string) {
     let newFlowName = name ?? "New folder";
-    const folderNameList = this.listAll()?.map((f) => f.name);
+    const folderNameList = await this.listAll().then((list) =>
+      list.map((f) => f.name),
+    );
     if (folderNameList.includes(newFlowName)) {
       let num = 2;
       let flag = true;

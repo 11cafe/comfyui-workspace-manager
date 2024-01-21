@@ -3,7 +3,6 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { app } from "/scripts/app.js";
 // @ts-ignore
 import { api } from "/scripts/api.js";
-import { ComfyExtension, ComfyObjectInfo } from "./types/comfy";
 import { Box, Portal } from "@chakra-ui/react";
 import {
   createFlow,
@@ -35,7 +34,7 @@ import { PanelPosition } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
 import React from "react";
 const RecentFilesDrawer = React.lazy(
-  () => import("./RecentFilesDrawer/RecentFilesDrawer")
+  () => import("./RecentFilesDrawer/RecentFilesDrawer"),
 );
 const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
 import { scanLocalNewFiles } from "./Api";
@@ -51,6 +50,7 @@ export default function App() {
   const workspaceContainerRef = useRef(null);
   const { showDialog } = useDialog();
   const [loadChild, setLoadChild] = useState(false);
+  const developmentEnvLoadFirst = useRef(true);
   const saveCurWorkflow = useCallback(() => {
     if (curFlowID.current) {
       const graphJson = JSON.stringify(app.graph.serialize());
@@ -67,7 +67,7 @@ export default function App() {
   }, []);
   const discardUnsavedChanges = () => {
     const userInput = confirm(
-      "Are you sure you want to discard unsaved changes? This will revert current workflow to your last saved version. You will lose all changes made since your last save."
+      "Are you sure you want to discard unsaved changes? This will revert current workflow to your last saved version. You will lose all changes made since your last save.",
     );
 
     if (userInput) {
@@ -151,13 +151,25 @@ export default function App() {
       const existFlowIds = listWorkflows().map((flow) => flow.id);
       const { fileList, folderList } = await scanLocalNewFiles(
         myWorkflowsDir!,
-        existFlowIds
+        existFlowIds,
       );
       await syncNewFlowOfLocalDisk(fileList, folderList);
     }
   };
 
   useEffect(() => {
+    /**
+     * because we have turned on strict mode, useEffect will be executed twice in strict mode in the development environment.
+     * and graphAppSetup contains DB related operations, repeated execution will bring some bad results.
+     * so in development environment mode, the first execution is skipped.
+     */
+    if (
+      process.env.NODE_ENV === "development" &&
+      developmentEnvLoadFirst.current
+    ) {
+      developmentEnvLoadFirst.current = false;
+      return;
+    }
     graphAppSetup();
     setLoadChild(true);
     setInterval(() => {
@@ -245,7 +257,7 @@ export default function App() {
 
   const loadFilePath = async (
     relativePath: string,
-    overwriteCurrent: boolean = false
+    overwriteCurrent: boolean = false,
   ) => {
     const fileName = relativePath.split("/").pop() ?? relativePath;
     if (!overwriteCurrent) {
@@ -264,7 +276,7 @@ export default function App() {
 
   const onDuplicateWorkflow = async (
     workflowID: string,
-    newFlowName?: string
+    newFlowName?: string,
   ) => {
     if (workspace == null) {
       return;
@@ -303,7 +315,7 @@ export default function App() {
           topBarStyle: { top, left },
         });
     },
-    [positionStyle]
+    [positionStyle],
   );
 
   const shortcutListener = (event: KeyboardEvent) => {
@@ -332,7 +344,7 @@ export default function App() {
     // window.addEventListener("message", authTokenListener);
 
     const fileInput = document.getElementById(
-      "comfy-file-input"
+      "comfy-file-input",
     ) as HTMLInputElement;
     const fileInputListener = async () => {
       if (fileInput && fileInput.files && fileInput.files.length > 0) {
@@ -364,14 +376,14 @@ export default function App() {
           if (im.type === "output") {
             onExecutedCreateMedia(im);
           }
-        }
+        },
       );
       e.detail?.output?.gifs?.forEach(
         (im: { filename: string; subfolder: string; type: string }) => {
           if (im.type === "output") {
             onExecutedCreateMedia(im);
           }
-        }
+        },
       );
     });
     return () => {
