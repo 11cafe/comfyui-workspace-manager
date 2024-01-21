@@ -159,4 +159,8 @@ name
 please delete indexdb manually F12 Dev tools -> Application -> IndexDB -> WorkspaceManagerDB
 <img width="460" alt="Screenshot 2024-01-21 at 11 21 55 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/adcde47f-c620-42ad-9367-e16e5be92be1">
 
+and delete localstorage.WORKSPACE_INDEXDB_BACKFILL
+<img width="460" alt="Screenshot 2024-01-21 at 11 29 02 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/f3c17034-c863-481a-8771-8e7e87bcee07">
+
+only do this if you are a developer
 
