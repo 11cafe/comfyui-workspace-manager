@@ -15,13 +15,13 @@ import { WorkspaceContext } from "../WorkspaceContext";
 import { PanelPosition } from "../types/dbTypes";
 import React from "react";
 const ModelManagerTopbar = React.lazy(
-  () => import("../model-manager/topbar/ModelManagerTopbar")
+  () => import("../model-manager/topbar/ModelManagerTopbar"),
 );
 interface Props {
   positionStyle: PanelPosition;
   updatePanelPosition: (
     position?: PanelPosition,
-    needUpdateDB?: boolean
+    needUpdateDB?: boolean,
   ) => void;
   curFlowName: string | null;
   setCurFlowName: (newName: string) => void;
@@ -70,6 +70,11 @@ export function Topbar({
             <IconTriangleInvertedFilled size={8} />
           </HStack>
         </Button>
+        {loadChild && (
+          <Suspense>
+            <ModelManagerTopbar />
+          </Suspense>
+        )}
         <Tooltip label="New workflow">
           <Button
             size={"sm"}
@@ -125,11 +130,6 @@ export function Topbar({
           </Tooltip>
         ) : (
           <div style={{ width: 22 }} />
-        )}
-        {loadChild && (
-          <Suspense>
-            <ModelManagerTopbar />
-          </Suspense>
         )}
         {isHovered && (
           <IconGripVertical
