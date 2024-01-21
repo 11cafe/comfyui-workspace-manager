@@ -51,3 +51,17 @@ export type Media = {
   localPath: string;
   format: string;
 };
+
+/**
+ * When deleting a folder, how files in the folder and files in nested folders are handled
+ */
+export enum EFlowOperationType {
+  /**
+   * Move to root directory
+   */
+  MOVE_TO_ROOT_FOLDER = "moveToRootFolder",
+  /**
+   * Delete
+   */
+  DELETE = "delete",
+}

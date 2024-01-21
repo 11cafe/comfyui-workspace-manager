@@ -32,17 +32,19 @@ export default function EditFolderNameModal({ folder, onclose }: Props) {
     submitError && setSubmitError("");
   };
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     const trimEditName = editName.trim();
     setEditName(trimEditName);
     if (trimEditName === folder.name) return onclose();
-    const folderNameList = foldersTable?.listAll()?.map((f) => f.name) ?? [];
+    const folderNameList =
+      (await foldersTable?.listAll().then((list) => list.map((f) => f.name))) ??
+      [];
     if (folderNameList.includes(trimEditName)) {
       setSubmitError(
-        "The name is duplicated, please modify it and submit again."
+        "The name is duplicated, please modify it and submit again.",
       );
     } else {
-      foldersTable?.update({
+      await foldersTable?.update({
         id: folder.id,
         name: trimEditName,
       });

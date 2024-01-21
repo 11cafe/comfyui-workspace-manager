@@ -176,3 +176,21 @@ export async function getAllModelsList() {
     console.error("Error get all models list:", error);
   }
 }
+
+export async function deleteLocalDiskFolder(folderPath: string) {
+  try {
+    const response = await fetch("/workspace/delete_folder", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        folder_path: folderPath,
+      }),
+    });
+    const result = await response.text();
+    return result;
+  } catch (error) {
+    console.error("Error move file:", error);
+  }
+}

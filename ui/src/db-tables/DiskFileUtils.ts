@@ -1,9 +1,10 @@
-import { deleteFile, saveDB, updateFile } from "../Api";
+import { deleteFile, updateFile } from "../Api";
 import {
   Workflow,
   foldersTable,
   updateFlow,
   userSettingsTable,
+  listWorkflows,
 } from "./WorkspaceDB";
 import {
   COMFYSPACE_TRACKING_FIELD_NAME,
@@ -17,7 +18,7 @@ export async function saveJsonFileMyWorkflows(workflow: Workflow) {
     return;
   }
   const fullPath = await generateFilePathAbsolute(workflow);
-  updateFlow(workflow.id, {
+  await updateFlow(workflow.id, {
     filePath: fullPath ?? undefined,
   });
   const json = workflow.json;
@@ -40,12 +41,12 @@ export async function deleteJsonFileMyWorkflows(workflow: Workflow) {
 }
 
 export async function generateFilePath(
-  workflow: Workflow
+  workflow: Workflow,
 ): Promise<string | null> {
   let filePath = toFileNameFriendly(workflow.name) + ".json";
   let curFolderID = workflow.parentFolderID;
   while (curFolderID != null) {
-    const folder = foldersTable?.get(curFolderID);
+    const folder = await foldersTable?.get(curFolderID);
     if (folder == null) {
       break;
     }
@@ -58,10 +59,10 @@ export async function generateFilePath(
 }
 
 export async function generateFilePathAbsolute(
-  workflow: Workflow
+  workflow: Workflow,
 ): Promise<string | null> {
   const subPath = await generateFilePath(workflow);
-  let myWorkflowsDir = userSettingsTable?.getSetting("myWorkflowsDir");
+  let myWorkflowsDir = await userSettingsTable?.getSetting("myWorkflowsDir");
   if (myWorkflowsDir == null) {
     console.error("myWorkflowsDir is not set");
     return null;
@@ -70,4 +71,59 @@ export async function generateFilePathAbsolute(
     myWorkflowsDir = myWorkflowsDir + "/";
   }
   return myWorkflowsDir + subPath;
+}
+
+export async function generateFolderPath(id: string): Promise<string | null> {
+  const folder = await foldersTable?.get(id);
+  let parentFolderID = folder?.parentFolderID;
+  let folderPath = folder?.name;
+  while (parentFolderID) {
+    const folder = await foldersTable?.get(parentFolderID);
+    if (folder == null) {
+      break;
+    }
+    folderPath = `${folder.name}/${folderPath}`;
+    parentFolderID = folder.parentFolderID ?? undefined;
+  }
+
+  let myWorkflowsDir = await userSettingsTable?.getSetting("myWorkflowsDir");
+
+  if (myWorkflowsDir == null) {
+    console.error("myWorkflowsDir is not set");
+    return null;
+  }
+
+  if (!myWorkflowsDir.endsWith("/")) {
+    myWorkflowsDir = myWorkflowsDir + "/";
+  }
+  return myWorkflowsDir + folderPath;
+}
+
+export async function getFileCountInFolder(folderId: string): Promise<number> {
+  const allFlows = await listWorkflows();
+  const allFolders = (await foldersTable?.listAll()) ?? [];
+  const nestedFolderIdStack = [folderId];
+  let count = 0;
+
+  while (nestedFolderIdStack.length > 0) {
+    const curFolderId = nestedFolderIdStack.shift();
+
+    if (curFolderId) {
+      for (const flow of allFlows) {
+        if (flow.parentFolderID === curFolderId) {
+          count++;
+        }
+      }
+
+      const curNestedFolderIds = allFolders
+        .filter((f) => f.parentFolderID === curFolderId)
+        .map((f) => f.id);
+
+      if (curNestedFolderIds.length) {
+        nestedFolderIdStack.push(...curNestedFolderIds);
+      }
+    }
+  }
+
+  return count;
 }

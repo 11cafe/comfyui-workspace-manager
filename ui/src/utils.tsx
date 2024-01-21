@@ -102,7 +102,7 @@ function isValidFileName(fileName: string) {
 
 export function formatTimestamp(
   unixTimestamp: number,
-  showSec: boolean = false
+  showSec: boolean = false,
 ) {
   // Create a new Date object from the UNIX timestamp
   const date = new Date(unixTimestamp);
@@ -130,7 +130,7 @@ export function formatTimestamp(
  */
 export function sortFlows(
   flows: Workflow[] = [],
-  sortType: ESortTypes = ESortTypes.RECENTLY_MODIFIED
+  sortType: ESortTypes = ESortTypes.RECENTLY_MODIFIED,
 ) {
   const copyFlows = [...flows];
   if (copyFlows.length) {
@@ -153,7 +153,7 @@ export function sortFlows(
   return copyFlows;
 }
 export async function validateOrSaveAllJsonFileMyWorkflows(
-  deleteEmptyFolder = false
+  deleteEmptyFolder = false,
 ) {
   for (const workflow of listWorkflows()) {
     const fullPath = await generateFilePathAbsolute(workflow);
@@ -168,7 +168,7 @@ export async function validateOrSaveAllJsonFileMyWorkflows(
 
 export const sortFileItem = (
   items: Array<Workflow | Folder>,
-  sortType: ESortTypes = ESortTypes.RECENTLY_MODIFIED
+  sortType: ESortTypes = ESortTypes.RECENTLY_MODIFIED,
 ) => {
   const copyFlows = [...items];
   switch (sortType) {
@@ -270,7 +270,7 @@ export function getPngMetadata(file: File) {
         const length = dataView.getUint32(offset);
         // Get the chunk type
         const type = String.fromCharCode(
-          ...pngData.slice(offset + 4, offset + 8)
+          ...pngData.slice(offset + 4, offset + 8),
         );
         if (type === "tEXt" || type == "comf") {
           // Get the keyword
@@ -279,12 +279,12 @@ export function getPngMetadata(file: File) {
             keyword_end++;
           }
           const keyword = String.fromCharCode(
-            ...pngData.slice(offset + 8, keyword_end)
+            ...pngData.slice(offset + 8, keyword_end),
           );
           // Get the text
           const contentArraySegment = pngData.slice(
             keyword_end + 1,
-            offset + 8 + length
+            offset + 8 + length,
           );
           const contentJson = Array.from(contentArraySegment)
             .map((s) => String.fromCharCode(s))
@@ -308,11 +308,17 @@ function parseExifData(exifData) {
 
   // Function to read 16-bit and 32-bit integers from binary data
   function readInt(offset, isLittleEndian, length) {
-    const arr = exifData.slice(offset, offset + length)
+    const arr = exifData.slice(offset, offset + length);
     if (length === 2) {
-      return new DataView(arr.buffer, arr.byteOffset, arr.byteLength).getUint16(0, isLittleEndian);
+      return new DataView(arr.buffer, arr.byteOffset, arr.byteLength).getUint16(
+        0,
+        isLittleEndian,
+      );
     } else if (length === 4) {
-      return new DataView(arr.buffer, arr.byteOffset, arr.byteLength).getUint32(0, isLittleEndian);
+      return new DataView(arr.buffer, arr.byteOffset, arr.byteLength).getUint32(
+        0,
+        isLittleEndian,
+      );
     }
   }
 
@@ -334,7 +340,9 @@ function parseExifData(exifData) {
       let value;
       if (type === 2) {
         // ASCII string
-        value = String.fromCharCode(...exifData.slice(valueOffset, valueOffset + numValues - 1));
+        value = String.fromCharCode(
+          ...exifData.slice(valueOffset, valueOffset + numValues - 1),
+        );
       }
 
       result[tag] = value;
@@ -352,11 +360,14 @@ export function getWebpMetadata(file: File) {
   return new Promise((r) => {
     const reader = new FileReader();
     reader.onload = (event) => {
-      const webp = new Uint8Array(event?.target?.result as  Iterable<number>);
+      const webp = new Uint8Array(event?.target?.result as Iterable<number>);
       const dataView = new DataView(webp.buffer);
 
       // Check that the WEBP signature is present
-      if (dataView.getUint32(0) !== 0x52494646 || dataView.getUint32(8) !== 0x57454250) {
+      if (
+        dataView.getUint32(0) !== 0x52494646 ||
+        dataView.getUint32(8) !== 0x57454250
+      ) {
         console.error("Not a valid WEBP file");
         r();
         return;
@@ -368,15 +379,22 @@ export function getWebpMetadata(file: File) {
       // Loop through the chunks in the WEBP file
       while (offset < webp.length) {
         const chunk_length = dataView.getUint32(offset + 4, true);
-        const chunk_type = String.fromCharCode(...webp.slice(offset, offset + 4));
+        const chunk_type = String.fromCharCode(
+          ...webp.slice(offset, offset + 4),
+        );
         if (chunk_type === "EXIF") {
-          if (String.fromCharCode(...webp.slice(offset + 8, offset + 8 + 6)) == "Exif\0\0") {
+          if (
+            String.fromCharCode(...webp.slice(offset + 8, offset + 8 + 6)) ==
+            "Exif\0\0"
+          ) {
             offset += 6;
           }
-          const data = parseExifData(webp.slice(offset + 8, offset + 8 + chunk_length));
+          const data = parseExifData(
+            webp.slice(offset + 8, offset + 8 + chunk_length),
+          );
           for (const key in data) {
-            const value = data[key]
-            const index = value.indexOf(':');
+            const value = data[key];
+            const index = value.indexOf(":");
             txt_chunks[value.slice(0, index)] = value.slice(index + 1);
           }
         }
@@ -411,7 +429,7 @@ export function getVideoMetadata(file) {
 
       const decoder = new TextDecoder();
       // Check for known valid magic strings
-      if (dataView.getUint32(0) == 0x1A45DFA3) {
+      if (dataView.getUint32(0) == 0x1a45dfa3) {
         //webm
         //see http://wiki.webmproject.org/webm-metadata/global-metadata
         //and https://www.matroska.org/technical/elements.html
@@ -421,57 +439,72 @@ export function getVideoMetadata(file) {
         //
         //description for variable length ints https://github.com/ietf-wg-cellar/ebml-specification/blob/master/specification.markdown
         let offset = 4 + 8; //COMMENT is 7 chars + 1 to realign
-        while(offset < videoData.length-16) {
+        while (offset < videoData.length - 16) {
           //Check for text tags
           if (dataView.getUint16(offset) == 0x4487) {
             //check that name of tag is COMMENT
-            const name = String.fromCharCode(...videoData.slice(offset-7,offset));
+            const name = String.fromCharCode(
+              ...videoData.slice(offset - 7, offset),
+            );
             if (name === "COMMENT") {
-              const vint = dataView.getUint32(offset+2);
-              const n_octets = Math.clz32(vint)+1;
-              if (n_octets < 4) {//250MB sanity cutoff
-                const length = (vint >> (8*(4-n_octets))) & ~(1 << (7*n_octets));
-                const content = decoder.decode(videoData.slice(offset+2+n_octets, offset+2+n_octets+length));
+              const vint = dataView.getUint32(offset + 2);
+              const n_octets = Math.clz32(vint) + 1;
+              if (n_octets < 4) {
+                //250MB sanity cutoff
+                const length =
+                  (vint >> (8 * (4 - n_octets))) & ~(1 << (7 * n_octets));
+                const content = decoder.decode(
+                  videoData.slice(
+                    offset + 2 + n_octets,
+                    offset + 2 + n_octets + length,
+                  ),
+                );
                 const json = JSON.parse(content);
                 r(json);
                 return;
               }
             }
           }
-          offset+=1;
+          offset += 1;
         }
-      } else if (dataView.getUint32(4) == 0x66747970 && dataView.getUint32(8) == 0x69736F6D) {
+      } else if (
+        dataView.getUint32(4) == 0x66747970 &&
+        dataView.getUint32(8) == 0x69736f6d
+      ) {
         //mp4
         //see https://developer.apple.com/documentation/quicktime-file-format
         //Seems to make no guarantee for alignment
-        let offset = videoData.length-4;
-        while (offset > 16) {//rough safe guess
-          if (dataView.getUint32(offset) == 0x64617461) {//any data tag
-            if (dataView.getUint32(offset - 8) == 0xa9636d74) {//cmt data tag
-              const type = dataView.getUint32(offset+4); //seemingly 1
-              const locale = dataView.getUint32(offset+8); //seemingly 0
-              const size = dataView.getUint32(offset-4) - 4*4;
-              const content = decoder.decode(videoData.slice(offset+12, offset+12+size));
+        let offset = videoData.length - 4;
+        while (offset > 16) {
+          //rough safe guess
+          if (dataView.getUint32(offset) == 0x64617461) {
+            //any data tag
+            if (dataView.getUint32(offset - 8) == 0xa9636d74) {
+              //cmt data tag
+              const type = dataView.getUint32(offset + 4); //seemingly 1
+              const locale = dataView.getUint32(offset + 8); //seemingly 0
+              const size = dataView.getUint32(offset - 4) - 4 * 4;
+              const content = decoder.decode(
+                videoData.slice(offset + 12, offset + 12 + size),
+              );
               const json = JSON.parse(content);
               r(json);
               return;
             }
           }
 
-          offset-=1;
+          offset -= 1;
         }
       } else {
-        console.error("Unknown magic: " + dataView.getUint32(0))
+        console.error("Unknown magic: " + dataView.getUint32(0));
         r();
         return;
       }
-
     };
 
     reader.readAsArrayBuffer(file);
   });
 }
-
 
 export const matchSaveWorkflowShortcut = (event: KeyboardEvent) => {
   const short = userSettingsTable?.getSetting("shortcuts")?.save;
@@ -481,7 +514,7 @@ export const matchSaveWorkflowShortcut = (event: KeyboardEvent) => {
 
 export const matchShortcut = (
   event: KeyboardEvent,
-  shortcutString: string
+  shortcutString: string,
 ): boolean => {
   const keys = shortcutString.split("+");
   const keyEvent: Record<string, boolean> = {
@@ -515,18 +548,18 @@ export async function syncNewFlowOfLocalDisk(
   folderList: {
     name: string;
     list: Workflow[];
-  }[]
+  }[],
 ) {
   if (singleFlowList.length) {
     await batchCreateFlows(singleFlowList, true);
   }
 
   if (folderList.length) {
-    const currentFolderList = foldersTable?.listAll();
+    const currentFolderList = await foldersTable?.listAll();
 
-    folderList.forEach(async (folder) => {
+    for (const folder of folderList) {
       const existFolder = currentFolderList?.find(
-        (f) => f.name === folder.name
+        (f) => f.name === folder.name,
       );
 
       let folderId;
@@ -534,14 +567,14 @@ export async function syncNewFlowOfLocalDisk(
       if (existFolder) {
         folderId = existFolder.id;
       } else {
-        const newFolder = foldersTable?.create({
+        const newFolder = await foldersTable?.create({
           name: folder.name,
         });
         folderId = newFolder?.id;
       }
 
       await batchCreateFlows(folder.list, true, folderId);
-    });
+    }
   }
 }
 

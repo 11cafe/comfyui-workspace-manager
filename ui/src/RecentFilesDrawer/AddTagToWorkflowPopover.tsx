@@ -30,8 +30,10 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
       value: t,
       label: t,
     })) ?? [];
+
   const [selectedTags, setSelectedTags] =
     useState<MultiValue<{ value: string; label: string }>>(initialTags);
+
   useEffect(() => {
     const loadTags = async () => {
       const tags = await tagsTable?.listAll();
@@ -39,14 +41,16 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
     };
     loadTags();
   }, []);
+
   useEffect(() => {
     setSelectedTags(
       workflow.tags?.map((t) => ({
         value: t,
         label: t,
-      })) ?? []
+      })) ?? [],
     );
   }, [workflow.tags]);
+
   if (tagsTable == null) {
     alert("Error: TagsTable is not loaded");
     return null;

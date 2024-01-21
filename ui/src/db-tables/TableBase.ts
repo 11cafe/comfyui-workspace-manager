@@ -1,6 +1,6 @@
 import { saveDB } from "../Api";
 import { updateWorkspaceIndexDB } from "./IndexDBUtils";
-import { Table, loadTable } from "./WorkspaceDB";
+import { Table, loadTableFromLocalBackup } from "./WorkspaceDB";
 import { indexdb } from "./indexdb";
 
 export class TableBase<T> {
@@ -12,16 +12,13 @@ export class TableBase<T> {
 
   public async listAll(): Promise<T[]> {
     const objs = await indexdb[this.tableName].toArray();
-    if (objs?.length) return objs as T[];
-    console.warn("indexdb not found", this.tableName, "fallback to legacy db");
-    const records = await this.getRecords();
-    return Object.values(records);
+    return objs as T[];
   }
 
   public async getRecords(): Promise<Record<string, T>> {
     console.warn("[DEPRECATED]getRecords() call", this.tableName);
 
-    return await loadTable(this.tableName);
+    return await loadTableFromLocalBackup(this.tableName);
   }
   public async get(id: string): Promise<T | undefined> {
     const obj = await indexdb[this.tableName].get(id);

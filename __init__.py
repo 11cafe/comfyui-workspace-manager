@@ -3,6 +3,7 @@ from aiohttp import web
 import aiohttp
 import requests
 import folder_paths
+import shutil
 import os
 import sys
 import threading
@@ -304,3 +305,16 @@ async def scan_local_new_files(request):
             if len(folder['list']) > 0:
                 folderList.append(folder)
     return web.Response(text=json.dumps({'fileList': fileList, 'folderList': folderList}), content_type='application/json')
+
+
+@server.PromptServer.instance.routes.post("/workspace/delete_folder")
+async def delete_folder(request):
+    data = await request.json()
+    folder_path = data['folder_path']
+
+    if os.path.exists(folder_path):
+        shutil.rmtree(folder_path)
+        return web.Response(text="Successfully deleted folder: {folder_path}")
+    else:
+        return web.Response(text="folder not found: {folder_path}", status=404)
+        

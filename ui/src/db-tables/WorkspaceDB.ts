@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { getDB, saveDB, updateFile } from "../Api";
+import { getDB, saveDB } from "../Api";
 import { generateUniqueName, sortFileItem, sortFlows } from "../utils";
 import { ESortTypes, ImportWorkflow } from "../RecentFilesDrawer/types";
 import { ChangelogsTable } from "./ChangelogsTable";
@@ -57,8 +57,8 @@ export let foldersTable: FoldersTable | null = null;
 export let changelogsTable: ChangelogsTable | null = null;
 export let mediaTable: MediaTable | null = null;
 
-export const loadTable = async (name: Table) => {
-  let jsonStr = await getDB(name);
+export const loadTableFromLocalBackup = async (name: Table) => {
+  const jsonStr = await getDB(name);
   let json: any;
   try {
     json = jsonStr != null ? JSON.parse(jsonStr) : null;
@@ -81,7 +81,7 @@ export async function loadDBs() {
       });
       return;
     }
-    workspace = await loadTable("workflows");
+    workspace = await loadTableFromLocalBackup("workflows");
   };
   const loadTags = async () => {
     tagsTable = await TagsTable.load();
@@ -108,18 +108,20 @@ export async function loadDBs() {
   ]);
 }
 
-export function listFolderContent(
+export async function listFolderContent(
   folderID?: string, // undefined if root folder
-  sortBy?: ESortTypes
-): Array<Workflow | Folder> {
+  sortBy?: ESortTypes,
+): Promise<(Workflow | Folder)[]> {
   if (workspace == null) {
     return [];
   }
   const workflows = Object.values(workspace).filter(
-    (w) => w.parentFolderID == folderID
+    (w) => w.parentFolderID == folderID,
   );
   const folders =
-    foldersTable?.listAll()?.filter((f) => f.parentFolderID == folderID) ?? [];
+    (await foldersTable
+      ?.listAll()
+      .then((list) => list.filter((f) => f.parentFolderID == folderID))) ?? [];
 
   const all = [...workflows, ...folders];
 
@@ -127,7 +129,7 @@ export function listFolderContent(
 }
 
 /** Class Workflow: below will be migrated to a class */
-export function updateFlow(id: string, input: Partial<Workflow>) {
+export async function updateFlow(id: string, input: Partial<Workflow>) {
   if (workspace == null) {
     return;
   }
@@ -146,7 +148,7 @@ export function updateFlow(id: string, input: Partial<Workflow>) {
     // no change detected
     return;
   }
-  let newWorkflow: Workflow = after;
+  const newWorkflow: Workflow = after;
   // When modifying the associated tag or modifying the directory, updateTime is not modified.
   const updateKey = Object.keys(input);
   const isModifyingTagOrFolder =
@@ -155,7 +157,7 @@ export function updateFlow(id: string, input: Partial<Workflow>) {
     newWorkflow.updateTime = Date.now();
     // update parent folder updateTime
     if (newWorkflow.parentFolderID != null) {
-      foldersTable?.update({
+      await foldersTable?.update({
         id: newWorkflow.parentFolderID,
         updateTime: Date.now(),
       });
@@ -164,20 +166,21 @@ export function updateFlow(id: string, input: Partial<Workflow>) {
   // update memory
   workspace[id] = newWorkflow;
   //update indexdb
-  indexdb.workflows.update(id, newWorkflow);
+  await indexdb.workflows.update(id, newWorkflow);
   //update legacy indexdb backup
   updateWorkspaceIndexDB();
   // update disk file db
-  saveDB("workflows", JSON.stringify(workspace));
+  await saveDB("workflows", JSON.stringify(workspace));
   // save to my_workflows/
-  if (input.name != null || input.parentFolderID != null) {
+  input.name != null || input.parentFolderID != null;
+  if (input.name !== null || input.parentFolderID !== null) {
     // renamed file or moved file folder
-    deleteJsonFileMyWorkflows(before);
-    saveJsonFileMyWorkflows(after);
+    await deleteJsonFileMyWorkflows(before);
+    await saveJsonFileMyWorkflows(after);
     return;
   }
   if (input.json != null) {
-    saveJsonFileMyWorkflows(after);
+    await saveJsonFileMyWorkflows(after);
   }
 }
 
@@ -233,9 +236,9 @@ export async function createFlow({
 export async function batchCreateFlows(
   flowList: ImportWorkflow[] = [],
   isOverwriteExistingFile: boolean = false,
-  parentFolderID?: string
+  parentFolderID?: string,
 ): Promise<string | undefined> {
-  let newWorkflows: Workflow[] = [];
+  const newWorkflows: Workflow[] = [];
   flowList.forEach((flow) => {
     if (workspace == null) {
       return;
@@ -315,19 +318,6 @@ export function batchDeleteFlow(ids: string[]) {
 }
 /** End of Class Workflow */
 
-export async function curComfyspaceJson(): Promise<string> {
-  const changeLogs = await changelogsTable?.getRecords();
-  const media = await mediaTable?.getRecords();
-  return JSON.stringify({
-    [UserSettingsTable.TABLE_NAME]: userSettingsTable?.records,
-    ["tags"]: {},
-    ["workflows"]: workspace,
-    [FoldersTable.TABLE_NAME]: foldersTable?.getRecords(),
-    [ChangelogsTable.TABLE_NAME]: changeLogs,
-    [MediaTable.TABLE_NAME]: media,
-  });
-}
-
 export async function backfillIndexdb() {
   const backfillWorkflows = async () => {
     try {
@@ -339,32 +329,32 @@ export async function backfillIndexdb() {
   };
   const backfillFolders = async () => {
     try {
-      const all = foldersTable?.listAll();
-      all && (await indexdb.folders.bulkAdd(all));
+      const all = await foldersTable?.getRecords();
+      all && (await indexdb.folders.bulkAdd(Object.values(all)));
     } catch (error) {
       console.error(error);
     }
   };
   const backfillMedia = async () => {
     try {
-      const all = await mediaTable?.listAll();
-      all && (await indexdb.media.bulkAdd(all));
+      const all = await mediaTable?.getRecords();
+      all && (await indexdb.media.bulkAdd(Object.values(all)));
     } catch (error) {
       console.error(error);
     }
   };
   const backfillChangelogs = async () => {
     try {
-      const all = await changelogsTable?.listAll();
-      all && (await indexdb.changelogs.bulkAdd(all));
+      const all = await changelogsTable?.getRecords();
+      all && (await indexdb.changelogs.bulkAdd(Object.values(all)));
     } catch (error) {
       console.error(error);
     }
   };
   const backfillTags = async () => {
     try {
-      const all = await tagsTable?.listAll();
-      all && (await indexdb.tags.bulkAdd(all));
+      const all = await tagsTable?.getRecords();
+      all && (await indexdb.tags.bulkAdd(Object.values(all)));
     } catch (error) {
       console.error(error);
     }
@@ -372,7 +362,7 @@ export async function backfillIndexdb() {
   const backfillUserSettings = async () => {
     try {
       const all = await userSettingsTable?.listAll();
-      all && (await indexdb.userSettings.bulkAdd(all));
+      all && (await indexdb.userSettings.bulkAdd(Object.values(all)));
     } catch (error) {
       console.error(error);
     }
