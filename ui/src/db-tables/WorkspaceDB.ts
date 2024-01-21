@@ -329,32 +329,32 @@ export async function backfillIndexdb() {
   };
   const backfillFolders = async () => {
     try {
-      const all = await foldersTable?.listAll();
-      all && (await indexdb.folders.bulkAdd(all));
+      const all = await foldersTable?.getRecords();
+      all && (await indexdb.folders.bulkAdd(Object.values(all)));
     } catch (error) {
       console.error(error);
     }
   };
   const backfillMedia = async () => {
     try {
-      const all = await mediaTable?.listAll();
-      all && (await indexdb.media.bulkAdd(all));
+      const all = await mediaTable?.getRecords();
+      all && (await indexdb.media.bulkAdd(Object.values(all)));
     } catch (error) {
       console.error(error);
     }
   };
   const backfillChangelogs = async () => {
     try {
-      const all = await changelogsTable?.listAll();
-      all && (await indexdb.changelogs.bulkAdd(all));
+      const all = await changelogsTable?.getRecords();
+      all && (await indexdb.changelogs.bulkAdd(Object.values(all)));
     } catch (error) {
       console.error(error);
     }
   };
   const backfillTags = async () => {
     try {
-      const all = await tagsTable?.listAll();
-      all && (await indexdb.tags.bulkAdd(all));
+      const all = await tagsTable?.getRecords();
+      all && (await indexdb.tags.bulkAdd(Object.values(all)));
     } catch (error) {
       console.error(error);
     }
@@ -362,7 +362,7 @@ export async function backfillIndexdb() {
   const backfillUserSettings = async () => {
     try {
       const all = await userSettingsTable?.listAll();
-      all && (await indexdb.userSettings.bulkAdd(all));
+      all && (await indexdb.userSettings.bulkAdd(Object.values(all)));
     } catch (error) {
       console.error(error);
     }

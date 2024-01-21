@@ -61,28 +61,25 @@ export default function FilesListFolderItemRightClickMenu({
             label: "Keep and move to root directory",
             colorScheme: "teal",
             onClick: () => {
-              onDelete(fileCount, EFlowOperationType.MOVE_TO_ROOT_FOLDER);
+              onDelete(EFlowOperationType.MOVE_TO_ROOT_FOLDER);
             },
           },
           {
             label: "Delete all files",
             colorScheme: "red",
             onClick: () => {
-              onDelete(fileCount, EFlowOperationType.DELETE);
+              onDelete(EFlowOperationType.DELETE);
             },
           },
         ],
       );
     } else {
-      onDelete(fileCount);
+      onDelete(EFlowOperationType.DELETE);
     }
   };
 
-  const onDelete = async (
-    fileCount: number,
-    operationType?: EFlowOperationType,
-  ) => {
-    await foldersTable?.deleteFolder(folder.id, fileCount, operationType);
+  const onDelete = async (operationType: EFlowOperationType) => {
+    await foldersTable?.deleteFolder(folder.id, operationType);
     onClose();
     onRefreshFilesList && onRefreshFilesList();
   };

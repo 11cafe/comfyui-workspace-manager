@@ -19,6 +19,12 @@ export class FoldersTable extends TableBase<Folder> {
     return instance;
   }
 
+  async saveBackup(newFolder: Folder) {
+    const records = await this.getRecords();
+    records[newFolder.id] = newFolder;
+    saveDB("folders", JSON.stringify(records));
+  }
+
   public async create(input: {
     name: string;
     parentFolderID?: string;
@@ -32,10 +38,8 @@ export class FoldersTable extends TableBase<Folder> {
       createTime: Date.now(),
       type: "folder",
     };
-    await indexdb.folders.add(folder);
-    await this.listAll().then((all) => {
-      saveDB("folders", JSON.stringify(all));
-    });
+    indexdb.folders.add(folder);
+    this.saveBackup(folder);
     return folder;
   }
 
@@ -55,8 +59,9 @@ export class FoldersTable extends TableBase<Folder> {
     if (input.name != null) {
       newRecord.updateTime = Date.now();
     }
-    await indexdb.folders.update(input.id, input);
-    await saveDB("folders", JSON.stringify(await this.listAll()));
+    indexdb.folders.update(input.id, input);
+    this.saveBackup(newRecord);
+
     // folder moved or renamed - move all workflows to the right directory(not required when folded state changes)
     if (input.name != null || input.parentFolderID != null) {
       validateOrSaveAllJsonFileMyWorkflows(true);
@@ -64,7 +69,6 @@ export class FoldersTable extends TableBase<Folder> {
   }
   public async deleteFolder(
     id: string,
-    fileCount: number = 0,
     flowOperationType: EFlowOperationType = EFlowOperationType.DELETE,
   ) {
     const folderPath = await generateFolderPath(id);
@@ -89,7 +93,6 @@ export class FoldersTable extends TableBase<Folder> {
                 break;
               case EFlowOperationType.MOVE_TO_ROOT_FOLDER:
                 await updateFlow(flow.id, { parentFolderID: undefined });
-                console.log("updateFlow");
                 break;
             }
           }
@@ -105,10 +108,15 @@ export class FoldersTable extends TableBase<Folder> {
         }
       }
     }
-    fileCount > 0 &&
-      (await saveDB("workflows", JSON.stringify(await listWorkflows())));
+
     folderPath && (await deleteLocalDiskFolder(folderPath));
-    await saveDB("folders", JSON.stringify(await this.listAll()));
+
+    const latestFolders = await this.listAll();
+    const backup: Record<string, Folder> = {};
+    latestFolders.forEach((f) => {
+      backup[f.id] = f;
+    });
+    saveDB("folders", JSON.stringify(backup));
   }
 
   public async generateUniqueName(name?: string) {
