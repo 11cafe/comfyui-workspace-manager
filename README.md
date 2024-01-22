@@ -29,6 +29,7 @@ and restart your ComfyUI.
 It is recommended to do git clone than downloading zip folder, because you can get latest updates by `git pull`!
 
 ## Features
+‼️ **Avoid using multi browser tab** with this extension for now since it may use old versions to overwrite your workflows. We will have a fundamental fix for this problem in a week
 ### v1.6.0 preview
 muti browser tab switching
 
