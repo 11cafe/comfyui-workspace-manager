@@ -109,13 +109,16 @@ export default function InatallModelsModal({
     const data = await fetch(fullURL);
     const json = await data.json();
     setModels(json.items);
-    indexdb.cache.add({
-      id: fullURL,
-      value: JSON.stringify({
-        data: json.items,
-        timestamp: Date.now(),
-      }),
-    });
+    // only cache if there is no search query
+    if (searchQuery === "") {
+      indexdb.cache.add({
+        id: fullURL,
+        value: JSON.stringify({
+          data: json.items,
+          timestamp: Date.now(),
+        }),
+      });
+    }
     setLoading(false);
   }, [searchQuery, modelType]);
 
