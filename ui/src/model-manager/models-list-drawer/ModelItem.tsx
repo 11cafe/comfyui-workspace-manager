@@ -3,7 +3,7 @@ import { ModelsListRespItem } from "../types";
 import { useEffect, useState } from "react";
 import { indexdb } from "../../db-tables/indexdb";
 import { Model } from "../../types/dbTypes";
-import type { DragEvent } from 'react';
+import type { DragEvent } from "react";
 // @ts-ignore
 import { app } from "/scripts/app.js";
 
@@ -56,7 +56,7 @@ export function ModelItem({ data }: Props) {
           civitModelVersionID: json.id,
           imageUrl: image_url ?? null,
         });
-      } catch (e) { }
+      } catch (e) {}
     }
   };
 
@@ -65,9 +65,12 @@ export function ModelItem({ data }: Props) {
     if (!nodeType) {
       return;
     }
-    e.dataTransfer.setData('eventName', 'WorkspaceManagerAddNode');
-    e.dataTransfer.setData('modelRelativePath', data.model_name + data.model_extension);
-    e.dataTransfer.setData('nodeType', nodeType);
+    e.dataTransfer.setData("eventName", "WorkspaceManagerAddNode");
+    e.dataTransfer.setData(
+      "modelRelativePath",
+      data.model_name + data.model_extension,
+    );
+    e.dataTransfer.setData("nodeType", nodeType);
   };
 
   if (hashing) {
@@ -101,9 +104,15 @@ export function ModelItem({ data }: Props) {
   }
 
   return (
-    <Box position="relative" borderRadius={4} draggable onDragStart={handleDragStart}>
+    <Box
+      position="relative"
+      borderRadius={4}
+      draggable
+      onDragStart={handleDragStart}
+    >
       <Image
         src={url}
+        draggable={false}
         boxSize="100%"
         height={178}
         objectFit="cover"
