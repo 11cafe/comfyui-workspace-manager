@@ -29,10 +29,11 @@ and restart your ComfyUI.
 It is recommended to do git clone than downloading zip folder, because you can get latest updates by `git pull`!
 
 ## Features
-‼️ **Avoid using multi browser tab** with this extension for now since it may use old versions to overwrite your workflows. Make sure you only have one tab opening http://127.0.0.1:8188/. We will have a fundamental fix for this problem in a week
+‼️ **Avoid using multi browser tab** with this extension for now since it may use old versions to overwrite your workflows. Make sure you only have one tab opening ComfyUI (127.0.0.1:8188). We will have a fundamental fix for this problem in a week
 ### v1.7 preview (beta testing)
 open workflow in new tab, 1click model install from civitai, view image gen metadata in gallery (prompt, sampler, models used)
-We're looking for beta previewer to preview and test our beta features! If you are interested, please DM me in discord @briefpeach or email me weixuanfu01@gmail.com
+
+We're looking for beta previewer to preview our beta features! If you are interested, please DM me in discord @briefpeach or email me weixuanfu01@gmail.com
 
 <img width="500" alt="Screenshot 2024-01-23 at 12 27 34 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/3b543024-3a6b-4fca-9980-e535d83e206e">
 
@@ -61,7 +62,10 @@ Every image/video you generate will be saved in the gallery of the current workf
 ### Where are my workflow and workspace data stored?
 
 🍺 All your workflows are saved in a folder in `/ComfyUI/my_workflows`, you can change this path in settings. 
+
 ⚠️Note: this is a ONE-WAY sync folder by default, that will only reflect changes made from your ComfyUI workspace browser; If you add some files manually using your OS file system (e.g. Finder in MacOS, File Explorer in Windows), workspace manager will not be able to pickup those changes. You need to use the "Import" button in files side bar to add new files to workspace manager.
+
+<img width="360" alt="Screenshot 2024-01-02 at 10 22 45 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/4751b096-0886-4a32-95b1-87c7ce5b3787">
 
 Our internal db data is stored in your disk under `/ComfyUI/custom_nodes/comfyui-workspace-manager/db/` We also store a backup copy of your db data in your browser cache in case you lose your workspace data when deleting comfyui-workspace-manager and reinstall. Press F12 or Inspect in right click browser menu, go to Application -> IndexedDB -> WorkspaceDB to see your data
 
@@ -87,11 +91,6 @@ switch between flows:
 🤏drag and drop to insert sub-workflow:
 
 <img src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/7540c45b-be51-4428-8558-96adcc1024c8" width="480">
-
-Choose the folder location where you want to save your workflows .json files in Settings:
-
-<img width="400" alt="Screenshot 2024-01-02 at 10 22 45 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/4751b096-0886-4a32-95b1-87c7ce5b3787">
-
 
 Bulk import flows:
 
