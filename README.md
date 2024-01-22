@@ -29,7 +29,6 @@ and restart your ComfyUI.
 It is recommended to do git clone than downloading zip folder, because you can get latest updates by `git pull`!
 
 ## Features
-‼️ **Avoid using multi browser tab** with this extension for now since it may use old versions to overwrite your workflows. Make sure you only have one tab opening ComfyUI (127.0.0.1:8188). We will have a fundamental fix for this problem in a week
 ### v1.7 preview (beta testing)
 open workflow in new tab, 1click model install from civitai, view image gen metadata in gallery (prompt, sampler, models used)
 
@@ -83,6 +82,8 @@ By default, We also enabled auto-saving your current workflow as a cache in case
 <img width="297" alt="Screenshot 2024-01-23 at 12 37 37 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/9ca0a63e-ddae-4436-a374-6ef0276c23fb">
 <img width="402" alt="Screenshot 2024-01-22 at 2 33 00 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/061a8463-f7e6-4985-9516-8117d7a5edd5">
 
+
+⚠️ **Avoid using multi browser tab** with this extension for now since it may use old versions to overwrite your workflows. Make sure you only have one tab opening ComfyUI (127.0.0.1:8188). We will have a fundamental fix for this problem in a week
 
 switch between flows:
 
