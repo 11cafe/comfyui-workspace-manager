@@ -2,6 +2,7 @@
 import Dexie, { Table } from "dexie";
 import { Workflow } from "./WorkspaceDB";
 import {
+  LocalCache,
   Changelog,
   Folder,
   Media,
@@ -19,6 +20,7 @@ class ManagerDB extends Dexie {
   tags!: Table<Tag, string>;
   userSettings!: Table<UserSettings, string>;
   models!: Table<Model, string>;
+  cache!: Table<LocalCache, string>;
 
   constructor() {
     super(WORKSPACE_INDEXDB_NAME);
@@ -31,6 +33,7 @@ class ManagerDB extends Dexie {
         tags: "&name",
         userSettings: "&id",
         models: "&id, fileName, fileHash",
+        cache: "&id",
       })
       .upgrade((trans) => {
         // Here you can write logic to initialize or migrate data to the new 'media' table, if necessary

@@ -15,6 +15,11 @@ export type Tag = {
   workflowIDs: string[];
   updateTime: number;
 };
+export type CacheKey = string;
+export type LocalCache = {
+  id: CacheKey;
+  value: string;
+};
 
 export type Model = {
   id: string;
