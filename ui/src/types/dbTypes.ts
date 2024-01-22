@@ -75,3 +75,5 @@ export enum EFlowOperationType {
    */
   DELETE = "delete",
 }
+
+export const WORKSPACE_INDEXDB_NAME = "comfyui_workspace_db";

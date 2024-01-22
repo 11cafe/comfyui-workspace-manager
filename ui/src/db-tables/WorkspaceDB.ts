@@ -106,6 +106,10 @@ export async function loadDBs() {
     loadChangelogs(),
     loadMedia(),
   ]);
+  if (localStorage.getItem("WORKSPACE_INDEXDB_BACKFILL") !== "true") {
+    await backfillIndexdb();
+    localStorage.setItem("WORKSPACE_INDEXDB_BACKFILL", "true");
+  }
 }
 
 export async function listFolderContent(

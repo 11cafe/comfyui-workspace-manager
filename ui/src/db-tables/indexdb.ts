@@ -8,6 +8,7 @@ import {
   Model,
   Tag,
   UserSettings,
+  WORKSPACE_INDEXDB_NAME,
 } from "../types/dbTypes";
 
 class ManagerDB extends Dexie {
@@ -20,7 +21,7 @@ class ManagerDB extends Dexie {
   models!: Table<Model, string>;
 
   constructor() {
-    super("WorkspaceManagerDB");
+    super(WORKSPACE_INDEXDB_NAME);
     this.version(1)
       .stores({
         workflows: "&id, name, parentFolderID", // Primary key and indexed props
