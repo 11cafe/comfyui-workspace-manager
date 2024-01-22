@@ -177,6 +177,21 @@ export async function getAllModelsList() {
   }
 }
 
+export async function getAllFoldersList() {
+  try {
+    const response = await fetch("/model_manager/get_folder_list", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const result = await response.json();
+    return result as string[];
+  } catch (error) {
+    console.error("Error get all models list:", error);
+  }
+}
+
 export async function deleteLocalDiskFolder(folderPath: string) {
   try {
     const response = await fetch("/workspace/delete_folder", {

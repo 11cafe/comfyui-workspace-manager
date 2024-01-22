@@ -3,10 +3,21 @@ import { ModelsListRespItem } from "../types";
 import { useEffect, useState } from "react";
 import { indexdb } from "../../db-tables/indexdb";
 import { Model } from "../../types/dbTypes";
+import type { DragEvent } from "react";
+// @ts-ignore
+import { app } from "/scripts/app.js";
 
 interface Props {
   data: ModelsListRespItem;
 }
+
+const MODEL_TYPE_TO_NODE_MAPPING: Record<string, string> = {
+  checkpoints: "CheckpointLoaderSimple",
+  vae: "VAELoader",
+  loras: "LoraLoader",
+  controlnet: "ControlNetLoader",
+  upscale_models: "UpscaleModelLoader",
+};
 
 export function ModelItem({ data }: Props) {
   const [url, setUrl] = useState(
@@ -49,6 +60,19 @@ export function ModelItem({ data }: Props) {
     }
   };
 
+  const handleDragStart = (e: DragEvent<HTMLDivElement>) => {
+    const nodeType = MODEL_TYPE_TO_NODE_MAPPING[data.model_type];
+    if (!nodeType) {
+      return;
+    }
+    e.dataTransfer.setData("eventName", "WorkspaceManagerAddNode");
+    e.dataTransfer.setData(
+      "modelRelativePath",
+      data.model_name + data.model_extension,
+    );
+    e.dataTransfer.setData("nodeType", nodeType);
+  };
+
   if (hashing) {
     return (
       <Flex
@@ -80,9 +104,15 @@ export function ModelItem({ data }: Props) {
   }
 
   return (
-    <Box position="relative" borderRadius={4}>
+    <Box
+      position="relative"
+      borderRadius={4}
+      draggable
+      onDragStart={handleDragStart}
+    >
       <Image
         src={url}
+        draggable={false}
         boxSize="100%"
         height={178}
         objectFit="cover"

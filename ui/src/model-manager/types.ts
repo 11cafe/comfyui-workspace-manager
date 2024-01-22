@@ -129,6 +129,7 @@ export type CivitiImageMeta = {
 
 export interface ModelsListRespItem {
   model_name: string;
+  model_extension: string;
   model_type: string;
   file_hash?: string;
 }
