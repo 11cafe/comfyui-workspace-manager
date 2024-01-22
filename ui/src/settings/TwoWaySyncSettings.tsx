@@ -17,7 +17,7 @@ export default function TwoWaySyncSettings() {
         isChecked={checked}
         onChange={(e) => {
           setChecked(e.target.checked);
-          userSettingsTable?.upsert({ autoSave: e.target.checked });
+          userSettingsTable?.upsert({ twoWaySync: e.target.checked });
         }}
       >
         Enable two way sync (Experimental)
