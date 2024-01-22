@@ -10,7 +10,7 @@ import {
   deleteJsonFileMyWorkflows,
   saveJsonFileMyWorkflows,
 } from "./DiskFileUtils";
-import { Folder } from "../types/dbTypes";
+import { Folder, SortableItem } from "../types/dbTypes";
 import { UserSettingsTable } from "./UserSettingsTable";
 import { indexdb } from "./indexdb";
 import { TagsTable } from "./TagsTable";
@@ -21,12 +21,8 @@ export type Table =
   | "userSettings"
   | "folders"
   | "changelogs"
-  | "media";
-
-interface SortableItem {
-  name: string;
-  updateTime: number;
-}
+  | "media"
+  | "models";
 
 export interface Workflow extends SortableItem {
   id: string;

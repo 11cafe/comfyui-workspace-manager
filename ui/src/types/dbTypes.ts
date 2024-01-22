@@ -3,6 +3,10 @@ export interface SortableItem {
   updateTime: number;
 }
 
+export interface TableBaseModel {
+  id: string;
+}
+
 export type Tags = {
   [name: string]: Tag;
 };
@@ -23,7 +27,7 @@ export type Model = {
 };
 
 export type UserSettings = {
-  userID: string;
+  id: string;
   myWorkflowsDir: string;
   topBarStyle: PanelPosition;
   shortcuts: {

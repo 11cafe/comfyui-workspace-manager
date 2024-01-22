@@ -29,7 +29,7 @@ class ManagerDB extends Dexie {
         media: "&id, workflowID",
         folders: "&id, name, parentFolderID",
         tags: "&name",
-        userSettings: "&userID",
+        userSettings: "&id",
         models: "&id, fileName, fileHash",
       })
       .upgrade((trans) => {
