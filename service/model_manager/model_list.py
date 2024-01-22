@@ -101,6 +101,10 @@ start_populate_file_hash_dict()
 def get_model_list(request):
     with file_list_lock:
         return web.json_response(file_list, content_type='application/json')
+    
+@server.PromptServer.instance.routes.get("/model_manager/get_folder_list")
+def get_model_list(request):
+    return web.json_response(list(folder_paths.folder_names_and_paths), content_type='application/json')
 
 loop = asyncio.get_event_loop()
 def send_ws(event, data):

@@ -1,24 +1,7 @@
 import { Button, AlertDialog, AlertDialogOverlay, AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter, Select } from "@chakra-ui/react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { getAllFoldersList } from "../../Api";
 
-const allFolderPaths = [
-    "checkpoints",
-    "configs",
-    "loras",
-    "vae",
-    "clip",
-    "unet",
-    "clip_vision",
-    "style_models",
-    "embeddings",
-    "diffusers",
-    "vae_approx",
-    "controlnet",
-    "gligen",
-    "upscale_models",
-    "custom_nodes",
-    "hypernetworks",
-];
 interface ChooseFolderProps {
     isOpen: boolean;
     onClose: () => void;
@@ -26,8 +9,18 @@ interface ChooseFolderProps {
 }
 export default function ChooseFolder({ isOpen, onClose, selectFolder }: ChooseFolderProps) {
     const [folderPath, setFolderPath] = useState("");
+    const [foldersList, setFoldersList] = useState<string[]>([]);
 
     const cancelRef = useRef(null);
+
+    useEffect(() => {
+      initData();
+    }, []);
+
+    const initData = async () => {
+      const folders_list = await getAllFoldersList();
+      if (folders_list) setFoldersList(folders_list);
+    };
 
     return (
         <AlertDialog
@@ -43,7 +36,7 @@ export default function ChooseFolder({ isOpen, onClose, selectFolder }: ChooseFo
 
                     <AlertDialogBody>
                         <Select placeholder='Select option' value={folderPath} onChange={e => setFolderPath(e.target.value)}>
-                            {allFolderPaths.map((folderPath) => (
+                            {foldersList.map((folderPath) => (
                                 <option value={folderPath}>{folderPath}</option>
                             ))}
                         </Select>

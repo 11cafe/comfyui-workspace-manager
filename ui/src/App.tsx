@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState, DragEvent } from "react";
 // @ts-ignore
 import { app } from "/scripts/app.js";
 // @ts-ignore
@@ -120,6 +120,7 @@ export default function App() {
     // };
     // app.registerExtension(ext);
     subsribeToWsToStopWarning();
+    app.canvasEl.addEventListener("drop",handleDrop);
     localStorage.removeItem("workspace");
     localStorage.removeItem("comfyspace");
     try {
@@ -167,6 +168,20 @@ export default function App() {
     usedWsEvents.forEach((event) => {
       api.addEventListener(event, () => null);
     });
+  };
+  
+  const handleDrop = async (e: DragEvent<HTMLCanvasElement> & {canvasX: number, canvasY: number}) => {
+    const eventName = e.dataTransfer.getData('eventName');
+    if (eventName !== 'WorkspaceManagerAddNode') {
+      return;
+    }
+    const modelRelativePath = e.dataTransfer.getData('modelRelativePath');
+    const nodeType = e.dataTransfer.getData('nodeType');
+    const node = LiteGraph.createNode(nodeType);
+    console.log(e);
+    node.pos = [e.canvasX, e.canvasY];
+    node.configure({widgets_values:[modelRelativePath]});
+    app.graph.add(node);
   };
 
   const checkIsDirty = () => {
