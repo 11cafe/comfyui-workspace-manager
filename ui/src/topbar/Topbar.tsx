@@ -53,8 +53,8 @@ export function Topbar({
         gap={2}
         draggable={false}
         id="workspaceManagerPanel"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseOver={() => setIsHovered(true)}
+        onMouseOut={() => setIsHovered(false)}
       >
         <Button
           size={"sm"}
