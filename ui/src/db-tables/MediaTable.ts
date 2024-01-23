@@ -46,12 +46,8 @@ export class MediaTable extends TableBase<Media> {
     });
     // save indexdb
     indexdb.media.add(md);
-    const records = await this.getRecords();
-    records[md.id] = md;
     // save disk file db
-    saveDB("media", JSON.stringify(records));
-    // save legacy indexdb backup
-    updateWorkspaceIndexDB();
+    this.saveDiskDB();
     return md;
   }
 }

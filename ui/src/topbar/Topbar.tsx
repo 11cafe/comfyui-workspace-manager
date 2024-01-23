@@ -9,19 +9,16 @@ import {
   IconTriangleInvertedFilled,
 } from "@tabler/icons-react";
 import DropdownTitle from "../components/DropdownTitle";
-import { Suspense, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import EditFlowName from "../components/EditFlowName";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { PanelPosition } from "../types/dbTypes";
-import React from "react";
-const ModelManagerTopbar = React.lazy(
-  () => import("../model-manager/topbar/ModelManagerTopbar")
-);
+
 interface Props {
   positionStyle: PanelPosition;
   updatePanelPosition: (
     position?: PanelPosition,
-    needUpdateDB?: boolean
+    needUpdateDB?: boolean,
   ) => void;
   curFlowName: string | null;
   setCurFlowName: (newName: string) => void;
@@ -125,11 +122,6 @@ export function Topbar({
           </Tooltip>
         ) : (
           <div style={{ width: 22 }} />
-        )}
-        {loadChild && (
-          <Suspense>
-            <ModelManagerTopbar />
-          </Suspense>
         )}
         {isHovered && (
           <IconGripVertical

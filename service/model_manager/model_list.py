@@ -7,6 +7,8 @@ import hashlib
 import shelve
 import threading
 import os
+import urllib.request
+import json
 
 # The path to the file where file_hash_dict will be saved
 FILE_HASH_DICT_FOLDER_PATH = os.path.join(os.path.dirname(__file__),"../../hash")
@@ -66,6 +68,23 @@ def populate_file_hash_dict():
     # Set populate_done to True when done
     populate_done = True
 
+def civit_get_model_by_hash(file_hash: str):
+    if (file_hash is None):
+        return None
+    try:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
+        url = f"https://civitai.com/api/v1/model-versions/by-hash/{file_hash}"
+        req = urllib.request.Request(url, headers=headers)
+        # Making a GET request
+        with urllib.request.urlopen(req) as response:
+            data = response.read()
+            encoding = response.info().get_content_charset('utf-8')
+            result = json.loads(data.decode(encoding))
+        return result
+    except Exception as e:
+        return None
+
 def start_populate_file_hash_dict():
     global populate_thread, populate_started, populate_done
     populate_running = populate_started == True and populate_done == False
@@ -82,6 +101,10 @@ start_populate_file_hash_dict()
 def get_model_list(request):
     with file_list_lock:
         return web.json_response(file_list, content_type='application/json')
+    
+@server.PromptServer.instance.routes.get("/model_manager/get_folder_list")
+def get_model_list(request):
+    return web.json_response(list(folder_paths.folder_names_and_paths), content_type='application/json')
 
 loop = asyncio.get_event_loop()
 def send_ws(event, data):

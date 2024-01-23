@@ -13,7 +13,8 @@ export type Table =
   | "userSettings"
   | "folders"
   | "changelogs"
-  | "media";
+  | "media"
+  | "models";
 
 export function isFolder(n: Folder | Workflow): n is Folder {
   // @ts-ignore
@@ -54,6 +55,10 @@ export async function loadDBs() {
     loadChangelogs(),
     loadMedia(),
   ]);
+  if (localStorage.getItem("WORKSPACE_INDEXDB_BACKFILL") !== "true") {
+    await backfillIndexdb();
+    localStorage.setItem("WORKSPACE_INDEXDB_BACKFILL", "true");
+  }
 }
 
 export async function backfillIndexdb() {

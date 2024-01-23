@@ -16,6 +16,10 @@ export interface Workflow extends SortableItem {
   coverMediaPath?: string;
 }
 
+export interface TableBaseModel {
+  id: string;
+}
+
 export type Tags = {
   [name: string]: Tag;
 };
@@ -24,9 +28,24 @@ export type Tag = {
   workflowIDs: string[];
   updateTime: number;
 };
+export type CacheKey = string;
+export type LocalCache = {
+  id: CacheKey;
+  value: string;
+};
+
+export type Model = {
+  id: string;
+  fileName: string;
+  fileFolder: string;
+  fileHash: string;
+  civitModelID: string;
+  civitModelVersionID: string;
+  imageUrl?: string | null;
+};
 
 export type UserSettings = {
-  userID: string;
+  id: string;
   myWorkflowsDir: string;
   topBarStyle: PanelPosition;
   shortcuts: {
@@ -78,3 +97,5 @@ export enum EFlowOperationType {
    */
   DELETE = "delete",
 }
+
+export const WORKSPACE_INDEXDB_NAME = "comfyui_workspace_db";

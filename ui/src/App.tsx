@@ -10,7 +10,6 @@ import {
   userSettingsTable,
   changelogsTable,
   mediaTable,
-  backfillIndexdb,
 } from "./db-tables/WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
@@ -34,7 +33,9 @@ const RecentFilesDrawer = React.lazy(
 );
 const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
 import { scanLocalNewFiles } from "./Api";
-
+const ModelManagerTopbar = React.lazy(
+  () => import("./model-manager/topbar/ModelManagerTopbar"),
+);
 const usedWsEvents = [
   // InstallProgress.tsx
   "download_progress",
@@ -139,10 +140,6 @@ export default function App() {
       loadWorkflowIDImpl(latestWfID);
     }
 
-    if (localStorage.getItem("WORKSPACE_INDEXDB_BACKFILL") !== "true") {
-      await backfillIndexdb();
-      localStorage.setItem("WORKSPACE_INDEXDB_BACKFILL", "true");
-    }
     /**
      * For two-way sync, one-time rewrite all /my_workflows files to the database
      */
@@ -330,6 +327,7 @@ export default function App() {
      * so in development environment mode, the first execution is skipped.
      */
     if (
+      // @ts-ignore
       process.env.NODE_ENV === "development" &&
       !developmentEnvLoadFirst.current
     ) {
@@ -373,10 +371,10 @@ export default function App() {
     };
     fileInput?.addEventListener("change", fileInputListener);
 
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
       const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
-
-      if (!autoSaveEnabled && checkIsDirty()) {
+      const isDirty = await checkIsDirty();
+      if (!autoSaveEnabled && isDirty) {
         e.preventDefault(); // For modern browsers
         e.returnValue = "You have unsaved changes"; // For older browsers
       }
@@ -446,6 +444,11 @@ export default function App() {
               updatePanelPosition={updatePanelPosition}
               positionStyle={positionStyle}
             />
+            {loadChild && (
+              <Suspense>
+                <ModelManagerTopbar />
+              </Suspense>
+            )}
             {loadChild && route === "recentFlows" && (
               <Suspense>
                 <RecentFilesDrawer

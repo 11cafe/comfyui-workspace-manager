@@ -13,7 +13,7 @@ import {
   Checkbox,
   Spinner,
   useToast,
-  useDisclosure
+  useDisclosure,
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { IconX } from "@tabler/icons-react";
@@ -23,6 +23,7 @@ import ModelCard from "./ModelCard";
 import InstallModelSearchBar from "./InstallModelSearchBar";
 import ChooseFolder from "./ChooseFolder";
 import InstallProgress from "./InstallProgress";
+import { indexdb } from "../../db-tables/indexdb";
 
 type CivitModelQueryParams = {
   types?: MODEL_TYPE;
@@ -45,6 +46,8 @@ const ALL_MODEL_TYPES = [
   // "Wildcards",
 ] as const; // `as const` makes the array readonly and its elements literal types
 
+const CACHE_EXPIRY_DAYS = 2;
+
 // Infer MODEL_TYPE from the ALL_MODEL_TYPES array
 type MODEL_TYPE = (typeof ALL_MODEL_TYPES)[number];
 const MODEL_TYPE_TO_FOLDER_MAPPING: Record<MODEL_TYPE, string> = {
@@ -61,12 +64,10 @@ export default function InatallModelsModal({
 }: {
   onclose: () => void;
 }) {
-  const [selectedID, setSelectedID] = useState<string[]>([]);
-  const [isSelecting, setIsSelecting] = useState(false);
   const [models, setModels] = useState<CivitiModel[]>([]);
   const [loading, setLoading] = useState(false);
   const [modelType, setModelType] = useState<MODEL_TYPE | undefined>(
-    "Checkpoint"
+    "Checkpoint",
   );
   const toast = useToast();
   const [installing, setInstalling] = useState<string[]>([]);
@@ -89,9 +90,35 @@ export default function InatallModelsModal({
     const queryString = new URLSearchParams(params).toString();
     const fullURL = `https://civitai.com/api/v1/models?${queryString}`;
 
+    const cacheEntry = await indexdb.cache?.get(fullURL);
+    if (cacheEntry?.value != null) {
+      try {
+        const { data, timestamp } = JSON.parse(cacheEntry?.value);
+        // Check if cached data is still valid
+        const ageInDays = (Date.now() - timestamp) / (1000 * 60 * 60 * 24);
+        if (ageInDays < CACHE_EXPIRY_DAYS) {
+          setModels(data);
+          setLoading(false);
+          return;
+        }
+      } catch (e) {
+        console.error("err fetching cache", e);
+      }
+    }
+
     const data = await fetch(fullURL);
     const json = await data.json();
     setModels(json.items);
+    // only cache if there is no search query
+    if (searchQuery === "") {
+      indexdb.cache.add({
+        id: fullURL,
+        value: JSON.stringify({
+          data: json.items,
+          timestamp: Date.now(),
+        }),
+      });
+    }
     setLoading(false);
   }, [searchQuery, modelType]);
 
@@ -108,14 +135,14 @@ export default function InatallModelsModal({
       }
     }
     toast({
-      title:
-        "Installing...",
+      title: "Installing...",
       description: file.current.name,
       status: "info",
       duration: 4000,
       isClosable: true,
     });
-    file.current.name != null && setInstalling((cur) => [...cur, file.current?.name ?? ""]);
+    file.current.name != null &&
+      setInstalling((cur) => [...cur, file.current?.name ?? ""]);
     installModelsApi({
       filename: file.current.name,
       name: file.current.name,
@@ -126,7 +153,7 @@ export default function InatallModelsModal({
   };
   const onClickInstallModel = (
     _file: CivitiModelFileVersion,
-    model: CivitiModel
+    model: CivitiModel,
   ) => {
     let folderPath: string | null =
       MODEL_TYPE_TO_FOLDER_MAPPING[model.type as MODEL_TYPE];
@@ -142,17 +169,13 @@ export default function InatallModelsModal({
     if (!downloadUrl) {
       return;
     }
-    file.current = ({ id: 0, downloadUrl });
+    file.current = { id: 0, downloadUrl };
     onOpen();
-  }
+  };
 
   useEffect(() => {
     loadData();
   }, [searchQuery, modelType]);
-
-  const isAllSelected =
-    models.length > 0 && selectedID.length === models.length;
-
   return (
     <>
       <Modal isOpen={true} onClose={onclose} blockScrollOnMount={true}>
@@ -164,12 +187,7 @@ export default function InatallModelsModal({
                 Models
               </Heading>
               <InstallModelSearchBar setSearchQuery={setSearchQuery} />
-              <Button
-                size={"sm"}
-                py={1}
-                mr={8}
-                onClick={customUrlDownload}
-              >
+              <Button size={"sm"} py={1} mr={8} onClick={customUrlDownload}>
                 Custom URL Install
               </Button>
             </HStack>
@@ -199,18 +217,6 @@ export default function InatallModelsModal({
                 );
               })}
             </HStack>
-            {isSelecting && (
-              <HStack gap={3}>
-                <Checkbox isChecked={isAllSelected}>All</Checkbox>
-                <Text fontSize={16}>{selectedID.length} Selected</Text>
-                <IconButton
-                  size={"sm"}
-                  icon={<IconX size={19} />}
-                  onClick={() => setIsSelecting(false)}
-                  aria-label="cancel"
-                />
-              </HStack>
-            )}
             {loading && (
               <Spinner
                 thickness="4px"
@@ -238,8 +244,11 @@ export default function InatallModelsModal({
           </ModalBody>
         </ModalContent>
       </Modal>
-      <ChooseFolder isOpen={isOpen} onClose={onClose} selectFolder={downloadModels} />
+      <ChooseFolder
+        isOpen={isOpen}
+        onClose={onClose}
+        selectFolder={downloadModels}
+      />
     </>
   );
 }
-

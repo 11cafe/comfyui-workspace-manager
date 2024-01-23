@@ -12,7 +12,7 @@ export class UserSettingsTable extends TableBase<UserSettings> {
   constructor() {
     super("userSettings");
     this.records = {
-      userID: DEFAULT_USER,
+      id: DEFAULT_USER,
       topBarStyle: {
         top: 0,
         left: 0,
@@ -35,6 +35,7 @@ export class UserSettingsTable extends TableBase<UserSettings> {
       ...newPairs,
     };
     indexdb.userSettings.put(this.records);
+    // TODO: need to migrate to saveDiskDB after changing it to async
     saveDB(UserSettingsTable.TABLE_NAME, JSON.stringify(this.records));
   }
 
@@ -57,8 +58,8 @@ export class UserSettingsTable extends TableBase<UserSettings> {
       const getDir = await getSystemDir();
       settings.myWorkflowsDir = `${getDir.dir_path}/my_workflows`;
     }
-    if (!settings.userID) {
-      settings.userID = DEFAULT_USER;
+    if (!settings.id) {
+      settings.id = DEFAULT_USER;
     }
     instance.records = settings;
     return instance;
