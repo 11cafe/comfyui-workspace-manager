@@ -27,7 +27,7 @@ import { Workflow } from "../types/dbTypes";
 type Props = {
   workflow: Workflow;
 };
-export default function WorkflowListItem({ workflow }: Props) {
+export default memo(function WorkflowListItem({ workflow }: Props) {
   const { colorMode } = useColorMode();
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
@@ -193,4 +193,4 @@ export default function WorkflowListItem({ workflow }: Props) {
       )}
     </HStack>
   );
-}
+});

@@ -29,6 +29,10 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     const loadData = async (flowId: string) => {
       const workflow = await workflowsTable?.get(flowId);
+      if (!workflow || !flowId) {
+        alert("No current workflow found!");
+        return;
+      }
       setCurWorkflow(workflow);
       const changelogs = await changelogsTable?.listByWorkflowID(flowId);
       setChangelogs(changelogs ?? []);
@@ -39,68 +43,67 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
       selectedChangelogID && setSelectedVersion(selectedChangelogID);
     };
 
-    curFlowID && loadData(curFlowID);
+    loadData(curFlowID ?? "");
   }, []);
 
   if (!curFlowID || !curWorkflow) {
-    alert("No current workflow found!");
     return null;
+  } else {
+    return (
+      <Card
+        width={400}
+        height={"100vh"}
+        pl={4}
+        pr={5}
+        pt={4}
+        gap={0}
+        position={"fixed"}
+        top={0}
+        left={0}
+        zIndex={1000}
+      >
+        <CardHeader pb={1} mb={0}>
+          <Flex justifyContent={"space-between"} alignItems={"center"}>
+            <Heading size="md">Version History</Heading>
+            <IconButton
+              size={"sm"}
+              icon={<IconX />}
+              onClick={onClose}
+              variant={"ghost"}
+              aria-label="close version history"
+            />
+          </Flex>
+        </CardHeader>
+        <CardBody overflowY={"auto"} gap={0}>
+          <Text mb={4}>All the saved changes of this workflow</Text>
+          <Stack divider={<StackDivider />} spacing={2}>
+            {changelogs?.map((c) => {
+              return (
+                <Button
+                  size={"sm"}
+                  variant={"ghost"}
+                  onClick={() => {
+                    if (isDirty) {
+                      alert(
+                        "You have unsaved changes, please save or discard your changes to proceed switching version, in case losing your changes.",
+                      );
+                      return;
+                    }
+                    app.loadGraphData(JSON.parse(c.json));
+                    workflowsTable?.updateFlow(curFlowID, {
+                      lastSavedJson: c.json,
+                    });
+                    onClose();
+                  }}
+                  isActive={c.id === selectedVersion}
+                >
+                  Saved at {formatTimestamp(c.createTime, true)}
+                </Button>
+              );
+            })}
+          </Stack>
+        </CardBody>
+      </Card>
+    );
   }
-
-  return (
-    <Card
-      width={400}
-      height={"100vh"}
-      pl={4}
-      pr={5}
-      pt={4}
-      gap={0}
-      position={"fixed"}
-      top={0}
-      left={0}
-      zIndex={1000}
-    >
-      <CardHeader pb={1} mb={0}>
-        <Flex justifyContent={"space-between"} alignItems={"center"}>
-          <Heading size="md">Version History</Heading>
-          <IconButton
-            size={"sm"}
-            icon={<IconX />}
-            onClick={onClose}
-            variant={"ghost"}
-            aria-label="close version history"
-          />
-        </Flex>
-      </CardHeader>
-      <CardBody overflowY={"auto"} gap={0}>
-        <Text mb={4}>All the saved changes of this workflow</Text>
-        <Stack divider={<StackDivider />} spacing={2}>
-          {changelogs?.map((c) => {
-            return (
-              <Button
-                size={"sm"}
-                variant={"ghost"}
-                onClick={() => {
-                  if (isDirty) {
-                    alert(
-                      "You have unsaved changes, please save or discard your changes to proceed switching version, in case losing your changes.",
-                    );
-                    return;
-                  }
-                  app.loadGraphData(JSON.parse(c.json));
-                  workflowsTable?.updateFlow(curFlowID, {
-                    lastSavedJson: c.json,
-                  });
-                  onClose();
-                }}
-                isActive={c.id === selectedVersion}
-              >
-                Saved at {formatTimestamp(c.createTime, true)}
-              </Button>
-            );
-          })}
-        </Stack>
-      </CardBody>
-    </Card>
-  );
 }

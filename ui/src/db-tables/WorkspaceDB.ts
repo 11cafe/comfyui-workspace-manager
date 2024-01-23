@@ -64,8 +64,8 @@ export async function loadDBs() {
 export async function backfillIndexdb() {
   const backfillWorkflows = async () => {
     try {
-      const all = await workflowsTable?.listAll();
-      all && (await indexdb.workflows.bulkAdd(all));
+      const all = await workflowsTable?.getRecords();
+      all && (await indexdb.workflows.bulkAdd(Object.values(all)));
     } catch (error) {
       console.error(error);
     }
