@@ -46,7 +46,7 @@ export default defineConfig(({ mode }) => ({
         // assetFileNames: "[name]-[hash][extname]",
         entryFileNames: "workspace_web/[name].js",
         chunkFileNames: `workspace_web/[name]-[hash].js`,
-        assetFileNames: `assets/[name]-[hash].[ext]`,
+        assetFileNames: `workspace_web/assets/[name]-[hash].[ext]`,
       },
     },
   },

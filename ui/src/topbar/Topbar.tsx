@@ -9,10 +9,11 @@ import {
   IconTriangleInvertedFilled,
 } from "@tabler/icons-react";
 import DropdownTitle from "../components/DropdownTitle";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import EditFlowName from "../components/EditFlowName";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { PanelPosition } from "../types/dbTypes";
+import './Topbar.css';
 
 interface Props {
   positionStyle: PanelPosition;
@@ -29,13 +30,9 @@ export function Topbar({
   curFlowName,
   setCurFlowName,
 }: Props) {
-  const [isHovered, setIsHovered] = useState(false);
   const { isDirty, loadNewWorkflow, saveCurWorkflow, setRoute, curFlowID } =
     useContext(WorkspaceContext);
-  const [loadChild, setLoadChild] = useState(false);
-  useEffect(() => {
-    setLoadChild(true);
-  }, []);
+
   return (
     <Draggable
       onDragEnd={(position: { x: number; y: number }) => {
@@ -53,8 +50,7 @@ export function Topbar({
         gap={2}
         draggable={false}
         id="workspaceManagerPanel"
-        onMouseOver={() => setIsHovered(true)}
-        onMouseOut={() => setIsHovered(false)}
+        className="workspaceManagerPanel"
       >
         <Button
           size={"sm"}
@@ -106,7 +102,7 @@ export function Topbar({
                 variant={"ghost"}
               />
             </Tooltip>
-            <DropdownTitle onClick={() => setIsHovered(false)} />
+            <DropdownTitle />
           </HStack>
         )}
         {curFlowID && isDirty ? (
@@ -123,14 +119,13 @@ export function Topbar({
         ) : (
           <div style={{ width: 22 }} />
         )}
-        {isHovered && (
-          <IconGripVertical
-            id="dragPanelIcon"
-            cursor="move"
-            size={15}
-            color="#FFF"
-          />
-        )}
+        <IconGripVertical
+          id="dragPanelIcon"
+          className="dragPanelIcon"
+          cursor="move"
+          size={15}
+          color="#FFF"
+        />
       </HStack>
     </Draggable>
   );
