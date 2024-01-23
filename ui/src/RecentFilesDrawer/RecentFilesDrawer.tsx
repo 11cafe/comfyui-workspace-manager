@@ -15,21 +15,14 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState, useRef, useCallback } from "react";
 import {
-  Workflow,
-  deleteFlow,
+  workflowsTable,
   isFolder,
-  listWorkflows,
-  listFolderContent,
-  tagsTable,
-  workspace,
   foldersTable,
 } from "../db-tables/WorkspaceDB";
 import {
   IconChevronDown,
-  IconChevronUp,
   IconFolderPlus,
   IconPlus,
-  IconX,
   IconFolder,
 } from "@tabler/icons-react";
 import { RecentFilesContext } from "../WorkspaceContext";
@@ -45,7 +38,7 @@ import FilesListFolderItem from "./FilesListFolderItem";
 import { useDebounce } from "../customHooks/useDebounce";
 import SearchInput from "../components/SearchInput";
 import { openWorkflowsFolder } from "../Api";
-import { Folder } from "../types/dbTypes";
+import { Folder, Workflow } from "../types/dbTypes";
 import ImportFileButton from "./ImportFileButton";
 import MyTagsRow from "./MyTagsRow";
 
@@ -77,9 +70,11 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   );
 
   const loadLatestWorkflows = async () => {
-    const all = await listFolderContent();
+    const all = (await workflowsTable?.listFolderContent()) ?? [];
     aloneFlowsAndFoldersRef.current = all;
-    allFlowsRef.current = listWorkflows();
+    await workflowsTable?.listAll().then((list) => {
+      allFlowsRef.current = list;
+    });
     filterFlows();
     setRefreshFolderStamp(Date.now());
   };
@@ -122,22 +117,22 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   }, [debounceSearchValue, selectedTag]);
 
   const onDelete = useCallback(
-    (id: string) => {
-      deleteFlow(id);
-      loadLatestWorkflows();
+    async (id: string) => {
+      await workflowsTable?.deleteFlow(id);
+      await loadLatestWorkflows();
     },
     [selectedTag, debounceSearchValue],
   );
 
   useEffect(() => {
     loadLatestWorkflows();
-    const handleDrop = (e: any) => {
-      workspace &&
-        draggingWorkflowID.current &&
-        insertWorkflowToCanvas3(workspace[draggingWorkflowID.current].json, [
-          e.canvasX,
-          e.canvasY,
-        ]);
+    const handleDrop = async (e: any) => {
+      if (draggingWorkflowID.current) {
+        const flow = await workflowsTable?.get(draggingWorkflowID.current);
+        flow &&
+          flow.json &&
+          insertWorkflowToCanvas3(flow.json, [e.canvasX, e.canvasY]);
+      }
     };
 
     app.canvasEl.addEventListener("drop", handleDrop);

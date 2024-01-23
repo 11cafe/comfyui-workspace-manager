@@ -1,6 +1,7 @@
-import { saveDB } from "../Api";
+import { getDB, saveDB } from "../Api";
+import { getWorkspaceIndexDB } from "./IndexDBUtils";
 import { TableBaseModel } from "../types/dbTypes";
-import { Table, loadTableFromLocalBackup } from "./WorkspaceDB";
+import { Table } from "./WorkspaceDB";
 import { indexdb } from "./indexdb";
 
 export class TableBase<T> {
@@ -31,8 +32,13 @@ export class TableBase<T> {
     return newItem;
   }
   public async listAll(): Promise<T[]> {
-    const objs = await indexdb[this.tableName].toArray();
-    return objs as T[];
+    const list = await indexdb[this.tableName].toArray();
+    return list as T[];
+  }
+
+  public async batchQuery(ids: string[]): Promise<T[]> {
+    const list = await indexdb[this.tableName].bulkGet(ids);
+    return list as T[];
   }
 
   public async getRecords(): Promise<Record<string, T>> {
@@ -41,8 +47,19 @@ export class TableBase<T> {
       this.tableName,
     );
 
-    return await loadTableFromLocalBackup(this.tableName);
+    const jsonStr = await getDB(this.tableName);
+    let json: any;
+    try {
+      json = jsonStr != null ? JSON.parse(jsonStr) : null;
+    } catch (e) {}
+    if (json == null) {
+      const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
+      const comfyspaceData = JSON.parse(comfyspace);
+      json = comfyspaceData[this.tableName];
+    }
+    return json ?? {};
   }
+
   public async get(id: string): Promise<T | undefined> {
     const obj = await indexdb[this.tableName].get(id);
     return obj as T;

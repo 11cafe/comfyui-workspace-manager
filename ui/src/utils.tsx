@@ -2,19 +2,17 @@
 import { deleteFile, updateFile } from "./Api";
 import { ESortTypes } from "./RecentFilesDrawer/types";
 import {
-  batchCreateFlows,
+  workflowsTable,
   foldersTable,
-  listWorkflows,
   userSettingsTable,
-  Workflow,
 } from "./db-tables/WorkspaceDB";
 import {
   generateFilePathAbsolute,
   saveJsonFileMyWorkflows,
 } from "./db-tables/DiskFileUtils";
-import { Folder } from "./types/dbTypes";
+import { Folder, Workflow } from "./types/dbTypes";
 // @ts-ignore
-import { app, ComfyApp } from "/scripts/app.js";
+import { app } from "/scripts/app.js";
 import {
   COMFYSPACE_TRACKING_FIELD_NAME,
   LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
@@ -155,7 +153,8 @@ export function sortFlows(
 export async function validateOrSaveAllJsonFileMyWorkflows(
   deleteEmptyFolder = false,
 ) {
-  for (const workflow of listWorkflows()) {
+  const flowList = (await workflowsTable?.listAll()) ?? [];
+  for (const workflow of flowList) {
     const fullPath = await generateFilePathAbsolute(workflow);
     if (workflow.filePath != fullPath) {
       // file path changed
@@ -221,7 +220,7 @@ export function insertWorkflowToCanvas(json: string, insertPos?: number[]) {
   canvas = null;
 }
 
-export function generateUniqueName(name?: string) {
+export async function generateUniqueName(name?: string) {
   /**
    * Generate a unique name
    * For imported scenes, the default name is the file name.
@@ -230,7 +229,8 @@ export function generateUniqueName(name?: string) {
    * Looks for a unique name in the format `${default name} ${number}`.
    */
   let newFlowName = name ?? "Untitled Flow";
-  const flowNameList = listWorkflows()?.map((flow) => flow.name);
+  const flowList = (await workflowsTable?.listAll()) ?? [];
+  const flowNameList = flowList.map((flow) => flow.name);
   if (flowNameList.includes(newFlowName)) {
     let num = 2;
     let flag = true;
@@ -551,7 +551,7 @@ export async function syncNewFlowOfLocalDisk(
   }[],
 ) {
   if (singleFlowList.length) {
-    await batchCreateFlows(singleFlowList, true);
+    await workflowsTable?.batchCreateFlows(singleFlowList, true);
   }
 
   if (folderList.length) {
@@ -573,7 +573,7 @@ export async function syncNewFlowOfLocalDisk(
         folderId = newFolder?.id;
       }
 
-      await batchCreateFlows(folder.list, true, folderId);
+      await workflowsTable?.batchCreateFlows(folder.list, true, folderId);
     }
   }
 }
@@ -602,7 +602,8 @@ export function generateUrlHashWithFlowId(id: string) {
 }
 
 export async function rewriteAllLocalFiles() {
-  for (const workflow of listWorkflows()) {
+  const flowList = (await workflowsTable?.listAll()) ?? [];
+  for (const workflow of flowList) {
     try {
       const fullPath = await generateFilePathAbsolute(workflow);
       const flow = JSON.parse(workflow.json);

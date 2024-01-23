@@ -17,7 +17,7 @@ import {
   Tooltip,
 } from "@chakra-ui/react";
 import { useContext, ChangeEvent, useState } from "react";
-import { listWorkflows, updateFlow } from "../db-tables/WorkspaceDB";
+import { workflowsTable } from "../db-tables/WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
 
 type Props = {
@@ -46,18 +46,19 @@ export default function EditFlowName({
     submitError && setSubmitError("");
   };
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     if (curFlowID) {
       const trimEditName = editName.trim();
       setEditName(trimEditName);
       if (displayName === trimEditName) return onCloseModal();
-      const flowNameList = listWorkflows()?.map((flow) => flow.name);
+      const flowList = (await workflowsTable?.listAll()) ?? [];
+      const flowNameList = flowList?.map((flow) => flow.name);
       if (flowNameList.includes(trimEditName)) {
         setSubmitError(
-          "The name is duplicated, please modify it and submit again."
+          "The name is duplicated, please modify it and submit again.",
         );
       } else {
-        updateFlow(curFlowID, {
+        await workflowsTable?.updateFlow(curFlowID, {
           name: trimEditName,
         });
         updateFlowName(trimEditName);

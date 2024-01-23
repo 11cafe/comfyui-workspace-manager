@@ -11,7 +11,7 @@ import {
   Tooltip,
 } from "@chakra-ui/react";
 import { IconExternalLink } from "@tabler/icons-react";
-import { Workflow, isFolder, updateFlow } from "../db-tables/WorkspaceDB";
+import { isFolder, workflowsTable } from "../db-tables/WorkspaceDB";
 import {
   formatTimestamp,
   generateUrlHashWithFlowId,
@@ -22,11 +22,12 @@ import { useState, memo, ChangeEvent, useContext } from "react";
 import WorkflowListItemRightClickMenu from "./WorkflowListItemRightClickMenu";
 import DeleteConfirm from "../components/DeleteConfirm";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
+import { Workflow } from "../types/dbTypes";
 
 type Props = {
   workflow: Workflow;
 };
-export default function WorkflowListItem({ workflow }: Props) {
+export default memo(function WorkflowListItem({ workflow }: Props) {
   const { colorMode } = useColorMode();
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
@@ -73,12 +74,12 @@ export default function WorkflowListItem({ workflow }: Props) {
       onDragLeave={() => {
         setIsDraggingOver(false);
       }}
-      onDrop={() => {
+      onDrop={async () => {
         if (draggingFile && !isFolder(draggingFile)) {
-          updateFlow(draggingFile.id, {
+          await workflowsTable?.updateFlow(draggingFile.id, {
             parentFolderID: workflow.parentFolderID,
           });
-          onRefreshFilesList && onRefreshFilesList();
+          await onRefreshFilesList?.();
         }
         setIsDraggingOver(false);
       }}
@@ -192,4 +193,4 @@ export default function WorkflowListItem({ workflow }: Props) {
       )}
     </HStack>
   );
-}
+});

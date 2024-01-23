@@ -1,5 +1,5 @@
-import { ChangeEvent, useContext, useRef } from "react";
-import { batchCreateFlows } from "../db-tables/WorkspaceDB";
+import { ChangeEvent, useContext } from "react";
+import { workflowsTable } from "../db-tables/WorkspaceDB";
 import { RecentFilesContext } from "../WorkspaceContext";
 import { getPngMetadata } from "../utils";
 import { ImportWorkflow } from "./types";
@@ -57,7 +57,11 @@ export default function ImportFlowsFileInput({
     }
 
     if (parsedFileList.length) {
-      await batchCreateFlows(parsedFileList, undefined, parentFolderID);
+      await workflowsTable?.batchCreateFlows(
+        parsedFileList,
+        undefined,
+        parentFolderID,
+      );
       onRefreshFilesList && onRefreshFilesList();
     }
   };

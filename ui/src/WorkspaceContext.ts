@@ -1,7 +1,6 @@
 import { createContext } from "react";
-import { Workflow } from "./db-tables/WorkspaceDB";
 import { Route } from "./utils";
-import { Folder } from "./types/dbTypes";
+import { Folder, Workflow } from "./types/dbTypes";
 
 export const WorkspaceContext = createContext<{
   curFlowID: string | null;

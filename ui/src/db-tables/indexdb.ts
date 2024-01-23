@@ -1,7 +1,7 @@
 // db.ts
 import Dexie, { Table } from "dexie";
-import { Workflow } from "./WorkspaceDB";
 import {
+  Workflow,
   LocalCache,
   Changelog,
   Folder,
