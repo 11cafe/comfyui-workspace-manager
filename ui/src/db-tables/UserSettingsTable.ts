@@ -35,7 +35,7 @@ export class UserSettingsTable extends TableBase<UserSettings> {
       ...newPairs,
     };
     indexdb.userSettings.put(this.records);
-    // TODO: need to migrate to saveDiskDB after changing it to async
+    // TODO: need to migrate to saveDiskDB after changing it to async，and need to modify the backfill logic in backfillIndexdb
     saveDB(UserSettingsTable.TABLE_NAME, JSON.stringify(this.records));
   }
 
@@ -44,7 +44,7 @@ export class UserSettingsTable extends TableBase<UserSettings> {
     let settings = await indexdb.userSettings.get(DEFAULT_USER);
     if (settings == null) {
       const jsonStr = await getDB(UserSettingsTable.TABLE_NAME);
-      let settings = jsonStr != null ? JSON.parse(jsonStr) : null;
+      settings = jsonStr != null ? JSON.parse(jsonStr) : null;
       if (settings == null) {
         const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
         const comfyspaceData = JSON.parse(comfyspace);

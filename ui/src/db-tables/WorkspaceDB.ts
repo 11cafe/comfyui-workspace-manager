@@ -104,8 +104,8 @@ export async function backfillIndexdb() {
   };
   const backfillUserSettings = async () => {
     try {
-      const all = await userSettingsTable?.listAll();
-      all && (await indexdb.userSettings.bulkAdd(Object.values(all)));
+      userSettingsTable?.records &&
+        (await indexdb.userSettings.put(userSettingsTable?.records));
     } catch (error) {
       console.error(error);
     }
