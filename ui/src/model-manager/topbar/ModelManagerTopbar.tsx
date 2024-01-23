@@ -23,7 +23,6 @@ export default function ModelManagerTopbar({}: Props) {
     const nodeType = e.dataTransfer.getData("nodeType");
     // @ts-ignore
     const node = LiteGraph.createNode(nodeType);
-    console.log(e);
     node.pos = [e.canvasX, e.canvasY];
     node.configure({ widgets_values: [modelRelativePath] });
     app.graph.add(node);
@@ -36,7 +35,7 @@ export default function ModelManagerTopbar({}: Props) {
   }, []);
   return (
     <HStack position={"fixed"} top={2} right={2} gap={2}>
-      <AddMissingModelsButton />
+      {/* <AddMissingModelsButton /> */}
 
       <Button
         size={"sm"}

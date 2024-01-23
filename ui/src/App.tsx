@@ -268,6 +268,7 @@ export default function App() {
     }
     const flow = await workflowsTable?.createFlow({
       json: workflow.json,
+      lastSavedJson: workflow.lastSavedJson,
       name: newFlowName || workflow.name,
       parentFolderID: workflow.parentFolderID,
       tags: workflow.tags,

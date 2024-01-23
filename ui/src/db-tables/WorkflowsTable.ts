@@ -9,6 +9,7 @@ import {
   saveJsonFileMyWorkflows,
 } from "./DiskFileUtils";
 import { ESortTypes, ImportWorkflow } from "../RecentFilesDrawer/types";
+import { defaultGraph } from "../defaultGraph";
 
 export class WorkflowsTable extends TableBase<Workflow> {
   static readonly TABLE_NAME = "workflows";
@@ -31,28 +32,18 @@ export class WorkflowsTable extends TableBase<Workflow> {
     });
   }
 
-  public async createFlow({
-    json,
-    name,
-    parentFolderID,
-    tags,
-  }: {
-    json: string;
-    name?: string;
-    parentFolderID?: string;
-    tags?: string[];
-  }): Promise<Workflow> {
+  public async createFlow(input: Partial<Workflow>): Promise<Workflow> {
+    const { id, json, name } = input;
     const newFlowName = await generateUniqueName(name);
-    const uuid = uuidv4(); // ⇨ '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
+    const uuid = id ?? uuidv4(); // ⇨ '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
     const time = Date.now();
     const newWorkflow: Workflow = {
+      ...input,
       id: uuid,
+      json: json ?? JSON.stringify(defaultGraph),
       name: newFlowName,
-      json,
-      parentFolderID: parentFolderID,
       updateTime: time,
       createTime: time,
-      tags: tags ?? [],
     };
     //add to IndexDB
     await indexdb.workflows.add(newWorkflow);
