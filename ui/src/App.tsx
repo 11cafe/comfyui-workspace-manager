@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useRef, useState, DragEvent } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 // @ts-ignore
 import { app } from "/scripts/app.js";
 // @ts-ignore
@@ -37,7 +37,9 @@ const RecentFilesDrawer = React.lazy(
 );
 const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
 import { scanLocalNewFiles } from "./Api";
-
+const ModelManagerTopbar = React.lazy(
+  () => import("./model-manager/topbar/ModelManagerTopbar"),
+);
 const usedWsEvents = [
   // InstallProgress.tsx
   "download_progress",
@@ -120,7 +122,6 @@ export default function App() {
     // };
     // app.registerExtension(ext);
     subsribeToWsToStopWarning();
-    app.canvasEl.addEventListener("drop",handleDrop);
     localStorage.removeItem("workspace");
     localStorage.removeItem("comfyspace");
     try {
@@ -168,20 +169,6 @@ export default function App() {
     usedWsEvents.forEach((event) => {
       api.addEventListener(event, () => null);
     });
-  };
-  
-  const handleDrop = async (e: DragEvent<HTMLCanvasElement> & {canvasX: number, canvasY: number}) => {
-    const eventName = e.dataTransfer.getData('eventName');
-    if (eventName !== 'WorkspaceManagerAddNode') {
-      return;
-    }
-    const modelRelativePath = e.dataTransfer.getData('modelRelativePath');
-    const nodeType = e.dataTransfer.getData('nodeType');
-    const node = LiteGraph.createNode(nodeType);
-    console.log(e);
-    node.pos = [e.canvasX, e.canvasY];
-    node.configure({widgets_values:[modelRelativePath]});
-    app.graph.add(node);
   };
 
   const checkIsDirty = () => {
@@ -342,6 +329,7 @@ export default function App() {
      * so in development environment mode, the first execution is skipped.
      */
     if (
+      // @ts-ignore
       process.env.NODE_ENV === "development" &&
       !developmentEnvLoadFirst.current
     ) {
@@ -457,6 +445,11 @@ export default function App() {
               updatePanelPosition={updatePanelPosition}
               positionStyle={positionStyle}
             />
+            {loadChild && (
+              <Suspense>
+                <ModelManagerTopbar />
+              </Suspense>
+            )}
             {loadChild && route === "recentFlows" && (
               <Suspense>
                 <RecentFilesDrawer
