@@ -131,6 +131,25 @@ duplicate flow by right click menu option:
    Right now you need to have python and GPU server up to run ComfyUI or Automatic111, that’s really painful for people who do not own a GPU. You should be able to run UI independently without paying for GPU💰.
    ➡️ Share and deploy your workflow to cloud in 1click and other people can easily run in browser using cloud GPU with no setup. It should be as easy as running Google Docs or Figma.
 
+## Beta Preview
+We're constantly pushing new features in beta branch, and only wait til it's thoroghly tested then push it to main. But if you would like to join our Beta Preview Program, you can receive latest feature updates pre-launch! Here is how to switch to beta, it requires you have some basic knowledge about command line and git.
+- Make sure you have [git installed](https://git-scm.com/downloads)
+- Open your terminal, go to the ComfyUI directory (where you usually start your python server by `python main.py`
+- in ComfyUI root directory, `cd custom_nodes && cd comfyui-workspace-manager`
+- inside custom_nodes/comfyui-workspace-manager, do `git fetch origin beta && git checkout beta`, you should see something like:
+```
+From https://github.com/11cafe/comfyui-workspace-manager
+ * branch            beta       -> FETCH_HEAD
+Switched to branch 'beta'
+Your branch is up to date with 'origin/beta'.
+```
+- now go back to ComfyUI restart your python server by `python main.py`
+
+‼️ Be careful that beta branch can be unstable, so please please make sure you have backups for all your workflows! You can make a copy of your /my_workflows folder.
+
+If anything goes wrong, and you want to revert back to main, please do the following:
+- inside custom_nodes/comfyui-workspace-manager, do `git checkout main`, then restart your python server and you are back into main branch!
+
 ## Credits
 ComfyUI: https://github.com/comfyanonymous/ComfyUI
 
