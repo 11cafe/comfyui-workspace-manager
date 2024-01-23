@@ -1,5 +1,5 @@
-import { saveDB, deleteLocalDiskFolder } from "../Api";
-import { deleteFlow, listWorkflows, updateFlow } from "./WorkspaceDB";
+import { deleteLocalDiskFolder } from "../Api";
+import { workflowsTable } from "./WorkspaceDB";
 import { EFlowOperationType, Folder } from "../types/dbTypes";
 import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
 import { v4 as uuidv4 } from "uuid";
@@ -19,12 +19,6 @@ export class FoldersTable extends TableBase<Folder> {
     return instance;
   }
 
-  async saveBackup(newFolder: Folder) {
-    const records = await this.getRecords();
-    records[newFolder.id] = newFolder;
-    saveDB("folders", JSON.stringify(records));
-  }
-
   public async create(input: {
     name: string;
     parentFolderID?: string;
@@ -38,8 +32,10 @@ export class FoldersTable extends TableBase<Folder> {
       createTime: Date.now(),
       type: "folder",
     };
-    indexdb.folders.add(folder);
-    this.saveBackup(folder);
+    await indexdb.folders.add(folder);
+    console.log(1);
+
+    this.saveDiskDB();
     return folder;
   }
 
@@ -59,8 +55,9 @@ export class FoldersTable extends TableBase<Folder> {
     if (input.name != null) {
       newRecord.updateTime = Date.now();
     }
-    indexdb.folders.update(input.id, input);
-    this.saveBackup(newRecord);
+    await indexdb.folders.update(input.id, input);
+    console.log(2);
+    this.saveDiskDB();
 
     // folder moved or renamed - move all workflows to the right directory(not required when folded state changes)
     if (input.name != null || input.parentFolderID != null) {
@@ -77,7 +74,7 @@ export class FoldersTable extends TableBase<Folder> {
      * When deleting a folder, if there are files in the folder
      * Breadth traverse all nested folders, find all files, move to root directory or delete as needed.
      */
-    const allFlows = await listWorkflows();
+    const allFlows = (await workflowsTable?.listAll()) ?? [];
     const allFolders = await this.listAll();
     const nestedFolderIdStack = [id];
 
@@ -89,10 +86,12 @@ export class FoldersTable extends TableBase<Folder> {
           if (flow.parentFolderID === curFolderId) {
             switch (flowOperationType) {
               case EFlowOperationType.DELETE:
-                await deleteFlow(flow.id);
+                await workflowsTable?.deleteFlow(flow.id);
                 break;
               case EFlowOperationType.MOVE_TO_ROOT_FOLDER:
-                await updateFlow(flow.id, { parentFolderID: undefined });
+                await workflowsTable?.updateFlow(flow.id, {
+                  parentFolderID: undefined,
+                });
                 break;
             }
           }
@@ -110,13 +109,7 @@ export class FoldersTable extends TableBase<Folder> {
     }
 
     folderPath && (await deleteLocalDiskFolder(folderPath));
-
-    const latestFolders = await this.listAll();
-    const backup: Record<string, Folder> = {};
-    latestFolders.forEach((f) => {
-      backup[f.id] = f;
-    });
-    saveDB("folders", JSON.stringify(backup));
+    this.saveDiskDB();
   }
 
   public async generateUniqueName(name?: string) {

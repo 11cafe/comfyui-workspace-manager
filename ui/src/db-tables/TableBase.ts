@@ -1,6 +1,6 @@
-import { saveDB } from "../Api";
-import { updateWorkspaceIndexDB } from "./IndexDBUtils";
-import { Table, loadTableFromLocalBackup } from "./WorkspaceDB";
+import { getDB, saveDB } from "../Api";
+import { getWorkspaceIndexDB, updateWorkspaceIndexDB } from "./IndexDBUtils";
+import { Table } from "./WorkspaceDB";
 import { indexdb } from "./indexdb";
 
 export class TableBase<T> {
@@ -11,15 +11,31 @@ export class TableBase<T> {
   }
 
   public async listAll(): Promise<T[]> {
-    const objs = await indexdb[this.tableName].toArray();
-    return objs as T[];
+    const list = await indexdb[this.tableName].toArray();
+    return list as T[];
+  }
+
+  public async batchQuery(ids: string[]): Promise<T[]> {
+    const list = await indexdb[this.tableName].bulkGet(ids);
+    return list as T[];
   }
 
   public async getRecords(): Promise<Record<string, T>> {
     console.warn("[DEPRECATED]getRecords() call", this.tableName);
 
-    return await loadTableFromLocalBackup(this.tableName);
+    const jsonStr = await getDB(this.tableName);
+    let json: any;
+    try {
+      json = jsonStr != null ? JSON.parse(jsonStr) : null;
+    } catch (e) {}
+    if (json == null) {
+      const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
+      const comfyspaceData = JSON.parse(comfyspace);
+      json = comfyspaceData[this.tableName];
+    }
+    return json ?? {};
   }
+
   public async get(id: string): Promise<T | undefined> {
     const obj = await indexdb[this.tableName].get(id);
     if (obj) return obj as T;
@@ -34,5 +50,17 @@ export class TableBase<T> {
     delete records[id];
     saveDB(this.tableName, JSON.stringify(records));
     updateWorkspaceIndexDB();
+  }
+
+  // tag、userSettings 主键不是id，需要注意适配；
+  public async saveDiskDB() {
+    console.log(111);
+
+    const latestFullData = await this.listAll();
+    const records: Record<string, T> = {};
+    latestFullData.forEach((f: any) => {
+      f.id && (records[f.id] = f);
+    });
+    saveDB(this.tableName, JSON.stringify(records));
   }
 }

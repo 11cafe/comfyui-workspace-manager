@@ -34,15 +34,11 @@ import {
   IconDownload,
   IconHistory,
 } from "@tabler/icons-react";
-import {
-  Workflow,
-  getWorkflow,
-  userSettingsTable,
-  workspace,
-} from "../db-tables/WorkspaceDB";
+import { workflowsTable, userSettingsTable } from "../db-tables/WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { Overlay } from "./Overlay";
 import { VersionHistoryDrawer } from "./VersionHistoryDrawer";
+import { Workflow } from "../types/dbTypes";
 
 export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
   const {
@@ -59,10 +55,14 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
   const [workflow, setWorkflow] = useState<Workflow>();
 
   useEffect(() => {
-    const workflow = curFlowID ? getWorkflow(curFlowID) : undefined;
-    setNewFlowName(workflow?.name ?? "");
-    setWorkflow(workflow);
+    if (curFlowID) {
+      workflowsTable?.get(curFlowID).then((workflow) => {
+        setNewFlowName(workflow?.name ?? "");
+        setWorkflow(workflow);
+      });
+    }
   }, [curFlowID]);
+
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setNewFlowName(event.target.value);
     submitError && setSubmitError("");
@@ -82,13 +82,8 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
     setIsOpenNewName(false);
   };
 
-  const handleDownload = useCallback(() => {
-    if (!workspace || !curFlowID) {
-      alert("You don't have any workspaces");
-      return;
-    }
-
-    const json_data = getWorkflow(curFlowID);
+  const handleDownload = useCallback(async () => {
+    const json_data = curFlowID ? await workflowsTable?.get(curFlowID) : null;
 
     if (!json_data) {
       alert("Workspace does not exist");

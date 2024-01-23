@@ -1,7 +1,13 @@
 // db.ts
 import Dexie, { Table } from "dexie";
-import { Workflow } from "./WorkspaceDB";
-import { Changelog, Folder, Media, Tag, UserSettings } from "../types/dbTypes";
+import {
+  Changelog,
+  Folder,
+  Media,
+  Tag,
+  UserSettings,
+  Workflow,
+} from "../types/dbTypes";
 
 class ManagerDB extends Dexie {
   workflows!: Table<Workflow, string>;

@@ -3,6 +3,19 @@ export interface SortableItem {
   updateTime: number;
 }
 
+export interface Workflow extends SortableItem {
+  id: string;
+  json: string;
+  lastSavedJson?: string;
+  name: string;
+  createTime: number;
+  filePath?: string;
+  tags?: string[];
+  parentFolderID?: string;
+  mediaIDs?: string[];
+  coverMediaPath?: string;
+}
+
 export type Tags = {
   [name: string]: Tag;
 };

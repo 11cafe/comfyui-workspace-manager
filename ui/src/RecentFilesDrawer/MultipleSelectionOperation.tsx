@@ -1,13 +1,8 @@
 import { Checkbox, HStack, IconButton, Text, Tooltip } from "@chakra-ui/react";
-import {
-  IconListCheck,
-  IconX,
-  IconFileExport,
-  IconDownload,
-} from "@tabler/icons-react";
+import { IconListCheck, IconX, IconDownload } from "@tabler/icons-react";
 import DeleteConfirm from "../components/DeleteConfirm";
 import { ChangeEvent } from "react";
-import { batchDeleteFlow, listWorkflows } from "../db-tables/WorkspaceDB";
+import { workflowsTable } from "../db-tables/WorkspaceDB";
 import JSZip from "JSZip";
 import { formatTimestamp } from "../utils";
 
@@ -28,16 +23,15 @@ export default function MultipleSelectionOperation(props: Props) {
     batchOperationCallback,
   } = props;
 
-  const batchExport = () => {
-    const selectedList = listWorkflows().filter((flow) =>
-      selectedKeys.includes(flow.id)
-    );
+  const batchExport = async () => {
+    const selectedList = await workflowsTable?.batchQuery(selectedKeys);
     const exportName = `ComfyUI workflow ${formatTimestamp(Date.now())}`;
     const zip = new JSZip();
     const folder = zip.folder(exportName);
-    selectedList.forEach((flow) => {
-      folder && folder.file(`${flow.name}.json`, flow.json);
-    });
+    selectedList &&
+      selectedList.forEach((flow) => {
+        folder && folder.file(`${flow.name}.json`, flow.json);
+      });
     zip.generateAsync({ type: "blob" }).then(function (content) {
       const a = document.createElement("a");
       a.href = window.URL.createObjectURL(content);
@@ -75,8 +69,8 @@ export default function MultipleSelectionOperation(props: Props) {
               variant="solid"
               promptMessage={`Are you sure you want to delete these ${selectedKeys.length} checked workflows?`}
               tooltipText="Delete selected"
-              onDelete={() => {
-                batchDeleteFlow(selectedKeys);
+              onDelete={async () => {
+                await workflowsTable?.batchDeleteFlow(selectedKeys);
                 batchOperationCallback("batchDelete");
               }}
             />

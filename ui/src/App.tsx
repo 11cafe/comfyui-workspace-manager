@@ -5,15 +5,11 @@ import { app } from "/scripts/app.js";
 import { api } from "/scripts/api.js";
 import { Box, Portal } from "@chakra-ui/react";
 import {
-  createFlow,
-  getWorkflow,
   loadDBs,
-  updateFlow,
-  workspace,
+  workflowsTable,
   userSettingsTable,
   changelogsTable,
   mediaTable,
-  listWorkflows,
   backfillIndexdb,
 } from "./db-tables/WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
@@ -64,7 +60,7 @@ export default function App() {
   const saveCurWorkflow = useCallback(() => {
     if (curFlowID.current) {
       const graphJson = JSON.stringify(app.graph.serialize());
-      updateFlow(curFlowID.current, {
+      workflowsTable?.updateFlow(curFlowID.current, {
         lastSavedJson: graphJson,
         json: graphJson,
       });
@@ -75,7 +71,8 @@ export default function App() {
       });
     }
   }, []);
-  const discardUnsavedChanges = () => {
+
+  const discardUnsavedChanges = async () => {
     const userInput = confirm(
       "Are you sure you want to discard unsaved changes? This will revert current workflow to your last saved version. You will lose all changes made since your last save.",
     );
@@ -83,7 +80,7 @@ export default function App() {
     if (userInput) {
       // User clicked OK
       if (curFlowID.current) {
-        const flow = getWorkflow(curFlowID.current);
+        const flow = await workflowsTable?.get(curFlowID.current);
         if (flow && flow.lastSavedJson) {
           app.loadGraphData(JSON.parse(flow.lastSavedJson));
         }
@@ -159,7 +156,8 @@ export default function App() {
     if (userSettingsTable?.getSetting("twoWaySync") === true) {
       // Scan all files and subfolders in the local storage directory, compare and find the data that needs to be added in the DB, and perform the new operation
       const myWorkflowsDir = userSettingsTable?.getSetting("myWorkflowsDir");
-      const existFlowIds = listWorkflows().map((flow) => flow.id);
+      const allFlows = await workflowsTable?.listAll();
+      const existFlowIds = (allFlows && allFlows.map((flow) => flow.id)) || [];
       const { fileList, folderList } = await scanLocalNewFiles(
         myWorkflowsDir!,
         existFlowIds,
@@ -174,12 +172,10 @@ export default function App() {
     });
   };
 
-  const checkIsDirty = () => {
+  const checkIsDirty = async () => {
     if (curFlowID.current != null) {
       const graphJson = app.graph.serialize() ?? {};
-      const curWorkflow = curFlowID.current
-        ? getWorkflow(curFlowID.current)
-        : null;
+      const curWorkflow = await workflowsTable?.get(curFlowID.current);
       let lastSaved = {};
       try {
         lastSaved = curWorkflow?.lastSavedJson
@@ -193,13 +189,14 @@ export default function App() {
     }
     return false;
   };
-  const loadWorkflowIDImpl = (id: string) => {
+
+  const loadWorkflowIDImpl = async (id: string) => {
     if (app.graph == null) {
       console.error("app.graph is null cannot load workflow");
       return;
     }
 
-    const flow = getWorkflow(id);
+    const flow = await workflowsTable?.get(id);
 
     if (flow == null) {
       alert("Error: Workflow not found! id: " + id);
@@ -210,6 +207,7 @@ export default function App() {
     app.loadGraphData(JSON.parse(flow.json));
     setRoute("root");
   };
+
   const loadWorkflowID = (id: string) => {
     const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
     if (autoSaveEnabled || !isDirty) {
@@ -236,8 +234,11 @@ export default function App() {
   };
   const loadNewWorkflow = async (input?: { json?: string; name?: string }) => {
     const jsonStr = input?.json ?? JSON.stringify(defaultGraph);
-    const flow = await createFlow({ json: jsonStr, name: input?.name });
-    loadWorkflowID(flow.id);
+    const flow = await workflowsTable?.createFlow({
+      json: jsonStr,
+      name: input?.name,
+    });
+    flow && loadWorkflowID(flow.id);
     setRoute("root");
   };
 
@@ -264,20 +265,17 @@ export default function App() {
     workflowID: string,
     newFlowName?: string,
   ) => {
-    if (workspace == null) {
-      return;
-    }
-    const workflow = getWorkflow(workflowID);
+    const workflow = await workflowsTable?.get(workflowID);
     if (workflow == null) {
       return;
     }
-    const flow = await createFlow({
+    const flow = await workflowsTable?.createFlow({
       json: workflow.json,
       name: newFlowName || workflow.name,
       parentFolderID: workflow.parentFolderID,
       tags: workflow.tags,
     });
-    loadWorkflowID(flow.id);
+    flow && loadWorkflowID(flow.id);
   };
 
   const updatePanelPosition = useCallback(
@@ -340,18 +338,20 @@ export default function App() {
     }
     graphAppSetup();
     setLoadChild(true);
-    autoSaveTimer.current = setInterval(() => {
+    autoSaveTimer.current = setInterval(async () => {
       const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
 
       if (curFlowID.current != null && autoSaveEnabled) {
         // autosave workflow if enabled
         const graphJson = JSON.stringify(app.graph.serialize());
         graphJson != null &&
-          updateFlow(curFlowID.current, {
+          (await workflowsTable?.updateFlow(curFlowID.current, {
             json: graphJson,
-          });
+          }));
       }
-      setIsDirty(checkIsDirty());
+      checkIsDirty().then((res) => {
+        setIsDirty(res);
+      });
     }, 1000);
     // pullAuthTokenCloseIfExist();
 
@@ -363,13 +363,12 @@ export default function App() {
     ) as HTMLInputElement;
     const fileInputListener = async () => {
       if (fileInput && fileInput.files && fileInput.files.length > 0) {
-        const flow = await createFlow({
-          // @ts-ignore
+        const flow = await workflowsTable?.createFlow({
           name: fileInput.files[0].name,
           json: JSON.stringify(defaultGraph),
         });
 
-        setCurFlowIDAndName(flow.id, flow.name ?? "Unknown name");
+        flow && setCurFlowIDAndName(flow.id, flow.name ?? "Unknown name");
       }
     };
     fileInput?.addEventListener("change", fileInputListener);

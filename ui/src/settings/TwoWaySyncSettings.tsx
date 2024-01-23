@@ -1,4 +1,4 @@
-import { Checkbox, Input, Stack, Text } from "@chakra-ui/react";
+import { Checkbox, Stack, Text } from "@chakra-ui/react";
 import { useState } from "react";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 
@@ -17,7 +17,7 @@ export default function TwoWaySyncSettings() {
         isChecked={checked}
         onChange={(e) => {
           setChecked(e.target.checked);
-          userSettingsTable?.upsert({ autoSave: e.target.checked });
+          userSettingsTable?.upsert({ twoWaySync: e.target.checked });
         }}
       >
         Enable two way sync (Experimental)

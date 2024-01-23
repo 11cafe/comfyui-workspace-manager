@@ -1,7 +1,7 @@
 import { Box, Menu, MenuList, MenuItem } from "@chakra-ui/react";
 import { MouseEvent, useContext, useRef, useState } from "react";
 import { RecentFilesContext } from "../WorkspaceContext";
-import { createFlow, foldersTable } from "../db-tables/WorkspaceDB";
+import { workflowsTable, foldersTable } from "../db-tables/WorkspaceDB";
 import EditFolderNameModal from "../components/EditFolderName";
 import {
   IconFileImport,
@@ -42,7 +42,7 @@ export default function FilesListFolderItemRightClickMenu({
   };
   const onClickNewFile = async (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    await createFlow({
+    await workflowsTable?.createFlow({
       json: JSON.stringify(defaultGraph),
       parentFolderID: folder.id,
     });

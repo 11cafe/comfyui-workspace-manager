@@ -1,16 +1,11 @@
 import { deleteFile, updateFile } from "../Api";
-import {
-  Workflow,
-  foldersTable,
-  updateFlow,
-  userSettingsTable,
-  listWorkflows,
-} from "./WorkspaceDB";
+import { foldersTable, workflowsTable, userSettingsTable } from "./WorkspaceDB";
 import {
   COMFYSPACE_TRACKING_FIELD_NAME,
   LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
 } from "../const";
 import { toFileNameFriendly } from "../utils";
+import { Workflow } from "../types/dbTypes";
 
 export async function saveJsonFileMyWorkflows(workflow: Workflow) {
   const file_path = await generateFilePath(workflow);
@@ -18,7 +13,7 @@ export async function saveJsonFileMyWorkflows(workflow: Workflow) {
     return;
   }
   const fullPath = await generateFilePathAbsolute(workflow);
-  await updateFlow(workflow.id, {
+  await workflowsTable?.updateFlow(workflow.id, {
     filePath: fullPath ?? undefined,
   });
   const json = workflow.json;
@@ -100,7 +95,7 @@ export async function generateFolderPath(id: string): Promise<string | null> {
 }
 
 export async function getFileCountInFolder(folderId: string): Promise<number> {
-  const allFlows = await listWorkflows();
+  const allFlows = (await workflowsTable?.listAll()) ?? [];
   const allFolders = (await foldersTable?.listAll()) ?? [];
   const nestedFolderIdStack = [folderId];
   let count = 0;

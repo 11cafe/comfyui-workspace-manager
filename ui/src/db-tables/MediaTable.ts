@@ -1,6 +1,6 @@
 import { saveDB } from "../Api";
 import { v4 as uuidv4 } from "uuid";
-import { Table, getWorkflow, updateFlow } from "./WorkspaceDB";
+import { Table, workflowsTable } from "./WorkspaceDB";
 import { updateWorkspaceIndexDB } from "./IndexDBUtils";
 import { TableBase } from "./TableBase";
 import { Media } from "../types/dbTypes";
@@ -38,9 +38,9 @@ export class MediaTable extends TableBase<Media> {
       format: format,
     };
     //link media to workflow
-    const curMedia = getWorkflow(input.workflowID)?.mediaIDs ?? [];
-    const newMedia = new Set(curMedia).add(md.id);
-    updateFlow(input.workflowID, {
+    const workflow = await workflowsTable?.get(input.workflowID);
+    const newMedia = new Set(workflow?.mediaIDs ?? []).add(md.id);
+    await workflowsTable?.updateFlow(input.workflowID, {
       mediaIDs: Array.from(newMedia),
       coverMediaPath: md.localPath,
     });
