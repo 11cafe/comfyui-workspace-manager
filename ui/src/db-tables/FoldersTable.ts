@@ -39,7 +39,7 @@ export class FoldersTable extends TableBase<Folder> {
       type: "folder",
     };
     indexdb.folders.add(folder);
-    this.saveBackup(folder);
+    await this.saveBackup(folder);
     return folder;
   }
 
@@ -59,8 +59,8 @@ export class FoldersTable extends TableBase<Folder> {
     if (input.name != null) {
       newRecord.updateTime = Date.now();
     }
-    indexdb.folders.update(input.id, input);
-    this.saveBackup(newRecord);
+    await indexdb.folders.update(input.id, input);
+    await this.saveBackup(newRecord);
 
     // folder moved or renamed - move all workflows to the right directory(not required when folded state changes)
     if (input.name != null || input.parentFolderID != null) {

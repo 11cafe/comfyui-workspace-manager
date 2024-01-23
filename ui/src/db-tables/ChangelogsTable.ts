@@ -1,6 +1,4 @@
-import { saveDB } from "../Api";
 import { v4 as uuidv4 } from "uuid";
-import { updateWorkspaceIndexDB } from "./IndexDBUtils";
 import { Table } from "./WorkspaceDB";
 import { Changelog } from "../types/dbTypes";
 import { TableBase } from "./TableBase";
@@ -54,10 +52,7 @@ export class ChangelogsTable extends TableBase<Changelog> {
       createTime: Date.now(),
     };
     await indexdb.changelogs.add(change);
-    const records = await this.getRecords();
-    records[change.id] = change;
-    saveDB(ChangelogsTable.TABLE_NAME, JSON.stringify(records));
-    updateWorkspaceIndexDB();
+    await this.saveDiskDB();
     return change;
   }
 }

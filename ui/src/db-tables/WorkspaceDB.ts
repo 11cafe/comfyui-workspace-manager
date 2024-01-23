@@ -13,7 +13,7 @@ import {
 import { Folder, SortableItem } from "../types/dbTypes";
 import { UserSettingsTable } from "./UserSettingsTable";
 import { indexdb } from "./indexdb";
-import { TagsTable } from "./TagsTable";
+import { TagsTable } from "./tagsTable";
 
 export type Table =
   | "workflows"

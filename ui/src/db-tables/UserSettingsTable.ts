@@ -35,6 +35,7 @@ export class UserSettingsTable extends TableBase<UserSettings> {
       ...newPairs,
     };
     indexdb.userSettings.put(this.records);
+    // TODO: need to migrate to saveDiskDB after changing it to async
     saveDB(UserSettingsTable.TABLE_NAME, JSON.stringify(this.records));
   }
 

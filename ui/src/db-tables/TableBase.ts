@@ -1,6 +1,5 @@
 import { saveDB } from "../Api";
-import { Folder, TableBaseModel } from "../types/dbTypes";
-import { updateWorkspaceIndexDB } from "./IndexDBUtils";
+import { TableBaseModel } from "../types/dbTypes";
 import { Table, loadTableFromLocalBackup } from "./WorkspaceDB";
 import { indexdb } from "./indexdb";
 
@@ -23,12 +22,12 @@ export class TableBase<T> {
 
   public async add(newItem: T): Promise<T> {
     await indexdb[this.tableName].add(newItem as any);
-    this.saveDiskDB();
+    await this.saveDiskDB();
     return newItem;
   }
   public async put(newItem: T): Promise<T> {
     await indexdb[this.tableName].add(newItem as any);
-    this.saveDiskDB();
+    await this.saveDiskDB();
     return newItem;
   }
   public async listAll(): Promise<T[]> {
@@ -37,7 +36,10 @@ export class TableBase<T> {
   }
 
   public async getRecords(): Promise<Record<string, T>> {
-    console.warn("[DEPRECATED]getRecords() call", this.tableName);
+    console.warn(
+      "[DEPRECATED] getRecords() call, should only be used for one-time backfill for indexdb",
+      this.tableName,
+    );
 
     return await loadTableFromLocalBackup(this.tableName);
   }
@@ -48,6 +50,6 @@ export class TableBase<T> {
 
   public async delete(id: string) {
     await indexdb[this.tableName].delete(id);
-    this.saveDiskDB();
+    await this.saveDiskDB();
   }
 }
