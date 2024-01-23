@@ -9,14 +9,11 @@ import {
   IconTriangleInvertedFilled,
 } from "@tabler/icons-react";
 import DropdownTitle from "../components/DropdownTitle";
-import { Suspense, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import EditFlowName from "../components/EditFlowName";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { PanelPosition } from "../types/dbTypes";
-import React from "react";
-const ModelManagerTopbar = React.lazy(
-  () => import("../model-manager/topbar/ModelManagerTopbar"),
-);
+
 interface Props {
   positionStyle: PanelPosition;
   updatePanelPosition: (
@@ -70,11 +67,6 @@ export function Topbar({
             <IconTriangleInvertedFilled size={8} />
           </HStack>
         </Button>
-        {loadChild && (
-          <Suspense>
-            <ModelManagerTopbar />
-          </Suspense>
-        )}
         <Tooltip label="New workflow">
           <Button
             size={"sm"}
