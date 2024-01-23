@@ -33,7 +33,7 @@ export class FoldersTable extends TableBase<Folder> {
       type: "folder",
     };
     await indexdb.folders.add(folder);
-    this.saveDiskDB;
+    this.saveDiskDB();
     return folder;
   }
 
