@@ -105,8 +105,8 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
 
   const [closeTimeoutId, setCloseTimeoutId] = useState<number>();
 
-  const delayedClose = () => {
-    setCloseTimeoutId(setTimeout(() => setIsOpen(false), 300)); // delay of 500ms
+  const onClose = () => {
+    setIsOpen(false);
   };
 
   const onOpen = () => {
@@ -117,8 +117,8 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
 
   return (
     <>
-      <Menu isLazy={true} isOpen={isOpen}>
-        <MenuButton onMouseEnter={onOpen} onMouseLeave={delayedClose}>
+      <Menu isLazy={true} isOpen={isOpen} gutter={0}>
+        <MenuButton onMouseEnter={onOpen} onMouseLeave={onClose}>
           <IconButton
             icon={<IconChevronDown size={20} />}
             aria-label="menu"
@@ -128,7 +128,12 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
           />
         </MenuButton>
         <Portal>
-          <MenuList minWidth={150} zIndex={1000} onMouseEnter={onOpen} onMouseLeave={delayedClose}>
+          <MenuList
+            minWidth={150}
+            zIndex={1000}
+            onMouseEnter={onOpen}
+            onMouseLeave={onClose}
+          >
             <MenuItem
               onClick={saveCurWorkflow}
               icon={<IconDeviceFloppy size={20} />}
