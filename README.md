@@ -145,7 +145,13 @@ Your branch is up to date with 'origin/beta'.
 ```
 - now go back to ComfyUI restart your python server by `python main.py`
 
-‼️ Be careful that beta branch can be unstable, so please please make sure you have backups for all your workflows! You can make a copy of your /my_workflows folder.
+‼️ Be careful that beta branch can be unstable, so please please make sure you have backups for all your workflows! Before switching to beta, please make a copy of these folders somewhere:
+
+`ComfyUI/custom_nodes/comfyui-workspace-manager/db`
+or for extra safety, you can make a copy of the entire `ComfyUI/custom_nodes/comfyui-workspace-manager/` folder
+
+if anything goes wrong, you can always paste back these folders. Also, you should have your /my_workflows folder (workspace save directory) in safe place always
+
 
 If anything goes wrong, and you want to revert back to main, please do the following:
 - inside custom_nodes/comfyui-workspace-manager, do `git checkout main`, then restart your python server and you are back into main branch!
