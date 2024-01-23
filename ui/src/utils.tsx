@@ -601,6 +601,11 @@ export function generateUrlHashWithFlowId(id: string) {
   return `${hashArr.join("/")}`;
 }
 
+export const openWorkflowInNewTab = (workflowID: string) => {
+  const newHash = generateUrlHashWithFlowId(workflowID);
+  window.open(`${window.location.origin}/#${newHash}`);
+};
+
 export async function rewriteAllLocalFiles() {
   const flowList = (await workflowsTable?.listAll()) ?? [];
   for (const workflow of flowList) {

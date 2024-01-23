@@ -22,10 +22,11 @@ import {
   getWorkflowIdInUrlHash,
   generateUrlHashWithFlowId,
   rewriteAllLocalFiles,
+  openWorkflowInNewTab,
 } from "./utils";
 import { Topbar } from "./topbar/Topbar";
 // import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
-import { PanelPosition } from "./types/dbTypes";
+import { PanelPosition, Workflow } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
 import React from "react";
 const RecentFilesDrawer = React.lazy(
@@ -33,6 +34,7 @@ const RecentFilesDrawer = React.lazy(
 );
 const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
 import { scanLocalNewFiles } from "./Api";
+import { IconExternalLink } from "@tabler/icons-react";
 const ModelManagerTopbar = React.lazy(
   () => import("./model-manager/topbar/ModelManagerTopbar"),
 );
@@ -93,6 +95,7 @@ export default function App() {
     curFlowID.current = id;
     setFlowID(id);
     setCurFlowName(name);
+    workflowsTable?.updateCurWorkflowID(id);
     if (getWorkflowIdInUrlHash()) {
       const newUrlHash = generateUrlHashWithFlowId(id);
       window.location.hash = newUrlHash;
@@ -104,20 +107,6 @@ export default function App() {
   };
 
   const graphAppSetup = async () => {
-    // const ext: ComfyExtension = {
-    //   // Unique name for the extension
-    //   name: "WorkspaceManager",
-    //   async setup(app) {
-    //     // clean up legacy localStorage
-    //   },
-    //   // @ts-ignore
-    //   async afterConfigureGraph() {
-    //     // to avoid the bug after switching workflow using comfyspace,
-    //     // immediately refresh browser, resulting in latest workflow not updated
-    //     localStorage.setItem("workflow", JSON.stringify(app.graph.serialize()));
-    //   },
-    // };
-    // app.registerExtension(ext);
     subsribeToWsToStopWarning();
     localStorage.removeItem("workspace");
     localStorage.removeItem("comfyspace");
@@ -171,20 +160,24 @@ export default function App() {
 
   const checkIsDirty = async () => {
     if (curFlowID.current != null) {
-      const graphJson = app.graph.serialize() ?? {};
       const curWorkflow = await workflowsTable?.get(curFlowID.current);
-      let lastSaved = {};
-      try {
-        lastSaved = curWorkflow?.lastSavedJson
-          ? JSON.parse(curWorkflow?.lastSavedJson)
-          : {};
-      } catch (e) {
-        console.error("error parsing json", e);
-      }
-      const equal = JSON.stringify(graphJson) === JSON.stringify(lastSaved);
-      return !equal;
+      return !!curWorkflow && checkIsDirtyImpl(curWorkflow);
     }
     return false;
+  };
+  const checkIsDirtyImpl = (curflow: Workflow) => {
+    if (curflow.lastSavedJson == null) return true;
+    const graphJson = app.graph.serialize() ?? {};
+    let lastSaved = {};
+    try {
+      lastSaved = curflow?.lastSavedJson
+        ? JSON.parse(curflow?.lastSavedJson)
+        : {};
+    } catch (e) {
+      console.error("error parsing json", e);
+    }
+    const equal = JSON.stringify(graphJson) === JSON.stringify(lastSaved);
+    return !equal;
   };
 
   const loadWorkflowIDImpl = async (id: string) => {
@@ -212,6 +205,13 @@ export default function App() {
       return;
     }
     showDialog(`Do you want to save the current workflow, ${curFlowName}?`, [
+      {
+        label: "Open in new tab",
+        icon: <IconExternalLink />,
+        onClick: () => {
+          openWorkflowInNewTab(id);
+        },
+      },
       {
         label: "Save",
         colorScheme: "teal",
@@ -373,7 +373,9 @@ export default function App() {
 
     const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
       const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
-      const isDirty = await checkIsDirty();
+      const isDirty =
+        !!workflowsTable?.curWorkflow &&
+        checkIsDirtyImpl(workflowsTable?.curWorkflow);
       if (!autoSaveEnabled && isDirty) {
         e.preventDefault(); // For modern browsers
         e.returnValue = "You have unsaved changes"; // For older browsers

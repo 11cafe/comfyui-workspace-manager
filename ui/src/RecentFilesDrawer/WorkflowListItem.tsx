@@ -12,11 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { IconExternalLink } from "@tabler/icons-react";
 import { isFolder, workflowsTable } from "../db-tables/WorkspaceDB";
-import {
-  formatTimestamp,
-  generateUrlHashWithFlowId,
-  isImageFormat,
-} from "../utils";
+import { formatTimestamp, openWorkflowInNewTab, isImageFormat } from "../utils";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import { useState, memo, ChangeEvent, useContext } from "react";
 import WorkflowListItemRightClickMenu from "./WorkflowListItemRightClickMenu";
@@ -57,11 +53,6 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
     setIsMenuOpen(false);
   };
   const hoverBgColor = colorMode === "light" ? "gray.200" : "#4A5568";
-
-  const openNewTab = () => {
-    const newHash = generateUrlHashWithFlowId(workflow.id);
-    window.open(`${window.location.origin}/#${newHash}`);
-  };
 
   const basicInfoComp = (
     <Box
@@ -170,8 +161,8 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
                 aria-label="Open in new tab"
                 size={"sm"}
                 variant="ghost"
-                onClick={openNewTab}
-                icon={<IconExternalLink color={"#718096"} />}
+                onClick={() => openWorkflowInNewTab(workflow.id)}
+                icon={<IconExternalLink color={"#718096"} size={23} />}
               />
             </Tooltip>
 

@@ -12,6 +12,10 @@ import { ESortTypes, ImportWorkflow } from "../RecentFilesDrawer/types";
 
 export class WorkflowsTable extends TableBase<Workflow> {
   static readonly TABLE_NAME = "workflows";
+  private _curWorkflow: Workflow | null = null;
+  public get curWorkflow() {
+    return this._curWorkflow;
+  }
 
   constructor() {
     super("workflows");
@@ -20,6 +24,11 @@ export class WorkflowsTable extends TableBase<Workflow> {
   static async load(): Promise<WorkflowsTable> {
     const instance = new WorkflowsTable();
     return instance;
+  }
+  public updateCurWorkflowID(id: string) {
+    this.get(id).then((w) => {
+      this._curWorkflow = w ?? null;
+    });
   }
 
   public async createFlow({
@@ -88,6 +97,10 @@ export class WorkflowsTable extends TableBase<Workflow> {
     }
     //update indexdb
     await indexdb.workflows.update(id, newWorkflow);
+    //update curWorkflow ram
+    if (this._curWorkflow && this._curWorkflow.id === id) {
+      this._curWorkflow = newWorkflow;
+    }
     await this.saveDiskDB();
     // save to my_workflows/
     if (input.name !== null || input.parentFolderID !== null) {

@@ -21,6 +21,7 @@ interface DialogButton {
   label: string;
   onClick: () => void;
   colorScheme?: string;
+  icon?: React.ReactElement;
 }
 
 interface DialogContextType {
@@ -84,6 +85,8 @@ export const AlertDialogProvider: React.FC<{ children: ReactNode }> = ({
                         button.onClick();
                         handleClose();
                       }}
+                      iconSpacing={1}
+                      leftIcon={button.icon}
                       ml={3}
                       key={index}
                     >
