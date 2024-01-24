@@ -91,11 +91,16 @@ export default function App() {
     }
   };
 
-  const setCurFlowIDAndName = (id: string, name: string) => {
+  const setCurFlowIDAndName = (id: string | null, name: string) => {
+    // curID null is when you deleted current workflow
     curFlowID.current = id;
     setFlowID(id);
     setCurFlowName(name);
     workflowsTable?.updateCurWorkflowID(id);
+    if (id == null) {
+      document.title = "ComfyUI";
+      return;
+    }
     if (getWorkflowIdInUrlHash()) {
       const newUrlHash = generateUrlHashWithFlowId(id);
       window.location.hash = newUrlHash;
@@ -198,7 +203,13 @@ export default function App() {
     setRoute("root");
   };
 
-  const loadWorkflowID = (id: string) => {
+  const loadWorkflowID = (id: string | null) => {
+    // curID null is when you deleted current workflow
+    if (id === null) {
+      setCurFlowIDAndName(null, "");
+      app.graph.clear();
+      return;
+    }
     const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
     if (autoSaveEnabled || !isDirty) {
       loadWorkflowIDImpl(id);
@@ -373,6 +384,14 @@ export default function App() {
     fileInput?.addEventListener("change", fileInputListener);
 
     const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
+      const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
+      const isDirty =
+        !!workflowsTable?.curWorkflow &&
+        checkIsDirtyImpl(workflowsTable?.curWorkflow);
+      if (!autoSaveEnabled && isDirty) {
+        e.preventDefault(); // For modern browsers
+        e.returnValue = "You have unsaved changes!"; // For older browsers
+      }
       showDialog(
         `Please save or discard your changes before leaving, or your changes will be lost.`,
         [
@@ -392,14 +411,6 @@ export default function App() {
           },
         ],
       );
-      const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
-      const isDirty =
-        !!workflowsTable?.curWorkflow &&
-        checkIsDirtyImpl(workflowsTable?.curWorkflow);
-      if (!autoSaveEnabled && isDirty) {
-        e.preventDefault(); // For modern browsers
-        e.returnValue = "You have unsaved changes"; // For older browsers
-      }
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);

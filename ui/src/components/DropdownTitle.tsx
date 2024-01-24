@@ -142,7 +142,7 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
             >
               Save
             </MenuItem>
-            <Tooltip label="This will revert current workflow to your last saved version. You will lose all changes made since your last save.">
+            <Tooltip label="Revert workflow to your last saved version. You will lose all changes made since your last save.">
               <MenuItem
                 onClick={discardUnsavedChanges}
                 icon={<IconArrowBackUpDouble size={20} />}
