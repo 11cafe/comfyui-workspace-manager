@@ -70,43 +70,11 @@ def read_table(table):
 async def get_workspace(request):
     # Extract the table parameter from the query string
     table = request.query.get('table')
-    data = read_table(table)
+    data = await asyncio.to_thread(read_table, table)
     return web.json_response(data)
 
 BACKUP_DIR = os.path.join(workspace_path, "backup")
 MAX_BACKUP_FILES = 20
-
-
-@server.PromptServer.instance.routes.post("/workspace/save_backup")
-async def save_backup(request):
-    try:
-        data = await request.json()
-        file_path = data.get('file_path')
-        json_str = data.get('json_str')
-
-        file_path = os.path.join(BACKUP_DIR, file_path)
-        if not file_path or not json_str:
-            return web.Response(text=json.dumps({"error": "file_path and json_str are required"}), status=400)
-        directory = os.path.dirname(file_path)
-        # Create the directory if it does not exist
-        os.makedirs(directory, exist_ok=True)
-
-        with open(file_path, 'w') as file:
-            file.write(json_str)
-
-        # Check the number of files in the directory after writing the new file
-        files = [f for f in os.listdir(directory) if os.path.isfile(
-            os.path.join(directory, f))]
-        if len(files) > MAX_BACKUP_FILES:
-            # Find the oldest file (smallest filename)
-            oldest_file = min(files, key=lambda x: x)
-            # Delete the oldest file
-            os.remove(os.path.join(directory, oldest_file))
-
-        return web.Response(text=json.dumps({"message": "File saved successfully"}), status=200)
-    except Exception as e:
-        return web.Response(text=json.dumps({"error": str(e)}), status=500)
-
 
 @server.PromptServer.instance.routes.post("/workspace/list_backup")
 async def list_backup(request):
@@ -174,17 +142,16 @@ async def update_file(request):
     my_workflows_dir = get_my_workflows_dir()
     full_path = os.path.join(my_workflows_dir, file_path)
 
+    def write_json_to_file(full_path, json_str):
+        # Create the directory if it doesn't exist
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        with open(full_path, 'w', encoding='utf-8') as file:
+            file.write(json_str)
+            
     # Offload the file update to a separate thread
     await asyncio.to_thread(write_json_to_file, full_path, json_str)
     return web.Response(text="File updated successfully")
 
-def write_json_to_file(full_path, json_str):
-    # Create the directory if it doesn't exist
-    os.makedirs(os.path.dirname(full_path), exist_ok=True)
-
-    # Perform the file writing
-    with open(full_path, 'w', encoding='utf-8') as file:
-        file.write(json_str)
 
 @server.PromptServer.instance.routes.post("/workspace/delete_file")
 async def delete_file(request):
