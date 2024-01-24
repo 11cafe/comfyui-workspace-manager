@@ -52,22 +52,10 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
     }
   };
 
-  useEffect(() => {
-    const loadTags = async () => {
-      const tags = await tagsTable?.listAll();
-      setAllTags(tags ?? []);
-    };
-    loadTags();
-  }, []);
-
-  useEffect(() => {
-    setSelectedTags(
-      workflow.tags?.map((t) => ({
-        value: t,
-        label: t,
-      })) ?? [],
-    );
-  }, [workflow.tags]);
+  const onOpen = async () => {
+    const tags = await tagsTable?.listAll();
+    setAllTags(tags ?? []);
+  };
 
   if (tagsTable == null) {
     alert("Error: TagsTable is not loaded");
@@ -80,7 +68,7 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
   const maxTagMenuHeight = 37 * 5;
 
   return (
-    <Popover isLazy={true}>
+    <Popover isLazy={true} onOpen={onOpen}>
       <PopoverTrigger>
         <IconButton
           aria-label="Delete confirm"
