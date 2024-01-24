@@ -35,7 +35,7 @@ export default function ModelManagerTopbar({}: Props) {
   }, []);
   return (
     <HStack position={"fixed"} top={2} right={2} gap={2}>
-      {/* <AddMissingModelsButton /> */}
+      <AddMissingModelsButton />
 
       <Button
         size={"sm"}
