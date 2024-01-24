@@ -13,7 +13,7 @@ import {
   Flex,
   Tooltip,
 } from "@chakra-ui/react";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useContext } from "react";
 import {
   workflowsTable,
   isFolder,
@@ -25,7 +25,7 @@ import {
   IconPlus,
   IconFolder,
 } from "@tabler/icons-react";
-import { RecentFilesContext } from "../WorkspaceContext";
+import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
 import { sortFileItem } from "../utils";
 import WorkflowListItem from "./WorkflowListItem";
@@ -53,7 +53,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   >([]);
   const aloneFlowsAndFoldersRef = useRef<Array<Folder | Workflow>>([]);
   const allFlowsRef = useRef<Array<Workflow>>([]);
-
+  const { loadWorkflowID } = useContext(WorkspaceContext);
   const [selectedTag, setSelectedTag] = useState<string>();
   const [multipleState, setMultipleState] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
@@ -119,6 +119,9 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   const onDelete = useCallback(
     async (id: string) => {
       await workflowsTable?.deleteFlow(id);
+      if (workflowsTable?.curWorkflow?.id === id) {
+        loadWorkflowID?.(null);
+      }
       await loadLatestWorkflows();
     },
     [selectedTag, debounceSearchValue],

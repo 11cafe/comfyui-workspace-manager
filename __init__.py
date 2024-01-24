@@ -139,17 +139,17 @@ async def update_file(request):
     data = await request.json()
     file_path = data['file_path']
     json_str = data['json_str']
-    my_workflows_dir = get_my_workflows_dir()
-    full_path = os.path.join(my_workflows_dir, file_path)
 
-    def write_json_to_file(full_path, json_str):
+    def write_json_to_file(json_str):
+        my_workflows_dir = get_my_workflows_dir()
+        full_path = os.path.join(my_workflows_dir, file_path)
         # Create the directory if it doesn't exist
         os.makedirs(os.path.dirname(full_path), exist_ok=True)
         with open(full_path, 'w', encoding='utf-8') as file:
             file.write(json_str)
             
     # Offload the file update to a separate thread
-    await asyncio.to_thread(write_json_to_file, full_path, json_str)
+    await asyncio.to_thread(write_json_to_file, json_str)
     return web.Response(text="File updated successfully")
 
 
@@ -158,22 +158,30 @@ async def delete_file(request):
     data = await request.json()
     file_path = data['file_path']
     delete_empty_folder = data['deleteEmptyFolder']
-    my_workflows_dir = get_my_workflows_dir()
-    full_path = os.path.join(my_workflows_dir, file_path)
 
-    if os.path.exists(full_path):
-        os.remove(full_path)
+    def sync_delete_file(file_path, delete_empty_folder):
+        my_workflows_dir = get_my_workflows_dir()
+        full_path = os.path.join(my_workflows_dir, file_path)
 
-        # Check if the directory is empty after deleting the file
-        directory = os.path.dirname(full_path)
-        if delete_empty_folder and not os.listdir(directory):
-            # If the directory is empty, remove the directory
-            os.rmdir(directory)
-            return web.Response(text="File and empty directory deleted successfully")
+        if os.path.exists(full_path):
+            os.remove(full_path)
+            directory = os.path.dirname(full_path)
+            if delete_empty_folder and not os.listdir(directory):
+                # If the directory is empty, remove the directory
+                os.rmdir(directory)
+                return "File and empty directory deleted successfully"
+            else:
+                return "File deleted successfully"
         else:
-            return web.Response(text="File deleted successfully")
+            return "File not found"
+
+    # Run the synchronous file operation in a separate thread
+    response_text = await asyncio.to_thread(sync_delete_file, file_path, delete_empty_folder)
+    
+    if response_text == "File not found":
+        return web.Response(text=response_text, status=404)
     else:
-        return web.Response(text="File not found", status=404)
+        return web.Response(text=response_text)
 
 
 @server.PromptServer.instance.routes.post("/workspace/rename_file")
