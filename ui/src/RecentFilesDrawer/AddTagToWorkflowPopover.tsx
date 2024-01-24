@@ -46,7 +46,7 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
       setSubmitError(true);
     } else {
       await tagsTable?.create(newTagName);
-      tagsTable?.listAll().then((tags) => setAllTags(tags ?? []));
+      await tagsTable?.listAll().then((tags) => setAllTags(tags ?? []));
       setNewTagName("");
       setSubmitError(false);
     }
