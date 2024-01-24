@@ -1,10 +1,11 @@
-import { Box, Button, HStack } from "@chakra-ui/react";
+import { Button } from "@chakra-ui/react";
 // @ts-ignore
 import { app } from "/scripts/app.js";
 // @ts-ignore
 import { api } from "/scripts/api.js";
 import { useEffect, useState } from "react";
-interface Props {}
+import MissingModelsListDrawer, { MissingModel } from "../missing-models-list-drawer/MissingModelsListDrawer";
+interface Props { }
 
 interface NodeError {
   errors: Array<{
@@ -21,10 +22,11 @@ interface NodeError {
   class_type: string;
 }
 
-export default function InstallMissingModelsButton({}: Props) {
-  const [missngCount, setMissingCount] = useState(0);
+export default function InstallMissingModelsButton({ }: Props) {
+  const [showMyModels, setShowMyModels] = useState(false);
+  const [missingModels, setMissingModels] = useState<MissingModel[]>([]);
   useEffect(() => {
-    const validateInput = async (input: string) => {};
+    const validateInput = async (input: string) => { };
     // monkey patch queue prompt api to catch errors
     const queuePrompt = app.queuePrompt as Function;
     app.queuePrompt = async function () {
@@ -36,20 +38,16 @@ export default function InstallMissingModelsButton({}: Props) {
           string,
           NodeError
         >;
-        setMissingCount(Object.keys(nodeErrors).length);
-        Object.values(nodeErrors).forEach((nodeError) => {
-          nodeError.errors.forEach((error) => {
-            if (error.type === "value_not_in_list") {
-              const { input_name, received_value } = error.extra_info;
-              console.log(
-                "invalid_input",
-                nodeError.class_type,
-                input_name,
-                received_value
-              );
-            }
-          });
-        });
+        setMissingModels(Object.values(nodeErrors).flatMap((nodeError) =>
+          nodeError.errors.filter((error) => error.type === "value_not_in_list").map((error) => {
+            const { input_name, received_value } = error.extra_info;
+            return {
+              class_type: nodeError.class_type,
+              input_name,
+              received_value
+            };
+          })
+        ));
       }
     };
     const graphJson = app.graph.serialize();
@@ -66,8 +64,13 @@ export default function InstallMissingModelsButton({}: Props) {
       });
   }, []);
   return (
-    <Button size={"sm"} aria-label="missing models" px={2}>
-      Missing Models {missngCount > 0 ? `(${missngCount})` : ""}
-    </Button>
+    <>
+      <Button size={"sm"} aria-label="missing models" px={2} onClick={() => setShowMyModels(true)}>
+        Missing Models {missingModels.length > 0 ? `(${missingModels.length})` : ""}
+      </Button>
+      {showMyModels && (
+        <MissingModelsListDrawer onClose={() => setShowMyModels(false)} missingModels={missingModels} />
+      )}
+    </>
   );
 }

@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { Button, Flex, Input, Text } from "@chakra-ui/react";
 
 export default function InstallModelSearchBar({
+  searchQuery,
   setSearchQuery,
 }: {
+  searchQuery: string;
   setSearchQuery: (query: string) => void;
 }) {
-  const [text, setText] = useState("");
+  const [text, setText] = useState(searchQuery);
   // const debounceSearchValue = useDebounce(text, 1000);
   // useEffect(() => {
   //   if (debounceSearchValue !== "") {

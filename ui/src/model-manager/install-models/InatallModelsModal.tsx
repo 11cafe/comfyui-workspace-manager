@@ -59,19 +59,19 @@ const MODEL_TYPE_TO_FOLDER_MAPPING: Record<MODEL_TYPE, string> = {
   Upscaler: "upscale_models",
   VAE: "vae",
 };
-export default function InatallModelsModal({
-  onclose,
-}: {
+
+interface Props {
   onclose: () => void;
-}) {
+  searchQuery?: string;
+  modelType?: MODEL_TYPE;
+}
+export default function InatallModelsModal({ onclose, searchQuery: searchQueryProp = '', modelType: modelTypeProp }: Props) {
   const [models, setModels] = useState<CivitiModel[]>([]);
   const [loading, setLoading] = useState(false);
-  const [modelType, setModelType] = useState<MODEL_TYPE | undefined>(
-    "Checkpoint",
-  );
+  const [modelType, setModelType] = useState(modelTypeProp);
   const toast = useToast();
   const [installing, setInstalling] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(searchQueryProp);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const file = useRef<CivitiModelFileVersion>();
   const loadData = useCallback(async () => {
@@ -186,7 +186,7 @@ export default function InatallModelsModal({
               <Heading size={"md"} mr={2}>
                 Models
               </Heading>
-              <InstallModelSearchBar setSearchQuery={setSearchQuery} />
+              <InstallModelSearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
               <Button size={"sm"} py={1} mr={8} onClick={customUrlDownload}>
                 Custom URL Install
               </Button>
