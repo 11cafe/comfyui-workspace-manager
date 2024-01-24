@@ -1,34 +1,26 @@
-import { useEffect, useState } from "react";
-import { Button, Flex, Input, Text } from "@chakra-ui/react";
+import { Button, Flex, Input } from "@chakra-ui/react";
 
 export default function InstallModelSearchBar({
+  searchQuery,
   setSearchQuery,
+  onSearch,
 }: {
+  searchQuery: string;
   setSearchQuery: (query: string) => void;
+  onSearch: () => void;
 }) {
-  const [text, setText] = useState("");
-  // const debounceSearchValue = useDebounce(text, 1000);
-  // useEffect(() => {
-  //   if (debounceSearchValue !== "") {
-  //     setSearchQuery(debounceSearchValue);
-  //   }
-  // }, [debounceSearchValue]);
   return (
     <Flex gap={1} alignItems={"center"} grow={1}>
       <Input
         placeholder="Search models in CivitAI"
         width={"60%"}
-        value={text}
-        onChange={(e) => setText(e.target.value)}
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
         onKeyUp={(e) => {
-          e.code === "Enter" && setSearchQuery(text);
+          e.code === "Enter" && onSearch();
         }}
       />
-      <Button
-        size={"sm"}
-        onClick={() => setSearchQuery(text)}
-        colorScheme="teal"
-      >
+      <Button size={"sm"} onClick={() => onSearch()} colorScheme="teal">
         Search
       </Button>
     </Flex>

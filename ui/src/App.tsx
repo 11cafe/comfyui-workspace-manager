@@ -204,7 +204,7 @@ export default function App() {
       loadWorkflowIDImpl(id);
       return;
     }
-    showDialog(`Do you want to save the current workflow, ${curFlowName}?`, [
+    showDialog(`Do you want to save the changes you made to, ${curFlowName}?`, [
       {
         label: "Open in new tab",
         icon: <IconExternalLink />,
@@ -373,6 +373,25 @@ export default function App() {
     fileInput?.addEventListener("change", fileInputListener);
 
     const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
+      showDialog(
+        `Please save or discard your changes before leaving, or your changes will be lost.`,
+        [
+          {
+            label: "Save",
+            colorScheme: "teal",
+            onClick: () => {
+              saveCurWorkflow();
+            },
+          },
+          {
+            label: "Discard",
+            colorScheme: "red",
+            onClick: () => {
+              discardUnsavedChanges();
+            },
+          },
+        ],
+      );
       const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
       const isDirty =
         !!workflowsTable?.curWorkflow &&
