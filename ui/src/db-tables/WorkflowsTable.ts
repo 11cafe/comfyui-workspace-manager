@@ -98,7 +98,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
     }
     await this.saveDiskDB();
     // save to my_workflows/
-    if (input.name !== null || input.parentFolderID !== null) {
+    if (input.name != null || input.parentFolderID != null) {
       // renamed file or moved file folder
       await deleteJsonFileMyWorkflows(before);
       await saveJsonFileMyWorkflows(after);
