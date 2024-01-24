@@ -10,6 +10,8 @@ import {
   Input,
   HStack,
   IconButton,
+  Alert,
+  AlertIcon,
 } from "@chakra-ui/react";
 import { useEffect, useState, useContext } from "react";
 import { tagsTable, workflowsTable } from "../db-tables/WorkspaceDB";
@@ -25,6 +27,7 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
   const { onRefreshFilesList } = useContext(RecentFilesContext);
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [newTagName, setNewTagName] = useState("");
+  const [submitError, setSubmitError] = useState(false);
   const initialTags =
     workflow.tags?.map((t) => ({
       value: t,
@@ -33,6 +36,21 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
 
   const [selectedTags, setSelectedTags] =
     useState<MultiValue<{ value: string; label: string }>>(initialTags);
+
+  const addTag = async () => {
+    const tagNameList =
+      (await tagsTable?.listAll().then((list) => list.map((f) => f.name))) ??
+      [];
+    if (tagNameList.includes(newTagName)) {
+      console.log(1111);
+      setSubmitError(true);
+    } else {
+      await tagsTable?.create(newTagName);
+      tagsTable?.listAll().then((tags) => setAllTags(tags ?? []));
+      setNewTagName("");
+      setSubmitError(false);
+    }
+  };
 
   useEffect(() => {
     const loadTags = async () => {
@@ -119,7 +137,7 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
               variant={"flushed"}
               value={newTagName}
               onChange={(e) => {
-                setNewTagName(e.target.value);
+                setNewTagName(e.target.value.trim());
               }}
             />
             <Button
@@ -130,15 +148,19 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
               size={"xs"}
               px={5}
               isDisabled={newTagName.length === 0}
-              onClick={async () => {
-                await tagsTable?.upsert(newTagName);
-                tagsTable?.listAll().then((tags) => setAllTags(tags ?? []));
-                setNewTagName("");
-              }}
+              onClick={addTag}
             >
               New Tag
             </Button>
           </HStack>
+          {submitError ? (
+            <Alert status="error" size="small">
+              <AlertIcon />
+              The name is duplicated, please modify it and submit again.
+            </Alert>
+          ) : (
+            ""
+          )}
         </PopoverBody>
       </PopoverContent>
     </Popover>

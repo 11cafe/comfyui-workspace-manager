@@ -24,13 +24,13 @@ class ManagerDB extends Dexie {
 
   constructor() {
     super(WORKSPACE_INDEXDB_NAME);
-    this.version(1)
+    this.version(2)
       .stores({
         workflows: "&id, name, parentFolderID", // Primary key and indexed props
         changelogs: "&id, workflowID",
         media: "&id, workflowID",
         folders: "&id, name, parentFolderID",
-        tags: "&name",
+        tags: "&id, name",
         userSettings: "&id",
         models: "&id, fileName, fileHash",
         cache: "&id",

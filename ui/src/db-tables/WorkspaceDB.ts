@@ -6,6 +6,7 @@ import { UserSettingsTable } from "./UserSettingsTable";
 import { TagsTable } from "./tagsTable";
 import { indexdb } from "./indexdb";
 import { Folder, Workflow } from "../types/dbTypes";
+import { v4 as uuidv4 } from "uuid";
 
 export type Table =
   | "workflows"
@@ -97,7 +98,14 @@ export async function backfillIndexdb() {
   const backfillTags = async () => {
     try {
       const all = await tagsTable?.getRecords();
-      all && (await indexdb.tags.bulkAdd(Object.values(all)));
+      const tagList = all ? Object.values(all) : [];
+      if (tagList.length > 0 && !tagList[0].id) {
+        tagList.forEach((tag) => {
+          tag.id = uuidv4();
+        });
+      }
+
+      tagList.length > 0 && (await indexdb.tags.bulkAdd(tagList));
     } catch (error) {
       console.error(error);
     }

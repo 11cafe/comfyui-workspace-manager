@@ -24,6 +24,7 @@ export type Tags = {
   [name: string]: Tag;
 };
 export type Tag = {
+  id: string;
   name: string;
   workflowIDs: string[];
   updateTime: number;
