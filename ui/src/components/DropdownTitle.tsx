@@ -3,7 +3,6 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useRef,
   useState,
 } from "react";
 import {
@@ -53,6 +52,7 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
   const [newFlowName, setNewFlowName] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [workflow, setWorkflow] = useState<Workflow>();
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     if (curFlowID) {
@@ -103,66 +103,79 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
   }, [curFlowID]);
   const saveShortcut = userSettingsTable?.getSetting("shortcuts")?.save;
 
+  const [closeTimeoutId, setCloseTimeoutId] = useState<number>();
+
+  const delayedClose = () => {
+    setCloseTimeoutId(setTimeout(() => setIsOpen(false), 200)); // delay of 500ms
+  };
+
+  const onOpen = () => {
+    setIsOpen(true);
+    clearTimeout(closeTimeoutId);
+    setCloseTimeoutId(undefined);
+  };
+
   return (
     <>
-      <Menu isLazy={true}>
-        {({ isOpen }) => (
-          <>
-            <MenuButton onClick={onClick}>
-              <IconButton
-                icon={<IconChevronDown size={20} />}
-                aria-label="menu"
-                size={"xs"}
-                backgroundColor={"#323232"}
-                color={"white"}
-              />
-            </MenuButton>
-            <Portal>
-              <MenuList minWidth={150} zIndex={1000}>
-                <MenuItem
-                  onClick={saveCurWorkflow}
-                  icon={<IconDeviceFloppy size={20} />}
-                  iconSpacing={1}
-                  command={saveShortcut}
-                >
-                  Save
-                </MenuItem>
-                <Tooltip label="This will revert current workflow to your last saved version. You will lose all changes made since your last save.">
-                  <MenuItem
-                    onClick={discardUnsavedChanges}
-                    icon={<IconArrowBackUpDouble size={20} />}
-                    iconSpacing={1}
-                    isDisabled={workflow?.lastSavedJson == null}
-                  >
-                    Discard unsaved changes
-                  </MenuItem>
-                </Tooltip>
-                <MenuItem
-                  onClick={handleDownload}
-                  icon={<IconDownload size={20} />}
-                  iconSpacing={1}
-                >
-                  Download
-                </MenuItem>
-                <MenuItem
-                  onClick={() => setIsOpenNewName(true)}
-                  icon={<IconDeviceFloppy size={20} />}
-                  iconSpacing={1}
-                >
-                  Save As
-                </MenuItem>
-                <MenuItem
-                  onClick={() => setIsVersionHistoryOpen(true)}
-                  icon={<IconHistory size={20} />}
-                  iconSpacing={1}
-                >
-                  Versions History
-                </MenuItem>
-              </MenuList>
-              {isOpen && <Overlay backgroundColor={null} />}
-            </Portal>
-          </>
-        )}
+      <Menu isLazy={true} isOpen={isOpen} gutter={4}>
+        <MenuButton onMouseEnter={onOpen} onMouseLeave={delayedClose}>
+          <IconButton
+            icon={<IconChevronDown size={20} />}
+            aria-label="menu"
+            size={"xs"}
+            backgroundColor={"#323232"}
+            color={"white"}
+          />
+        </MenuButton>
+        <Portal>
+          <MenuList
+            minWidth={150}
+            zIndex={1000}
+            onMouseEnter={onOpen}
+            onMouseLeave={delayedClose}
+          >
+            <MenuItem
+              onClick={saveCurWorkflow}
+              icon={<IconDeviceFloppy size={20} />}
+              iconSpacing={1}
+              command={saveShortcut}
+            >
+              Save
+            </MenuItem>
+            <Tooltip label="This will revert current workflow to your last saved version. You will lose all changes made since your last save.">
+              <MenuItem
+                onClick={discardUnsavedChanges}
+                icon={<IconArrowBackUpDouble size={20} />}
+                iconSpacing={1}
+                isDisabled={workflow?.lastSavedJson == null}
+              >
+                Discard unsaved changes
+              </MenuItem>
+            </Tooltip>
+            <MenuItem
+              onClick={handleDownload}
+              icon={<IconDownload size={20} />}
+              iconSpacing={1}
+            >
+              Download
+            </MenuItem>
+            <MenuItem
+              onClick={() => setIsOpenNewName(true)}
+              icon={<IconDeviceFloppy size={20} />}
+              iconSpacing={1}
+            >
+              Save As
+            </MenuItem>
+            <MenuItem
+              onClick={() => setIsVersionHistoryOpen(true)}
+              icon={<IconHistory size={20} />}
+              iconSpacing={1}
+            >
+              Versions History
+            </MenuItem>
+          </MenuList>
+          {isOpen && <Overlay backgroundColor={null} />}
+        </Portal>
       </Menu>
       {isVersionHistoryOpen && (
         <VersionHistoryDrawer onClose={() => setIsVersionHistoryOpen(false)} />
