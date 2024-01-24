@@ -106,7 +106,7 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
   const [closeTimeoutId, setCloseTimeoutId] = useState<number>();
 
   const delayedClose = () => {
-    setCloseTimeoutId(setTimeout(() => setIsOpen(false), 200)); // delay of 500ms
+    setCloseTimeoutId(setTimeout(() => setIsOpen(false), 300)); // delay of 300ms
   };
 
   const onOpen = () => {

@@ -1,22 +1,18 @@
 import {
   Button,
   HStack,
-  Text,
   Modal,
   ModalOverlay,
   ModalContent,
   ModalHeader,
   ModalBody,
   ModalCloseButton,
-  IconButton,
   Heading,
-  Checkbox,
   Spinner,
   useToast,
   useDisclosure,
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { IconX } from "@tabler/icons-react";
 import { CivitiModel, CivitiModelFileVersion } from "../types";
 import { installModelsApi } from "../api/modelsApi";
 import ModelCard from "./ModelCard";
@@ -65,7 +61,11 @@ interface Props {
   searchQuery?: string;
   modelType?: MODEL_TYPE;
 }
-export default function InatallModelsModal({ onclose, searchQuery: searchQueryProp = '', modelType: modelTypeProp }: Props) {
+export default function InatallModelsModal({
+  onclose,
+  searchQuery: searchQueryProp = "",
+  modelType: modelTypeProp,
+}: Props) {
   const [models, setModels] = useState<CivitiModel[]>([]);
   const [loading, setLoading] = useState(false);
   const [modelType, setModelType] = useState(modelTypeProp);
@@ -175,7 +175,7 @@ export default function InatallModelsModal({ onclose, searchQuery: searchQueryPr
 
   useEffect(() => {
     loadData();
-  }, [searchQuery, modelType]);
+  }, [modelType]);
   return (
     <>
       <Modal isOpen={true} onClose={onclose} blockScrollOnMount={true}>
@@ -186,7 +186,11 @@ export default function InatallModelsModal({ onclose, searchQuery: searchQueryPr
               <Heading size={"md"} mr={2}>
                 Models
               </Heading>
-              <InstallModelSearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+              <InstallModelSearchBar
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                onSearch={loadData}
+              />
               <Button size={"sm"} py={1} mr={8} onClick={customUrlDownload}>
                 Custom URL Install
               </Button>

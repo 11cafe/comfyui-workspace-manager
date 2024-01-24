@@ -91,8 +91,6 @@ export default function MissingModelsListDrawer({
                           `https://civitai.com/search/models?sortBy=models_v5&query=${formatSearchQuery(model.received_value)}`,
                           "_blank",
                         );
-                        // setSearchQuery(formatSearchQuery(model.received_value));
-                        // setShowInstallModels(true);
                       }}
                     >
                       Search in CivitAI
