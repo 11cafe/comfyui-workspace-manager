@@ -5,7 +5,7 @@ import { MediaTable } from "./MediaTable";
 import { UserSettingsTable } from "./UserSettingsTable";
 import { TagsTable } from "./tagsTable";
 import { indexdb } from "./indexdb";
-import { Folder, Workflow } from "../types/dbTypes";
+import { Folder, UserSettings, Workflow } from "../types/dbTypes";
 import { v4 as uuidv4 } from "uuid";
 import { getSystemDir } from "../Api";
 
@@ -100,6 +100,7 @@ export async function backfillIndexdb() {
     try {
       const all = await tagsTable?.getRecords();
       const tagList = all ? Object.values(all) : [];
+      // ID is a new field, compatible with the historical data of existing users.
       if (tagList.length > 0 && !tagList[0].id) {
         tagList.forEach((tag) => {
           tag.id = uuidv4();
@@ -113,21 +114,40 @@ export async function backfillIndexdb() {
   };
   const backfillUserSettings = async () => {
     try {
-      const all = (await userSettingsTable?.getRecords()) ?? {};
-      const backupList = Object.values(all);
-      if (backupList.length === 0 && userSettingsTable) {
-        backupList.push(userSettingsTable?.defaultSettings);
+      /**
+       * In the new version, the data structure of the local disk backup of userSettings has changed, adding id, which is the user id.
+       * Currently the default is set to Default User.
+       * Therefore, the backfill needs to be compatible with the historical data of the original users.
+       */
+      if (!userSettingsTable) return;
+      let backupData = await userSettingsTable?.getRecords();
+      if (Object.keys(backupData).length === 0) {
+        // no local backup data
+        backupData = {
+          [userSettingsTable.DEFAULT_USER]: userSettingsTable.defaultSettings,
+        };
       }
-      if (!backupList[0].myWorkflowsDir) {
+
+      let backfillList;
+      // If userId does not exist, it means that it is historical data and userId needs to be added.
+      if (!backupData[userSettingsTable.DEFAULT_USER]) {
+        backfillList = [
+          {
+            id: userSettingsTable.DEFAULT_USER,
+            ...backupData,
+          },
+        ] as UserSettings[];
+      } else {
+        backfillList = Object.values(backupData);
+      }
+      if (!backfillList[0].myWorkflowsDir) {
         const getDir = await getSystemDir();
         const myWorkflowsDir = `${getDir.dir_path}/my_workflows`;
-        backupList[0].myWorkflowsDir = myWorkflowsDir;
+        backfillList[0].myWorkflowsDir = myWorkflowsDir;
         userSettingsTable!.defaultSettings.myWorkflowsDir = myWorkflowsDir;
       }
-      if (!backupList[0].id) {
-        backupList[0].id = userSettingsTable!.DEFAULT_USER;
-      }
-      all && (await indexdb.userSettings.bulkAdd(backupList));
+      await indexdb.userSettings.bulkAdd(backfillList);
+      await userSettingsTable?.saveDiskDB();
     } catch (error) {
       console.error(error);
     }

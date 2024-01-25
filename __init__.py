@@ -129,9 +129,15 @@ def get_my_workflows_dir():
     data = read_table('userSettings')
     if (data):
         records = json.loads(data)
-        curDir = records[DEFAULT_USER]['myWorkflowsDir'] if records else None
+
+        if DEFAULT_USER in records and 'myWorkflowsDir' in records[DEFAULT_USER]:  
+            curDir = records[DEFAULT_USER]['myWorkflowsDir']  
+        elif 'myWorkflowsDir' in records:  
+            curDir = records['myWorkflowsDir']
+        
         if curDir:
             return curDir
+        
     return os.path.join(comfy_path, 'my_workflows')
 
 
