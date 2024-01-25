@@ -21,7 +21,7 @@ import {
   Tooltip,
 } from "@chakra-ui/react";
 import { IconEdit } from "@tabler/icons-react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { getSystemDir } from "../Api";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { ShortcutSettings } from "../settings/ShortcutSettings";
@@ -36,14 +36,18 @@ export default function WorkspaceSettingsModal({
 }) {
   const [isManualEntry, setIsManualEntry] = useState(false);
   const [isEditDirectory, setIsEditDirectory] = useState(false);
-  const [currentDirectory, setCurrentDirectory] = useState(
-    userSettingsTable?.records.myWorkflowsDir,
-  );
+  const [currentDirectory, setCurrentDirectory] = useState("");
   const [dirPathList, setDirPathList] = useState<string[]>([]);
   const [subdirectoryList, setSubdirectoryList] = useState<string[]>([]);
   const [noPermission, setNoPermission] = useState(false);
   const manualEntryRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
+
+  useEffect(() => {
+    userSettingsTable?.getSetting("myWorkflowsDir").then((res) => {
+      setCurrentDirectory(res);
+    });
+  }, []);
 
   const getDir = async (root?: string) => {
     const {
@@ -99,10 +103,12 @@ export default function WorkspaceSettingsModal({
       }
     }
     const newPath = manualEntry ?? `/${dirPathList.join("/")}`;
-    userSettingsTable?.upsert({
+    await userSettingsTable?.upsert({
       myWorkflowsDir: newPath,
     });
-    setCurrentDirectory(userSettingsTable?.getSetting("myWorkflowsDir"));
+    const getNewPath =
+      (await userSettingsTable?.getSetting("myWorkflowsDir")) ?? "";
+    setCurrentDirectory(getNewPath);
     manualEntry && setNoPermission(false);
     onCloseEditDirectory();
     // to update /my_workflows files in disk to new location

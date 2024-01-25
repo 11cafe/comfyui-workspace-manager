@@ -27,7 +27,7 @@ export class TableBase<T> {
     return newItem;
   }
   public async put(newItem: T): Promise<T> {
-    await indexdb[this.tableName].add(newItem as any);
+    await indexdb[this.tableName].put(newItem as any);
     await this.saveDiskDB();
     return newItem;
   }

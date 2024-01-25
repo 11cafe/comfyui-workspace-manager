@@ -7,6 +7,7 @@ import { TagsTable } from "./tagsTable";
 import { indexdb } from "./indexdb";
 import { Folder, Workflow } from "../types/dbTypes";
 import { v4 as uuidv4 } from "uuid";
+import { getSystemDir } from "../Api";
 
 export type Table =
   | "workflows"
@@ -112,8 +113,21 @@ export async function backfillIndexdb() {
   };
   const backfillUserSettings = async () => {
     try {
-      userSettingsTable?.records &&
-        (await indexdb.userSettings.put(userSettingsTable?.records));
+      const all = (await userSettingsTable?.getRecords()) ?? {};
+      const backupList = Object.values(all);
+      if (backupList.length === 0 && userSettingsTable) {
+        backupList.push(userSettingsTable?.defaultSettings);
+      }
+      if (!backupList[0].myWorkflowsDir) {
+        const getDir = await getSystemDir();
+        const myWorkflowsDir = `${getDir.dir_path}/my_workflows`;
+        backupList[0].myWorkflowsDir = myWorkflowsDir;
+        userSettingsTable!.defaultSettings.myWorkflowsDir = myWorkflowsDir;
+      }
+      if (!backupList[0].id) {
+        backupList[0].id = userSettingsTable!.DEFAULT_USER;
+      }
+      all && (await indexdb.userSettings.bulkAdd(backupList));
     } catch (error) {
       console.error(error);
     }

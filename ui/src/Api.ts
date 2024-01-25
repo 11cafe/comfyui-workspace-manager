@@ -97,7 +97,7 @@ export async function getSystemDir(root?: string) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        absolute_dir: root,
+        absolute_dir: root ?? "",
       }),
     });
     const result = await response.json();

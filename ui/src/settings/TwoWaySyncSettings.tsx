@@ -1,11 +1,20 @@
 import { Checkbox, Stack, Text } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 
 export default function TwoWaySyncSettings() {
-  const curSetting = userSettingsTable?.getSetting("twoWaySync");
+  const [checked, setChecked] = useState(false);
 
-  const [checked, setChecked] = useState(curSetting ?? false);
+  const getTwoWaySync = () => {
+    userSettingsTable?.getSetting("twoWaySync").then((res) => {
+      setChecked(!!res);
+    });
+  };
+
+  useEffect(() => {
+    getTwoWaySync();
+  }, []);
+
   return (
     <Stack>
       <Text color={"GrayText"}>
@@ -15,9 +24,9 @@ export default function TwoWaySyncSettings() {
       </Text>
       <Checkbox
         isChecked={checked}
-        onChange={(e) => {
-          setChecked(e.target.checked);
-          userSettingsTable?.upsert({ twoWaySync: e.target.checked });
+        onChange={async (e) => {
+          await userSettingsTable?.upsert({ twoWaySync: e.target.checked });
+          getTwoWaySync();
         }}
       >
         Enable two way sync (Experimental)

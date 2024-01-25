@@ -117,7 +117,9 @@ export default function App() {
     localStorage.removeItem("comfyspace");
     try {
       await loadDBs();
-      updatePanelPosition(userSettingsTable?.getSetting("topBarStyle"), false);
+      await userSettingsTable?.getSetting("topBarStyle").then((res) => {
+        updatePanelPosition(res, false);
+      });
     } catch (error) {
       console.error("error loading db", error);
     }
@@ -144,9 +146,11 @@ export default function App() {
       localStorage.setItem("REWRITTEN_ALL_LOCAL_DISK_FILE", "true");
     }
 
-    if (userSettingsTable?.getSetting("twoWaySync") === true) {
+    const towWaySyncSwitch = await userSettingsTable?.getSetting("twoWaySync");
+    if (towWaySyncSwitch) {
       // Scan all files and subfolders in the local storage directory, compare and find the data that needs to be added in the DB, and perform the new operation
-      const myWorkflowsDir = userSettingsTable?.getSetting("myWorkflowsDir");
+      const myWorkflowsDir =
+        await userSettingsTable?.getSetting("myWorkflowsDir");
       const allFlows = await workflowsTable?.listAll();
       const existFlowIds = (allFlows && allFlows.map((flow) => flow.id)) || [];
       const { fileList, folderList } = await scanLocalNewFiles(
@@ -203,14 +207,15 @@ export default function App() {
     setRoute("root");
   };
 
-  const loadWorkflowID = (id: string | null) => {
+  const loadWorkflowID = async (id: string | null) => {
     // curID null is when you deleted current workflow
     if (id === null) {
       setCurFlowIDAndName(null, "");
       app.graph.clear();
       return;
     }
-    const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
+    const autoSaveEnabled =
+      (await userSettingsTable?.getSetting("autoSave")) ?? true;
     if (autoSaveEnabled || !isDirty) {
       loadWorkflowIDImpl(id);
       return;
@@ -246,7 +251,7 @@ export default function App() {
       json: jsonStr,
       name: input?.name,
     });
-    flow && loadWorkflowID(flow.id);
+    flow && (await loadWorkflowID(flow.id));
     setRoute("root");
   };
 
@@ -284,7 +289,7 @@ export default function App() {
       parentFolderID: workflow.parentFolderID,
       tags: workflow.tags,
     });
-    flow && loadWorkflowID(flow.id);
+    flow && (await loadWorkflowID(flow.id));
   };
 
   const updatePanelPosition = useCallback(
@@ -311,8 +316,9 @@ export default function App() {
     [positionStyle],
   );
 
-  const shortcutListener = (event: KeyboardEvent) => {
-    if (matchSaveWorkflowShortcut(event)) {
+  const shortcutListener = async (event: KeyboardEvent) => {
+    const needSave = await matchSaveWorkflowShortcut(event);
+    if (needSave) {
       saveCurWorkflow();
     }
   };
@@ -349,7 +355,8 @@ export default function App() {
     graphAppSetup();
     setLoadChild(true);
     autoSaveTimer.current = setInterval(async () => {
-      const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
+      const autoSaveEnabled =
+        (await userSettingsTable?.getSetting("autoSave")) ?? true;
 
       if (curFlowID.current != null && autoSaveEnabled) {
         // autosave workflow if enabled
@@ -384,7 +391,8 @@ export default function App() {
     fileInput?.addEventListener("change", fileInputListener);
 
     const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
-      const autoSaveEnabled = userSettingsTable?.getSetting("autoSave") ?? true;
+      const autoSaveEnabled =
+        (await userSettingsTable?.getSetting("autoSave")) ?? true;
       const isDirty =
         !!workflowsTable?.curWorkflow &&
         checkIsDirtyImpl(workflowsTable?.curWorkflow);

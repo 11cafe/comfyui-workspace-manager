@@ -17,6 +17,7 @@ from .version_control import update_version_if_outdated
 from .service.model_manager.model_installer import download_url_with_wget
 from .service.model_manager.model_list import get_model_list
 WEB_DIRECTORY = "entry"
+DEFAULT_USER = "guest"
 NODE_CLASS_MAPPINGS = {}
 __all__ = ['NODE_CLASS_MAPPINGS']
 version = "V1.0.0"
@@ -128,7 +129,7 @@ def get_my_workflows_dir():
     data = read_table('userSettings')
     if (data):
         records = json.loads(data)
-        curDir = records['myWorkflowsDir'] if records else None
+        curDir = records[DEFAULT_USER]['myWorkflowsDir'] if records else None
         if curDir:
             return curDir
     return os.path.join(comfy_path, 'my_workflows')

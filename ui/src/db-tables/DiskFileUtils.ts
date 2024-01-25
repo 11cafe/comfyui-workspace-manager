@@ -58,7 +58,7 @@ export async function generateFilePathAbsolute(
 ): Promise<string | null> {
   const subPath = await generateFilePath(workflow);
   let myWorkflowsDir = await userSettingsTable?.getSetting("myWorkflowsDir");
-  if (myWorkflowsDir == null) {
+  if (!myWorkflowsDir) {
     console.error("myWorkflowsDir is not set");
     return null;
   }
@@ -83,7 +83,7 @@ export async function generateFolderPath(id: string): Promise<string | null> {
 
   let myWorkflowsDir = await userSettingsTable?.getSetting("myWorkflowsDir");
 
-  if (myWorkflowsDir == null) {
+  if (!myWorkflowsDir) {
     console.error("myWorkflowsDir is not set");
     return null;
   }

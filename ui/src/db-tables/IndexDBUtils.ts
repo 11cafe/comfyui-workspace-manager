@@ -45,11 +45,6 @@ async function writeWorkspaceTable(data: string): Promise<void> {
   }
 }
 
-export async function updateWorkspaceIndexDB() {
-  // since we migrated to indexdb, disabling updating this legacy indexdb backup
-  return;
-}
-
 // Function to read data from the database
 async function readDataFromDatabase(): Promise<string | undefined> {
   try {

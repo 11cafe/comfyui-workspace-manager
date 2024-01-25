@@ -1,18 +1,14 @@
-import { getDB, getSystemDir, saveDB } from "../Api";
 import { UserSettings } from "../types/dbTypes";
-import { getWorkspaceIndexDB } from "./IndexDBUtils";
 import { TableBase } from "./TableBase";
-import { indexdb } from "./indexdb";
-
-const DEFAULT_USER = "guest";
-
 export class UserSettingsTable extends TableBase<UserSettings> {
-  public records: UserSettings;
+  public defaultSettings: UserSettings;
+  public readonly DEFAULT_USER = "guest";
   static readonly TABLE_NAME = "userSettings";
+
   constructor() {
     super("userSettings");
-    this.records = {
-      id: DEFAULT_USER,
+    this.defaultSettings = {
+      id: this.DEFAULT_USER,
       topBarStyle: {
         top: 0,
         left: 0,
@@ -26,42 +22,27 @@ export class UserSettingsTable extends TableBase<UserSettings> {
     };
   }
 
-  public getSetting<K extends keyof UserSettings>(key: K): UserSettings[K] {
-    return this.records[key];
+  public async getSetting<K extends keyof UserSettings>(
+    key: K,
+  ): Promise<UserSettings[K]> {
+    const currentUserSettings: UserSettings | undefined = await this.get(
+      this.DEFAULT_USER,
+    );
+    return currentUserSettings?.[key] ?? this.defaultSettings[key];
   }
-  public upsert(newPairs: Partial<UserSettings>) {
-    this.records = {
-      ...this.records,
+
+  public async upsert(newPairs: Partial<UserSettings>) {
+    const oldSettings =
+      (await this.get(this.DEFAULT_USER)) ?? this.defaultSettings;
+    const newSettings = {
+      ...oldSettings,
       ...newPairs,
     };
-    indexdb.userSettings.put(this.records);
-    // TODO: need to migrate to saveDiskDB after changing it to async，and need to modify the backfill logic in backfillIndexdb
-    saveDB(UserSettingsTable.TABLE_NAME, JSON.stringify(this.records));
+    await this.put(newSettings);
   }
 
   static async load(): Promise<UserSettingsTable> {
     const instance = new UserSettingsTable();
-    let settings = await indexdb.userSettings.get(DEFAULT_USER);
-    if (settings == null) {
-      const jsonStr = await getDB(UserSettingsTable.TABLE_NAME);
-      settings = jsonStr != null ? JSON.parse(jsonStr) : null;
-      if (settings == null) {
-        const comfyspace = (await getWorkspaceIndexDB()) ?? "{}";
-        const comfyspaceData = JSON.parse(comfyspace);
-        settings = comfyspaceData[UserSettingsTable.TABLE_NAME] || {};
-      }
-    }
-    if (settings == null) {
-      settings = instance.records;
-    }
-    if (!settings.myWorkflowsDir) {
-      const getDir = await getSystemDir();
-      settings.myWorkflowsDir = `${getDir.dir_path}/my_workflows`;
-    }
-    if (!settings.id) {
-      settings.id = DEFAULT_USER;
-    }
-    instance.records = settings;
     return instance;
   }
 }
