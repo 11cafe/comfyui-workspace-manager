@@ -17,8 +17,6 @@ export async function getDB(table: Table): Promise<string | undefined> {
 }
 
 export async function saveDB(table: Table, jsonData: string) {
-  // const tableBackupFile = table + "/" + Date.now() + ".json";
-  // saveBackup(tableBackupFile, jsonData);
   try {
     const response = await fetch("/workspace/save_db", {
       method: "POST",
@@ -70,25 +68,6 @@ export async function deleteFile(file_path: string, deleteEmptyFolder = false) {
     return result;
   } catch (error) {
     console.error("Error deleting file:", error);
-  }
-}
-
-export async function saveBackup(file_path: string, jsonData: string) {
-  try {
-    const response = await fetch("/workspace/save_backup", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        file_path: file_path,
-        json_str: jsonData,
-      }),
-    });
-    const result = await response.text();
-    return result;
-  } catch (error) {
-    console.error("Error saving workspace backup:", error);
   }
 }
 

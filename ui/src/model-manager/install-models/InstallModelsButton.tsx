@@ -17,7 +17,7 @@ export default function InstallModelsButton() {
       </Button>
 
       {showInstallModels && (
-        <InatallModelsModal onclose={() => setShowInstallModels(false)} />
+        <InatallModelsModal modelType="Checkpoint" onclose={() => setShowInstallModels(false)} />
       )}
     </>
   );

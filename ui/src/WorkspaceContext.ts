@@ -5,7 +5,7 @@ import { Folder, Workflow } from "./types/dbTypes";
 export const WorkspaceContext = createContext<{
   curFlowID: string | null;
   onDuplicateWorkflow?: (flowID: string, newFlowName?: string) => void;
-  loadWorkflowID: (id: string) => void;
+  loadWorkflowID: (id: string | null) => void;
   saveCurWorkflow: () => void;
   discardUnsavedChanges: () => void;
   isDirty: boolean;

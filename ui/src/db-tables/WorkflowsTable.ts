@@ -26,7 +26,11 @@ export class WorkflowsTable extends TableBase<Workflow> {
     const instance = new WorkflowsTable();
     return instance;
   }
-  public updateCurWorkflowID(id: string) {
+  public updateCurWorkflowID(id: string | null) {
+    if (id == null) {
+      this._curWorkflow = null;
+      return;
+    }
     this.get(id).then((w) => {
       this._curWorkflow = w ?? null;
     });
@@ -88,13 +92,13 @@ export class WorkflowsTable extends TableBase<Workflow> {
     }
     //update indexdb
     await indexdb.workflows.update(id, newWorkflow);
-    //update curWorkflow ram
+    //update curWorkflow RAM
     if (this._curWorkflow && this._curWorkflow.id === id) {
       this._curWorkflow = newWorkflow;
     }
     await this.saveDiskDB();
     // save to my_workflows/
-    if (input.name !== null || input.parentFolderID !== null) {
+    if (input.name != null || input.parentFolderID != null) {
       // renamed file or moved file folder
       await deleteJsonFileMyWorkflows(before);
       await saveJsonFileMyWorkflows(after);
