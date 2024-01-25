@@ -1,11 +1,10 @@
 import { Box, Button, HStack } from "@chakra-ui/react";
-import { useEffect, useState, DragEvent } from "react";
-import React from "react";
+import { lazy, useEffect, useState, DragEvent } from "react";
 import ModelsListDrawer from "../models-list-drawer/ModelsListDrawer";
 // @ts-ignore
 import { app } from "/scripts/app.js";
 
-const AddMissingModelsButton = React.lazy(
+const AddMissingModelsButton = lazy(
   () => import("./InstallMissingModelsButton"),
 );
 interface Props {}
