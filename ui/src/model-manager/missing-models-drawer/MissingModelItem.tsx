@@ -79,6 +79,8 @@ export default function MissingModelItem({ model }: Props) {
 
 function formatSearchQuery(query: string): string {
   return query
+    // Remove path, only applies if model is in a subfolder
+    .replace(/^.*(\\|\/|\:)/, '') 
     // Remove file extension
     .replace(/\.[^/.]+$/, "")
     // Replace special characters with space
