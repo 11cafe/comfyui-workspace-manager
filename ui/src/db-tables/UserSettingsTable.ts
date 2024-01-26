@@ -1,5 +1,7 @@
 import { UserSettings } from "../types/dbTypes";
 import { TableBase } from "./TableBase";
+import { getSystemDir } from "../Api";
+
 export class UserSettingsTable extends TableBase<UserSettings> {
   public defaultSettings: UserSettings;
   public readonly DEFAULT_USER = "guest";
@@ -43,6 +45,8 @@ export class UserSettingsTable extends TableBase<UserSettings> {
 
   static async load(): Promise<UserSettingsTable> {
     const instance = new UserSettingsTable();
+    const getDir = await getSystemDir();
+    instance.defaultSettings.myWorkflowsDir = `${getDir.dir_path}/my_workflows`;
     return instance;
   }
 }

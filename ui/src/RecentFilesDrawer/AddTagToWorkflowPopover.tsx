@@ -10,10 +10,8 @@ import {
   Input,
   HStack,
   IconButton,
-  Alert,
-  AlertIcon,
 } from "@chakra-ui/react";
-import { useEffect, useState, useContext } from "react";
+import { useState, useContext } from "react";
 import { tagsTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import { IconPlus, IconTag } from "@tabler/icons-react";
 import { MultiValue, Select } from "chakra-react-select";
@@ -27,7 +25,6 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
   const { onRefreshFilesList } = useContext(RecentFilesContext);
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [newTagName, setNewTagName] = useState("");
-  const [submitError, setSubmitError] = useState(false);
   const initialTags =
     workflow.tags?.map((t) => ({
       value: t,
@@ -38,18 +35,14 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
     useState<MultiValue<{ value: string; label: string }>>(initialTags);
 
   const addTag = async () => {
-    const tagNameList =
-      (await tagsTable?.listAll().then((list) => list.map((f) => f.name))) ??
-      [];
-    if (tagNameList.includes(newTagName)) {
-      console.log(1111);
-      setSubmitError(true);
-    } else {
-      await tagsTable?.create(newTagName);
-      await tagsTable?.listAll().then((tags) => setAllTags(tags ?? []));
-      setNewTagName("");
-      setSubmitError(false);
-    }
+    await tagsTable?.put({
+      id: newTagName,
+      name: newTagName,
+      workflowIDs: [],
+      updateTime: Date.now(),
+    });
+    await tagsTable?.listAll().then((tags) => setAllTags(tags ?? []));
+    setNewTagName("");
   };
 
   const onOpen = async () => {
@@ -141,14 +134,6 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
               New Tag
             </Button>
           </HStack>
-          {submitError ? (
-            <Alert status="error" size="small">
-              <AlertIcon />
-              The name is duplicated, please modify it and submit again.
-            </Alert>
-          ) : (
-            ""
-          )}
         </PopoverBody>
       </PopoverContent>
     </Popover>
