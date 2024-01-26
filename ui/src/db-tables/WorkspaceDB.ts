@@ -104,8 +104,18 @@ export async function backfillIndexdb() {
   };
   const backfillUserSettings = async () => {
     try {
-      userSettingsTable?.records &&
-        (await indexdb.userSettings.put(userSettingsTable?.records));
+      const tableInstance = userSettingsTable!;
+      const backupData = await tableInstance.getRecords().then((data) => {
+        if (!data[tableInstance.DEFAULT_USER]) {
+          // legacy
+          return data;
+        }
+        return data[tableInstance.DEFAULT_USER];
+      });
+      await indexdb.userSettings.put({
+        ...tableInstance.defaultSettings,
+        ...backupData,
+      });
     } catch (error) {
       console.error(error);
     }

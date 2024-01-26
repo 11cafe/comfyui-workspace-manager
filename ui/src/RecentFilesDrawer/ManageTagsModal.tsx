@@ -34,8 +34,8 @@ export default function ManageTagsModal({ onclose }: { onclose: () => void }) {
             <HStack>
               <ChakraTag>{tag.name}</ChakraTag>
               <IconButton
-                onClick={() => {
-                  tagsTable?.delete(tag.name);
+                onClick={async () => {
+                  await tagsTable?.delete(tag.name);
                   loadTags();
                 }}
                 aria-label="delete-tag"

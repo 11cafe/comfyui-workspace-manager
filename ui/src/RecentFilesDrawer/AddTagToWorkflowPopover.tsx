@@ -11,7 +11,7 @@ import {
   HStack,
   IconButton,
 } from "@chakra-ui/react";
-import { useEffect, useState, useContext } from "react";
+import { useState, useContext } from "react";
 import { tagsTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import { IconPlus, IconTag } from "@tabler/icons-react";
 import { MultiValue, Select } from "chakra-react-select";
@@ -34,22 +34,20 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
   const [selectedTags, setSelectedTags] =
     useState<MultiValue<{ value: string; label: string }>>(initialTags);
 
-  useEffect(() => {
-    const loadTags = async () => {
-      const tags = await tagsTable?.listAll();
-      setAllTags(tags ?? []);
-    };
-    loadTags();
-  }, []);
+  const addTag = async () => {
+    await tagsTable?.put({
+      name: newTagName,
+      workflowIDs: [],
+      updateTime: Date.now(),
+    });
+    await tagsTable?.listAll().then((tags) => setAllTags(tags ?? []));
+    setNewTagName("");
+  };
 
-  useEffect(() => {
-    setSelectedTags(
-      workflow.tags?.map((t) => ({
-        value: t,
-        label: t,
-      })) ?? [],
-    );
-  }, [workflow.tags]);
+  const onOpen = async () => {
+    const tags = await tagsTable?.listAll();
+    setAllTags(tags ?? []);
+  };
 
   if (tagsTable == null) {
     alert("Error: TagsTable is not loaded");
@@ -62,7 +60,7 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
   const maxTagMenuHeight = 37 * 5;
 
   return (
-    <Popover isLazy={true}>
+    <Popover isLazy={true} onOpen={onOpen}>
       <PopoverTrigger>
         <IconButton
           aria-label="Delete confirm"
@@ -119,7 +117,7 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
               variant={"flushed"}
               value={newTagName}
               onChange={(e) => {
-                setNewTagName(e.target.value);
+                setNewTagName(e.target.value.trim());
               }}
             />
             <Button
@@ -130,11 +128,7 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
               size={"xs"}
               px={5}
               isDisabled={newTagName.length === 0}
-              onClick={async () => {
-                await tagsTable?.upsert(newTagName);
-                tagsTable?.listAll().then((tags) => setAllTags(tags ?? []));
-                setNewTagName("");
-              }}
+              onClick={addTag}
             >
               New Tag
             </Button>

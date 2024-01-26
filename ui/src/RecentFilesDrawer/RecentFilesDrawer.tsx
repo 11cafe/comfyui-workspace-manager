@@ -120,7 +120,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
     async (id: string) => {
       await workflowsTable?.deleteFlow(id);
       if (workflowsTable?.curWorkflow?.id === id) {
-        loadWorkflowID?.(null);
+        await loadWorkflowID?.(null);
       }
       await loadLatestWorkflows();
     },

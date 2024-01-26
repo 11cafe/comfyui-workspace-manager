@@ -39,7 +39,7 @@ import { Overlay } from "./Overlay";
 import { VersionHistoryDrawer } from "./VersionHistoryDrawer";
 import { Workflow } from "../types/dbTypes";
 
-export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
+export default function DropdownTitle() {
   const {
     curFlowID,
     onDuplicateWorkflow,
@@ -53,6 +53,7 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
   const [submitError, setSubmitError] = useState("");
   const [workflow, setWorkflow] = useState<Workflow>();
   const [isOpen, setIsOpen] = useState(false);
+  const [saveShortcut, setSaveShortcut] = useState("");
 
   useEffect(() => {
     if (curFlowID) {
@@ -101,7 +102,6 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }, [curFlowID]);
-  const saveShortcut = userSettingsTable?.getSetting("shortcuts")?.save;
 
   const [closeTimeoutId, setCloseTimeoutId] = useState<number>();
 
@@ -113,6 +113,9 @@ export default function DropdownTitle({ onClick }: { onClick?: () => void }) {
     setIsOpen(true);
     clearTimeout(closeTimeoutId);
     setCloseTimeoutId(undefined);
+    userSettingsTable?.getSetting("shortcuts").then((res) => {
+      setSaveShortcut(res?.save);
+    });
   };
 
   return (

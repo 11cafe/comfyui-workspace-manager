@@ -506,8 +506,10 @@ export function getVideoMetadata(file) {
   });
 }
 
-export const matchSaveWorkflowShortcut = (event: KeyboardEvent) => {
-  const short = userSettingsTable?.getSetting("shortcuts")?.save;
+export const matchSaveWorkflowShortcut = async (event: KeyboardEvent) => {
+  const short = await userSettingsTable?.getSetting("shortcuts").then((res) => {
+    return res?.save;
+  });
   if (!short) return false;
   return matchShortcut(event, short);
 };
