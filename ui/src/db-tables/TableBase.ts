@@ -10,7 +10,7 @@ export class TableBase<T> {
   protected constructor(tableName: Table) {
     this.tableName = tableName;
   }
-  async saveDiskDB() {
+  protected async saveDiskDB() {
     const objs = (await indexdb[this.tableName].toArray()) as TableBaseModel[];
     const backup: Record<string, TableBaseModel> = {};
     objs.forEach((f) => {
