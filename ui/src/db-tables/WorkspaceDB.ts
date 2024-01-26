@@ -97,15 +97,7 @@ export async function backfillIndexdb() {
   const backfillTags = async () => {
     try {
       const all = await tagsTable?.getRecords();
-      const tagList = all ? Object.values(all) : [];
-      // ID is a new field, compatible with the historical data of existing users.
-      if (tagList.length > 0 && !tagList[0].id) {
-        tagList.forEach((tag) => {
-          tag.id = tag.name;
-        });
-      }
-
-      tagList.length > 0 && (await indexdb.tags.bulkAdd(tagList));
+      all && (await indexdb.tags.bulkAdd(Object.values(all)));
     } catch (error) {
       console.error(error);
     }

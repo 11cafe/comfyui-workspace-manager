@@ -36,7 +36,6 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
 
   const addTag = async () => {
     await tagsTable?.put({
-      id: newTagName,
       name: newTagName,
       workflowIDs: [],
       updateTime: Date.now(),

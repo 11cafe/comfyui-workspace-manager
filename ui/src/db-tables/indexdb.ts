@@ -30,7 +30,7 @@ class ManagerDB extends Dexie {
         changelogs: "&id, workflowID",
         media: "&id, workflowID",
         folders: "&id, name, parentFolderID",
-        tags: "&id, name",
+        tags: "&name",
         userSettings: "&id",
         models: "&id, fileName, fileHash",
         cache: "&id",

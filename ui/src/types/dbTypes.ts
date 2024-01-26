@@ -18,13 +18,13 @@ export interface Workflow extends SortableItem {
 
 export interface TableBaseModel {
   id: string;
+  name: string;
 }
 
 export type Tags = {
   [name: string]: Tag;
 };
 export type Tag = {
-  id: string;
   name: string;
   workflowIDs: string[];
   updateTime: number;

@@ -35,7 +35,7 @@ export default function ManageTagsModal({ onclose }: { onclose: () => void }) {
               <ChakraTag>{tag.name}</ChakraTag>
               <IconButton
                 onClick={async () => {
-                  await tagsTable?.delete(tag.id);
+                  await tagsTable?.delete(tag.name);
                   loadTags();
                 }}
                 aria-label="delete-tag"

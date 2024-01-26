@@ -16,7 +16,7 @@ export class TableBase<T> {
     objs.forEach((f) => {
       // only tags table is using name as primary key, we either give up backup that table to diskDB
       // or add a id as primary key to it
-      backup[f.id] = f;
+      backup[f.id ?? f.name] = f;
     });
     saveDB(this.tableName, JSON.stringify(backup));
   }
