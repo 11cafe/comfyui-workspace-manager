@@ -113,7 +113,7 @@ export default function InatallModelsModal({
     setModels(json.items);
     // only cache if there is no search query
     if (searchQuery === "") {
-      indexdb.cache.add({
+      indexdb.cache.put({
         id: fullURL,
         value: JSON.stringify({
           data: json.items,
