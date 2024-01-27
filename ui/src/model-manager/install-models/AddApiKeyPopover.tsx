@@ -1,26 +1,34 @@
-import { Popover, PopoverTrigger, PopoverContent, PopoverArrow, PopoverCloseButton, useDisclosure, Button, Input, Stack } from "@chakra-ui/react";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverArrow,
+  PopoverCloseButton,
+  useDisclosure,
+  Button,
+  Input,
+  Stack,
+} from "@chakra-ui/react";
 import { useState } from "react";
+import { setCivitApiKey } from "../../utils/civitUtils";
 
-interface Props {
-  apiKey: string;
-  setApiKey(apiKey: string): void;
-}
+interface Props {}
 
-export default function AddApiKeyPopover({ apiKey, setApiKey }: Props) {
-  const [apiKeyInput, setApiKeyInput] = useState(apiKey);
+export default function AddApiKeyPopover({}: Props) {
+  const [apiKeyInput, setApiKeyInput] = useState("");
   const { onOpen, onClose, isOpen } = useDisclosure();
 
   const saveApiKey = () => {
-    setApiKey(apiKeyInput);
+    setCivitApiKey(apiKeyInput);
     onClose();
-  }
+  };
 
   return (
     <Popover
       isOpen={isOpen}
       onOpen={onOpen}
       onClose={onClose}
-      placement='right'
+      placement="right"
       closeOnBlur={false}
     >
       <PopoverTrigger>
@@ -32,7 +40,11 @@ export default function AddApiKeyPopover({ apiKey, setApiKey }: Props) {
         <PopoverArrow />
         <PopoverCloseButton />
         <Stack spacing={4}>
-          <Input value={apiKeyInput} onChange={e => setApiKeyInput(e.target.value)} placeholder="API Key" />
+          <Input
+            value={apiKeyInput}
+            onChange={(e) => setApiKeyInput(e.target.value)}
+            placeholder="API Key"
+          />
           <Button size={"sm"} py={1} mr={8} onClick={saveApiKey}>
             Save
           </Button>

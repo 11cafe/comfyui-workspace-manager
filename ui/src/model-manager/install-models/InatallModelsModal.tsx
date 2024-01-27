@@ -21,7 +21,7 @@ import ChooseFolder from "./ChooseFolder";
 import InstallProgress from "./InstallProgress";
 import { indexdb } from "../../db-tables/indexdb";
 import AddApiKeyPopover from "./AddApiKeyPopover";
-import useLocalStorage from "../hooks/useLocalStorage";
+import { getCivitApiKey } from "../../utils/civitUtils";
 
 type CivitModelQueryParams = {
   types?: MODEL_TYPE;
@@ -76,7 +76,6 @@ export default function InatallModelsModal({
   const [searchQuery, setSearchQuery] = useState(searchQueryProp);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const file = useRef<CivitiModelFileVersion>();
-  const [apiKey, setApiKey] = useLocalStorage('apiKey', "");
   const loadData = useCallback(async () => {
     setLoading(true);
     const params: CivitModelQueryParams = {
@@ -147,6 +146,7 @@ export default function InatallModelsModal({
     file.current.name != null &&
       setInstalling((cur) => [...cur, file.current?.name ?? ""]);
     let url = file.current.downloadUrl;
+    const apiKey = getCivitApiKey();
     if (apiKey) {
       url += `?token=${apiKey}`;
     }
@@ -172,11 +172,6 @@ export default function InatallModelsModal({
     }
   };
   const customUrlDownload = () => {
-    const downloadUrl = prompt("Enter the URL to download");
-    if (!downloadUrl) {
-      return;
-    }
-    file.current = { id: 0, downloadUrl };
     onOpen();
   };
 
@@ -198,10 +193,10 @@ export default function InatallModelsModal({
                 setSearchQuery={setSearchQuery}
                 onSearch={loadData}
               />
-              <AddApiKeyPopover key={apiKey} apiKey={apiKey} setApiKey={setApiKey} />
               <Button size={"sm"} py={1} mr={8} onClick={customUrlDownload}>
                 Custom URL Install
               </Button>
+              <AddApiKeyPopover />
             </HStack>
             <HStack gap={2} mb={2} wrap={"wrap"}>
               <Button
@@ -246,7 +241,7 @@ export default function InatallModelsModal({
                 return (
                   <ModelCard
                     model={model}
-                    key={model.id + apiKey}
+                    key={model.id}
                     onClickInstallModel={onClickInstallModel}
                     installing={installing}
                   />
@@ -260,7 +255,10 @@ export default function InatallModelsModal({
       <ChooseFolder
         isOpen={isOpen}
         onClose={onClose}
-        selectFolder={downloadModels}
+        selectFolder={(folderPath: string, customUrl: string) => {
+          file.current = { id: 0, downloadUrl: customUrl };
+          downloadModels(folderPath);
+        }}
       />
     </>
   );
