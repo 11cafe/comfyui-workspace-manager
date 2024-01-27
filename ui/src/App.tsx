@@ -390,35 +390,35 @@ export default function App() {
     };
     fileInput?.addEventListener("change", fileInputListener);
 
-    const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
-      const autoSaveEnabled =
-        (await userSettingsTable?.getSetting("autoSave")) ?? true;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      const autoSaveEnabled = userSettingsTable?.autoSave ?? true;
       const isDirty =
         !!workflowsTable?.curWorkflow &&
         checkIsDirtyImpl(workflowsTable?.curWorkflow);
+
       if (!autoSaveEnabled && isDirty) {
         e.preventDefault(); // For modern browsers
         e.returnValue = "You have unsaved changes!"; // For older browsers
+        showDialog(
+          `Please save or discard your changes before leaving, or your changes will be lost.`,
+          [
+            {
+              label: "Save",
+              colorScheme: "teal",
+              onClick: () => {
+                saveCurWorkflow();
+              },
+            },
+            {
+              label: "Discard",
+              colorScheme: "red",
+              onClick: () => {
+                discardUnsavedChanges();
+              },
+            },
+          ],
+        );
       }
-      showDialog(
-        `Please save or discard your changes before leaving, or your changes will be lost.`,
-        [
-          {
-            label: "Save",
-            colorScheme: "teal",
-            onClick: () => {
-              saveCurWorkflow();
-            },
-          },
-          {
-            label: "Discard",
-            colorScheme: "red",
-            onClick: () => {
-              discardUnsavedChanges();
-            },
-          },
-        ],
-      );
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
