@@ -34,7 +34,6 @@ export default function InstallMissingModelsButton({}: Props) {
       try {
         await queuePrompt.apply(app, [...arguments]);
       } finally {
-        console.log("queuePrompt app.node err", app.lastNodeErrors);
         const nodeErrors = (app.lastNodeErrors ?? {}) as Record<
           string,
           NodeError

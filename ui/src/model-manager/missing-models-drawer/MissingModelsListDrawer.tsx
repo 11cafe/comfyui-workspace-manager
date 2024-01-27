@@ -61,7 +61,9 @@ export default function MissingModelsListDrawer({
             </Flex>
           </CardHeader>
           <Grid templateColumns="1" gap={1} marginTop={2}>
-            {missingModels.map((model) => <MissingModelItem model={model} />)}
+            {missingModels.map((model) => (
+              <MissingModelItem key={model.received_value} model={model} />
+            ))}
           </Grid>
         </Card>
       </Box>
