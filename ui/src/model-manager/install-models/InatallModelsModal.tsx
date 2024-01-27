@@ -20,6 +20,8 @@ import InstallModelSearchBar from "./InstallModelSearchBar";
 import ChooseFolder from "./ChooseFolder";
 import InstallProgress from "./InstallProgress";
 import { indexdb } from "../../db-tables/indexdb";
+import AddApiKeyPopover from "./AddApiKeyPopover";
+import useLocalStorage from "../hooks/useLocalStorage";
 
 type CivitModelQueryParams = {
   types?: MODEL_TYPE;
@@ -74,6 +76,7 @@ export default function InatallModelsModal({
   const [searchQuery, setSearchQuery] = useState(searchQueryProp);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const file = useRef<CivitiModelFileVersion>();
+  const [apiKey, setApiKey] = useLocalStorage('apiKey', "");
   const loadData = useCallback(async () => {
     setLoading(true);
     const params: CivitModelQueryParams = {
@@ -143,11 +146,15 @@ export default function InatallModelsModal({
     });
     file.current.name != null &&
       setInstalling((cur) => [...cur, file.current?.name ?? ""]);
+    let url = file.current.downloadUrl;
+    if (apiKey) {
+      url += `?token=${apiKey}`;
+    }
     installModelsApi({
       filename: file.current.name,
       name: file.current.name,
       save_path: folderPath,
-      url: file.current.downloadUrl,
+      url,
     });
     onClose();
   };
@@ -191,6 +198,7 @@ export default function InatallModelsModal({
                 setSearchQuery={setSearchQuery}
                 onSearch={loadData}
               />
+              <AddApiKeyPopover key={apiKey} apiKey={apiKey} setApiKey={setApiKey} />
               <Button size={"sm"} py={1} mr={8} onClick={customUrlDownload}>
                 Custom URL Install
               </Button>
@@ -209,6 +217,7 @@ export default function InatallModelsModal({
               {ALL_MODEL_TYPES.map((type) => {
                 return (
                   <Button
+                    key={type}
                     size={"sm"}
                     py={1}
                     isActive={modelType === type}
@@ -237,7 +246,7 @@ export default function InatallModelsModal({
                 return (
                   <ModelCard
                     model={model}
-                    key={model.id}
+                    key={model.id + apiKey}
                     onClickInstallModel={onClickInstallModel}
                     installing={installing}
                   />

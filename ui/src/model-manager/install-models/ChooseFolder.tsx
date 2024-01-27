@@ -61,7 +61,7 @@ export default function ChooseFolder({
               onChange={(e) => setFolderPath(e.target.value)}
             >
               {foldersList.map((folderPath) => (
-                <option value={folderPath}>{folderPath}</option>
+                <option key={folderPath} value={folderPath}>{folderPath}</option>
               ))}
             </Select>
           </AlertDialogBody>
