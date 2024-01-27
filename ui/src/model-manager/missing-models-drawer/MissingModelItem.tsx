@@ -15,22 +15,21 @@ interface Props {
 export default function MissingModelItem({ model }: Props) {
   const [suggestedUrls, setSuggestedUrls] = useState<{ url: string, name: string }[]>([]);
   const modelName = formatSearchQuery(model.received_value);
-  const getSearchData = async () => {
-    // huggingface search
+  const getHuggingFaceData = async () => {
     const hfData = await fetch(`https://huggingface.co/api/models?limit=3&search=${modelName}`);
     const hfSearchResult = await hfData.json() as { id: string; modelId: string }[];
     const hfUrls = hfSearchResult.map(({ modelId }) => ({ name: `${modelId.split('/')[1]} on HuggingFace`, url: `https://huggingface.co/${modelId}` }));
-    console.log(modelName, "hf", hfSearchResult, hfUrls);
-    // civitai search
+    setSuggestedUrls(p => [...p, ...hfUrls]);
+  };
+  const getCivitaiData = async () => {
     const civitaiData = await fetch(`https://civitai.com/api/v1/models?limit=3&query=${modelName}`);
     const civitaiSearchResult = await civitaiData.json() as { items: { id: string, name: string }[] };
     const civitaiUrls = civitaiSearchResult.items?.map(({ name, id }) => ({ name: `${name} on civitAI`, url: `https://civitai.com/models/${id}` })) ?? [];
-    console.log(modelName, "civitai", civitaiSearchResult, civitaiUrls);
-    // set suggested urls
-    setSuggestedUrls([...hfUrls, ...civitaiUrls]);
+    setSuggestedUrls(p => [...p, ...civitaiUrls]);
   };
   useEffect(() => {
-    getSearchData();
+    getHuggingFaceData();
+    getCivitaiData();
   }, [model]);
 
   console.log(suggestedUrls);
@@ -83,8 +82,8 @@ function formatSearchQuery(query: string): string {
     .replace(/^.*(\\|\/|\:)/, '') 
     // Remove file extension
     .replace(/\.[^/.]+$/, "")
-    // Replace special characters with space
-    .replace(/[^a-zA-Z0-9]/g, " ")
+    // Replace underscore with space
+    .replaceAll("_", " ")
     // Add space before capital letters
     .replace(/([A-Z])/g, " $1")
     .trim();

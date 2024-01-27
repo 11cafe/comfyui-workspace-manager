@@ -44,7 +44,7 @@ export default function InstallProgress() {
       paddingX={5}
     >
       {queue.map(({ save_path, progress }) => (
-        <HStack>
+        <HStack key={save_path}>
           <Text fontSize={16} width="40%">
             {save_path.replace(/^.*[\\/]/, "")}
           </Text>

@@ -147,9 +147,21 @@ def download_url_with_agent(url, save_path, progress_callback=None):
 
         req = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(req) as response:
+            if response.status != 200:
+              raise Exception(f"Request returned status code {response.status}")
+  
             file_size = int(response.headers.get('content-length', 0))
+            print(f"File size: {file_size} bytes")
             chunk_size = 1024  # 1KB per chunk
             downloaded = 0
+
+            if file_size == 0:
+              html = response.read().decode()
+              title = re.search(r'<title>(.*?)</title>', html)[0]
+              if 'Sign in' in title:
+                raise Exception(f"You need to add API key to download this model.")
+              else:
+                raise Exception(f"Download failed. {title}")
 
             if not os.path.exists(os.path.dirname(temp_save_path)):
                 os.makedirs(os.path.dirname(temp_save_path))

@@ -76,6 +76,7 @@ export default function EditFlowName({
     <HStack>
       <Tooltip label={displayName} placement="bottom">
         <Text
+          as="div"
           color="white"
           onClick={startEdit}
           maxW={240}

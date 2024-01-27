@@ -20,6 +20,8 @@ import InstallModelSearchBar from "./InstallModelSearchBar";
 import ChooseFolder from "./ChooseFolder";
 import InstallProgress from "./InstallProgress";
 import { indexdb } from "../../db-tables/indexdb";
+import AddApiKeyPopover from "./AddApiKeyPopover";
+import { getCivitApiKey } from "../../utils/civitUtils";
 
 type CivitModelQueryParams = {
   types?: MODEL_TYPE;
@@ -143,11 +145,16 @@ export default function InatallModelsModal({
     });
     file.current.name != null &&
       setInstalling((cur) => [...cur, file.current?.name ?? ""]);
+    let url = file.current.downloadUrl;
+    const apiKey = getCivitApiKey();
+    if (apiKey) {
+      url += `?token=${apiKey}`;
+    }
     installModelsApi({
       filename: file.current.name,
       name: file.current.name,
       save_path: folderPath,
-      url: file.current.downloadUrl,
+      url,
     });
     onClose();
   };
@@ -165,11 +172,6 @@ export default function InatallModelsModal({
     }
   };
   const customUrlDownload = () => {
-    const downloadUrl = prompt("Enter the URL to download");
-    if (!downloadUrl) {
-      return;
-    }
-    file.current = { id: 0, downloadUrl };
     onOpen();
   };
 
@@ -194,6 +196,7 @@ export default function InatallModelsModal({
               <Button size={"sm"} py={1} mr={8} onClick={customUrlDownload}>
                 Custom URL Install
               </Button>
+              <AddApiKeyPopover />
             </HStack>
             <HStack gap={2} mb={2} wrap={"wrap"}>
               <Button
@@ -209,6 +212,7 @@ export default function InatallModelsModal({
               {ALL_MODEL_TYPES.map((type) => {
                 return (
                   <Button
+                    key={type}
                     size={"sm"}
                     py={1}
                     isActive={modelType === type}
@@ -251,7 +255,10 @@ export default function InatallModelsModal({
       <ChooseFolder
         isOpen={isOpen}
         onClose={onClose}
-        selectFolder={downloadModels}
+        selectFolder={(folderPath: string, customUrl: string) => {
+          file.current = { id: 0, downloadUrl: customUrl };
+          downloadModels(folderPath);
+        }}
       />
     </>
   );

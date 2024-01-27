@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { Box, Button, Portal } from "@chakra-ui/react";
+import { useState } from "react";
+import { Button } from "@chakra-ui/react";
 
 import InatallModelsModal from "./InatallModelsModal";
 
@@ -17,7 +17,10 @@ export default function InstallModelsButton() {
       </Button>
 
       {showInstallModels && (
-        <InatallModelsModal modelType="Checkpoint" onclose={() => setShowInstallModels(false)} />
+        <InatallModelsModal
+          modelType="Checkpoint"
+          onclose={() => setShowInstallModels(false)}
+        />
       )}
     </>
   );
