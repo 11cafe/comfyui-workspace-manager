@@ -25,7 +25,11 @@ interface DialogButton {
 }
 
 interface DialogContextType {
-  showDialog: (message: string, buttons: DialogButton[]) => void;
+  showDialog: (
+    message: string,
+    buttons: DialogButton[],
+    hideCloseIcon?: boolean,
+  ) => void;
 }
 
 const DialogContext = createContext<DialogContextType | undefined>(undefined);
@@ -44,13 +48,18 @@ export const AlertDialogProvider: React.FC<{ children: ReactNode }> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [buttons, setButtons] = useState<DialogButton[]>([]);
+  const [hideCloseIcon, setHideCloseIcon] = useState(false);
   const cancelRef = React.useRef<HTMLButtonElement>(null);
 
-  const showDialog = useCallback((message: string, buttons: DialogButton[]) => {
-    setMessage(message);
-    setButtons(buttons);
-    setIsOpen(true);
-  }, []);
+  const showDialog: DialogContextType["showDialog"] = useCallback(
+    (message, buttons, hideCloseIcon = false) => {
+      setMessage(message);
+      setButtons(buttons);
+      setIsOpen(true);
+      setHideCloseIcon(hideCloseIcon);
+    },
+    [],
+  );
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
@@ -73,9 +82,11 @@ export const AlertDialogProvider: React.FC<{ children: ReactNode }> = ({
                   fontSize="lg"
                   fontWeight="bold"
                 ></AlertDialogHeader>
-                <AlertDialogCloseButton />
+                {!hideCloseIcon ? <AlertDialogCloseButton /> : null}
 
-                <AlertDialogBody>{message}</AlertDialogBody>
+                <AlertDialogBody whiteSpace="pre-wrap">
+                  {message}
+                </AlertDialogBody>
 
                 <AlertDialogFooter>
                   {buttons.map((button, index) => (
