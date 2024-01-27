@@ -121,7 +121,7 @@ export default function DropdownTitle() {
   return (
     <>
       <Menu isLazy={true} isOpen={isOpen} gutter={4}>
-        <MenuButton onMouseEnter={onOpen} onMouseLeave={delayedClose}>
+        <MenuButton as="div" onMouseEnter={onOpen} onMouseLeave={delayedClose}>
           <IconButton
             icon={<IconChevronDown size={20} />}
             aria-label="menu"
