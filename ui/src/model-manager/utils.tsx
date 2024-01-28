@@ -5,7 +5,7 @@ import { app, ComfyApp } from "/scripts/app.js";
 
 export function formatTimestamp(
   unixTimestamp: number,
-  showSec: boolean = false
+  showSec: boolean = false,
 ) {
   // Create a new Date object from the UNIX timestamp
   const date = new Date(unixTimestamp);
@@ -40,3 +40,13 @@ export function KBtoGB(kilobytes: number, decimalPlaces: number = 1) {
     return sizeInMB.toFixed(decimalPlaces) + " MB";
   }
 }
+
+// fro folder_path.py
+export const modelExtensions = [
+  "ckpt",
+  "pt",
+  "bin",
+  "pth",
+  "safetensors",
+  "onnx",
+];

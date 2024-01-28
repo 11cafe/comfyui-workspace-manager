@@ -55,13 +55,15 @@ export default function MissingModelsListDrawer({
           <CardHeader>
             <Flex justifyContent={"space-between"} alignContent={"center"}>
               <Heading size={"md"} mr={2}>
-                Models
+                Missing Models ({missingModels.length})
               </Heading>
               <InstallModelsButton />
             </Flex>
           </CardHeader>
           <Grid templateColumns="1" gap={1} marginTop={2}>
-            {missingModels.map((model) => <MissingModelItem model={model} />)}
+            {missingModels.map((model) => (
+              <MissingModelItem key={model.received_value} model={model} />
+            ))}
           </Grid>
         </Card>
       </Box>
