@@ -30,18 +30,17 @@ It is recommended to do git clone than downloading zip folder, because you can g
 
 ## Features
 ### v1.7 preview (beta testing)
-open workflow in new tab, 1click model install from civitai, view image gen metadata in gallery (prompt, sampler, models used)
+open workflow in new tab, 1click model install from civitai, view image gen metadata in gallery (prompt, sampler, models used). To preview beta: https://github.com/11cafe/comfyui-workspace-manager/tree/main?tab=readme-ov-file#beta-preview
 
-We're looking for beta previewer to preview our beta features! If you are interested, please DM me in discord @briefpeach or email me weixuanfu01@gmail.com
+<img width="400" alt="Screenshot 2024-01-23 at 12 27 34 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/3b543024-3a6b-4fca-9980-e535d83e206e">
 
-<img width="500" alt="Screenshot 2024-01-23 at 12 27 34 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/3b543024-3a6b-4fca-9980-e535d83e206e">
-
-<img width="230" alt="Screenshot 2024-01-23 at 12 26 56 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/d29d0831-a15a-4597-acf6-facee4dbc76e">
+<img width="200" alt="Screenshot 2024-01-23 at 12 26 56 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/d29d0831-a15a-4597-acf6-facee4dbc76e">
 
 ### V1.5
-Every image/video you generate will be saved in the gallery of the current workflow. You can set any image in the gallery as the cover photo of the workflow
+Manually save your workflow by pressing the 💾 button, or ⌨**Shift+S** shortcut (customize this shortcut in Settings). Every time you save, it will create a new record in **Version History**. You can go back and switch versions in version history like git.
+Every image/video you generate will be saved in the gallery of the current workflow. You can set any image in the gallery as the cover photo of the workflow.
 
-<img width="500" alt="Screenshot 2024-01-07 at 7 19 16 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/24556b8f-0480-4440-a473-f0f723393344">
+<img width="467" alt="sidebar" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/0b9b5e1a-02b4-46ed-ab5c-cb8ed366765f">
 
 <img width="460" alt="gallery" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/2b7886c9-2d4a-46c6-adac-429720f74f11">
 
@@ -57,6 +56,30 @@ Every image/video you generate will be saved in the gallery of the current workf
 - 📑Quickly duplicate flow in right-click menu
 - cloud sync & backup workspace so you will never lose your data (Upcoming!)
 - One-click share workflow (Upcoming!)
+
+switch between flows:
+
+<img src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/11543a0f-6cc4-41fb-8666-772ab9a2cfe6" width="500">
+
+🤏drag and drop to insert sub-workflow:
+
+<img src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/7540c45b-be51-4428-8558-96adcc1024c8" width="480">
+
+Bulk import flows:
+
+<img width="400" alt="Screenshot 2024-01-02 at 10 22 45 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/884c8852-73c7-41d6-9179-7fb1fcea9d04">
+
+add tags to flow: 
+
+<img width="400" alt="Screenshot 2023-12-13 at 1 54 04 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/6bf4d22b-f52a-4d23-8882-4a31162616f3">
+
+Workflow operations: Manual Save, Download, Discard unsaved changes: 
+
+<img width="500" alt="Screenshot 2023-12-29 at 9 59 57 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/88c82672-ebf2-4feb-bf5b-74b447843c2c">
+
+duplicate flow by right click menu option:
+
+<img width="200" alt="Screenshot 2023-12-29 at 9 58 26 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/b74c4405-8232-4e39-b995-3b4877d27c9e">
 
 ### Where are my workflow and workspace data stored?
 
@@ -84,33 +107,6 @@ By default, We also enabled auto-saving your current workflow as a cache in case
 
 
 ⚠️ **Avoid using multi browser tab** with this extension for now since it may use old versions to overwrite your workflows. Make sure you only have one tab opening ComfyUI (127.0.0.1:8188). We will have a fundamental fix for this problem in a week
-
-switch between flows:
-
-<img src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/11543a0f-6cc4-41fb-8666-772ab9a2cfe6" width="500">
-
-🤏drag and drop to insert sub-workflow:
-
-<img src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/7540c45b-be51-4428-8558-96adcc1024c8" width="480">
-
-Bulk import flows:
-
-<img width="400" alt="Screenshot 2024-01-02 at 10 22 45 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/884c8852-73c7-41d6-9179-7fb1fcea9d04">
-
-
-
-add tags to flow: 
-
-<img width="400" alt="Screenshot 2023-12-13 at 1 54 04 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/6bf4d22b-f52a-4d23-8882-4a31162616f3">
-
-Workflow operations: Manual Save, Download, Discard unsaved changes: 
-
-<img width="500" alt="Screenshot 2023-12-29 at 9 59 57 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/88c82672-ebf2-4feb-bf5b-74b447843c2c">
-
-duplicate flow by right click menu option:
-
-<img width="200" alt="Screenshot 2023-12-29 at 9 58 26 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/b74c4405-8232-4e39-b995-3b4877d27c9e">
-
 
 **Looking for colaborators and coworkers** to develop this ComfyUI project management tool. If you know React, Python or ML model deployment, please reach out to weixuanfu01@gmail.com We want to make it easy to **manage, share and deploy** ComfyUI project.
 
