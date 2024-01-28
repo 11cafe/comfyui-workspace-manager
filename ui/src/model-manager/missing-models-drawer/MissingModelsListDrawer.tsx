@@ -55,7 +55,7 @@ export default function MissingModelsListDrawer({
           <CardHeader>
             <Flex justifyContent={"space-between"} alignContent={"center"}>
               <Heading size={"md"} mr={2}>
-                Models
+                Missing Models ({missingModels.length})
               </Heading>
               <InstallModelsButton />
             </Flex>

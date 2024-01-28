@@ -1,4 +1,11 @@
-import { GridItem, VStack, Button, Text, Link } from "@chakra-ui/react";
+import {
+  GridItem,
+  VStack,
+  Button,
+  Text,
+  Image,
+  HStack,
+} from "@chakra-ui/react";
 import { IconExternalLink } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { modelExtensions } from "../utils";
@@ -26,12 +33,9 @@ export default function MissingModelItem({ model }: Props) {
       siblings?: { rfilename: string }[];
     }[];
     const hfUrls: missingModelPredict[] = [];
-    console.log(hfSearchResult);
     hfSearchResult.slice(0, 1).forEach(({ modelId, siblings }) => {
-      console.log(modelId, siblings);
-      siblings?.forEach((s) => {
+      siblings?.slice(0, 3).forEach((s) => {
         const ext = s.rfilename.split(".").pop();
-        console.log(ext);
         if (modelExtensions.includes(ext ?? "")) {
           hfUrls.push({
             name: s.rfilename,
@@ -67,21 +71,27 @@ export default function MissingModelItem({ model }: Props) {
     <GridItem p={3} shadow="md" borderWidth="1px">
       <VStack align="start">
         <Text>{model.class_type}</Text>
-        <Text fontWeight="bold">Input:</Text>
-        <Text>{model.input_name}</Text>
-        <Text fontWeight="bold">Received Value:</Text>
-        <Text color="red.400">{model.received_value}</Text>
+        <HStack ml={3}>
+          <Text>{model.input_name}: </Text>
+          <Text color="red.400">{model.received_value}</Text>
+        </HStack>
         {suggestedUrls.map(({ url, name }) => (
-          <Link
-            href={url}
-            isExternal
+          <Button
+            size={"sm"}
             onClick={(e) => {
               e.stopPropagation();
+              window.open(url, "_blank");
             }}
+            leftIcon={
+              <Image
+                width={5}
+                src="https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo.png"
+              />
+            }
+            rightIcon={<IconExternalLink size={20} />}
           >
             {name}
-            <IconExternalLink size={20} />
-          </Link>
+          </Button>
         ))}
         <Button
           colorScheme="blue"
