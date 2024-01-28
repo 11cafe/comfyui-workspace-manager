@@ -18,12 +18,11 @@ export interface MissingModel {
 interface Props {
   model: MissingModel;
 }
-type missingModelPredict = { url: string; name: string; downloadUrl: string };
+type missingModelPredict = { url: string; name: string; downloadUrl?: string };
 export default function MissingModelItem({ model }: Props) {
   const [suggestedUrls, setSuggestedUrls] = useState<missingModelPredict[]>([]);
   const modelName = formatSearchQuery(model.received_value);
   const getHuggingFaceData = async () => {
-    console.warn("fetching hf", modelName);
     const hfData = await fetch(
       `https://huggingface.co/api/models?limit=3&search=${modelName}&full=true`,
     );
@@ -34,15 +33,10 @@ export default function MissingModelItem({ model }: Props) {
     }[];
     const hfUrls: missingModelPredict[] = [];
     hfSearchResult.slice(0, 1).forEach(({ modelId, siblings }) => {
-      siblings?.slice(0, 3).forEach((s) => {
-        const ext = s.rfilename.split(".").pop();
-        if (modelExtensions.includes(ext ?? "")) {
-          hfUrls.push({
-            name: s.rfilename,
-            downloadUrl: `https://huggingface.co/${modelId}/resolve/main/${s.rfilename}`,
-            url: `https://huggingface.co/${modelId}/tree/main`,
-          });
-        }
+      hfUrls.push({
+        name: modelId,
+        downloadUrl: `https://huggingface.co/${modelId}/resolve/main/`,
+        url: `https://huggingface.co/${modelId}/tree/main`,
       });
     });
     setSuggestedUrls(hfUrls);
