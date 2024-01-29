@@ -4,7 +4,14 @@ import {
   isFolder,
   workflowsTable,
 } from "../db-tables/WorkspaceDB";
-import { useState, memo, useContext, useEffect, MouseEvent } from "react";
+import {
+  useState,
+  memo,
+  useContext,
+  useEffect,
+  MouseEvent,
+  DragEvent,
+} from "react";
 import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 import { RecentFilesContext } from "../WorkspaceContext";
 import WorkflowListItem from "./WorkflowListItem";
@@ -22,8 +29,12 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { colorMode } = useColorMode();
-  const { draggingFile, refreshFolderStamp, onRefreshFilesList } =
-    useContext(RecentFilesContext);
+  const {
+    draggingFile,
+    setDraggingFile,
+    refreshFolderStamp,
+    onRefreshFilesList,
+  } = useContext(RecentFilesContext);
   const activeStyle =
     colorMode === "light"
       ? { backgroundColor: "#E2E8F0" }
@@ -45,6 +56,22 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
     setMenuPosition({ x: event.clientX, y: event.clientY });
     setIsMenuOpen(true);
   };
+  const handleDrop = async () => {
+    if (!draggingFile) return setIsActive(false);
+    if (isFolder(draggingFile)) {
+      if (draggingFile.id === folder.id) return setIsActive(false);
+      await foldersTable?.update({
+        id: draggingFile.id,
+        parentFolderID: folder.id,
+      });
+    } else if (!isFolder(draggingFile)) {
+      await workflowsTable?.updateFlow(draggingFile.id, {
+        parentFolderID: folder.id,
+      });
+    }
+    await onRefreshFilesList?.();
+    setIsActive(false);
+  };
   useEffect(() => {
     if (!!folder.isCollapse === isCollapsed) return;
     foldersTable?.update({
@@ -62,22 +89,14 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
           setIsCollapsed(!isCollapsed);
         }}
         onContextMenu={handleContextMenu}
+        draggable="true"
         onDragOver={(e) => {
           e.preventDefault();
           setIsActive(true);
         }}
-        onDragLeave={() => {
-          setIsActive(false);
-        }}
-        onDrop={async () => {
-          if (draggingFile && !isFolder(draggingFile)) {
-            await workflowsTable?.updateFlow(draggingFile.id, {
-              parentFolderID: folder.id,
-            });
-            await onRefreshFilesList?.();
-          }
-          setIsActive(false);
-        }}
+        onDragLeave={() => setIsActive(false)}
+        onDragStart={() => setDraggingFile?.(folder)}
+        onDrop={handleDrop}
         _hover={activeStyle}
         style={isActive || isMenuOpen ? activeStyle : undefined}
       >
@@ -97,14 +116,13 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
           </svg>
         </HStack>
         <Text>{folder.name}</Text>
-
-        <FilesListFolderItemRightClickMenu
-          isopen={isMenuOpen}
-          menuPosition={menuPosition}
-          onClose={() => setIsMenuOpen(false)}
-          folder={folder}
-        />
       </HStack>
+      <FilesListFolderItemRightClickMenu
+        isopen={isMenuOpen}
+        menuPosition={menuPosition}
+        onClose={() => setIsMenuOpen(false)}
+        folder={folder}
+      />
       {!isCollapsed && (
         <Stack ml={4} gap={0}>
           {children.map((file) => {

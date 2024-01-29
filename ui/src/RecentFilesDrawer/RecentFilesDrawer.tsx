@@ -31,7 +31,7 @@ import { sortFileItem } from "../utils";
 import WorkflowListItem from "./WorkflowListItem";
 import MultipleSelectionOperation from "./MultipleSelectionOperation";
 import { ESortTypes, sortTypeLocalStorageKey } from "./types";
-// @ts-ignore
+// @ts-expect-error ComfyUI import
 import { app } from "/scripts/app.js";
 import { insertWorkflowToCanvas3 } from "./InsertWorkflowToCanvas";
 import FilesListFolderItem from "./FilesListFolderItem";
@@ -129,7 +129,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
 
   useEffect(() => {
     loadLatestWorkflows();
-    const handleDrop = async (e: any) => {
+    const handleDrop = async (e: { canvasX: number; canvasY: number }) => {
       if (draggingWorkflowID.current) {
         const flow = await workflowsTable?.get(draggingWorkflowID.current);
         flow &&

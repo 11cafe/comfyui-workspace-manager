@@ -11,10 +11,14 @@ import {
   Tooltip,
 } from "@chakra-ui/react";
 import { IconExternalLink } from "@tabler/icons-react";
-import { isFolder, workflowsTable } from "../db-tables/WorkspaceDB";
+import {
+  foldersTable,
+  isFolder,
+  workflowsTable,
+} from "../db-tables/WorkspaceDB";
 import { formatTimestamp, openWorkflowInNewTab, isImageFormat } from "../utils";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
-import { useState, memo, ChangeEvent, useContext } from "react";
+import { MouseEvent, useState, memo, ChangeEvent, useContext } from "react";
 import WorkflowListItemRightClickMenu from "./WorkflowListItemRightClickMenu";
 import DeleteConfirm from "../components/DeleteConfirm";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
@@ -43,7 +47,7 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
     multiSelectedFlowsID.includes(workflow.id);
   const { curFlowID, loadWorkflowID } = useContext(WorkspaceContext);
   const isSelected = curFlowID === workflow.id;
-  const handleContextMenu = (event: any) => {
+  const handleContextMenu = (event: MouseEvent) => {
     event.preventDefault();
     setMenuPosition({ x: event.clientX, y: event.clientY });
     setIsMenuOpen(true);
@@ -53,6 +57,24 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
     setIsMenuOpen(false);
   };
   const hoverBgColor = colorMode === "light" ? "gray.200" : "#4A5568";
+
+  const handleDrop = async () => {
+    if (!draggingFile) return setIsDraggingOver(false);
+    if (isFolder(draggingFile)) {
+      if (draggingFile.id === workflow.parentFolderID)
+        return setIsDraggingOver(false);
+      await foldersTable?.update({
+        id: draggingFile.id,
+        parentFolderID: workflow.parentFolderID,
+      });
+    } else {
+      await workflowsTable?.updateFlow(draggingFile.id, {
+        parentFolderID: workflow.parentFolderID,
+      });
+    }
+    await onRefreshFilesList?.();
+    setIsDraggingOver(false);
+  };
 
   const basicInfoComp = (
     <Box
@@ -65,23 +87,13 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
       onDragLeave={() => {
         setIsDraggingOver(false);
       }}
-      onDrop={async () => {
-        if (draggingFile && !isFolder(draggingFile)) {
-          await workflowsTable?.updateFlow(draggingFile.id, {
-            parentFolderID: workflow.parentFolderID,
-          });
-          await onRefreshFilesList?.();
-        }
-        setIsDraggingOver(false);
-      }}
+      onDrop={handleDrop}
       backgroundColor={
         isSelected ? "teal.200" : isMenuOpen ? hoverBgColor : undefined
       }
       color={isSelected && !isMultiSelecting ? "#333" : undefined}
       draggable={!isMultiSelecting}
-      onDragStart={(e) => {
-        setDraggingFile && setDraggingFile(workflow);
-      }}
+      onDragStart={() => setDraggingFile?.(workflow)}
       borderRadius={6}
       px={1}
       py={1}
