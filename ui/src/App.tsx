@@ -59,6 +59,7 @@ export default function App() {
   const [loadChild, setLoadChild] = useState(false);
   const developmentEnvLoadFirst = useRef(false);
   const autoSaveTimer = useRef(0);
+  const workflowOverwriteNoticeStateRef = useRef("hide"); // disabled/hide/show;
 
   const saveCurWorkflow = useCallback(() => {
     if (curFlowID.current) {
@@ -359,13 +360,41 @@ export default function App() {
         (await userSettingsTable?.getSetting("autoSave")) ?? true;
 
       if (curFlowID.current != null && autoSaveEnabled) {
-        // autosave workflow if enabled
-        const graphJson = JSON.stringify(app.graph.serialize());
-        graphJson != null &&
-          (await workflowsTable?.updateFlow(curFlowID.current, {
-            json: graphJson,
-          }));
+        const isLatest = await workflowsTable?.latestVersionCheck();
+        if (
+          workflowOverwriteNoticeStateRef.current !== "disabled" &&
+          !isLatest
+        ) {
+          workflowOverwriteNoticeStateRef.current = "show";
+          showDialog(
+            `This notification is to inform you that it appears you've opened the same workflow in multiple tabs. If all tabs are set to auto-save, this may lead to conflicts and potential data loss.\n\nYou might want to consider disabling auto-save to prevent this. We will remind you to save changes if you leave a page with unsaved work.`,
+            [
+              {
+                label: "Do Not Remind Again",
+                onClick: () => {
+                  workflowOverwriteNoticeStateRef.current = "disabled";
+                },
+              },
+              {
+                label: "Disable Auto-Save",
+                colorScheme: "teal",
+                onClick: () => {
+                  userSettingsTable?.upsert({ autoSave: false });
+                },
+              },
+            ],
+            true,
+          );
+        } else {
+          // autosave workflow if enabled
+          const graphJson = JSON.stringify(app.graph.serialize());
+          graphJson != null &&
+            (await workflowsTable?.updateFlow(curFlowID.current, {
+              json: graphJson,
+            }));
+        }
       }
+
       checkIsDirty().then((res) => {
         setIsDirty(res);
       });
@@ -390,35 +419,35 @@ export default function App() {
     };
     fileInput?.addEventListener("change", fileInputListener);
 
-    const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
-      const autoSaveEnabled =
-        (await userSettingsTable?.getSetting("autoSave")) ?? true;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      const autoSaveEnabled = userSettingsTable?.autoSave ?? true;
       const isDirty =
         !!workflowsTable?.curWorkflow &&
         checkIsDirtyImpl(workflowsTable?.curWorkflow);
+
       if (!autoSaveEnabled && isDirty) {
         e.preventDefault(); // For modern browsers
         e.returnValue = "You have unsaved changes!"; // For older browsers
+        showDialog(
+          `Please save or discard your changes before leaving, or your changes will be lost.`,
+          [
+            {
+              label: "Save",
+              colorScheme: "teal",
+              onClick: () => {
+                saveCurWorkflow();
+              },
+            },
+            {
+              label: "Discard",
+              colorScheme: "red",
+              onClick: () => {
+                discardUnsavedChanges();
+              },
+            },
+          ],
+        );
       }
-      showDialog(
-        `Please save or discard your changes before leaving, or your changes will be lost.`,
-        [
-          {
-            label: "Save",
-            colorScheme: "teal",
-            onClick: () => {
-              saveCurWorkflow();
-            },
-          },
-          {
-            label: "Discard",
-            colorScheme: "red",
-            onClick: () => {
-              discardUnsavedChanges();
-            },
-          },
-        ],
-      );
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
