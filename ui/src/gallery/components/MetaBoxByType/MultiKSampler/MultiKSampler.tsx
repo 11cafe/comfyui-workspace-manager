@@ -25,8 +25,8 @@ export const MultiKSampler: MetaBoxTypeCom = ({ metaData }) => {
         </Button>
       </Box>
       {Object.keys(mediaMetaData ?? {})
-        ?.filter(v => !!mediaMetaData?.[v])
-        .map(key => (
+        ?.filter((v) => !!mediaMetaData?.[v])
+        .map((key) => (
           <Flex key={`meta${key}`} gap={2}>
             <Flex gap={1} alignItems={"center"} flexBasis={"200px"}>
               {key}

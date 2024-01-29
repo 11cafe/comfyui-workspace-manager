@@ -37,7 +37,7 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
       const changelogs = await changelogsTable?.listByWorkflowID(flowId);
       setChangelogs(changelogs ?? []);
       const selectedChangelog = changelogs?.filter(
-        c => c.json === workflow?.lastSavedJson,
+        (c) => c.json === workflow?.lastSavedJson,
       );
       const selectedChangelogID = selectedChangelog?.[0]?.id;
       selectedChangelogID && setSelectedVersion(selectedChangelogID);
@@ -77,7 +77,7 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
         <CardBody overflowY={"auto"} gap={0}>
           <Text mb={4}>All the saved changes of this workflow</Text>
           <Stack divider={<StackDivider />} spacing={2}>
-            {changelogs?.map(c => {
+            {changelogs?.map((c) => {
               return (
                 <Button
                   size={"sm"}

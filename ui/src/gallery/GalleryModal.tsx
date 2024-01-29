@@ -51,7 +51,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
   useEffect(() => {
     loadData();
     curFlowID &&
-      workflowsTable?.get(curFlowID).then(flow => {
+      workflowsTable?.get(curFlowID).then((flow) => {
         if (flow) {
           setWorkflowName(flow.name);
           flow?.coverMediaPath && setCoverPath(flow?.coverMediaPath);
@@ -69,7 +69,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
   const onClickMedia = (media: Media) => {
     if (isSelecting) {
       if (selectedID.includes(media.id)) {
-        setSelectedID(selectedID.filter(id => id !== media.id));
+        setSelectedID(selectedID.filter((id) => id !== media.id));
       } else {
         setSelectedID([...selectedID, media.id]);
       }
@@ -118,7 +118,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
                   if (isAllSelected) {
                     setSelectedID([]);
                   } else {
-                    setSelectedID(images.map(i => i.id));
+                    setSelectedID(images.map((i) => i.id));
                   }
                 }}
               >
@@ -138,7 +138,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
         <ModalBody overflowY={"auto"}>
           {!metaData ? (
             <HStack wrap={"wrap"}>
-              {images.map(media => {
+              {images.map((media) => {
                 if (media.localPath == null) {
                   return null;
                 }

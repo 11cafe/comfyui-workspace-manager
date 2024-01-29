@@ -31,7 +31,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
       this._curWorkflow = null;
       return;
     }
-    this.get(id).then(w => {
+    this.get(id).then((w) => {
       this._curWorkflow = w ?? null;
     });
   }
@@ -174,13 +174,14 @@ export class WorkflowsTable extends TableBase<Workflow> {
     sortBy?: ESortTypes,
   ) {
     const workflows =
-      (await this.listAll().then(list =>
-        list.filter(w => w.parentFolderID == folderID),
+      (await this.listAll().then((list) =>
+        list.filter((w) => w.parentFolderID == folderID),
       )) ?? [];
     const folders =
       (await foldersTable
         ?.listAll()
-        .then(list => list.filter(f => f.parentFolderID == folderID))) ?? [];
+        .then((list) => list.filter((f) => f.parentFolderID == folderID))) ??
+      [];
 
     const all = [...workflows, ...folders];
 

@@ -37,7 +37,8 @@ export default function EditFolderNameModal({ folder, onclose }: Props) {
     setEditName(trimEditName);
     if (trimEditName === folder.name) return onclose();
     const folderNameList =
-      (await foldersTable?.listAll().then(list => list.map(f => f.name))) ?? [];
+      (await foldersTable?.listAll().then((list) => list.map((f) => f.name))) ??
+      [];
     if (folderNameList.includes(trimEditName)) {
       setSubmitError(
         "The name is duplicated, please modify it and submit again.",
@@ -65,7 +66,7 @@ export default function EditFolderNameModal({ folder, onclose }: Props) {
               value={editName}
               onChange={handleChange}
               autoFocus
-              onKeyUp={e => {
+              onKeyUp={(e) => {
                 e.code === "Enter" && !submitError && onSubmit();
               }}
             />

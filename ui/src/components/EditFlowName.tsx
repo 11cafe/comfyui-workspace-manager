@@ -52,7 +52,7 @@ export default function EditFlowName({
       setEditName(trimEditName);
       if (displayName === trimEditName) return onCloseModal();
       const flowList = (await workflowsTable?.listAll()) ?? [];
-      const flowNameList = flowList?.map(flow => flow.name);
+      const flowNameList = flowList?.map((flow) => flow.name);
       if (flowNameList.includes(trimEditName)) {
         setSubmitError(
           "The name is duplicated, please modify it and submit again.",
@@ -104,7 +104,7 @@ export default function EditFlowName({
                 value={editName}
                 onChange={handleChange}
                 autoFocus
-                onKeyUp={e => {
+                onKeyUp={(e) => {
                   e.code === "Enter" && !submitError && onSubmit();
                 }}
               />

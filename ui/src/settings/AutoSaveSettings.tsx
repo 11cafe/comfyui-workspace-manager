@@ -6,7 +6,7 @@ export default function AutoSaveSettings() {
   const [checked, setChecked] = useState(false);
 
   const getAutoSave = () => {
-    userSettingsTable?.getSetting("autoSave").then(res => {
+    userSettingsTable?.getSetting("autoSave").then((res) => {
       setChecked(!!res);
     });
   };
@@ -19,7 +19,7 @@ export default function AutoSaveSettings() {
     <Stack>
       <Checkbox
         isChecked={checked}
-        onChange={async e => {
+        onChange={async (e) => {
           await userSettingsTable?.upsert({ autoSave: e.target.checked });
           getAutoSave();
         }}

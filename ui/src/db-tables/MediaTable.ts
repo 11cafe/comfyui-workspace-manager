@@ -18,7 +18,7 @@ export class MediaTable extends TableBase<Media> {
     if (medias.length > 0) return medias;
     const records = await this.getRecords();
     return Object.values(records)
-      .filter(c => c.workflowID === workflowID)
+      .filter((c) => c.workflowID === workflowID)
       .sort((a, b) => b.createTime - a.createTime);
   }
 

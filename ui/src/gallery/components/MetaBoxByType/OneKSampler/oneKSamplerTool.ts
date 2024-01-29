@@ -50,7 +50,7 @@ export function getDataByKSampler(prompt: any, kSampler: any) {
 
 export const calcOneKSampler: (metaData: MetaData) => {
   [key: string]: any;
-} = metaData => {
+} = (metaData) => {
   const { prompt, workflow } = metaData;
   console.log(workflow);
   // KSampler

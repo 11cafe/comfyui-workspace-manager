@@ -84,7 +84,7 @@ export function Topbar({
         <EditFlowName
           isDirty={isDirty}
           displayName={curFlowName ?? ""}
-          updateFlowName={newName => {
+          updateFlowName={(newName) => {
             setCurFlowName(newName);
             requestAnimationFrame(() => {
               updatePanelPosition();

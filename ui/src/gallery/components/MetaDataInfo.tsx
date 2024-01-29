@@ -21,13 +21,13 @@ export const MetaDataInfo: FC<MetaDataInfoProps> = ({ mediaList, media }) => {
     <Flex gap={3} h={"100%"}>
       <Flex flex={1}>
         <Carousel
-          media={mediaList.map(v => ({
+          media={mediaList.map((v) => ({
             id: v.id,
             imageUrl: `/workspace/view_media?filename=${v.localPath}`,
           }))}
-          currentNum={mediaList?.findIndex(p => p.id === mediaAct?.id)}
-          setMediaAct={newMedia =>
-            setMediaAct(mediaList?.find(v => v.id === newMedia.id))
+          currentNum={mediaList?.findIndex((p) => p.id === mediaAct?.id)}
+          setMediaAct={(newMedia) =>
+            setMediaAct(mediaList?.find((v) => v.id === newMedia.id))
           }
         />
       </Flex>

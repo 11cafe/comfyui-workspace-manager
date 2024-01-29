@@ -41,11 +41,11 @@ export function authTokenListener(event: MessageEvent) {
         Authorization: `Bearer ${comfyspace_authToken}`,
       },
     })
-      .then(response => response.json())
-      .then(data => {
+      .then((response) => response.json())
+      .then((data) => {
         console.log("User Info:", data);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error fetching user info:", error);
       });
   }

@@ -9,7 +9,7 @@ interface Props {
 export function ModelsList({ list }: Props) {
   return (
     <Grid templateColumns="repeat(3, 1fr)" gap={1} marginTop={2}>
-      {list.map(v => (
+      {list.map((v) => (
         <GridItem key={v.model_name}>
           <ModelItem data={v} />
         </GridItem>

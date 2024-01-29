@@ -15,8 +15,8 @@ export default function InstallModelSearchBar({
         placeholder="Search models in CivitAI"
         width={"60%"}
         value={searchQuery}
-        onChange={e => setSearchQuery(e.target.value)}
-        onKeyUp={e => {
+        onChange={(e) => setSearchQuery(e.target.value)}
+        onKeyUp={(e) => {
           e.code === "Enter" && onSearch();
         }}
       />

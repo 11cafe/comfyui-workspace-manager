@@ -39,10 +39,10 @@ export default function InstallMissingModelsButton({}: Props) {
           NodeError
         >;
         setMissingModels(
-          Object.values(nodeErrors).flatMap(nodeError =>
+          Object.values(nodeErrors).flatMap((nodeError) =>
             nodeError.errors
-              .filter(error => error.type === "value_not_in_list")
-              .map(error => {
+              .filter((error) => error.type === "value_not_in_list")
+              .map((error) => {
                 const { input_name, received_value } = error.extra_info;
                 return {
                   class_type: nodeError.class_type,

@@ -6,7 +6,7 @@ export default function TwoWaySyncSettings() {
   const [checked, setChecked] = useState(false);
 
   const getTwoWaySync = () => {
-    userSettingsTable?.getSetting("twoWaySync").then(res => {
+    userSettingsTable?.getSetting("twoWaySync").then((res) => {
       setChecked(!!res);
     });
   };
@@ -24,7 +24,7 @@ export default function TwoWaySyncSettings() {
       </Text>
       <Checkbox
         isChecked={checked}
-        onChange={async e => {
+        onChange={async (e) => {
           await userSettingsTable?.upsert({ twoWaySync: e.target.checked });
           getTwoWaySync();
         }}

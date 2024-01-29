@@ -37,7 +37,7 @@ export default function ChooseFolder({
     if (folders_list) {
       setFoldersList(
         folders_list.filter(
-          folderPath =>
+          (folderPath) =>
             !["custom_nodes", "config", "saved_prompts"].includes(folderPath),
         ),
       );
@@ -60,15 +60,15 @@ export default function ChooseFolder({
             <Text>Model download url</Text>
             <Input
               placeholder="https://civitai.com/api/download/models/311399"
-              onChange={e => setUrl(e.target.value)}
+              onChange={(e) => setUrl(e.target.value)}
               value={url}
             />
             <Select
               placeholder="Select option"
               value={folderPath}
-              onChange={e => setFolderPath(e.target.value)}
+              onChange={(e) => setFolderPath(e.target.value)}
             >
-              {foldersList.map(folderPath => (
+              {foldersList.map((folderPath) => (
                 <option key={folderPath} value={folderPath}>
                   {folderPath}
                 </option>

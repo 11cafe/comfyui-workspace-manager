@@ -29,7 +29,7 @@ export default function ModelsListDrawer({ onClose }: Props) {
 
   // filter by model type
   useEffect(() => {
-    const res = modelsList.filter(item => {
+    const res = modelsList.filter((item) => {
       return item.model_type === selectedModel;
     });
     setCurModelList(res);

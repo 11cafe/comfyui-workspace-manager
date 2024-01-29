@@ -59,11 +59,11 @@ export function insertWorkflowToCanvas3(json: string, insertPos?: number[]) {
     const node_data = old_nodes[i];
     const new_node_data = { ...node_data };
     new_node_data.id = old_new_node_ids_map[node_data.id];
-    new_node_data.inputs?.forEach(input => {
+    new_node_data.inputs?.forEach((input) => {
       input.link = old_new_link_ids_map[input.link];
     });
-    new_node_data.outputs?.forEach(output => {
-      output.links = output.links?.map(link => old_new_link_ids_map[link]);
+    new_node_data.outputs?.forEach((output) => {
+      output.links = output.links?.map((link) => old_new_link_ids_map[link]);
     });
 
     //paste in last known mouse position
@@ -91,7 +91,7 @@ export function insertWorkflowToCanvas3(json: string, insertPos?: number[]) {
     newNodesInfo[newnode.id] = new_node_data;
   }
 
-  newNodes.forEach(node => {
+  newNodes.forEach((node) => {
     node.configure(newNodesInfo[node.id]);
   });
 }

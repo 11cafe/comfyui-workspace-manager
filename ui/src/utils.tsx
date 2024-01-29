@@ -230,7 +230,7 @@ export async function generateUniqueName(name?: string) {
    */
   let newFlowName = name ?? "Untitled Flow";
   const flowList = (await workflowsTable?.listAll()) ?? [];
-  const flowNameList = flowList.map(flow => flow.name);
+  const flowNameList = flowList.map((flow) => flow.name);
   if (flowNameList.includes(newFlowName)) {
     let num = 2;
     let flag = true;
@@ -249,7 +249,7 @@ export async function generateUniqueName(name?: string) {
 export function getPngMetadata(file: File) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = event => {
+    reader.onload = (event) => {
       // Get the PNG data as a Uint8Array
       // @ts-expect-error
       const pngData = new Uint8Array(event.target.result);
@@ -287,7 +287,7 @@ export function getPngMetadata(file: File) {
             offset + 8 + length,
           );
           const contentJson = Array.from(contentArraySegment)
-            .map(s => String.fromCharCode(s))
+            .map((s) => String.fromCharCode(s))
             .join("");
           txt_chunks[keyword] = contentJson;
         }
@@ -357,9 +357,9 @@ function parseExifData(exifData) {
 }
 
 export function getWebpMetadata(file: File) {
-  return new Promise(r => {
+  return new Promise((r) => {
     const reader = new FileReader();
-    reader.onload = event => {
+    reader.onload = (event) => {
       const webp = new Uint8Array(event?.target?.result as Iterable<number>);
       const dataView = new DataView(webp.buffer);
 
@@ -421,9 +421,9 @@ export function isVideoName(name: string) {
 }
 
 export function getVideoMetadata(file) {
-  return new Promise(r => {
+  return new Promise((r) => {
     const reader = new FileReader();
-    reader.onload = event => {
+    reader.onload = (event) => {
       const videoData = new Uint8Array(event.target.result);
       const dataView = new DataView(videoData.buffer);
 
@@ -507,7 +507,7 @@ export function getVideoMetadata(file) {
 }
 
 export const matchSaveWorkflowShortcut = async (event: KeyboardEvent) => {
-  const short = await userSettingsTable?.getSetting("shortcuts").then(res => {
+  const short = await userSettingsTable?.getSetting("shortcuts").then((res) => {
     return res?.save;
   });
   if (!short) return false;
@@ -527,7 +527,7 @@ export const matchShortcut = (
     [event.key.toUpperCase()]: true,
   };
 
-  return keys.every(key => keyEvent[key]);
+  return keys.every((key) => keyEvent[key]);
 };
 
 export function isImageFormat(fileName: string) {
@@ -560,7 +560,9 @@ export async function syncNewFlowOfLocalDisk(
     const currentFolderList = await foldersTable?.listAll();
 
     for (const folder of folderList) {
-      const existFolder = currentFolderList?.find(f => f.name === folder.name);
+      const existFolder = currentFolderList?.find(
+        (f) => f.name === folder.name,
+      );
 
       let folderId;
 
@@ -580,7 +582,7 @@ export async function syncNewFlowOfLocalDisk(
 
 export function getWorkflowIdInUrlHash() {
   const hashArr = window.location.hash.slice(1).split("/");
-  const workspaceId = hashArr.find(h => h.includes("workspaceId@"));
+  const workspaceId = hashArr.find((h) => h.includes("workspaceId@"));
   return workspaceId ? workspaceId.split("@")[1] : null;
 }
 
@@ -591,7 +593,7 @@ export function getWorkflowIdInUrlHash() {
  */
 export function generateUrlHashWithFlowId(id: string) {
   const hashArr = window.location.hash.slice(1).split("/");
-  const workspaceIdIndex = hashArr.findIndex(h => h.includes("workspaceId@"));
+  const workspaceIdIndex = hashArr.findIndex((h) => h.includes("workspaceId@"));
   const newWorkflowId = `workspaceId@${id}`;
   if (workspaceIdIndex >= 0) {
     hashArr[workspaceIdIndex] = newWorkflowId;

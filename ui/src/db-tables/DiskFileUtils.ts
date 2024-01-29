@@ -111,8 +111,8 @@ export async function getFileCountInFolder(folderId: string): Promise<number> {
       }
 
       const curNestedFolderIds = allFolders
-        .filter(f => f.parentFolderID === curFolderId)
-        .map(f => f.id);
+        .filter((f) => f.parentFolderID === curFolderId)
+        .map((f) => f.id);
 
       if (curNestedFolderIds.length) {
         nestedFolderIdStack.push(...curNestedFolderIds);

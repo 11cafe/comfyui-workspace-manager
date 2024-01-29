@@ -35,7 +35,7 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
         folder.id,
         window.localStorage.getItem(sortTypeLocalStorageKey) as ESortTypes,
       )
-      .then(child => {
+      .then((child) => {
         setChildren(child);
       });
   }, [folder.id, refreshFolderStamp]);
@@ -62,7 +62,7 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
           setIsCollapsed(!isCollapsed);
         }}
         onContextMenu={handleContextMenu}
-        onDragOver={e => {
+        onDragOver={(e) => {
           e.preventDefault();
           setIsActive(true);
         }}
@@ -107,7 +107,7 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
       </HStack>
       {!isCollapsed && (
         <Stack ml={4} gap={0}>
-          {children.map(file => {
+          {children.map((file) => {
             if (isFolder(file)) {
               return <FilesListFolderItem key={file.id} folder={file} />;
             } else {

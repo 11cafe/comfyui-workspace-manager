@@ -44,7 +44,7 @@ export default function WorkspaceSettingsModal({
   const toast = useToast();
 
   useEffect(() => {
-    userSettingsTable?.getSetting("myWorkflowsDir").then(res => {
+    userSettingsTable?.getSetting("myWorkflowsDir").then((res) => {
       setCurrentDirectory(res);
     });
   }, []);
@@ -75,7 +75,7 @@ export default function WorkspaceSettingsModal({
       setSubdirectoryList(dirList);
       setIsEditDirectory(true);
       setDirPathList(
-        (currentDirectory && currentDirectory.split("/").filter(p => !!p)) ||
+        (currentDirectory && currentDirectory.split("/").filter((p) => !!p)) ||
           [],
       );
     }

@@ -96,8 +96,8 @@ export class FoldersTable extends TableBase<Folder> {
 
         await indexdb.folders.delete(curFolderId);
         const curNestedFolderIds = allFolders
-          .filter(f => f.parentFolderID === curFolderId)
-          .map(f => f.id);
+          .filter((f) => f.parentFolderID === curFolderId)
+          .map((f) => f.id);
 
         if (curNestedFolderIds.length) {
           nestedFolderIdStack.push(...curNestedFolderIds);
@@ -111,8 +111,8 @@ export class FoldersTable extends TableBase<Folder> {
 
   public async generateUniqueName(name?: string) {
     let newFlowName = name ?? "New folder";
-    const folderNameList = await this.listAll().then(list =>
-      list.map(f => f.name),
+    const folderNameList = await this.listAll().then((list) =>
+      list.map((f) => f.name),
     );
     if (folderNameList.includes(newFlowName)) {
       let num = 2;

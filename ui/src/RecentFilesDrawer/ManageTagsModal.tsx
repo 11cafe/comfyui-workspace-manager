@@ -30,7 +30,7 @@ export default function ManageTagsModal({ onclose }: { onclose: () => void }) {
         <ModalHeader>My Tags</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          {allTags.map(tag => (
+          {allTags.map((tag) => (
             <HStack>
               <ChakraTag>{tag.name}</ChakraTag>
               <IconButton

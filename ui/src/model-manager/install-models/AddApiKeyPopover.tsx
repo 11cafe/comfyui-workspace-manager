@@ -40,7 +40,7 @@ export default function AddApiKeyPopover() {
         <Stack spacing={4}>
           <Input
             value={apiKeyInput}
-            onChange={e => setApiKeyInput(e.target.value)}
+            onChange={(e) => setApiKeyInput(e.target.value)}
             placeholder="API Key"
           />
           <Button size={"sm"} py={1} mr={8} onClick={saveApiKey}>

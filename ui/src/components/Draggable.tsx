@@ -50,7 +50,7 @@ export default function Draggable({
   }, []);
 
   const handleMouseUp = useCallback(() => {
-    setTranslation(state => {
+    setTranslation((state) => {
       onDragEnd(state);
       return POSITION;
     });

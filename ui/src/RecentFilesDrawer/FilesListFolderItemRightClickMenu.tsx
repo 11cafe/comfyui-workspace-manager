@@ -91,7 +91,7 @@ export default function FilesListFolderItemRightClickMenu({
           <MenuList>
             <MenuItem
               icon={<IconPencil size={19} />}
-              onClick={e => {
+              onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 setIsRenameOpen(true);
@@ -115,7 +115,7 @@ export default function FilesListFolderItemRightClickMenu({
               New file
             </MenuItem>
             <MenuItem
-              onClick={e => {
+              onClick={(e) => {
                 e.stopPropagation();
                 fileInputRef.current?.click();
               }}

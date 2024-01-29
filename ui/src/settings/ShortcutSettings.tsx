@@ -28,7 +28,7 @@ export function ShortcutSettings() {
   };
 
   const getShortcut = () => {
-    userSettingsTable?.getSetting("shortcuts").then(res => {
+    userSettingsTable?.getSetting("shortcuts").then((res) => {
       setShortcut(res?.save ?? userSettingsTable?.defaultSettings.shortcuts);
     });
   };
