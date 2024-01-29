@@ -452,7 +452,7 @@ export default function App() {
 
     window.addEventListener("beforeunload", handleBeforeUnload);
 
-    api.addEventListener("executed", (e: any) => {
+    const handleExecuted = (e: any) => {
       e.detail?.output?.images?.forEach(
         (im: { filename: string; subfolder: string; type: string }) => {
           if (im.type === "output") {
@@ -467,12 +467,15 @@ export default function App() {
           }
         },
       );
-    });
+    };
+
+    api.addEventListener("executed", handleExecuted);
     return () => {
       // window.removeEventListener("message", authTokenListener);
       window.removeEventListener("keydown", shortcutListener);
       window.removeEventListener("change", fileInputListener);
       window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("executed", handleExecuted);
       clearInterval(autoSaveTimer.current);
     };
   }, []);
