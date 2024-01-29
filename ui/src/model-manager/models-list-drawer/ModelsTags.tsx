@@ -17,7 +17,7 @@ export function ModelsTags({
 
   return (
     <Wrap>
-      {modelTypeList.map((v) => (
+      {modelTypeList.map(v => (
         <WrapItem key={v}>
           <Button
             colorScheme="blue"

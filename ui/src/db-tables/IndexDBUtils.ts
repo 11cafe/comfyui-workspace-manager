@@ -8,7 +8,7 @@ function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open("WorkspaceDB", 3);
 
-    request.onupgradeneeded = (event) => {
+    request.onupgradeneeded = event => {
       const db = (event.target as IDBOpenDBRequest).result;
       // Create an object store if it doesn't exist
       if (!db.objectStoreNames.contains(WORKSPACE_TABLE)) {
@@ -16,11 +16,11 @@ function openDatabase(): Promise<IDBDatabase> {
       }
     };
 
-    request.onsuccess = (event) => {
+    request.onsuccess = event => {
       resolve((event.target as IDBOpenDBRequest).result);
     };
 
-    request.onerror = (event) => {
+    request.onerror = event => {
       reject((event.target as IDBOpenDBRequest).error);
     };
   });

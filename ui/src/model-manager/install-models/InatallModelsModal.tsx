@@ -144,7 +144,7 @@ export default function InatallModelsModal({
       isClosable: true,
     });
     file.current.name != null &&
-      setInstalling((cur) => [...cur, file.current?.name ?? ""]);
+      setInstalling(cur => [...cur, file.current?.name ?? ""]);
     let url = file.current.downloadUrl;
     const apiKey = getCivitApiKey();
     if (apiKey) {
@@ -162,7 +162,7 @@ export default function InatallModelsModal({
     _file: CivitiModelFileVersion,
     model: CivitiModel,
   ) => {
-    let folderPath: string | null =
+    const folderPath: string | null =
       MODEL_TYPE_TO_FOLDER_MAPPING[model.type as MODEL_TYPE];
     file.current = _file;
     if (folderPath == null) {
@@ -209,7 +209,7 @@ export default function InatallModelsModal({
               >
                 All
               </Button>
-              {ALL_MODEL_TYPES.map((type) => {
+              {ALL_MODEL_TYPES.map(type => {
                 return (
                   <Button
                     key={type}
@@ -237,7 +237,7 @@ export default function InatallModelsModal({
           <ModalCloseButton />
           <ModalBody overflowY={"auto"}>
             <HStack wrap={"wrap"}>
-              {models?.map((model) => {
+              {models?.map(model => {
                 return (
                   <ModelCard
                     model={model}

@@ -105,7 +105,7 @@ export async function backfillIndexdb() {
   const backfillUserSettings = async () => {
     try {
       const tableInstance = userSettingsTable!;
-      const backupData = await tableInstance.getRecords().then((data) => {
+      const backupData = await tableInstance.getRecords().then(data => {
         if (!data[tableInstance.DEFAULT_USER]) {
           // legacy
           return data;

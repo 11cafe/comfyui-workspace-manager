@@ -23,7 +23,7 @@ export interface ComfyExtension {
    */
   addCustomNodeDefs?(
     defs: Record<string, ComfyObjectInfo>,
-    app: ComfyApp
+    app: ComfyApp,
   ): Promise<void>;
   /**
    * Allows the extension to add custom widgets
@@ -31,7 +31,7 @@ export interface ComfyExtension {
    * @returns An array of {[widget name]: widget data}
    */
   getCustomWidgets?(
-    app: ComfyApp
+    app: ComfyApp,
   ): Promise<
     Record<
       string,
@@ -39,7 +39,7 @@ export interface ComfyExtension {
         node,
         inputName,
         inputData,
-        app
+        app,
       ) => { widget?: IWidget; minWidth?: number; minHeight?: number }
     >
   >;
@@ -52,7 +52,7 @@ export interface ComfyExtension {
   beforeRegisterNodeDef?(
     nodeType: typeof LGraphNode,
     nodeData: ComfyObjectInfo,
-    app: ComfyApp
+    app: ComfyApp,
   ): Promise<void>;
   /**
    * Allows the extension to register additional nodes with LGraph after standard nodes are added

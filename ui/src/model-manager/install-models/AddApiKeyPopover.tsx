@@ -12,9 +12,7 @@ import {
 import { useState } from "react";
 import { setCivitApiKey } from "../../utils/civitUtils";
 
-interface Props {}
-
-export default function AddApiKeyPopover({}: Props) {
+export default function AddApiKeyPopover() {
   const [apiKeyInput, setApiKeyInput] = useState("");
   const { onOpen, onClose, isOpen } = useDisclosure();
 
@@ -42,7 +40,7 @@ export default function AddApiKeyPopover({}: Props) {
         <Stack spacing={4}>
           <Input
             value={apiKeyInput}
-            onChange={(e) => setApiKeyInput(e.target.value)}
+            onChange={e => setApiKeyInput(e.target.value)}
             placeholder="API Key"
           />
           <Button size={"sm"} py={1} mr={8} onClick={saveApiKey}>

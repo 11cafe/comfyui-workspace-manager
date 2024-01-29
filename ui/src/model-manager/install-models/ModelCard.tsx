@@ -19,7 +19,7 @@ interface ModelCardProps {
   model: CivitiModel;
   onClickInstallModel: (
     file: CivitiModelFileVersion,
-    model: CivitiModel
+    model: CivitiModel,
   ) => void;
   installing: string[];
 }
@@ -30,12 +30,12 @@ export default function ModelCard({
 }: ModelCardProps) {
   const modelPhoto = model.modelVersions?.at(0)?.images?.at(0)?.url;
   const versions = model.modelVersions;
-  const versionFiles = versions?.map((version) => version?.files?.at(0));
+  const versionFiles = versions?.map(version => version?.files?.at(0));
   const [selectedFile, setSelectedFile] = useState<string>(
-    versionFiles?.at(0)?.name ?? ""
+    versionFiles?.at(0)?.name ?? "",
   );
   const curFile = versionFiles?.find(
-    (versionFile) => versionFile?.name === selectedFile
+    versionFile => versionFile?.name === selectedFile,
   );
   const onClickMedia = () => {
     window.open(`https://civitai.com/models/${model.id}`);
@@ -90,7 +90,7 @@ export default function ModelCard({
             type="submit"
             onClick={() => installHandler()}
             isDisabled={Boolean(
-              selectedFile && installing.includes(selectedFile)
+              selectedFile && installing.includes(selectedFile),
             )}
           >
             Install
@@ -101,11 +101,11 @@ export default function ModelCard({
           <Select
             size={"md"}
             style={{ paddingLeft: 4 }}
-            onChange={(e) => {
+            onChange={e => {
               setSelectedFile(e.target.value);
             }}
           >
-            {versionFiles?.map((versionFile) => {
+            {versionFiles?.map(versionFile => {
               const filename = versionFile?.name;
               if (!filename) return null;
               return (

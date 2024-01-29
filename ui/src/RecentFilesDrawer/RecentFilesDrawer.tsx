@@ -72,7 +72,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   const loadLatestWorkflows = async () => {
     const all = (await workflowsTable?.listFolderContent()) ?? [];
     aloneFlowsAndFoldersRef.current = all;
-    await workflowsTable?.listAll().then((list) => {
+    await workflowsTable?.listAll().then(list => {
       allFlowsRef.current = list;
     });
     filterFlows();
@@ -83,7 +83,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
 
   const filterFlows = () => {
     if (isFilter) {
-      const filterResult = allFlowsRef.current.filter((flow) => {
+      const filterResult = allFlowsRef.current.filter(flow => {
         let tagFlag = true;
         let keywordFlag = true;
         if (selectedTag) {
@@ -148,7 +148,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   }, []);
 
   const onSelect = useCallback((flowId: string, selected: boolean) => {
-    setSelectedKeys((preState) => {
+    setSelectedKeys(preState => {
       const copyKeys = [...preState];
       if (selected) {
         copyKeys.push(flowId);
@@ -167,9 +167,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
         setSelectedKeys([]);
         return;
       case "selectAll":
-        setSelectedKeys(
-          value ? allFlowsRef.current.map((flow) => flow.id) : [],
-        );
+        setSelectedKeys(value ? allFlowsRef.current.map(flow => flow.id) : []);
         return;
     }
   };
@@ -262,7 +260,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
                 {allFlowsRef.current.length > 0 ? (
                   <MultipleSelectionOperation
                     multipleState={multipleState}
-                    changeMultipleState={(state) => {
+                    changeMultipleState={state => {
                       setMultipleState(state);
                       !state && setSelectedKeys([]);
                     }}
@@ -309,7 +307,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
                   <MenuOptionGroup
                     value={sortTypeRef.current}
                     type="radio"
-                    onChange={(type) => onSort(type as ESortTypes)}
+                    onChange={type => onSort(type as ESortTypes)}
                   >
                     {Object.values(ESortTypes).map((sortType, index) => (
                       <MenuItemOption key={index} value={sortType}>
@@ -325,7 +323,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
               onUpdateSearchValue={onUpdateSearchValue}
             />
             <Flex overflowY={"auto"} overflowX={"hidden"} direction="column">
-              {currentRenderingData.map((n) => {
+              {currentRenderingData.map(n => {
                 if (isFolder(n)) {
                   return <FilesListFolderItem folder={n} key={n.id} />;
                 }

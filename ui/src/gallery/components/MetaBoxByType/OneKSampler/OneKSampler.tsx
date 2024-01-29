@@ -24,7 +24,7 @@ export const OneKSampler: MetaBoxTypeCom = ({ metaData }) => {
           Copy all
         </Button>
       </Box>
-      {Object.keys(mediaMetaData ?? {}).map((key) => (
+      {Object.keys(mediaMetaData ?? {}).map(key => (
         <Flex key={`meta${key}`} gap={2}>
           <Flex gap={1} alignItems={"center"} flexBasis={"200px"}>
             {key}

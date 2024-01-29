@@ -22,14 +22,14 @@ interface Props {
 export default function ModelsListDrawer({ onClose }: Props) {
   const [selectedModel, setSelectedModel] = useState("checkpoints");
 
-  const {loading, modelTypeList, modelsList} = useUpdateModels();
+  const { loading, modelTypeList, modelsList } = useUpdateModels();
 
   // current render models
   const [curModelList, setCurModelList] = useState<ModelsListRespItem[]>([]);
 
   // filter by model type
   useEffect(() => {
-    const res = modelsList.filter((item) => {
+    const res = modelsList.filter(item => {
       return item.model_type === selectedModel;
     });
     setCurModelList(res);

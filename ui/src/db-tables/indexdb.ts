@@ -35,7 +35,7 @@ class ManagerDB extends Dexie {
         models: "&id, fileName, fileHash",
         cache: "&id",
       })
-      .upgrade((trans) => {
+      .upgrade(trans => {
         // Here you can write logic to initialize or migrate data to the new 'media' table, if necessary
       });
   }

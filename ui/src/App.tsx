@@ -117,7 +117,7 @@ export default function App() {
     localStorage.removeItem("comfyspace");
     try {
       await loadDBs();
-      await userSettingsTable?.getSetting("topBarStyle").then((res) => {
+      await userSettingsTable?.getSetting("topBarStyle").then(res => {
         updatePanelPosition(res, false);
       });
     } catch (error) {
@@ -152,7 +152,7 @@ export default function App() {
       const myWorkflowsDir =
         await userSettingsTable?.getSetting("myWorkflowsDir");
       const allFlows = await workflowsTable?.listAll();
-      const existFlowIds = (allFlows && allFlows.map((flow) => flow.id)) || [];
+      const existFlowIds = (allFlows && allFlows.map(flow => flow.id)) || [];
       const { fileList, folderList } = await scanLocalNewFiles(
         myWorkflowsDir!,
         existFlowIds,
@@ -162,7 +162,7 @@ export default function App() {
   };
 
   const subsribeToWsToStopWarning = () => {
-    usedWsEvents.forEach((event) => {
+    usedWsEvents.forEach(event => {
       api.addEventListener(event, () => null);
     });
   };
@@ -366,7 +366,7 @@ export default function App() {
             json: graphJson,
           }));
       }
-      checkIsDirty().then((res) => {
+      checkIsDirty().then(res => {
         setIsDirty(res);
       });
     }, 1000);

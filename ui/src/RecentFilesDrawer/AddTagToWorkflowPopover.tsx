@@ -26,7 +26,7 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [newTagName, setNewTagName] = useState("");
   const initialTags =
-    workflow.tags?.map((t) => ({
+    workflow.tags?.map(t => ({
       value: t,
       label: t,
     })) ?? [];
@@ -40,7 +40,7 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
       workflowIDs: [],
       updateTime: Date.now(),
     });
-    await tagsTable?.listAll().then((tags) => setAllTags(tags ?? []));
+    await tagsTable?.listAll().then(tags => setAllTags(tags ?? []));
     setNewTagName("");
   };
 
@@ -53,7 +53,7 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
     alert("Error: TagsTable is not loaded");
     return null;
   }
-  const tagOptions = allTags.map((t) => ({
+  const tagOptions = allTags.map(t => ({
     value: t.name,
     label: t.name,
   }));
@@ -82,20 +82,20 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
             options={tagOptions}
             menuIsOpen={true}
             value={selectedTags}
-            onChange={async (selected) => {
+            onChange={async selected => {
               setSelectedTags(selected);
               await workflowsTable?.updateFlow(workflow.id, {
-                tags: selected.map((s) => s.value),
+                tags: selected.map(s => s.value),
               });
               await onRefreshFilesList?.();
             }}
             chakraStyles={{
-              dropdownIndicator: (provided) => ({
+              dropdownIndicator: provided => ({
                 ...provided,
                 p: 0,
                 w: "30px",
               }),
-              menuList: (provided) => ({
+              menuList: provided => ({
                 ...provided,
                 shadow: "none",
                 pt: 0,
@@ -116,7 +116,7 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
               mb={6}
               variant={"flushed"}
               value={newTagName}
-              onChange={(e) => {
+              onChange={e => {
                 setNewTagName(e.target.value.trim());
               }}
             />

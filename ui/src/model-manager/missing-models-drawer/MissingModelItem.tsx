@@ -54,7 +54,7 @@ export default function MissingModelItem({ model }: Props) {
         url: `https://civitai.com/models/${id}`,
         downloadUrl: `https://civitai.com/models/${id}`,
       })) ?? [];
-    setSuggestedUrls((p) => [...p, ...civitaiUrls]);
+    setSuggestedUrls(p => [...p, ...civitaiUrls]);
   };
   useEffect(() => {
     getHuggingFaceData();
@@ -72,7 +72,7 @@ export default function MissingModelItem({ model }: Props) {
         {suggestedUrls.map(({ url, name }) => (
           <Button
             size={"sm"}
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation();
               window.open(url, "_blank");
             }}

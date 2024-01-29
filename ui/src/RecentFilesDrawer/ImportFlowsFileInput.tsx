@@ -34,7 +34,7 @@ export default function ImportFlowsFileInput({
       ) {
         await new Promise((resolve, reject) => {
           const reader = new FileReader();
-          reader.onload = (e) => {
+          reader.onload = e => {
             try {
               const result = e.target?.result;
               if (typeof result === "string") {
@@ -74,7 +74,7 @@ export default function ImportFlowsFileInput({
       accept=".json,image/png"
       multiple
       onChange={handleFileChange}
-      onClick={(e) => {
+      onClick={e => {
         e.stopPropagation();
       }}
     />

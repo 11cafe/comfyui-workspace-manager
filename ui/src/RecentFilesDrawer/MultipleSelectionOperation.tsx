@@ -29,7 +29,7 @@ export default function MultipleSelectionOperation(props: Props) {
     const zip = new JSZip();
     const folder = zip.folder(exportName);
     selectedList &&
-      selectedList.forEach((flow) => {
+      selectedList.forEach(flow => {
         folder && folder.file(`${flow.name}.json`, flow.json);
       });
     zip.generateAsync({ type: "blob" }).then(function (content) {

@@ -14,7 +14,7 @@ export default function MyTagsRow({ setSelectedTag, selectedTag }: Props) {
 
   const [tags, setTags] = useState<Tag[]>([]);
   useEffect(() => {
-    tagsTable?.listAll().then((tags) => {
+    tagsTable?.listAll().then(tags => {
       setTags(tags);
     });
   }, []);
@@ -30,7 +30,7 @@ export default function MyTagsRow({ setSelectedTag, selectedTag }: Props) {
           }}
         />
       )}
-      {tags.slice(0, showAllTags ? undefined : MAX_TAGS_TO_SHOW).map((tag) => (
+      {tags.slice(0, showAllTags ? undefined : MAX_TAGS_TO_SHOW).map(tag => (
         <Button
           key={tag.name}
           variant="solid"

@@ -13,7 +13,7 @@ export class TableBase<T> {
   protected async saveDiskDB() {
     const objs = (await indexdb[this.tableName].toArray()) as TableBaseModel[];
     const backup: Record<string, TableBaseModel> = {};
-    objs.forEach((f) => {
+    objs.forEach(f => {
       // only tags table is using name as primary key, we either give up backup that table to diskDB
       // or add a id as primary key to it
       backup[f.id ?? f.name] = f;

@@ -57,7 +57,7 @@ export default function DropdownTitle() {
 
   useEffect(() => {
     if (curFlowID) {
-      workflowsTable?.get(curFlowID).then((workflow) => {
+      workflowsTable?.get(curFlowID).then(workflow => {
         setNewFlowName(workflow?.name ?? "");
         setWorkflow(workflow);
       });
@@ -113,7 +113,7 @@ export default function DropdownTitle() {
     setIsOpen(true);
     clearTimeout(closeTimeoutId);
     setCloseTimeoutId(undefined);
-    userSettingsTable?.getSetting("shortcuts").then((res) => {
+    userSettingsTable?.getSetting("shortcuts").then(res => {
       setSaveShortcut(res?.save);
     });
   };
@@ -196,7 +196,7 @@ export default function DropdownTitle() {
                   value={newFlowName}
                   onChange={handleChange}
                   autoFocus
-                  onKeyUp={(e) => {
+                  onKeyUp={e => {
                     e.code === "Enter" && !submitError && onSubmit();
                   }}
                 />

@@ -13,7 +13,7 @@ import { useContext } from "react";
 import EditFlowName from "../components/EditFlowName";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { PanelPosition } from "../types/dbTypes";
-import './Topbar.css';
+import "./Topbar.css";
 
 interface Props {
   positionStyle: PanelPosition;
@@ -84,7 +84,7 @@ export function Topbar({
         <EditFlowName
           isDirty={isDirty}
           displayName={curFlowName ?? ""}
-          updateFlowName={(newName) => {
+          updateFlowName={newName => {
             setCurFlowName(newName);
             requestAnimationFrame(() => {
               updatePanelPosition();

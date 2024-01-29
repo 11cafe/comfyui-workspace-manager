@@ -58,7 +58,7 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
     <Box
       flexShrink={1}
       flexGrow={1}
-      onDragOver={(e) => {
+      onDragOver={e => {
         e.preventDefault();
         setIsDraggingOver(true);
       }}
@@ -79,7 +79,7 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
       }
       color={isSelected && !isMultiSelecting ? "#333" : undefined}
       draggable={!isMultiSelecting}
-      onDragStart={(e) => {
+      onDragStart={e => {
         setDraggingFile && setDraggingFile(workflow);
       }}
       borderRadius={6}

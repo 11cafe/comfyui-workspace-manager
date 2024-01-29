@@ -24,7 +24,7 @@ export class ChangelogsTable extends TableBase<Changelog> {
 
     const records = await this.getRecords();
     return Object.values(records)
-      .filter((c) => c.workflowID === workflowID)
+      .filter(c => c.workflowID === workflowID)
       .sort((a, b) => b.createTime - a.createTime);
   }
   public async getLastestByWorkflowID(workflowID: string): Promise<Changelog> {
@@ -32,7 +32,7 @@ export class ChangelogsTable extends TableBase<Changelog> {
     if (objects?.length) return objects[0];
     const records = await this.getRecords();
     const all = Object.values(records)
-      .filter((c) => c.workflowID === workflowID)
+      .filter(c => c.workflowID === workflowID)
       .sort((a, b) => b.createTime - a.createTime);
     return all[0];
   }
