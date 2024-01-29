@@ -6,6 +6,7 @@ import { UserSettingsTable } from "./UserSettingsTable";
 import { TagsTable } from "./tagsTable";
 import { indexdb } from "./indexdb";
 import { Folder, Workflow } from "../types/dbTypes";
+import { WorkflowVersionsTable } from "./WorkflowVersionsTable";
 
 export type Table =
   | "workflows"
@@ -14,7 +15,8 @@ export type Table =
   | "folders"
   | "changelogs"
   | "media"
-  | "models";
+  | "models"
+  | "workflowVersions";
 
 export function isFolder(n: Folder | Workflow): n is Folder {
   // @ts-ignore
@@ -27,34 +29,19 @@ export let userSettingsTable: UserSettingsTable | null = null;
 export let foldersTable: FoldersTable | null = null;
 export let changelogsTable: ChangelogsTable | null = null;
 export let mediaTable: MediaTable | null = null;
+export let workflowVersionsTable: WorkflowVersionsTable | null = null;
 
 export async function loadDBs() {
-  const loadWorkflows = async () => {
-    workflowsTable = await WorkflowsTable.load();
-  };
-  const loadTags = async () => {
-    tagsTable = await TagsTable.load();
-  };
-  const loadUserSettings = async () => {
-    userSettingsTable = await UserSettingsTable.load();
-  };
-  const loadFolders = async () => {
-    foldersTable = await FoldersTable.load();
-  };
-  const loadChangelogs = async () => {
-    changelogsTable = await ChangelogsTable.load();
-  };
-  const loadMedia = async () => {
+  const loadDBs = async () => {
     mediaTable = new MediaTable();
+    changelogsTable = await ChangelogsTable.load();
+    foldersTable = await FoldersTable.load();
+    userSettingsTable = await UserSettingsTable.load();
+    tagsTable = await TagsTable.load();
+    workflowsTable = await WorkflowsTable.load();
+    workflowVersionsTable = await WorkflowVersionsTable.load();
   };
-  await Promise.all([
-    loadWorkflows(),
-    loadTags(),
-    loadUserSettings(),
-    loadFolders(),
-    loadChangelogs(),
-    loadMedia(),
-  ]);
+  await loadDBs();
   if (localStorage.getItem("WORKSPACE_INDEXDB_BACKFILL") !== "true") {
     await backfillIndexdb();
     localStorage.setItem("WORKSPACE_INDEXDB_BACKFILL", "true");
@@ -120,6 +107,14 @@ export async function backfillIndexdb() {
       console.error(error);
     }
   };
+  const backfillWorkflowVersions = async () => {
+    try {
+      const all = await workflowVersionsTable?.getRecords();
+      all && (await indexdb.workflowVersions.bulkAdd(Object.values(all)));
+    } catch (error) {
+      console.error(error);
+    }
+  };
   await Promise.all([
     backfillWorkflows(),
     backfillFolders(),
@@ -127,5 +122,6 @@ export async function backfillIndexdb() {
     backfillChangelogs(),
     backfillTags(),
     backfillUserSettings(),
+    backfillWorkflowVersions(),
   ]);
 }

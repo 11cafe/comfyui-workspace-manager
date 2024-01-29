@@ -10,6 +10,7 @@ import {
   Tag,
   UserSettings,
   WORKSPACE_INDEXDB_NAME,
+  WorkflowVersion,
 } from "../types/dbTypes";
 
 class ManagerDB extends Dexie {
@@ -21,6 +22,7 @@ class ManagerDB extends Dexie {
   userSettings!: Table<UserSettings, string>;
   models!: Table<Model, string>;
   cache!: Table<LocalCache, string>;
+  workflowVersions!: Table<WorkflowVersion, string>;
 
   constructor() {
     super(WORKSPACE_INDEXDB_NAME);
@@ -34,6 +36,7 @@ class ManagerDB extends Dexie {
         userSettings: "&id",
         models: "&id, fileName, fileHash",
         cache: "&id",
+        workflowVersions: "&id, name, workflowID",
       })
       .upgrade((trans) => {
         // Here you can write logic to initialize or migrate data to the new 'media' table, if necessary

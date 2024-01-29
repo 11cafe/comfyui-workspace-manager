@@ -49,6 +49,13 @@ export interface ModelManagerPosition {
   top: number;
   right: number;
 }
+export type WorkflowVersion = {
+  id: string;
+  name: string;
+  workflowID: string;
+  json: string;
+  createTime: number;
+};
 
 export type UserSettings = {
   id: string;
