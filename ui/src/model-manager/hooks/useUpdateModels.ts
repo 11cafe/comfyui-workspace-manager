@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
-import { getAllModelsList } from '../../Api';
-import type { ModelsListRespItem } from '../types';
+import { useEffect, useRef, useState } from "react";
+import { getAllModelsList } from "../../Api";
+import type { ModelsListRespItem } from "../types";
 // @ts-ignore
 import { api } from "/scripts/api.js";
 
@@ -16,9 +16,12 @@ export const useUpdateModels = () => {
 
   useEffect(() => {
     initData();
-    api.addEventListener("model_list", (e: { detail: ModelsListRespItem[] }) => {
+    api.addEventListener(
+      "model_list",
+      (e: { detail: ModelsListRespItem[] }) => {
         updateModels(e.detail);
-    });
+      },
+    );
   }, []);
 
   const initData = async () => {
@@ -30,7 +33,7 @@ export const useUpdateModels = () => {
     if (!file_list) return;
     setLoading(false);
     const modelTypeList = Array.from(
-      new Set(file_list.map((item) => item.model_type))
+      new Set(file_list.map((item) => item.model_type)),
     );
     // checkpoints must be in first
     const index = modelTypeList.indexOf("checkpoints");

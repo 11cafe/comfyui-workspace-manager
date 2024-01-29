@@ -12,17 +12,15 @@ import {
 } from "@chakra-ui/react";
 import { IconDownload } from "@tabler/icons-react";
 import { formatTimestamp } from "../../utils.tsx";
-import {
-  MultiKSampler,
-} from "./MetaBoxByType/MultiKSampler/MultiKSampler.tsx";
-import {isMultiKSampler} from './MetaBoxByType/MultiKSampler/multiKSamplerTool.tsx'
+import { MultiKSampler } from "./MetaBoxByType/MultiKSampler/MultiKSampler.tsx";
+import { isMultiKSampler } from "./MetaBoxByType/MultiKSampler/multiKSamplerTool.tsx";
 
 export const MetaInfoBox = ({ media }: { media?: Media }) => {
   const [mediaMetaData, setMediaMetaData] = useState<MetaData>();
   const getMetaData = async (curMedia: Media) => {
     try {
       const res = await getMetadataFromUrl(
-        `/workspace/view_media?filename=${curMedia.localPath}`
+        `/workspace/view_media?filename=${curMedia.localPath}`,
       );
       setMediaMetaData(res);
     } catch (e) {

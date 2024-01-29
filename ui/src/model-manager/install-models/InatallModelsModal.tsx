@@ -162,7 +162,7 @@ export default function InatallModelsModal({
     _file: CivitiModelFileVersion,
     model: CivitiModel,
   ) => {
-    let folderPath: string | null =
+    const folderPath: string | null =
       MODEL_TYPE_TO_FOLDER_MAPPING[model.type as MODEL_TYPE];
     file.current = _file;
     if (folderPath == null) {

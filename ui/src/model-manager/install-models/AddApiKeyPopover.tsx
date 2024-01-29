@@ -12,9 +12,7 @@ import {
 import { useState } from "react";
 import { setCivitApiKey } from "../../utils/civitUtils";
 
-interface Props {}
-
-export default function AddApiKeyPopover({}: Props) {
+export default function AddApiKeyPopover() {
   const [apiKeyInput, setApiKeyInput] = useState("");
   const { onOpen, onClose, isOpen } = useDisclosure();
 
