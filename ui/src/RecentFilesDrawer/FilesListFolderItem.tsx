@@ -18,6 +18,7 @@ import WorkflowListItem from "./WorkflowListItem";
 import FilesListFolderItemRightClickMenu from "./FilesListFolderItemRightClickMenu";
 import { ESortTypes, sortTypeLocalStorageKey } from "./types";
 import { Folder, Workflow } from "../types/dbTypes";
+import ItemsList from "./ItemsList";
 
 type Props = {
   folder: Folder;
@@ -125,13 +126,7 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
       />
       {!isCollapsed && (
         <Stack ml={4} gap={0}>
-          {children.map((file) => {
-            if (isFolder(file)) {
-              return <FilesListFolderItem key={file.id} folder={file} />;
-            } else {
-              return <WorkflowListItem key={file.id} workflow={file} />;
-            }
-          })}
+          <ItemsList items={children} />
         </Stack>
       )}
     </Stack>

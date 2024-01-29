@@ -41,6 +41,7 @@ import { openWorkflowsFolder } from "../Api";
 import { Folder, Workflow } from "../types/dbTypes";
 import ImportFileButton from "./ImportFileButton";
 import MyTagsRow from "./MyTagsRow";
+import ItemsList from "./ItemsList";
 
 type Props = {
   onClose: () => void;
@@ -325,12 +326,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
               onUpdateSearchValue={onUpdateSearchValue}
             />
             <Flex overflowY={"auto"} overflowX={"hidden"} direction="column">
-              {currentRenderingData.map((n) => {
-                if (isFolder(n)) {
-                  return <FilesListFolderItem folder={n} key={n.id} />;
-                }
-                return <WorkflowListItem key={n.id} workflow={n} />;
-              })}
+              <ItemsList items={currentRenderingData} />
             </Flex>
           </Flex>
         </Card>

@@ -11,11 +11,6 @@ import {
   Tooltip,
 } from "@chakra-ui/react";
 import { IconExternalLink } from "@tabler/icons-react";
-import {
-  foldersTable,
-  isFolder,
-  workflowsTable,
-} from "../db-tables/WorkspaceDB";
 import { formatTimestamp, openWorkflowInNewTab, isImageFormat } from "../utils";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import { MouseEvent, useState, memo, ChangeEvent, useContext } from "react";
@@ -29,7 +24,6 @@ type Props = {
 };
 export default memo(function WorkflowListItem({ workflow }: Props) {
   const { colorMode } = useColorMode();
-  const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const {
@@ -38,8 +32,6 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
     onMultiSelectFlow,
     onDeleteFlow,
     multiSelectedFlowsID,
-    onRefreshFilesList,
-    draggingFile,
   } = useContext(RecentFilesContext);
   const isChecked =
     multiSelectedFlowsID &&
@@ -58,36 +50,10 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
   };
   const hoverBgColor = colorMode === "light" ? "gray.200" : "#4A5568";
 
-  const handleDrop = async () => {
-    if (!draggingFile) return setIsDraggingOver(false);
-    if (isFolder(draggingFile)) {
-      if (draggingFile.id === workflow.parentFolderID)
-        return setIsDraggingOver(false);
-      await foldersTable?.update({
-        id: draggingFile.id,
-        parentFolderID: workflow.parentFolderID,
-      });
-    } else {
-      await workflowsTable?.updateFlow(draggingFile.id, {
-        parentFolderID: workflow.parentFolderID,
-      });
-    }
-    await onRefreshFilesList?.();
-    setIsDraggingOver(false);
-  };
-
   const basicInfoComp = (
     <Box
       flexShrink={1}
       flexGrow={1}
-      onDragOver={(e) => {
-        e.preventDefault();
-        setIsDraggingOver(true);
-      }}
-      onDragLeave={() => {
-        setIsDraggingOver(false);
-      }}
-      onDrop={handleDrop}
       backgroundColor={
         isSelected ? "teal.200" : isMenuOpen ? hoverBgColor : undefined
       }
@@ -132,9 +98,6 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
           </Text>
         </Stack>
       </HStack>
-      {isDraggingOver && (
-        <Box width={"100%"} mt={2} height={"2px"} backgroundColor={"#4299E1"} />
-      )}
     </Box>
   );
 
