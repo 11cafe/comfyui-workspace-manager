@@ -14,7 +14,6 @@ import {
 } from "react";
 import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 import { RecentFilesContext } from "../WorkspaceContext";
-import WorkflowListItem from "./WorkflowListItem";
 import FilesListFolderItemRightClickMenu from "./FilesListFolderItemRightClickMenu";
 import { ESortTypes, sortTypeLocalStorageKey } from "./types";
 import { Folder, Workflow } from "../types/dbTypes";
@@ -57,7 +56,9 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
     setMenuPosition({ x: event.clientX, y: event.clientY });
     setIsMenuOpen(true);
   };
-  const handleDrop = async () => {
+  const handleDrop = async (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!draggingFile) return setIsActive(false);
     if (isFolder(draggingFile)) {
       if (draggingFile.id === folder.id) return setIsActive(false);
@@ -93,9 +94,14 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
         draggable="true"
         onDragOver={(e) => {
           e.preventDefault();
+          e.stopPropagation();
           setIsActive(true);
         }}
-        onDragLeave={() => setIsActive(false)}
+        onDragLeave={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsActive(false);
+        }}
         onDragStart={() => setDraggingFile?.(folder)}
         onDrop={handleDrop}
         _hover={activeStyle}

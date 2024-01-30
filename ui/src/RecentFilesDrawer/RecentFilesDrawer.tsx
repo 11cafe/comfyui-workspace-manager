@@ -12,8 +12,16 @@ import {
   Box,
   Flex,
   Tooltip,
+  Switch,
 } from "@chakra-ui/react";
-import { useEffect, useState, useRef, useCallback, useContext } from "react";
+import {
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  useContext,
+  ChangeEvent,
+} from "react";
 import {
   workflowsTable,
   isFolder,
@@ -28,13 +36,15 @@ import {
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
 import { sortFileItem } from "../utils";
-import WorkflowListItem from "./WorkflowListItem";
 import MultipleSelectionOperation from "./MultipleSelectionOperation";
-import { ESortTypes, sortTypeLocalStorageKey } from "./types";
+import {
+  ESortTypes,
+  folderOnTopLocalStorageKey,
+  sortTypeLocalStorageKey,
+} from "./types";
 // @ts-expect-error ComfyUI import
 import { app } from "/scripts/app.js";
 import { insertWorkflowToCanvas3 } from "./InsertWorkflowToCanvas";
-import FilesListFolderItem from "./FilesListFolderItem";
 import { useDebounce } from "../customHooks/useDebounce";
 import SearchInput from "../components/SearchInput";
 import { openWorkflowsFolder } from "../Api";
@@ -68,6 +78,9 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   const sortTypeRef = useRef<ESortTypes>(
     (window.localStorage.getItem(sortTypeLocalStorageKey) as ESortTypes) ??
       ESortTypes.RECENTLY_MODIFIED,
+  );
+  const folderOnTopRef = useRef<boolean>(
+    window.localStorage.getItem(folderOnTopLocalStorageKey) === "true",
   );
 
   const loadLatestWorkflows = async () => {
@@ -110,6 +123,13 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
     setCurrentRenderingData(sortFileItem(currentRenderingData, type));
     sortTypeRef.current = type;
     window.localStorage.setItem(sortTypeLocalStorageKey, type);
+    !isFilter && setRefreshFolderStamp(Date.now());
+  };
+
+  const onFolderOnTopChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const state = e.target.checked;
+    folderOnTopRef.current = state;
+    window.localStorage.setItem(folderOnTopLocalStorageKey, state.toString());
     !isFilter && setRefreshFolderStamp(Date.now());
   };
 
@@ -320,6 +340,13 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
                   </MenuOptionGroup>
                 </MenuList>
               </Menu>
+              <Flex gap={2} align="center">
+                <Text>Folders on Top</Text>
+                <Switch
+                  isChecked={folderOnTopRef.current}
+                  onChange={onFolderOnTopChange}
+                />
+              </Flex>
             </HStack>
             <SearchInput
               searchValue={searchValue}

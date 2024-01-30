@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { DragEvent, useContext, useEffect, useState } from "react";
 import { RecentFilesContext } from "../WorkspaceContext";
 import {
   foldersTable,
@@ -9,24 +9,27 @@ import { Folder, Workflow } from "../types/dbTypes";
 import FilesListFolderItem from "./FilesListFolderItem";
 import WorkflowListItem from "./WorkflowListItem";
 import { Box } from "@chakra-ui/react";
+import { folderOnTopLocalStorageKey } from "./types";
 
 export default function ItemsList({
   items,
 }: {
   items: Array<Folder | Workflow>;
 }) {
-  const folders = items
-    .filter(isFolder)
-    .sort((a, b) => a.name.localeCompare(b.name));
-  const workflows = items
-    .filter((item): item is Workflow => !isFolder(item))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const [folderOnTop, setFolderOnTop] = useState(
+    window.localStorage.getItem(folderOnTopLocalStorageKey) === "true",
+  );
+  const folders = items.filter(isFolder);
+  const workflows = items.filter((item): item is Workflow => !isFolder(item));
   const parentFolderID = workflows[0]?.parentFolderID;
 
   const [isDraggingOver, setIsDraggingOver] = useState(false);
-  const { onRefreshFilesList, draggingFile } = useContext(RecentFilesContext);
+  const { onRefreshFilesList, draggingFile, refreshFolderStamp } =
+    useContext(RecentFilesContext);
 
-  const handleDrop = async () => {
+  const handleDrop = async (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!draggingFile) return setIsDraggingOver(false);
     if (isFolder(draggingFile)) {
       if (draggingFile.id === parentFolderID) return setIsDraggingOver(false);
@@ -43,25 +46,43 @@ export default function ItemsList({
     setIsDraggingOver(false);
   };
 
+  useEffect(() => {
+    setFolderOnTop(
+      window.localStorage.getItem(folderOnTopLocalStorageKey) === "true",
+    );
+  }, [refreshFolderStamp]);
+
   return (
     <>
-      {folders.map((folder) => (
-        <FilesListFolderItem key={folder.id} folder={folder} />
-      ))}
+      {folderOnTop &&
+        folders.map((folder) => (
+          <FilesListFolderItem key={folder.id} folder={folder} />
+        ))}
       <Box
         border={isDraggingOver ? "2px dashed #718096" : undefined}
         onDragOver={(e) => {
           e.preventDefault();
+          e.stopPropagation();
           setIsDraggingOver(true);
         }}
-        onDragLeave={() => {
+        onDragLeave={(e) => {
+          console.log(e.target);
+          e.preventDefault();
+          e.stopPropagation();
           setIsDraggingOver(false);
         }}
         onDrop={handleDrop}
       >
-        {workflows.map((workflow) => (
-          <WorkflowListItem key={workflow.id} workflow={workflow} />
-        ))}
+        {folderOnTop
+          ? workflows.map((workflow) => (
+              <WorkflowListItem key={workflow.id} workflow={workflow} />
+            ))
+          : items.map((n) => {
+              if (isFolder(n)) {
+                return <FilesListFolderItem folder={n} key={n.id} />;
+              }
+              return <WorkflowListItem key={n.id} workflow={n} />;
+            })}
       </Box>
     </>
   );

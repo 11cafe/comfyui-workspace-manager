@@ -49,6 +49,10 @@ export class FoldersTable extends TableBase<Folder> {
     if (folder == null) {
       return;
     }
+    const nameChanged = input.name != undefined && input.name != folder.name;
+    const parentFolderChanged =
+      input.parentFolderID != undefined &&
+      input.parentFolderID != folder.parentFolderID;
     const newRecord = {
       ...folder,
       ...input,
@@ -56,14 +60,7 @@ export class FoldersTable extends TableBase<Folder> {
     if (input.name != null) {
       newRecord.updateTime = Date.now();
     }
-    const allFolders = await this.listAll();
-    const folderWithSameName = allFolders.find(
-      (f) =>
-        f.parentFolderID == newRecord.parentFolderID && // use == instead of ===, because parentFolderID can be null or undefined
-        f.name === newRecord.name &&
-        f.id !== newRecord.id,
-    );
-    if (folderWithSameName != null) {
+    if (parentFolderChanged) {
       input.name = await this.generateUniqueName(
         newRecord.name,
         newRecord.parentFolderID ?? undefined,
@@ -73,10 +70,7 @@ export class FoldersTable extends TableBase<Folder> {
     this.saveDiskDB();
 
     // folder moved or renamed - move all workflows to the right directory(not required when folded state changes)
-    if (
-      input.name != folder.name ||
-      input.parentFolderID != folder.parentFolderID
-    ) {
+    if (nameChanged || parentFolderChanged) {
       validateOrSaveAllJsonFileMyWorkflows(true);
     }
   }
