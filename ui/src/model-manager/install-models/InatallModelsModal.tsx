@@ -1,27 +1,27 @@
 import {
   Button,
   HStack,
-  Text,
   Modal,
   ModalOverlay,
   ModalContent,
   ModalHeader,
   ModalBody,
   ModalCloseButton,
-  IconButton,
   Heading,
-  Checkbox,
   Spinner,
+  useToast,
+  useDisclosure,
 } from "@chakra-ui/react";
-import { useCallback, useContext, useEffect, useState } from "react";
-import { IconX } from "@tabler/icons-react";
-import { useDialog } from "../components/AlertDialogProvider";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { CivitiModel, CivitiModelFileVersion } from "../types";
-import { InstallModelsApiInput, installModelsApi } from "../api/modelsApi";
+import { installModelsApi } from "../api/modelsApi";
 import ModelCard from "./ModelCard";
-import InstallProgress from "./InstallProgress";
 import InstallModelSearchBar from "./InstallModelSearchBar";
-import { useToast } from "@chakra-ui/react";
+import ChooseFolder from "./ChooseFolder";
+import InstallProgress from "./InstallProgress";
+import { indexdb } from "../../db-tables/indexdb";
+import AddApiKeyPopover from "./AddApiKeyPopover";
+import { getCivitApiKey } from "../../utils/civitUtils";
 
 type CivitModelQueryParams = {
   types?: MODEL_TYPE;
@@ -44,6 +44,8 @@ const ALL_MODEL_TYPES = [
   // "Wildcards",
 ] as const; // `as const` makes the array readonly and its elements literal types
 
+const CACHE_EXPIRY_DAYS = 2;
+
 // Infer MODEL_TYPE from the ALL_MODEL_TYPES array
 type MODEL_TYPE = (typeof ALL_MODEL_TYPES)[number];
 const MODEL_TYPE_TO_FOLDER_MAPPING: Record<MODEL_TYPE, string> = {
@@ -55,152 +57,209 @@ const MODEL_TYPE_TO_FOLDER_MAPPING: Record<MODEL_TYPE, string> = {
   Upscaler: "upscale_models",
   VAE: "vae",
 };
-export default function GalleryModal({ onclose }: { onclose: () => void }) {
-  const [selectedID, setSelectedID] = useState<string[]>([]);
-  const [isSelecting, setIsSelecting] = useState(false);
+
+interface Props {
+  onclose: () => void;
+  searchQuery?: string;
+  modelType?: MODEL_TYPE;
+}
+export default function InatallModelsModal({
+  onclose,
+  searchQuery: searchQueryProp = "",
+  modelType: modelTypeProp,
+}: Props) {
   const [models, setModels] = useState<CivitiModel[]>([]);
   const [loading, setLoading] = useState(false);
-  const [modelType, setModelType] = useState<MODEL_TYPE | undefined>(
-    "Checkpoint"
-  );
+  const [modelType, setModelType] = useState(modelTypeProp);
   const toast = useToast();
   const [installing, setInstalling] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(searchQueryProp);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const file = useRef<CivitiModelFileVersion>();
   const loadData = useCallback(async () => {
     setLoading(true);
     const params: CivitModelQueryParams = {
       limit: "30",
       nsfw: "false",
-      types: modelType,
     };
     if (searchQuery !== "") {
       params.query = searchQuery;
+    }
+    if (modelType != null) {
+      params.types = modelType;
     }
 
     const queryString = new URLSearchParams(params).toString();
     const fullURL = `https://civitai.com/api/v1/models?${queryString}`;
 
+    const cacheEntry = await indexdb.cache?.get(fullURL);
+    if (cacheEntry?.value != null) {
+      try {
+        const { data, timestamp } = JSON.parse(cacheEntry?.value);
+        // Check if cached data is still valid
+        const ageInDays = (Date.now() - timestamp) / (1000 * 60 * 60 * 24);
+        if (ageInDays < CACHE_EXPIRY_DAYS) {
+          setModels(data);
+          setLoading(false);
+          return;
+        }
+      } catch (e) {
+        console.error("err fetching cache", e);
+      }
+    }
+
     const data = await fetch(fullURL);
     const json = await data.json();
     setModels(json.items);
+    // only cache if there is no search query
+    if (searchQuery === "") {
+      indexdb.cache.put({
+        id: fullURL,
+        value: JSON.stringify({
+          data: json.items,
+          timestamp: Date.now(),
+        }),
+      });
+    }
     setLoading(false);
   }, [searchQuery, modelType]);
-  const onClickInstallModel = (
-    file: CivitiModelFileVersion,
-    model: CivitiModel
-  ) => {
-    if (file.downloadUrl == null || file.name == null) {
-      console.error("file.downloadUrl or file.name is null");
+
+  const downloadModels = (folderPath: string) => {
+    if (!file.current?.downloadUrl) {
+      console.error("file.downloadUrl is null");
       return;
     }
-    let folderPath: string | null =
-      MODEL_TYPE_TO_FOLDER_MAPPING[model.type as MODEL_TYPE];
-    if (folderPath == null) {
-      folderPath = prompt(
-        "What's the folder path under /ComfyUI/models you want to save the model? "
-      );
-    }
-    if (folderPath == null) {
-      return;
+    if (!file.current.name) {
+      file.current.name = file.current.downloadUrl.split("/").pop();
+      if (!file.current.name) {
+        console.error("file.downloadUrl is malformed");
+        return;
+      }
     }
     toast({
-      title:
-        "Installing...Please check the progress in your python server console",
-      description: file.name,
+      title: "Installing...",
+      description: file.current.name,
       status: "info",
       duration: 4000,
       isClosable: true,
     });
-    file.name != null && setInstalling((cur) => [...cur, file.name ?? ""]);
+    file.current.name != null &&
+      setInstalling((cur) => [...cur, file.current?.name ?? ""]);
+    let url = file.current.downloadUrl;
+    const apiKey = getCivitApiKey();
+    if (apiKey) {
+      url += `?token=${apiKey}`;
+    }
     installModelsApi({
-      filename: file.name,
-      name: file.name,
+      filename: file.current.name,
+      name: file.current.name,
       save_path: folderPath,
-      url: file.downloadUrl,
+      url,
     });
+    onClose();
   };
+  const onClickInstallModel = (
+    _file: CivitiModelFileVersion,
+    model: CivitiModel,
+  ) => {
+    const folderPath: string | null =
+      MODEL_TYPE_TO_FOLDER_MAPPING[model.type as MODEL_TYPE];
+    file.current = _file;
+    if (folderPath == null) {
+      onOpen();
+    } else {
+      downloadModels(folderPath);
+    }
+  };
+  const customUrlDownload = () => {
+    onOpen();
+  };
+
   useEffect(() => {
     loadData();
-  }, [searchQuery, modelType]);
-
-  const isAllSelected =
-    models.length > 0 && selectedID.length === models.length;
-
+  }, [modelType]);
   return (
-    <Modal isOpen={true} onClose={onclose} blockScrollOnMount={true}>
-      <ModalOverlay />
-      <ModalContent width={"90%"} maxWidth={"90vw"} height={"90vh"}>
-        <ModalHeader>
-          <HStack gap={2} mb={2} alignItems={"center"}>
-            <Heading size={"md"} mr={2}>
-              Models
-            </Heading>
-            <InstallModelSearchBar setSearchQuery={setSearchQuery} />
-          </HStack>
-          <InstallProgress />
-          <HStack gap={2} mb={2} wrap={"wrap"}>
-            <Button
-              size={"sm"}
-              py={1}
-              onClick={() => {
-                setModelType(undefined);
-              }}
-              isActive={modelType == null}
-            >
-              All
-            </Button>
-            {ALL_MODEL_TYPES.map((type) => {
-              return (
-                <Button
-                  size={"sm"}
-                  py={1}
-                  isActive={modelType === type}
-                  onClick={() => {
-                    setModelType(type);
-                  }}
-                >
-                  {type}
-                </Button>
-              );
-            })}
-          </HStack>
-          {isSelecting && (
-            <HStack gap={3}>
-              <Checkbox isChecked={isAllSelected}>All</Checkbox>
-              <Text fontSize={16}>{selectedID.length} Selected</Text>
-              <IconButton
-                size={"sm"}
-                icon={<IconX size={19} />}
-                onClick={() => setIsSelecting(false)}
-                aria-label="cancel"
+    <>
+      <Modal isOpen={true} onClose={onclose} blockScrollOnMount={true}>
+        <ModalOverlay />
+        <ModalContent width={"90%"} maxWidth={"90vw"} height={"90vh"}>
+          <ModalHeader>
+            <HStack gap={2} mb={2} alignItems={"center"}>
+              <Heading size={"md"} mr={2}>
+                Models
+              </Heading>
+              <InstallModelSearchBar
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                onSearch={loadData}
               />
+              <Button size={"sm"} py={1} mr={8} onClick={customUrlDownload}>
+                Custom URL Install
+              </Button>
+              <AddApiKeyPopover />
             </HStack>
-          )}
-        </ModalHeader>
-        <ModalCloseButton />
-        <ModalBody overflowY={"auto"}>
-          {loading && (
-            <Spinner
-              thickness="4px"
-              emptyColor="gray.200"
-              color="pink.500"
-              size="lg"
-            />
-          )}
-          <HStack wrap={"wrap"}>
-            {models?.map((model) => {
-              return (
-                <ModelCard
-                  model={model}
-                  key={model.id}
-                  onClickInstallModel={onClickInstallModel}
-                  installing={installing}
-                />
-              );
-            })}
-          </HStack>
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+            <HStack gap={2} mb={2} wrap={"wrap"}>
+              <Button
+                size={"sm"}
+                py={1}
+                onClick={() => {
+                  setModelType(undefined);
+                }}
+                isActive={modelType == null}
+              >
+                All
+              </Button>
+              {ALL_MODEL_TYPES.map((type) => {
+                return (
+                  <Button
+                    key={type}
+                    size={"sm"}
+                    py={1}
+                    isActive={modelType === type}
+                    onClick={() => {
+                      setModelType(type);
+                    }}
+                  >
+                    {type}
+                  </Button>
+                );
+              })}
+            </HStack>
+            {loading && (
+              <Spinner
+                thickness="4px"
+                emptyColor="gray.200"
+                color="pink.500"
+                size="lg"
+              />
+            )}
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody overflowY={"auto"}>
+            <HStack wrap={"wrap"}>
+              {models?.map((model) => {
+                return (
+                  <ModelCard
+                    model={model}
+                    key={model.id}
+                    onClickInstallModel={onClickInstallModel}
+                    installing={installing}
+                  />
+                );
+              })}
+            </HStack>
+            <InstallProgress />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+      <ChooseFolder
+        isOpen={isOpen}
+        onClose={onClose}
+        selectFolder={(folderPath: string, customUrl: string) => {
+          file.current = { id: 0, downloadUrl: customUrl };
+          downloadModels(folderPath);
+        }}
+      />
+    </>
   );
 }

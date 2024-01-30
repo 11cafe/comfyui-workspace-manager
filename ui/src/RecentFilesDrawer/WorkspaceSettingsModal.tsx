@@ -18,9 +18,10 @@ import {
   Stack,
   useToast,
   SimpleGrid,
+  Tooltip,
 } from "@chakra-ui/react";
-import { IconEdit, IconFolder } from "@tabler/icons-react";
-import { useRef, useState } from "react";
+import { IconEdit } from "@tabler/icons-react";
+import { useRef, useState, useEffect } from "react";
 import { getSystemDir } from "../Api";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { ShortcutSettings } from "../settings/ShortcutSettings";
@@ -35,14 +36,18 @@ export default function WorkspaceSettingsModal({
 }) {
   const [isManualEntry, setIsManualEntry] = useState(false);
   const [isEditDirectory, setIsEditDirectory] = useState(false);
-  const [currentDirectory, setCurrentDirectory] = useState(
-    userSettingsTable?.records.myWorkflowsDir
-  );
+  const [currentDirectory, setCurrentDirectory] = useState("");
   const [dirPathList, setDirPathList] = useState<string[]>([]);
   const [subdirectoryList, setSubdirectoryList] = useState<string[]>([]);
   const [noPermission, setNoPermission] = useState(false);
   const manualEntryRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
+
+  useEffect(() => {
+    userSettingsTable?.getSetting("myWorkflowsDir").then((res) => {
+      setCurrentDirectory(res);
+    });
+  }, []);
 
   const getDir = async (root?: string) => {
     const {
@@ -71,7 +76,7 @@ export default function WorkspaceSettingsModal({
       setIsEditDirectory(true);
       setDirPathList(
         (currentDirectory && currentDirectory.split("/").filter((p) => !!p)) ||
-          []
+          [],
       );
     }
   };
@@ -98,10 +103,12 @@ export default function WorkspaceSettingsModal({
       }
     }
     const newPath = manualEntry ?? `/${dirPathList.join("/")}`;
-    userSettingsTable?.upsert({
+    await userSettingsTable?.upsert({
       myWorkflowsDir: newPath,
     });
-    setCurrentDirectory(userSettingsTable?.getSetting("myWorkflowsDir"));
+    const getNewPath =
+      (await userSettingsTable?.getSetting("myWorkflowsDir")) ?? "";
+    setCurrentDirectory(getNewPath);
     manualEntry && setNoPermission(false);
     onCloseEditDirectory();
     // to update /my_workflows files in disk to new location
@@ -178,20 +185,34 @@ export default function WorkspaceSettingsModal({
                   {!isEditDirectory ? (
                     <Flex>
                       <Tag overflowWrap="anywhere">{currentDirectory}</Tag>
-                      <IconButton
-                        aria-label="Enter folder address"
-                        size={"sm"}
-                        ml={2}
-                        icon={<IconEdit />}
-                        onClick={onOpenEnter}
-                      />
-                      <IconButton
-                        aria-label="Select folder"
-                        size={"sm"}
-                        ml={2}
-                        icon={<IconFolder />}
-                        onClick={onOpenEditDirectory}
-                      />
+                      <Tooltip label="Choose folder">
+                        <IconButton
+                          aria-label="Select folder"
+                          size={"sm"}
+                          ml={2}
+                          icon={
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="#EFC54D"
+                              style={{ width: "1.4rem", height: "1.4srem" }}
+                            >
+                              <path d="M19.5 21a3 3 0 0 0 3-3v-4.5a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3V18a3 3 0 0 0 3 3h15ZM1.5 10.146V6a3 3 0 0 1 3-3h5.379a2.25 2.25 0 0 1 1.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 0 1 3 3v1.146A4.483 4.483 0 0 0 19.5 9h-15a4.483 4.483 0 0 0-3 1.146Z" />
+                            </svg>
+                          }
+                          onClick={onOpenEditDirectory}
+                        />
+                      </Tooltip>
+                      <Tooltip label="Input absolute path">
+                        <IconButton
+                          aria-label="Enter folder address"
+                          size={"sm"}
+                          ml={2}
+                          icon={<IconEdit size={19} />}
+                          onClick={onOpenEnter}
+                          variant={"ghost"}
+                        />
+                      </Tooltip>
                     </Flex>
                   ) : isManualEntry ? (
                     enterFolderAddressComp

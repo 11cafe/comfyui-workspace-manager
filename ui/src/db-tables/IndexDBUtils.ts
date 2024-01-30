@@ -1,4 +1,5 @@
-import { curComfyspaceJson } from "./WorkspaceDB";
+// Legacy indexdb backup, to be deleted after indexdb migration is done
+
 const WORKSPACE_KEY = "backup";
 const WORKSPACE_TABLE = "workspace";
 let indexDB: IDBDatabase | null = null;
@@ -44,15 +45,6 @@ async function writeWorkspaceTable(data: string): Promise<void> {
   }
 }
 
-export async function updateWorkspaceIndexDB() {
-  try {
-    const comfyspaceData = await curComfyspaceJson();
-    await writeWorkspaceTable(comfyspaceData);
-  } catch (error) {
-    console.error("Error writing to IndexedDB:", error);
-  }
-}
-
 // Function to read data from the database
 async function readDataFromDatabase(): Promise<string | undefined> {
   try {
@@ -79,7 +71,6 @@ async function readDataFromDatabase(): Promise<string | undefined> {
   }
 }
 
-// Usage example
 export async function getWorkspaceIndexDB() {
   try {
     const comfyspaceData = await readDataFromDatabase();

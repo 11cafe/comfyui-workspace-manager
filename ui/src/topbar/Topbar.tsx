@@ -9,19 +9,17 @@ import {
   IconTriangleInvertedFilled,
 } from "@tabler/icons-react";
 import DropdownTitle from "../components/DropdownTitle";
-import { Suspense, useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import EditFlowName from "../components/EditFlowName";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { PanelPosition } from "../types/dbTypes";
-import React from "react";
-const ModelManagerTopbar = React.lazy(
-  () => import("../model-manager/topbar/ModelManagerTopbar")
-);
+import "./Topbar.css";
+
 interface Props {
   positionStyle: PanelPosition;
   updatePanelPosition: (
     position?: PanelPosition,
-    needUpdateDB?: boolean
+    needUpdateDB?: boolean,
   ) => void;
   curFlowName: string | null;
   setCurFlowName: (newName: string) => void;
@@ -32,13 +30,9 @@ export function Topbar({
   curFlowName,
   setCurFlowName,
 }: Props) {
-  const [isHovered, setIsHovered] = useState(false);
   const { isDirty, loadNewWorkflow, saveCurWorkflow, setRoute, curFlowID } =
     useContext(WorkspaceContext);
-  const [loadChild, setLoadChild] = useState(false);
-  useEffect(() => {
-    setLoadChild(true);
-  }, []);
+
   return (
     <Draggable
       onDragEnd={(position: { x: number; y: number }) => {
@@ -56,8 +50,7 @@ export function Topbar({
         gap={2}
         draggable={false}
         id="workspaceManagerPanel"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        className="workspaceManagerPanel"
       >
         <Button
           size={"sm"}
@@ -70,21 +63,24 @@ export function Topbar({
             <IconTriangleInvertedFilled size={8} />
           </HStack>
         </Button>
-        <Button
-          size={"sm"}
-          variant={"outline"}
-          colorScheme="teal"
-          aria-label="new workflow"
-          onClick={() => loadNewWorkflow()}
-          px={2}
-        >
-          <HStack gap={1}>
-            <IconPlus size={16} color={"white"} />
-            <Text color={"white"} fontSize={"sm"}>
+        <Tooltip label="New workflow">
+          <Button
+            size={"sm"}
+            variant={"outline"}
+            colorScheme="teal"
+            aria-label="new workflow"
+            onClick={() => loadNewWorkflow()}
+            px={2}
+            py={2}
+          >
+            <HStack gap={0}>
+              <IconPlus size={16} color={"white"} />
+              {/* <Text color={"white"} fontSize={"sm"}>
               New
-            </Text>
-          </HStack>
-        </Button>
+            </Text> */}
+            </HStack>
+          </Button>
+        </Tooltip>
         <EditFlowName
           isDirty={isDirty}
           displayName={curFlowName ?? ""}
@@ -106,12 +102,13 @@ export function Topbar({
                 variant={"ghost"}
               />
             </Tooltip>
-            <DropdownTitle onClick={() => setIsHovered(false)} />
+            <DropdownTitle />
           </HStack>
         )}
-        {curFlowID && isDirty && (
+        {curFlowID && isDirty ? (
           <Tooltip label="Save workflow">
             <IconButton
+              style={{ width: 22 }}
               onClick={saveCurWorkflow}
               icon={<IconDeviceFloppy size={22} color="white" />}
               size={"xs"}
@@ -119,20 +116,16 @@ export function Topbar({
               variant={"ghost"}
             />
           </Tooltip>
+        ) : (
+          <div style={{ width: 22 }} />
         )}
-        {/* {loadChild && (
-          <Suspense>
-            <ModelManagerTopbar />
-          </Suspense>
-        )} */}
-        {isHovered && (
-          <IconGripVertical
-            id="dragPanelIcon"
-            cursor="move"
-            size={15}
-            color="#FFF"
-          />
-        )}
+        <IconGripVertical
+          id="dragPanelIcon"
+          className="dragPanelIcon"
+          cursor="move"
+          size={15}
+          color="#FFF"
+        />
       </HStack>
     </Draggable>
   );

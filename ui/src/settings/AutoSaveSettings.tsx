@@ -1,18 +1,27 @@
-import { Checkbox, Input, Stack, Text } from "@chakra-ui/react";
-import { useState } from "react";
+import { Checkbox, Stack } from "@chakra-ui/react";
+import { useState, useEffect } from "react";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 
 export default function AutoSaveSettings() {
-  const curSetting = userSettingsTable?.getSetting("autoSave");
+  const [checked, setChecked] = useState(false);
 
-  const [checked, setChecked] = useState(curSetting ?? true);
+  const getAutoSave = () => {
+    userSettingsTable?.getSetting("autoSave").then((res) => {
+      setChecked(!!res);
+    });
+  };
+
+  useEffect(() => {
+    getAutoSave();
+  }, []);
+
   return (
     <Stack>
       <Checkbox
         isChecked={checked}
-        onChange={(e) => {
-          setChecked(e.target.checked);
-          userSettingsTable?.upsert({ autoSave: e.target.checked });
+        onChange={async (e) => {
+          await userSettingsTable?.upsert({ autoSave: e.target.checked });
+          getAutoSave();
         }}
       >
         Enable auto save workflow

@@ -1,29 +1,28 @@
 // @ts-ignore
-import { deleteFile } from "./Api";
+import { deleteFile, updateFile } from "./Api";
 import { ESortTypes } from "./RecentFilesDrawer/types";
 import {
-  batchCreateFlows,
+  workflowsTable,
   foldersTable,
-  listWorkflows,
-  saveJsonFileMyWorkflows,
   userSettingsTable,
-  Workflow,
 } from "./db-tables/WorkspaceDB";
-import { generateFilePathAbsolute } from "./db-tables/DiskFileUtils";
-import { Folder } from "./types/dbTypes";
+import {
+  generateFilePathAbsolute,
+  saveJsonFileMyWorkflows,
+} from "./db-tables/DiskFileUtils";
+import { Folder, Workflow } from "./types/dbTypes";
 // @ts-ignore
-import { app, ComfyApp } from "/scripts/app.js";
+import { app } from "/scripts/app.js";
+import {
+  COMFYSPACE_TRACKING_FIELD_NAME,
+  LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
+} from "./const";
 
-export type Route =
-  | "root"
-  | "customNodes"
-  | "recentFlows"
-  | "gallery"
-  | "myModels";
+export type Route = "root" | "customNodes" | "recentFlows" | "gallery";
 
 // copied from app.js
 function sanitizeNodeName(string: string): string {
-  let entityMap: Record<string, string> = {
+  const entityMap: Record<string, string> = {
     "&": "",
     "<": "",
     ">": "",
@@ -38,7 +37,7 @@ function sanitizeNodeName(string: string): string {
 }
 export function findMissingNodes(): string[] {
   const missingNodeTypes = [];
-  for (let n of app.graph._nodes) {
+  for (const n of app.graph._nodes) {
     // Patch T2IAdapterLoader to ControlNetLoader since they are the same node now
     if (n.type == "T2IAdapterLoader") n.type = "ControlNetLoader";
     if (n.type == "ConditioningAverage ") n.type = "ConditioningAverage"; //typo fix
@@ -101,7 +100,7 @@ function isValidFileName(fileName: string) {
 
 export function formatTimestamp(
   unixTimestamp: number,
-  showSec: boolean = false
+  showSec: boolean = false,
 ) {
   // Create a new Date object from the UNIX timestamp
   const date = new Date(unixTimestamp);
@@ -114,7 +113,7 @@ export function formatTimestamp(
   const minutes = String(date.getMinutes()).padStart(2, "0");
   const seconds = String(date.getSeconds()).padStart(2, "0");
   // Format the date and time string
-  let res = `${month}-${day}-${year} ${hours}:${minutes}`;
+  const res = `${month}-${day}-${year} ${hours}:${minutes}`;
   if (showSec) {
     return res + `:${seconds}`;
   }
@@ -129,7 +128,7 @@ export function formatTimestamp(
  */
 export function sortFlows(
   flows: Workflow[] = [],
-  sortType: ESortTypes = ESortTypes.RECENTLY_MODIFIED
+  sortType: ESortTypes = ESortTypes.RECENTLY_MODIFIED,
 ) {
   const copyFlows = [...flows];
   if (copyFlows.length) {
@@ -152,10 +151,11 @@ export function sortFlows(
   return copyFlows;
 }
 export async function validateOrSaveAllJsonFileMyWorkflows(
-  deleteEmptyFolder = false
+  deleteEmptyFolder = false,
 ) {
-  for (const workflow of listWorkflows()) {
-    const fullPath = generateFilePathAbsolute(workflow);
+  const flowList = (await workflowsTable?.listAll()) ?? [];
+  for (const workflow of flowList) {
+    const fullPath = await generateFilePathAbsolute(workflow);
     if (workflow.filePath != fullPath) {
       // file path changed
       workflow.filePath != null &&
@@ -167,7 +167,7 @@ export async function validateOrSaveAllJsonFileMyWorkflows(
 
 export const sortFileItem = (
   items: Array<Workflow | Folder>,
-  sortType: ESortTypes = ESortTypes.RECENTLY_MODIFIED
+  sortType: ESortTypes = ESortTypes.RECENTLY_MODIFIED,
 ) => {
   const copyFlows = [...items];
   switch (sortType) {
@@ -195,7 +195,7 @@ export function insertWorkflowToCanvas(json: string, insertPos?: number[]) {
     graphData = structuredClone(graphData);
   }
   // @ts-ignore
-  var tempGraph = new LGraph();
+  let tempGraph = new LGraph();
   tempGraph.configure(graphData);
   const prevClipboard = localStorage.getItem("litegrapheditor_clipboard");
 
@@ -220,7 +220,7 @@ export function insertWorkflowToCanvas(json: string, insertPos?: number[]) {
   canvas = null;
 }
 
-export function generateUniqueName(name?: string) {
+export async function generateUniqueName(name?: string) {
   /**
    * Generate a unique name
    * For imported scenes, the default name is the file name.
@@ -229,7 +229,8 @@ export function generateUniqueName(name?: string) {
    * Looks for a unique name in the format `${default name} ${number}`.
    */
   let newFlowName = name ?? "Untitled Flow";
-  const flowNameList = listWorkflows()?.map((flow) => flow.name);
+  const flowList = (await workflowsTable?.listAll()) ?? [];
+  const flowNameList = flowList.map((flow) => flow.name);
   if (flowNameList.includes(newFlowName)) {
     let num = 2;
     let flag = true;
@@ -269,7 +270,7 @@ export function getPngMetadata(file: File) {
         const length = dataView.getUint32(offset);
         // Get the chunk type
         const type = String.fromCharCode(
-          ...pngData.slice(offset + 4, offset + 8)
+          ...pngData.slice(offset + 4, offset + 8),
         );
         if (type === "tEXt" || type == "comf") {
           // Get the keyword
@@ -278,12 +279,12 @@ export function getPngMetadata(file: File) {
             keyword_end++;
           }
           const keyword = String.fromCharCode(
-            ...pngData.slice(offset + 8, keyword_end)
+            ...pngData.slice(offset + 8, keyword_end),
           );
           // Get the text
           const contentArraySegment = pngData.slice(
             keyword_end + 1,
-            offset + 8 + length
+            offset + 8 + length,
           );
           const contentJson = Array.from(contentArraySegment)
             .map((s) => String.fromCharCode(s))
@@ -301,15 +302,221 @@ export function getPngMetadata(file: File) {
   });
 }
 
-export const matchSaveWorkflowShortcut = (event: KeyboardEvent) => {
-  const short = userSettingsTable?.getSetting("shortcuts")?.save;
+function parseExifData(exifData) {
+  // Check for the correct TIFF header (0x4949 for little-endian or 0x4D4D for big-endian)
+  const isLittleEndian = new Uint16Array(exifData.slice(0, 2))[0] === 0x4949;
+
+  // Function to read 16-bit and 32-bit integers from binary data
+  function readInt(offset, isLittleEndian, length) {
+    const arr = exifData.slice(offset, offset + length);
+    if (length === 2) {
+      return new DataView(arr.buffer, arr.byteOffset, arr.byteLength).getUint16(
+        0,
+        isLittleEndian,
+      );
+    } else if (length === 4) {
+      return new DataView(arr.buffer, arr.byteOffset, arr.byteLength).getUint32(
+        0,
+        isLittleEndian,
+      );
+    }
+  }
+
+  // Read the offset to the first IFD (Image File Directory)
+  const ifdOffset = readInt(4, isLittleEndian, 4);
+
+  function parseIFD(offset) {
+    const numEntries = readInt(offset, isLittleEndian, 2);
+    const result = {};
+
+    for (let i = 0; i < numEntries; i++) {
+      const entryOffset = offset + 2 + i * 12;
+      const tag = readInt(entryOffset, isLittleEndian, 2);
+      const type = readInt(entryOffset + 2, isLittleEndian, 2);
+      const numValues = readInt(entryOffset + 4, isLittleEndian, 4);
+      const valueOffset = readInt(entryOffset + 8, isLittleEndian, 4);
+
+      // Read the value(s) based on the data type
+      let value;
+      if (type === 2) {
+        // ASCII string
+        value = String.fromCharCode(
+          ...exifData.slice(valueOffset, valueOffset + numValues - 1),
+        );
+      }
+
+      result[tag] = value;
+    }
+
+    return result;
+  }
+
+  // Parse the first IFD
+  const ifdData = parseIFD(ifdOffset);
+  return ifdData;
+}
+
+export function getWebpMetadata(file: File) {
+  return new Promise((r) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const webp = new Uint8Array(event?.target?.result as Iterable<number>);
+      const dataView = new DataView(webp.buffer);
+
+      // Check that the WEBP signature is present
+      if (
+        dataView.getUint32(0) !== 0x52494646 ||
+        dataView.getUint32(8) !== 0x57454250
+      ) {
+        console.error("Not a valid WEBP file");
+        r();
+        return;
+      }
+
+      // Start searching for chunks after the WEBP signature
+      let offset = 12;
+      const txt_chunks = {};
+      // Loop through the chunks in the WEBP file
+      while (offset < webp.length) {
+        const chunk_length = dataView.getUint32(offset + 4, true);
+        const chunk_type = String.fromCharCode(
+          ...webp.slice(offset, offset + 4),
+        );
+        if (chunk_type === "EXIF") {
+          if (
+            String.fromCharCode(...webp.slice(offset + 8, offset + 8 + 6)) ==
+            "Exif\0\0"
+          ) {
+            offset += 6;
+          }
+          const data = parseExifData(
+            webp.slice(offset + 8, offset + 8 + chunk_length),
+          );
+          for (const key in data) {
+            const value = data[key];
+            const index = value.indexOf(":");
+            txt_chunks[value.slice(0, index)] = value.slice(index + 1);
+          }
+        }
+
+        offset += 8 + chunk_length;
+      }
+
+      r(txt_chunks);
+    };
+
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+export function isVideoName(name: string) {
+  if (name?.endsWith(".webm")) {
+    return true;
+  }
+  if (name?.endsWith(".mp4")) {
+    return true;
+  }
+
+  return false;
+}
+
+export function getVideoMetadata(file) {
+  return new Promise((r) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const videoData = new Uint8Array(event.target.result);
+      const dataView = new DataView(videoData.buffer);
+
+      const decoder = new TextDecoder();
+      // Check for known valid magic strings
+      if (dataView.getUint32(0) == 0x1a45dfa3) {
+        //webm
+        //see http://wiki.webmproject.org/webm-metadata/global-metadata
+        //and https://www.matroska.org/technical/elements.html
+        //contrary to specs, tag seems consistently at start
+        //COMMENT + 0x4487 + packed length?
+        //length 0x8d8 becomes 0x48d8
+        //
+        //description for variable length ints https://github.com/ietf-wg-cellar/ebml-specification/blob/master/specification.markdown
+        let offset = 4 + 8; //COMMENT is 7 chars + 1 to realign
+        while (offset < videoData.length - 16) {
+          //Check for text tags
+          if (dataView.getUint16(offset) == 0x4487) {
+            //check that name of tag is COMMENT
+            const name = String.fromCharCode(
+              ...videoData.slice(offset - 7, offset),
+            );
+            if (name === "COMMENT") {
+              const vint = dataView.getUint32(offset + 2);
+              const n_octets = Math.clz32(vint) + 1;
+              if (n_octets < 4) {
+                //250MB sanity cutoff
+                const length =
+                  (vint >> (8 * (4 - n_octets))) & ~(1 << (7 * n_octets));
+                const content = decoder.decode(
+                  videoData.slice(
+                    offset + 2 + n_octets,
+                    offset + 2 + n_octets + length,
+                  ),
+                );
+                const json = JSON.parse(content);
+                r(json);
+                return;
+              }
+            }
+          }
+          offset += 1;
+        }
+      } else if (
+        dataView.getUint32(4) == 0x66747970 &&
+        dataView.getUint32(8) == 0x69736f6d
+      ) {
+        //mp4
+        //see https://developer.apple.com/documentation/quicktime-file-format
+        //Seems to make no guarantee for alignment
+        let offset = videoData.length - 4;
+        while (offset > 16) {
+          //rough safe guess
+          if (dataView.getUint32(offset) == 0x64617461) {
+            //any data tag
+            if (dataView.getUint32(offset - 8) == 0xa9636d74) {
+              //cmt data tag
+              const type = dataView.getUint32(offset + 4); //seemingly 1
+              const locale = dataView.getUint32(offset + 8); //seemingly 0
+              const size = dataView.getUint32(offset - 4) - 4 * 4;
+              const content = decoder.decode(
+                videoData.slice(offset + 12, offset + 12 + size),
+              );
+              const json = JSON.parse(content);
+              r(json);
+              return;
+            }
+          }
+
+          offset -= 1;
+        }
+      } else {
+        console.error("Unknown magic: " + dataView.getUint32(0));
+        r();
+        return;
+      }
+    };
+
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+export const matchSaveWorkflowShortcut = async (event: KeyboardEvent) => {
+  const short = await userSettingsTable?.getSetting("shortcuts").then((res) => {
+    return res?.save;
+  });
   if (!short) return false;
   return matchShortcut(event, short);
 };
 
 export const matchShortcut = (
   event: KeyboardEvent,
-  shortcutString: string
+  shortcutString: string,
 ): boolean => {
   const keys = shortcutString.split("+");
   const keyEvent: Record<string, boolean> = {
@@ -343,18 +550,18 @@ export async function syncNewFlowOfLocalDisk(
   folderList: {
     name: string;
     list: Workflow[];
-  }[]
+  }[],
 ) {
   if (singleFlowList.length) {
-    await batchCreateFlows(singleFlowList, true);
+    await workflowsTable?.batchCreateFlows(singleFlowList, true);
   }
 
   if (folderList.length) {
-    const currentFolderList = foldersTable?.listAll();
+    const currentFolderList = await foldersTable?.listAll();
 
-    folderList.forEach(async (folder) => {
+    for (const folder of folderList) {
       const existFolder = currentFolderList?.find(
-        (f) => f.name === folder.name
+        (f) => f.name === folder.name,
       );
 
       let folderId;
@@ -362,13 +569,59 @@ export async function syncNewFlowOfLocalDisk(
       if (existFolder) {
         folderId = existFolder.id;
       } else {
-        const newFolder = foldersTable?.create({
+        const newFolder = await foldersTable?.create({
           name: folder.name,
         });
         folderId = newFolder?.id;
       }
 
-      await batchCreateFlows(folder.list, true, folderId);
-    });
+      await workflowsTable?.batchCreateFlows(folder.list, true, folderId);
+    }
+  }
+}
+
+export function getWorkflowIdInUrlHash() {
+  const hashArr = window.location.hash.slice(1).split("/");
+  const workspaceId = hashArr.find((h) => h.includes("workspaceId@"));
+  return workspaceId ? workspaceId.split("@")[1] : null;
+}
+
+/**
+ * Generate url hash containing workflowId;
+ * If workspaceId@ exists, replace it, if it does not exist, append it.
+ * This operation will not damage the original hash.
+ */
+export function generateUrlHashWithFlowId(id: string) {
+  const hashArr = window.location.hash.slice(1).split("/");
+  const workspaceIdIndex = hashArr.findIndex((h) => h.includes("workspaceId@"));
+  const newWorkflowId = `workspaceId@${id}`;
+  if (workspaceIdIndex >= 0) {
+    hashArr[workspaceIdIndex] = newWorkflowId;
+  } else {
+    hashArr.push(newWorkflowId);
+  }
+  return `${hashArr.join("/")}`;
+}
+
+export const openWorkflowInNewTab = (workflowID: string) => {
+  const newHash = generateUrlHashWithFlowId(workflowID);
+  window.open(`${window.location.origin}/#${newHash}`);
+};
+
+export async function rewriteAllLocalFiles() {
+  const flowList = (await workflowsTable?.listAll()) ?? [];
+  for (const workflow of flowList) {
+    try {
+      const fullPath = await generateFilePathAbsolute(workflow);
+      const flow = JSON.parse(workflow.json);
+      flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {
+        id: workflow.id,
+        name: workflow.name,
+      };
+      delete flow.extra[LEGACY_COMFYSPACE_TRACKING_FIELD_NAME];
+      fullPath && (await updateFile(fullPath, JSON.stringify(flow)));
+    } catch (error) {
+      console.error(error);
+    }
   }
 }

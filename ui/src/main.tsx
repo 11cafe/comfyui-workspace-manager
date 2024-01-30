@@ -10,7 +10,7 @@ document.body.append(topbar);
 const App = React.lazy(() =>
   import("./App.tsx").then(({ default: App }) => ({
     default: App,
-  }))
+  })),
 );
 
 ReactDOM.createRoot(topbar).render(
@@ -24,7 +24,7 @@ ReactDOM.createRoot(topbar).render(
         </Suspense>
       </AlertDialogProvider>
     </ChakraProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );
 
 // hacky fix for chakra add extra className (chakra-ui-light) into body
@@ -35,10 +35,10 @@ const observerConfig = { attributes: true, attributeFilter: ["class"] };
 // Callback function to execute when mutations are observed
 const callback = function (
   mutationsList: MutationRecord[],
-  _observer: MutationObserver
+  _observer: MutationObserver,
 ) {
   // remove color-scheme property from <html> element, this made the checkboxes dark
-  let htmlElement = document.documentElement;
+  const htmlElement = document.documentElement;
   if (htmlElement.style.colorScheme === "dark") {
     // Remove the color-scheme property
     htmlElement.style.removeProperty("color-scheme");

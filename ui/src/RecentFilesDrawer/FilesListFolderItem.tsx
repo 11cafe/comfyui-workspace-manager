@@ -1,10 +1,8 @@
 import { HStack, useColorMode, Text, Stack } from "@chakra-ui/react";
 import {
-  Workflow,
   foldersTable,
   isFolder,
-  listFolderContent,
-  updateFlow,
+  workflowsTable,
 } from "../db-tables/WorkspaceDB";
 import { useState, memo, useContext, useEffect, MouseEvent } from "react";
 import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
@@ -12,7 +10,7 @@ import { RecentFilesContext } from "../WorkspaceContext";
 import WorkflowListItem from "./WorkflowListItem";
 import FilesListFolderItemRightClickMenu from "./FilesListFolderItemRightClickMenu";
 import { ESortTypes, sortTypeLocalStorageKey } from "./types";
-import { Folder } from "../types/dbTypes";
+import { Folder, Workflow } from "../types/dbTypes";
 
 type Props = {
   folder: Folder;
@@ -20,9 +18,7 @@ type Props = {
 export default memo(function FilesListFolderItem({ folder }: Props) {
   const [isActive, setIsActive] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(folder.isCollapse ?? false);
-  const [children, setChildren] = useState<Array<Folder | Workflow>>(() =>
-    listFolderContent(folder.id)
-  );
+  const [children, setChildren] = useState<Array<Folder | Workflow>>([]);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { colorMode } = useColorMode();
@@ -32,21 +28,25 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
     colorMode === "light"
       ? { backgroundColor: "#E2E8F0" }
       : { backgroundColor: "#4A5568" };
+
   useEffect(() => {
-    setChildren(
-      listFolderContent(
+    workflowsTable
+      ?.listFolderContent(
         folder.id,
-        window.localStorage.getItem(sortTypeLocalStorageKey) as ESortTypes
+        window.localStorage.getItem(sortTypeLocalStorageKey) as ESortTypes,
       )
-    );
+      .then((child) => {
+        setChildren(child);
+      });
   }, [folder.id, refreshFolderStamp]);
+
   const handleContextMenu = (event: MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
     setMenuPosition({ x: event.clientX, y: event.clientY });
     setIsMenuOpen(true);
   };
   useEffect(() => {
-    if (folder.isCollapse === isCollapsed) return;
+    if (!!folder.isCollapse === isCollapsed) return;
     foldersTable?.update({
       id: folder.id,
       isCollapse: isCollapsed,
@@ -69,12 +69,12 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
         onDragLeave={() => {
           setIsActive(false);
         }}
-        onDrop={() => {
+        onDrop={async () => {
           if (draggingFile && !isFolder(draggingFile)) {
-            updateFlow(draggingFile.id, {
+            await workflowsTable?.updateFlow(draggingFile.id, {
               parentFolderID: folder.id,
             });
-            onRefreshFilesList && onRefreshFilesList();
+            await onRefreshFilesList?.();
           }
           setIsActive(false);
         }}
@@ -109,9 +109,9 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
         <Stack ml={4} gap={0}>
           {children.map((file) => {
             if (isFolder(file)) {
-              return <FilesListFolderItem folder={file} />;
+              return <FilesListFolderItem key={file.id} folder={file} />;
             } else {
-              return <WorkflowListItem workflow={file} />;
+              return <WorkflowListItem key={file.id} workflow={file} />;
             }
           })}
         </Stack>

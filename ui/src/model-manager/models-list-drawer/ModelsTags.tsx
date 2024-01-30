@@ -17,20 +17,18 @@ export function ModelsTags({
 
   return (
     <Wrap>
-      {modelTypeList.map((v) => {
-        return (
-          <WrapItem>
-            <Button
-              colorScheme="teal"
-              variant={selectedModel === v ? "solid" : "outline"}
-              onClick={() => clickHanlder(v)}
-              size={"sm"}
-            >
-              {v}
-            </Button>
-          </WrapItem>
-        );
-      })}
+      {modelTypeList.map((v) => (
+        <WrapItem key={v}>
+          <Button
+            colorScheme="blue"
+            variant={selectedModel === v ? "solid" : "outline"}
+            onClick={() => clickHanlder(v)}
+            size={"sm"}
+          >
+            {v}
+          </Button>
+        </WrapItem>
+      ))}
     </Wrap>
   );
 }

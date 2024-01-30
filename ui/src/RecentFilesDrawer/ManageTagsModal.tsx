@@ -1,7 +1,5 @@
 import {
-  Button,
   HStack,
-  useDisclosure,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -12,11 +10,19 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { Tag, Workflow, tagsTable, updateFlow } from "../db-tables/WorkspaceDB";
-import { IconSettings, IconTrash } from "@tabler/icons-react";
+import { tagsTable } from "../db-tables/WorkspaceDB";
+import { IconTrash } from "@tabler/icons-react";
+import { Tag } from "../types/dbTypes";
 
 export default function ManageTagsModal({ onclose }: { onclose: () => void }) {
-  const [allTags, setAllTags] = useState<Tag[]>(tagsTable?.listAll() ?? []);
+  const [allTags, setAllTags] = useState<Tag[]>([]);
+  const loadTags = async () => {
+    const tags = await tagsTable?.listAll();
+    setAllTags(tags ?? []);
+  };
+  useEffect(() => {
+    loadTags();
+  }, []);
   return (
     <Modal isOpen={true} onClose={onclose}>
       <ModalOverlay />
@@ -28,9 +34,9 @@ export default function ManageTagsModal({ onclose }: { onclose: () => void }) {
             <HStack>
               <ChakraTag>{tag.name}</ChakraTag>
               <IconButton
-                onClick={() => {
-                  tagsTable?.delete(tag.name);
-                  setAllTags(tagsTable?.listAll() ?? []);
+                onClick={async () => {
+                  await tagsTable?.delete(tag.name);
+                  loadTags();
                 }}
                 aria-label="delete-tag"
                 colorScheme="red"

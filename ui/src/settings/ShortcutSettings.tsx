@@ -1,14 +1,14 @@
 import { Input, Stack, Text } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 
 export function ShortcutSettings() {
-  const shortcutSetting = userSettingsTable?.getSetting("shortcuts")?.save;
-  const [shortcut, setShortcut] = useState(shortcutSetting ?? "Control+S");
+  const [shortcut, setShortcut] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
   const handleFocus = () => setIsInputFocused(true);
   const handleBlur = () => setIsInputFocused(false);
-  const handleKeyDown = (e: any) => {
+
+  const handleKeyDown = async (e: any) => {
     e.preventDefault();
 
     let newShortcut = "";
@@ -22,10 +22,21 @@ export function ShortcutSettings() {
       !["Control", "Shift", "Alt"].includes(e.key)
     ) {
       newShortcut += e.key.toUpperCase();
-      setShortcut(newShortcut);
-      userSettingsTable?.upsert({ shortcuts: { save: newShortcut } });
+      await userSettingsTable?.upsert({ shortcuts: { save: newShortcut } });
+      getShortcut();
     }
   };
+
+  const getShortcut = () => {
+    userSettingsTable?.getSetting("shortcuts").then((res) => {
+      setShortcut(res?.save ?? userSettingsTable?.defaultSettings.shortcuts);
+    });
+  };
+
+  useEffect(() => {
+    getShortcut();
+  }, []);
+
   return (
     <Stack>
       <Text>Keyboard Shortcut - Save current workflow</Text>

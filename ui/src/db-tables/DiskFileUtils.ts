@@ -1,45 +1,47 @@
-import { deleteFile, saveDB, updateFile } from "../Api";
-import { Workflow, foldersTable, userSettingsTable } from "./WorkspaceDB";
+import { deleteFile, updateFile } from "../Api";
+import { foldersTable, workflowsTable, userSettingsTable } from "./WorkspaceDB";
 import {
   COMFYSPACE_TRACKING_FIELD_NAME,
   LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
 } from "../const";
-
 import { toFileNameFriendly } from "../utils";
+import { Workflow } from "../types/dbTypes";
 
-export function saveJsonFileMyWorkflows(
-  workflow: Workflow,
-  onFileSaved?: (fullPath: string) => void
-) {
-  const file_path = generateFilePath(workflow);
+export async function saveJsonFileMyWorkflows(workflow: Workflow) {
+  const file_path = await generateFilePath(workflow);
   if (file_path == null) {
     return;
   }
-  const fullPath = generateFilePathAbsolute(workflow);
-  fullPath && onFileSaved && onFileSaved(fullPath);
-
+  const fullPath = await generateFilePathAbsolute(workflow);
+  await workflowsTable?.updateFlow(workflow.id, {
+    filePath: fullPath ?? undefined,
+  });
   const json = workflow.json;
   const flow = JSON.parse(json);
-  delete flow.extra[LEGACY_COMFYSPACE_TRACKING_FIELD_NAME];
   flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {
     id: workflow.id,
+    name: workflow.name,
   };
-  updateFile(file_path, JSON.stringify(flow));
+  delete flow.extra[LEGACY_COMFYSPACE_TRACKING_FIELD_NAME];
+
+  await updateFile(file_path, JSON.stringify(flow));
 }
 
-export function deleteJsonFileMyWorkflows(workflow: Workflow) {
+export async function deleteJsonFileMyWorkflows(workflow: Workflow) {
   if (workflow.name == null) {
     return;
   }
-  const file_path = generateFilePath(workflow);
+  const file_path = await generateFilePath(workflow);
   file_path != null && deleteFile(file_path);
 }
 
-export function generateFilePath(workflow: Workflow): string | null {
+export async function generateFilePath(
+  workflow: Workflow,
+): Promise<string | null> {
   let filePath = toFileNameFriendly(workflow.name) + ".json";
   let curFolderID = workflow.parentFolderID;
   while (curFolderID != null) {
-    const folder = foldersTable?.get(curFolderID);
+    const folder = await foldersTable?.get(curFolderID);
     if (folder == null) {
       break;
     }
@@ -51,10 +53,12 @@ export function generateFilePath(workflow: Workflow): string | null {
   return filePath ?? null;
 }
 
-export function generateFilePathAbsolute(workflow: Workflow): string | null {
-  const subPath = generateFilePath(workflow);
-  let myWorkflowsDir = userSettingsTable?.getSetting("myWorkflowsDir");
-  if (myWorkflowsDir == null) {
+export async function generateFilePathAbsolute(
+  workflow: Workflow,
+): Promise<string | null> {
+  const subPath = await generateFilePath(workflow);
+  let myWorkflowsDir = await userSettingsTable?.getSetting("myWorkflowsDir");
+  if (!myWorkflowsDir) {
     console.error("myWorkflowsDir is not set");
     return null;
   }
@@ -62,4 +66,59 @@ export function generateFilePathAbsolute(workflow: Workflow): string | null {
     myWorkflowsDir = myWorkflowsDir + "/";
   }
   return myWorkflowsDir + subPath;
+}
+
+export async function generateFolderPath(id: string): Promise<string | null> {
+  const folder = await foldersTable?.get(id);
+  let parentFolderID = folder?.parentFolderID;
+  let folderPath = folder?.name;
+  while (parentFolderID) {
+    const folder = await foldersTable?.get(parentFolderID);
+    if (folder == null) {
+      break;
+    }
+    folderPath = `${folder.name}/${folderPath}`;
+    parentFolderID = folder.parentFolderID ?? undefined;
+  }
+
+  let myWorkflowsDir = await userSettingsTable?.getSetting("myWorkflowsDir");
+
+  if (!myWorkflowsDir) {
+    console.error("myWorkflowsDir is not set");
+    return null;
+  }
+
+  if (!myWorkflowsDir.endsWith("/")) {
+    myWorkflowsDir = myWorkflowsDir + "/";
+  }
+  return myWorkflowsDir + folderPath;
+}
+
+export async function getFileCountInFolder(folderId: string): Promise<number> {
+  const allFlows = (await workflowsTable?.listAll()) ?? [];
+  const allFolders = (await foldersTable?.listAll()) ?? [];
+  const nestedFolderIdStack = [folderId];
+  let count = 0;
+
+  while (nestedFolderIdStack.length > 0) {
+    const curFolderId = nestedFolderIdStack.shift();
+
+    if (curFolderId) {
+      for (const flow of allFlows) {
+        if (flow.parentFolderID === curFolderId) {
+          count++;
+        }
+      }
+
+      const curNestedFolderIds = allFolders
+        .filter((f) => f.parentFolderID === curFolderId)
+        .map((f) => f.id);
+
+      if (curNestedFolderIds.length) {
+        nestedFolderIdStack.push(...curNestedFolderIds);
+      }
+    }
+  }
+
+  return count;
 }

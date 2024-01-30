@@ -126,3 +126,10 @@ export type CivitiImageMeta = {
   cfgScale?: number;
   negativePrompt?: string;
 };
+
+export interface ModelsListRespItem {
+  model_name: string;
+  model_extension: string;
+  model_type: string;
+  file_hash?: string;
+}

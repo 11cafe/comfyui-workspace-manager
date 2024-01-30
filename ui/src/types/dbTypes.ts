@@ -3,6 +3,24 @@ export interface SortableItem {
   updateTime: number;
 }
 
+export interface Workflow extends SortableItem {
+  id: string;
+  json: string;
+  lastSavedJson?: string;
+  name: string;
+  createTime: number;
+  filePath?: string;
+  tags?: string[];
+  parentFolderID?: string;
+  mediaIDs?: string[];
+  coverMediaPath?: string;
+}
+
+export interface TableBaseModel {
+  id: string;
+  name: string;
+}
+
 export type Tags = {
   [name: string]: Tag;
 };
@@ -11,14 +29,24 @@ export type Tag = {
   workflowIDs: string[];
   updateTime: number;
 };
-export type TagsTable = {
-  tags: Tags;
-  listAll(): Tag[];
-  upsert(name: string): Tag;
-  delete(name: string): void;
+export type CacheKey = string;
+export type LocalCache = {
+  id: CacheKey;
+  value: string;
+};
+
+export type Model = {
+  id: string;
+  fileName: string;
+  fileFolder: string;
+  fileHash: string;
+  civitModelID: string;
+  civitModelVersionID: string;
+  imageUrl?: string | null;
 };
 
 export type UserSettings = {
+  id: string;
   myWorkflowsDir: string;
   topBarStyle: PanelPosition;
   shortcuts: {
@@ -56,3 +84,19 @@ export type Media = {
   localPath: string;
   format: string;
 };
+
+/**
+ * When deleting a folder, how files in the folder and files in nested folders are handled
+ */
+export enum EFlowOperationType {
+  /**
+   * Move to root directory
+   */
+  MOVE_TO_ROOT_FOLDER = "moveToRootFolder",
+  /**
+   * Delete
+   */
+  DELETE = "delete",
+}
+
+export const WORKSPACE_INDEXDB_NAME = "comfyui_workspace_db";

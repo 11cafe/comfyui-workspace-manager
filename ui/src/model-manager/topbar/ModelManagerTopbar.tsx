@@ -1,35 +1,53 @@
 import { Box, Button, HStack } from "@chakra-ui/react";
-import Draggable from "../components/Draggable";
-import { IconGripVertical } from "@tabler/icons-react";
-import { useCallback, useContext, useEffect, useState } from "react";
-import { ManagerContext } from "../ManagerContext";
-import { PanelPosition } from "../types";
-import React from "react";
+import { lazy, useEffect, useState, DragEvent } from "react";
 import ModelsListDrawer from "../models-list-drawer/ModelsListDrawer";
+// @ts-ignore
+import { app } from "/scripts/app.js";
 
-const AddMissingModelsButton = React.lazy(
-  () => import("./InstallMissingModelsButton")
+const AddMissingModelsButton = lazy(
+  () => import("./InstallMissingModelsButton"),
 );
 interface Props {}
 
-const WIDTH = 200;
 export default function ModelManagerTopbar({}: Props) {
   const [showMyModels, setShowMyModels] = useState(false);
+  const handleModelDrop = async (
+    e: DragEvent<HTMLCanvasElement> & { canvasX: number; canvasY: number },
+  ) => {
+    const eventName = e.dataTransfer.getData("eventName");
+    if (eventName !== "WorkspaceManagerAddNode") {
+      return;
+    }
+    const modelRelativePath = e.dataTransfer.getData("modelRelativePath");
+    const nodeType = e.dataTransfer.getData("nodeType");
+    // @ts-ignore
+    const node = LiteGraph.createNode(nodeType);
+    node.pos = [e.canvasX, e.canvasY];
+    node.configure({ widgets_values: [modelRelativePath] });
+    app.graph.add(node);
+  };
+  useEffect(() => {
+    app.canvasEl.addEventListener("drop", handleModelDrop);
+    return () => {
+      app.canvasEl.removeEventListener("drop", handleModelDrop);
+    };
+  }, []);
   return (
-    <>
+    <HStack position={"fixed"} top={2} right={2} gap={2}>
+      <AddMissingModelsButton />
+
       <Button
         size={"sm"}
-        variant={"outline"}
-        colorScheme="teal"
+        colorScheme="blue"
         aria-label="My models"
         onClick={() => setShowMyModels(true)}
-        px={2}
+        px={1}
       >
-        My models
+        Models
       </Button>
       {showMyModels && (
         <ModelsListDrawer onClose={() => setShowMyModels(false)} />
       )}
-    </>
+    </HStack>
   );
 }

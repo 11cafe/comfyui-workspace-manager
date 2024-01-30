@@ -1,1 +1,0 @@
-import{r as o,j as t,B as e}from"./input.js";import{app as r}from"/scripts/app.js";function n({}){return o.useEffect(()=>{const s=r.graph.serialize();console.log(s)},[]),t.jsx(e,{size:"sm","aria-label":"missing models",px:2,children:"Install Missing Models"})}export{n as default};

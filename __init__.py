@@ -1,8 +1,10 @@
+import asyncio
 import server
 from aiohttp import web
 import aiohttp
 import requests
 import folder_paths
+import shutil
 import os
 import sys
 import threading
@@ -13,8 +15,9 @@ import os
 import json
 from .version_control import update_version_if_outdated
 from .service.model_manager.model_installer import download_url_with_wget
-
+from .service.model_manager.model_list import get_model_list
 WEB_DIRECTORY = "entry"
+DEFAULT_USER = "guest"
 NODE_CLASS_MAPPINGS = {}
 __all__ = ['NODE_CLASS_MAPPINGS']
 version = "V1.0.0"
@@ -26,9 +29,12 @@ db_dir_path = os.path.join(workspace_path, "db")
 
 
 workspace_app = web.Application()
-workspace_app.add_routes([
-    web.static("/", os.path.join(workspace_path, 'dist/workspace_web')),
-])
+dist_path = os.path.join(workspace_path, 'dist/workspace_web')
+if os.path.exists(dist_path):
+    workspace_app.add_routes([
+        web.static("/", dist_path),
+    ])
+
 server.PromptServer.instance.app.add_subapp("/workspace_web/", workspace_app)
 
 @server.PromptServer.instance.routes.post("/workspace/save_db")
@@ -39,15 +45,15 @@ async def save_db(request):
     json_data = data['json']
 
     file_name = f'{db_dir_path}/{table}.json'
-    if not os.path.exists(db_dir_path):
-        os.makedirs(db_dir_path)
-
-    # Write the JSON data to the specified file
-    with open(file_name, 'w') as file:
-        file.write(json.dumps(json_data, indent=4))
-
+    # Offload file writing to a separate thread
+    def write_json_string_to_db(file_name, json_data):
+        if not os.path.exists(db_dir_path):
+            os.makedirs(db_dir_path)
+        # Write the JSON data to the specified file
+        with open(file_name, 'w') as file:
+            file.write(json.dumps(json_data, indent=4))
+    await asyncio.to_thread(write_json_string_to_db, file_name, json_data)
     return web.Response(text=f"JSON saved to {file_name}")
-
 
 def read_table(table):
     if not table:
@@ -65,43 +71,11 @@ def read_table(table):
 async def get_workspace(request):
     # Extract the table parameter from the query string
     table = request.query.get('table')
-    data = read_table(table)
+    data = await asyncio.to_thread(read_table, table)
     return web.json_response(data)
 
 BACKUP_DIR = os.path.join(workspace_path, "backup")
 MAX_BACKUP_FILES = 20
-
-
-@server.PromptServer.instance.routes.post("/workspace/save_backup")
-async def save_backup(request):
-    try:
-        data = await request.json()
-        file_path = data.get('file_path')
-        json_str = data.get('json_str')
-
-        file_path = os.path.join(BACKUP_DIR, file_path)
-        if not file_path or not json_str:
-            return web.Response(text=json.dumps({"error": "file_path and json_str are required"}), status=400)
-        directory = os.path.dirname(file_path)
-        # Create the directory if it does not exist
-        os.makedirs(directory, exist_ok=True)
-
-        with open(file_path, 'w') as file:
-            file.write(json_str)
-
-        # Check the number of files in the directory after writing the new file
-        files = [f for f in os.listdir(directory) if os.path.isfile(
-            os.path.join(directory, f))]
-        if len(files) > MAX_BACKUP_FILES:
-            # Find the oldest file (smallest filename)
-            oldest_file = min(files, key=lambda x: x)
-            # Delete the oldest file
-            os.remove(os.path.join(directory, oldest_file))
-
-        return web.Response(text=json.dumps({"message": "File saved successfully"}), status=200)
-    except Exception as e:
-        return web.Response(text=json.dumps({"error": str(e)}), status=500)
-
 
 @server.PromptServer.instance.routes.post("/workspace/list_backup")
 async def list_backup(request):
@@ -155,9 +129,15 @@ def get_my_workflows_dir():
     data = read_table('userSettings')
     if (data):
         records = json.loads(data)
-        curDir = records['myWorkflowsDir'] if records else None
+
+        if DEFAULT_USER in records and 'myWorkflowsDir' in records[DEFAULT_USER]:  
+            curDir = records[DEFAULT_USER]['myWorkflowsDir']  
+        elif 'myWorkflowsDir' in records:  
+            curDir = records['myWorkflowsDir']
+        
         if curDir:
             return curDir
+        
     return os.path.join(comfy_path, 'my_workflows')
 
 
@@ -166,13 +146,17 @@ async def update_file(request):
     data = await request.json()
     file_path = data['file_path']
     json_str = data['json_str']
-    my_workflows_dir = get_my_workflows_dir()
-    full_path = os.path.join(my_workflows_dir, file_path)
-    # Create the directory if it doesn't exist
-    os.makedirs(os.path.dirname(full_path), exist_ok=True)
 
-    with open(full_path, 'w', encoding='utf-8') as file:
-        file.write(json_str)
+    def write_json_to_file(json_str):
+        my_workflows_dir = get_my_workflows_dir()
+        full_path = os.path.join(my_workflows_dir, file_path)
+        # Create the directory if it doesn't exist
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        with open(full_path, 'w', encoding='utf-8') as file:
+            file.write(json_str)
+            
+    # Offload the file update to a separate thread
+    await asyncio.to_thread(write_json_to_file, json_str)
     return web.Response(text="File updated successfully")
 
 
@@ -181,22 +165,30 @@ async def delete_file(request):
     data = await request.json()
     file_path = data['file_path']
     delete_empty_folder = data['deleteEmptyFolder']
-    my_workflows_dir = get_my_workflows_dir()
-    full_path = os.path.join(my_workflows_dir, file_path)
 
-    if os.path.exists(full_path):
-        os.remove(full_path)
+    def sync_delete_file(file_path, delete_empty_folder):
+        my_workflows_dir = get_my_workflows_dir()
+        full_path = os.path.join(my_workflows_dir, file_path)
 
-        # Check if the directory is empty after deleting the file
-        directory = os.path.dirname(full_path)
-        if delete_empty_folder and not os.listdir(directory):
-            # If the directory is empty, remove the directory
-            os.rmdir(directory)
-            return web.Response(text="File and empty directory deleted successfully")
+        if os.path.exists(full_path):
+            os.remove(full_path)
+            directory = os.path.dirname(full_path)
+            if delete_empty_folder and not os.listdir(directory):
+                # If the directory is empty, remove the directory
+                os.rmdir(directory)
+                return "File and empty directory deleted successfully"
+            else:
+                return "File deleted successfully"
         else:
-            return web.Response(text="File deleted successfully")
+            return "File not found"
+
+    # Run the synchronous file operation in a separate thread
+    response_text = await asyncio.to_thread(sync_delete_file, file_path, delete_empty_folder)
+    
+    if response_text == "File not found":
+        return web.Response(text=response_text, status=404)
     else:
-        return web.Response(text="File not found", status=404)
+        return web.Response(text=response_text)
 
 
 @server.PromptServer.instance.routes.post("/workspace/rename_file")
@@ -301,3 +293,16 @@ async def scan_local_new_files(request):
             if len(folder['list']) > 0:
                 folderList.append(folder)
     return web.Response(text=json.dumps({'fileList': fileList, 'folderList': folderList}), content_type='application/json')
+
+
+@server.PromptServer.instance.routes.post("/workspace/delete_folder")
+async def delete_folder(request):
+    data = await request.json()
+    folder_path = data['folder_path']
+
+    if os.path.exists(folder_path):
+        shutil.rmtree(folder_path)
+        return web.Response(text="Successfully deleted folder: {folder_path}")
+    else:
+        return web.Response(text="folder not found: {folder_path}", status=404)
+        

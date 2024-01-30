@@ -1,37 +1,64 @@
-import { useEffect, useState } from "react";
-import { Button, HStack, Text } from "@chakra-ui/react";
-import { setCancelInstall } from "../api/modelsApi";
+// @ts-ignore
+import { api } from "/scripts/api.js";
+import {
+  HStack,
+  Progress,
+  Stack,
+  Text,
+  useColorMode,
+  useToast,
+} from "@chakra-ui/react";
+import { useState, useEffect } from "react";
+
+type Queue = { save_path: string; progress: number };
 
 export default function InstallProgress() {
-  const [progress, setProgress] = useState("");
-  const handleModelInstallMessage = (event: Event) => {
-    const text = (event as CustomEvent).detail;
-    const lines = text.split("\n");
-    const lastLine = lines.reverse().find((line: string) => line.trim() !== "");
-    setProgress(lastLine ?? "");
-  };
+  const { colorMode } = useColorMode();
+  const toast = useToast();
+  const [queue, setQueue] = useState<Queue[]>([]);
 
   useEffect(() => {
-    // Attach the event listener
-    window.addEventListener("model_install_message", handleModelInstallMessage);
-
-    // Cleanup function to remove the event listener
-    return () => {
-      window.removeEventListener(
-        "model_install_message",
-        handleModelInstallMessage
-      );
-    };
+    api.addEventListener("download_progress", (e: { detail: Queue[] }) => {
+      setQueue(e.detail);
+    });
+    api.addEventListener("download_error", (e: { detail: string }) => {
+      toast({
+        title: "Download Error",
+        description: e.detail,
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+      });
+    });
   }, []);
 
   return (
-    <HStack>
-      <Text fontWeight={"500"} fontSize={18} py={2}>
-        {progress}
-      </Text>
-      {/* {progress !== "" && (
-        <Button onClick={() => setCancelInstall(true)}>Cancel</Button>
-      )} */}
-    </HStack>
+    <Stack
+      spacing={5}
+      pos="absolute"
+      bottom="0"
+      left="0"
+      width="50%"
+      zIndex={80}
+      backgroundColor={colorMode === "light" ? "white" : "#242424"}
+      paddingX={5}
+    >
+      {queue.map(({ save_path, progress }) => (
+        <HStack key={save_path}>
+          <Text fontSize={16} width="40%">
+            {save_path.replace(/^.*[\\/]/, "")}
+          </Text>
+          <Progress
+            isIndeterminate={!progress}
+            hasStripe
+            width="50%"
+            value={progress}
+          />
+          <Text fontSize={16} width="10%">
+            {progress.toFixed(1)}%
+          </Text>
+        </HStack>
+      ))}
+    </Stack>
   );
 }

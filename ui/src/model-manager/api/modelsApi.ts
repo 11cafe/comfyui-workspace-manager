@@ -16,7 +16,7 @@ export const installModelsApi = async (target: InstallModelsApiInput) => {
   window.dispatchEvent(
     new CustomEvent("model_install_message", {
       detail: `Installing model ${target.filename} to ${target.save_path}, check progress in the server console.`,
-    })
+    }),
   );
   try {
     const response = await api.fetchApi("/model_manager/install_model", {
@@ -29,7 +29,7 @@ export const installModelsApi = async (target: InstallModelsApiInput) => {
     window.dispatchEvent(
       new CustomEvent("model_install_message", {
         detail: text,
-      })
+      }),
     );
     // **** Streaming version*****
     // const reader = response.body.getReader();
