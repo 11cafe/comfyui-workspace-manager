@@ -54,6 +54,7 @@ export type UserSettings = {
   };
   autoSave?: boolean;
   twoWaySync?: boolean;
+  foldersOnTop?: boolean;
 };
 
 export interface PanelPosition {

@@ -10,15 +10,14 @@ import FilesListFolderItem from "./FilesListFolderItem";
 import WorkflowListItem from "./WorkflowListItem";
 import { Box } from "@chakra-ui/react";
 import { folderOnTopLocalStorageKey } from "./types";
+import { userSettingsTable } from "../db-tables/WorkspaceDB";
 
 export default function ItemsList({
   items,
 }: {
   items: Array<Folder | Workflow>;
 }) {
-  const [folderOnTop, setFolderOnTop] = useState(
-    window.localStorage.getItem(folderOnTopLocalStorageKey) === "true",
-  );
+  const [folderOnTop, setFolderOnTop] = useState(false);
   const folders = items.filter(isFolder);
   const workflows = items.filter((item): item is Workflow => !isFolder(item));
   const parentFolderID = workflows[0]?.parentFolderID;
@@ -61,9 +60,9 @@ export default function ItemsList({
   };
 
   useEffect(() => {
-    setFolderOnTop(
-      window.localStorage.getItem(folderOnTopLocalStorageKey) === "true",
-    );
+    userSettingsTable?.getSetting("foldersOnTop").then((res) => {
+      setFolderOnTop(res ?? false);
+    });
   }, [refreshFolderStamp]);
 
   return (

@@ -26,6 +26,7 @@ import {
   workflowsTable,
   isFolder,
   foldersTable,
+  userSettingsTable,
 } from "../db-tables/WorkspaceDB";
 import {
   IconChevronDown,
@@ -37,11 +38,7 @@ import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
 import { sortFileItem } from "../utils";
 import MultipleSelectionOperation from "./MultipleSelectionOperation";
-import {
-  ESortTypes,
-  folderOnTopLocalStorageKey,
-  sortTypeLocalStorageKey,
-} from "./types";
+import { ESortTypes, sortTypeLocalStorageKey } from "./types";
 // @ts-expect-error ComfyUI import
 import { app } from "/scripts/app.js";
 import { insertWorkflowToCanvas3 } from "./InsertWorkflowToCanvas";
@@ -79,9 +76,12 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
     (window.localStorage.getItem(sortTypeLocalStorageKey) as ESortTypes) ??
       ESortTypes.RECENTLY_MODIFIED,
   );
-  const folderOnTopRef = useRef<boolean>(
-    window.localStorage.getItem(folderOnTopLocalStorageKey) === "true",
-  );
+  const [folderOnTop, setFolderOnTop] = useState(false);
+  useEffect(() => {
+    userSettingsTable?.getSetting("foldersOnTop").then((res) => {
+      setFolderOnTop(res ?? false);
+    });
+  }, []);
 
   const loadLatestWorkflows = async () => {
     const all = (await workflowsTable?.listFolderContent()) ?? [];
@@ -128,9 +128,14 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
 
   const onFolderOnTopChange = (e: ChangeEvent<HTMLInputElement>) => {
     const state = e.target.checked;
-    folderOnTopRef.current = state;
-    window.localStorage.setItem(folderOnTopLocalStorageKey, state.toString());
-    !isFilter && setRefreshFolderStamp(Date.now());
+    userSettingsTable
+      ?.upsert({
+        foldersOnTop: state,
+      })
+      .then(() => {
+        setFolderOnTop(state);
+        !isFilter && setRefreshFolderStamp(Date.now());
+      });
   };
 
   useEffect(() => {
@@ -343,7 +348,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
               <Flex gap={2} align="center">
                 <Text>Folders on Top</Text>
                 <Switch
-                  isChecked={folderOnTopRef.current}
+                  isChecked={folderOnTop}
                   onChange={onFolderOnTopChange}
                 />
               </Flex>

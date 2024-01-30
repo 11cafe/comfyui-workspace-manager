@@ -2,7 +2,6 @@
  * The key value of the sort type in the local cache
  */
 export const sortTypeLocalStorageKey = "CWM_WORKFLOWS_SORT_TYPE";
-export const folderOnTopLocalStorageKey = "CWM_WORKFLOWS_FOLDER_ON_TOP";
 
 export enum ESortTypes {
   /**
