@@ -53,7 +53,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
 
   public async createFlow(input: Partial<Workflow>): Promise<Workflow> {
     const { id, json, name } = input;
-    const newFlowName = await generateUniqueName(name);
+    const newFlowName = await generateUniqueName(name, input.parentFolderID);
     const uuid = id ?? uuidv4(); // ⇨ '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
     const time = Date.now();
     const newWorkflow: Workflow = {
@@ -146,7 +146,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
       const newFlowName =
         flow.name && isOverwriteExistingFile
           ? flow.name
-          : await generateUniqueName(flow.name);
+          : await generateUniqueName(flow.name, parentFolderID);
       const uuid = uuidv4();
       const time = Date.now();
       const newWorkflow: Workflow = {

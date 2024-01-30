@@ -220,7 +220,10 @@ export function insertWorkflowToCanvas(json: string, insertPos?: number[]) {
   canvas = null;
 }
 
-export async function generateUniqueName(name?: string) {
+export async function generateUniqueName(
+  name?: string,
+  parentFolderID?: string,
+) {
   /**
    * Generate a unique name
    * For imported scenes, the default name is the file name.
@@ -230,7 +233,9 @@ export async function generateUniqueName(name?: string) {
    */
   let newFlowName = name ?? "Untitled Flow";
   const flowList = (await workflowsTable?.listAll()) ?? [];
-  const flowNameList = flowList.map((flow) => flow.name);
+  const flowNameList = flowList
+    .filter((f) => f.parentFolderID == parentFolderID)
+    .map((flow) => flow.name);
   if (flowNameList.includes(newFlowName)) {
     let num = 2;
     let flag = true;
