@@ -27,6 +27,20 @@ export default function ItemsList({
   const { onRefreshFilesList, draggingFile, refreshFolderStamp } =
     useContext(RecentFilesContext);
 
+  const handleDragLeave = (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const targetIsDroppable =
+      e.relatedTarget instanceof Element &&
+      e.relatedTarget.classList.contains("droppable") &&
+      e.relatedTarget !== e.currentTarget;
+    const targetIsChild = e.currentTarget.contains(e.relatedTarget as Node);
+    // fixes a bug where the dragleave event is fired when dragging over a child element, causing elements to flicker
+    if (targetIsDroppable || !targetIsChild) {
+      setIsDraggingOver(false);
+    }
+  };
+
   const handleDrop = async (e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -65,13 +79,9 @@ export default function ItemsList({
           e.stopPropagation();
           setIsDraggingOver(true);
         }}
-        onDragLeave={(e) => {
-          console.log(e.target);
-          e.preventDefault();
-          e.stopPropagation();
-          setIsDraggingOver(false);
-        }}
+        onDragLeave={handleDragLeave}
         onDrop={handleDrop}
+        className="droppable"
       >
         {folderOnTop
           ? workflows.map((workflow) => (

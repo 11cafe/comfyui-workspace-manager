@@ -106,6 +106,7 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
         onDrop={handleDrop}
         _hover={activeStyle}
         style={isActive || isMenuOpen ? activeStyle : undefined}
+        className="droppable"
       >
         <HStack gap={1}>
           {isCollapsed ? (
