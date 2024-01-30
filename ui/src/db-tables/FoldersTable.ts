@@ -23,7 +23,10 @@ export class FoldersTable extends TableBase<Folder> {
     name: string;
     parentFolderID?: string;
   }): Promise<Folder> {
-    const uniqueName = await this.generateUniqueName(input.name);
+    const uniqueName = await this.generateUniqueName(
+      input.name,
+      input.parentFolderID,
+    );
     const folder: Folder = {
       id: uuidv4(),
       name: uniqueName,
@@ -109,10 +112,10 @@ export class FoldersTable extends TableBase<Folder> {
     this.saveDiskDB();
   }
 
-  public async generateUniqueName(name?: string) {
+  public async generateUniqueName(name?: string, parentFolderID?: string) {
     let newFlowName = name ?? "New folder";
     const folderNameList = await this.listAll().then((list) =>
-      list.map((f) => f.name),
+      list.filter((f) => f.parentFolderID == parentFolderID).map((f) => f.name),
     );
     if (folderNameList.includes(newFlowName)) {
       let num = 2;

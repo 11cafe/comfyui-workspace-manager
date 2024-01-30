@@ -39,8 +39,8 @@ import { useDebounce } from "../customHooks/useDebounce";
 import SearchInput from "../components/SearchInput";
 import { openWorkflowsFolder } from "../Api";
 import { Folder, Workflow } from "../types/dbTypes";
-import ImportFileButton from "./ImportFileButton";
 import MyTagsRow from "./MyTagsRow";
+import ImportFlowsFileInput from "./ImportFlowsFileInput";
 
 type Props = {
   onClose: () => void;
@@ -225,7 +225,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
                   <Link onClick={openCognitoPopup}>Login</Link>
                 </Tooltip> */}
               </HStack>
-              <ImportFileButton />
+              <ImportFlowsFileInput />
               <Tooltip label="Open workspace save directory">
                 <IconButton
                   aria-label="Open workspace save directory"
