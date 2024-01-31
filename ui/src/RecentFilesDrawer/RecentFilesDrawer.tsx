@@ -49,6 +49,7 @@ import { Folder, Workflow } from "../types/dbTypes";
 import MyTagsRow from "./MyTagsRow";
 import ImportFlowsFileInput from "./ImportFlowsFileInput";
 import ItemsList from "./ItemsList";
+import { DRAWER_Z_INDEX } from "../const";
 
 type Props = {
   onClose: () => void;
@@ -244,7 +245,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
           top={0}
           left={0}
           shadow={"xl"}
-          zIndex={1000}
+          zIndex={DRAWER_Z_INDEX}
           // boxShadow={"rgba(200, 200, 200, 0.4) 1px 4px 8px 1px"}
         >
           <Flex alignItems={"center"} justifyContent={"space-between"}>

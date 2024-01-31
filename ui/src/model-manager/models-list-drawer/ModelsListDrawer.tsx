@@ -15,6 +15,7 @@ import { app } from "/scripts/app.js";
 import InstallModelsButton from "../install-models/InstallModelsButton";
 import { ModelsListRespItem } from "../types";
 import { useUpdateModels } from "../hooks/useUpdateModels";
+import { DRAWER_Z_INDEX } from "../../const";
 interface Props {
   onClose: () => void;
 }
@@ -74,7 +75,7 @@ export default function ModelsListDrawer({ onClose }: Props) {
           top={0}
           left={0}
           shadow={"xl"}
-          zIndex={1000}
+          zIndex={DRAWER_Z_INDEX}
           overflowY={"auto"}
         >
           <CardHeader>

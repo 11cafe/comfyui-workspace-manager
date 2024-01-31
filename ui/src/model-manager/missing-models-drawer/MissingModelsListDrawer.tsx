@@ -12,6 +12,7 @@ import { useEffect } from "react";
 import { app } from "/scripts/app.js";
 import InstallModelsButton from "../install-models/InstallModelsButton";
 import MissingModelItem from "./MissingModelItem";
+import { DRAWER_Z_INDEX } from "../../const";
 
 export interface MissingModel {
   class_type: string;
@@ -49,7 +50,7 @@ export default function MissingModelsListDrawer({
           top={0}
           left={0}
           shadow={"xl"}
-          zIndex={1000}
+          zIndex={DRAWER_Z_INDEX}
           overflowY={"auto"}
         >
           <CardHeader>
