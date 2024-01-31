@@ -46,7 +46,10 @@ export class WorkflowsTable extends TableBase<Workflow> {
   public async latestVersionCheck() {
     if (this._curWorkflow) {
       const curFlowInDB = await this.get(this._curWorkflow.id);
-      return curFlowInDB?.updateTime === this._curWorkflow.updateTime;
+      if (curFlowInDB) {
+        return curFlowInDB?.updateTime === this._curWorkflow.updateTime;
+      }
+      return true;
     }
     return true;
   }
