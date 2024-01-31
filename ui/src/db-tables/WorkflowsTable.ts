@@ -113,10 +113,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
     }
     await this.saveDiskDB();
     // save to my_workflows/
-    if (
-      Object.prototype.hasOwnProperty.call(input, "name") ||
-      Object.prototype.hasOwnProperty.call(input, "parentFolderID")
-    ) {
+    if ("name" in input || "parentFolderID" in input) {
       // renamed file or moved file folder
       await deleteJsonFileMyWorkflows(before);
       await saveJsonFileMyWorkflows(after);

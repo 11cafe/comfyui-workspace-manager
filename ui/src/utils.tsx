@@ -1,5 +1,5 @@
 // @ts-ignore
-import { deleteFile, updateFile } from "./Api";
+import { ScanLocalFile, ScanLocalFolder, ScanLocalResult, deleteFile, updateFile } from "./Api";
 import { ESortTypes } from "./RecentFilesDrawer/types";
 import {
   workflowsTable,
@@ -157,6 +157,7 @@ export async function validateOrSaveAllJsonFileMyWorkflows(
   for (const workflow of flowList) {
     const fullPath = await generateFilePathAbsolute(workflow);
     if (workflow.filePath != fullPath) {
+      console.log(workflow.filePath, fullPath);
       // file path changed
       workflow.filePath != null &&
         (await deleteFile(workflow.filePath, deleteEmptyFolder));
@@ -551,16 +552,15 @@ export function getFileUrl(relativePath: string) {
 }
 
 export async function syncNewFlowOfLocalDisk(
-  singleFlowList: Workflow[],
-  folderList: {
-    name: string;
-    list: Workflow[];
-  }[],
+  scanList: ScanLocalResult[],
+  parentFolderID?: string,
 ) {
-  if (singleFlowList.length) {
-    await workflowsTable?.batchCreateFlows(singleFlowList, true);
+  const fileList = scanList.filter((s): s is ScanLocalFile => "json" in s);
+  if (fileList.length) {
+    await workflowsTable?.batchCreateFlows(fileList, true, parentFolderID);
   }
 
+  const folderList = scanList.filter((s): s is ScanLocalFolder => "list" in s);
   if (folderList.length) {
     const currentFolderList = await foldersTable?.listAll();
 
@@ -576,11 +576,12 @@ export async function syncNewFlowOfLocalDisk(
       } else {
         const newFolder = await foldersTable?.create({
           name: folder.name,
+          parentFolderID,
         });
         folderId = newFolder?.id;
       }
 
-      await workflowsTable?.batchCreateFlows(folder.list, true, folderId);
+      await syncNewFlowOfLocalDisk(folder.list, folderId);
     }
   }
 }
