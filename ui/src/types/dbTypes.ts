@@ -55,6 +55,8 @@ export type WorkflowVersion = {
   workflowID: string;
   json: string;
   createTime: number;
+  privacy: "public" | "private";
+  remoteUrl: string;
 };
 
 export type UserSettings = {

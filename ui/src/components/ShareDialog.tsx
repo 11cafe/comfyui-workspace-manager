@@ -19,6 +19,7 @@ import {
   IconLock,
   IconWorld,
 } from "@tabler/icons-react";
+import { workflowVersionsTable } from "../db-tables/WorkspaceDB";
 
 interface Props {
   onClose: () => void;
@@ -38,6 +39,19 @@ export default function ShareDialog({ onClose, workflow }: Props) {
   const [versionName, setVersionName] = useState(
     "version " + getCurDateString(),
   );
+  // const onShare = async () => {
+  //   const url = await workflowVersionsTable?.add({
+  //     workflowID: workflow.id,
+  //     name: versionName,
+  //     createTime: Date.now(),
+  //     privacy: "public",
+  //     json: workflow.json,
+  //     remoteUrl: "",
+  //   });
+  //   if (url) {
+  //     alert(url);
+  //   }
+  // };
   return (
     <Modal isOpen={true} onClose={onClose} size={"lg"}>
       <ModalOverlay />

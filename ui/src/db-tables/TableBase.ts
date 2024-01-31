@@ -3,6 +3,7 @@ import { getWorkspaceIndexDB } from "./IndexDBUtils";
 import { TableBaseModel } from "../types/dbTypes";
 import { Table } from "./WorkspaceDB";
 import { indexdb } from "./indexdb";
+import { v4 } from "uuid";
 
 export class TableBase<T> {
   public readonly tableName: Table;
@@ -22,6 +23,9 @@ export class TableBase<T> {
   }
 
   public async add(newItem: T): Promise<T> {
+    if (!newItem.id) {
+      newItem.id = v4();
+    }
     await indexdb[this.tableName].add(newItem as any);
     await this.saveDiskDB();
     return newItem;
