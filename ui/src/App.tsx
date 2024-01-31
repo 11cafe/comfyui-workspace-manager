@@ -154,11 +154,9 @@ export default function App() {
         await userSettingsTable?.getSetting("myWorkflowsDir");
       const allFlows = await workflowsTable?.listAll();
       const existFlowIds = (allFlows && allFlows.map((flow) => flow.id)) || [];
-      const { fileList, folderList } = await scanLocalNewFiles(
-        myWorkflowsDir!,
-        existFlowIds,
-      );
-      await syncNewFlowOfLocalDisk(fileList, folderList);
+      const fileList = await scanLocalNewFiles(myWorkflowsDir!, existFlowIds);
+      if (!fileList || fileList.length === 0) return;
+      await syncNewFlowOfLocalDisk(fileList);
     }
   };
 
