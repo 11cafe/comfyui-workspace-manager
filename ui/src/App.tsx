@@ -61,15 +61,15 @@ export default function App() {
   const autoSaveTimer = useRef(0);
   const workflowOverwriteNoticeStateRef = useRef("hide"); // disabled/hide/show;
 
-  const saveCurWorkflow = useCallback(() => {
+  const saveCurWorkflow = useCallback(async () => {
     if (curFlowID.current) {
       const graphJson = JSON.stringify(app.graph.serialize());
-      workflowsTable?.updateFlow(curFlowID.current, {
+      await workflowsTable?.updateFlow(curFlowID.current, {
         lastSavedJson: graphJson,
         json: graphJson,
       });
 
-      changelogsTable?.create({
+      await changelogsTable?.create({
         workflowID: curFlowID.current,
         json: graphJson,
       });
@@ -77,6 +77,7 @@ export default function App() {
   }, []);
 
   const discardUnsavedChanges = async () => {
+    console.log("discardUnsavedChanges");
     const userInput = confirm(
       "Are you sure you want to discard unsaved changes? This will revert current workflow to your last saved version. You will lose all changes made since your last save.",
     );
@@ -93,12 +94,6 @@ export default function App() {
             workflowsTable?.updateFlow(curFlowID.current, {
               lastSavedJson: JSON.stringify(app.graph.serialize()),
             });
-          } else {
-            // no last saved json, may cuz user just disabled autosave
-            // save current json as last saved json
-            // this maynot be ideal but better than losing all changes
-            app.loadGraphData(JSON.parse(flow.json));
-            saveCurWorkflow();
           }
         }
       }
@@ -202,6 +197,7 @@ export default function App() {
   };
 
   const loadWorkflowIDImpl = async (id: string) => {
+    console.log("loadWorkflowIDImpl", id);
     if (app.graph == null) {
       console.error("app.graph is null cannot load workflow");
       return;
@@ -232,12 +228,15 @@ export default function App() {
       loadWorkflowIDImpl(id);
       return;
     }
-    showDialog(`Do you want to save the changes you made to, ${curFlowName}?`, [
+    showSaveOrDiscardCurWorkflowDialog(id);
+  };
+  const showSaveOrDiscardCurWorkflowDialog = async (newIDToLoad?: string) => {
+    const buttons = [
       {
         label: "Open in new tab",
         icon: <IconExternalLink />,
         onClick: () => {
-          openWorkflowInNewTab(id);
+          newIDToLoad && openWorkflowInNewTab(newIDToLoad);
         },
       },
       {
@@ -245,19 +244,26 @@ export default function App() {
         colorScheme: "teal",
         onClick: () => {
           saveCurWorkflow();
-          loadWorkflowIDImpl(id);
+          newIDToLoad && loadWorkflowIDImpl(newIDToLoad);
         },
       },
-      {
+    ];
+    if (workflowsTable?.curWorkflow?.lastSavedJson != null) {
+      buttons.push({
         label: "Discard",
         colorScheme: "red",
         onClick: () => {
           discardUnsavedChanges();
-          loadWorkflowIDImpl(id);
+          newIDToLoad && loadWorkflowIDImpl(newIDToLoad);
         },
-      },
-    ]);
+      });
+    }
+    showDialog(
+      `Do you want to save the changes you made to, ${workflowsTable?.curWorkflow?.name}?`,
+      buttons,
+    );
   };
+
   const loadNewWorkflow = async (input?: { json?: string; name?: string }) => {
     const jsonStr = input?.json ?? JSON.stringify(defaultGraph);
     const flow = await workflowsTable?.createFlow({
@@ -440,25 +446,7 @@ export default function App() {
       if (!autoSaveEnabled && isDirty) {
         e.preventDefault(); // For modern browsers
         e.returnValue = "You have unsaved changes!"; // For older browsers
-        showDialog(
-          `Please save or discard your changes before leaving, or your changes will be lost.`,
-          [
-            {
-              label: "Save",
-              colorScheme: "teal",
-              onClick: () => {
-                saveCurWorkflow();
-              },
-            },
-            {
-              label: "Discard",
-              colorScheme: "red",
-              onClick: () => {
-                discardUnsavedChanges();
-              },
-            },
-          ],
-        );
+        showSaveOrDiscardCurWorkflowDialog();
       }
     };
 
