@@ -24,7 +24,7 @@ type Props = {
 };
 export default memo(function FilesListFolderItem({ folder }: Props) {
   const [isActive, setIsActive] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(folder.isCollapse ?? false);
+  const [isCollapsed, setIsCollapsed] = useState(folder.isCollapse ?? true);
   const [children, setChildren] = useState<Array<Folder | Workflow>>([]);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
