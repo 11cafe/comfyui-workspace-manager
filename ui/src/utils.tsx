@@ -157,7 +157,6 @@ export async function validateOrSaveAllJsonFileMyWorkflows(
   for (const workflow of flowList) {
     const fullPath = await generateFilePathAbsolute(workflow);
     if (workflow.filePath != fullPath) {
-      console.log(workflow.filePath, fullPath);
       // file path changed
       workflow.filePath != null &&
         (await deleteFile(workflow.filePath, deleteEmptyFolder));

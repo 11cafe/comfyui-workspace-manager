@@ -9,7 +9,6 @@ import { Folder, Workflow } from "../types/dbTypes";
 import FilesListFolderItem from "./FilesListFolderItem";
 import WorkflowListItem from "./WorkflowListItem";
 import { Box } from "@chakra-ui/react";
-import { folderOnTopLocalStorageKey } from "./types";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 
 export default function ItemsList({
@@ -25,20 +24,6 @@ export default function ItemsList({
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const { onRefreshFilesList, draggingFile, refreshFolderStamp } =
     useContext(RecentFilesContext);
-
-  const handleDragLeave = (e: DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const targetIsDroppable =
-      e.relatedTarget instanceof Element &&
-      e.relatedTarget.classList.contains("droppable") &&
-      e.relatedTarget !== e.currentTarget;
-    const targetIsChild = e.currentTarget.contains(e.relatedTarget as Node);
-    // fixes a bug where the dragleave event is fired when dragging over a child element, causing elements to flicker
-    if (targetIsDroppable || !targetIsChild) {
-      setIsDraggingOver(false);
-    }
-  };
 
   const handleDrop = async (e: DragEvent) => {
     e.preventDefault();
@@ -72,13 +57,19 @@ export default function ItemsList({
           <FilesListFolderItem key={folder.id} folder={folder} />
         ))}
       <Box
-        border={isDraggingOver ? "2px dashed #718096" : undefined}
+        border={
+          isDraggingOver ? "2px dashed #718096" : "2px dashed transparent"
+        }
         onDragOver={(e) => {
           e.preventDefault();
           e.stopPropagation();
           setIsDraggingOver(true);
         }}
-        onDragLeave={handleDragLeave}
+        onDragLeave={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsDraggingOver(false);
+        }}
         onDrop={handleDrop}
         className="droppable"
       >

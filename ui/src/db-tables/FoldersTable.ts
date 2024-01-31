@@ -49,9 +49,9 @@ export class FoldersTable extends TableBase<Folder> {
     if (folder == null) {
       return;
     }
-    const nameChanged = input.name != undefined && input.name != folder.name;
+    const nameChanged = "name" in input && input.name != folder.name;
     const parentFolderChanged =
-      input.parentFolderID != undefined &&
+      "parentFolderID" in input &&
       input.parentFolderID != folder.parentFolderID;
     const newRecord = {
       ...folder,
