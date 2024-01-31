@@ -46,8 +46,8 @@ import { useDebounce } from "../customHooks/useDebounce";
 import SearchInput from "../components/SearchInput";
 import { openWorkflowsFolder } from "../Api";
 import { Folder, Workflow } from "../types/dbTypes";
-import ImportFileButton from "./ImportFileButton";
 import MyTagsRow from "./MyTagsRow";
+import ImportFlowsFileInput from "./ImportFlowsFileInput";
 import ItemsList from "./ItemsList";
 
 type Props = {
@@ -61,7 +61,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   >([]);
   const aloneFlowsAndFoldersRef = useRef<Array<Folder | Workflow>>([]);
   const allFlowsRef = useRef<Array<Workflow>>([]);
-  const { loadWorkflowID } = useContext(WorkspaceContext);
+  const { loadWorkflowID, curFlowID } = useContext(WorkspaceContext);
   const [selectedTag, setSelectedTag] = useState<string>();
   const [multipleState, setMultipleState] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
@@ -188,6 +188,12 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   const batchOperationCallback = (type: string, value: unknown) => {
     switch (type) {
       case "batchDelete":
+        curFlowID &&
+          workflowsTable?.get(curFlowID).then((res) => {
+            if (!res) {
+              loadWorkflowID?.(null);
+            }
+          });
         loadLatestWorkflows();
         setMultipleState(false);
         setSelectedKeys([]);
@@ -251,7 +257,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
                   <Link onClick={openCognitoPopup}>Login</Link>
                 </Tooltip> */}
               </HStack>
-              <ImportFileButton />
+              <ImportFlowsFileInput />
               <Tooltip label="Open workspace save directory">
                 <IconButton
                   aria-label="Open workspace save directory"

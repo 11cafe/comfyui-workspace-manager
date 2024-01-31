@@ -108,6 +108,8 @@ export default function App() {
     workflowsTable?.updateCurWorkflowID(id);
     if (id == null) {
       document.title = "ComfyUI";
+      window.location.hash = "";
+      localStorage.removeItem("curFlowID");
       return;
     }
     if (getWorkflowIdInUrlHash()) {
@@ -204,8 +206,10 @@ export default function App() {
 
     const flow = await workflowsTable?.get(id);
 
+    // If the currently loaded flow does not exist, you need to clear the URL hash and localStorage to avoid popping up another prompt that the flow does not exist when refreshing the page.
     if (flow == null) {
       alert("Error: Workflow not found! id: " + id);
+      setCurFlowIDAndName(null, "");
       return;
     }
     setCurFlowIDAndName(id, flow.name);
@@ -459,7 +463,7 @@ export default function App() {
 
     window.addEventListener("beforeunload", handleBeforeUnload);
 
-    api.addEventListener("executed", (e: any) => {
+    const handleExecuted = (e: any) => {
       e.detail?.output?.images?.forEach(
         (im: { filename: string; subfolder: string; type: string }) => {
           if (im.type === "output") {
@@ -474,12 +478,15 @@ export default function App() {
           }
         },
       );
-    });
+    };
+
+    api.addEventListener("executed", handleExecuted);
     return () => {
       // window.removeEventListener("message", authTokenListener);
       window.removeEventListener("keydown", shortcutListener);
       window.removeEventListener("change", fileInputListener);
       window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("executed", handleExecuted);
       clearInterval(autoSaveTimer.current);
     };
   }, []);

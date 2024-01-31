@@ -1,10 +1,9 @@
 import { Box, Menu, MenuList, MenuItem } from "@chakra-ui/react";
-import { MouseEvent, useContext, useRef, useState } from "react";
+import { MouseEvent, useContext, useState } from "react";
 import { RecentFilesContext } from "../WorkspaceContext";
 import { workflowsTable, foldersTable } from "../db-tables/WorkspaceDB";
 import EditFolderNameModal from "../components/EditFolderName";
 import {
-  IconFileImport,
   IconFolderPlus,
   IconPencil,
   IconPlus,
@@ -48,7 +47,6 @@ export default function FilesListFolderItemRightClickMenu({
     });
     onRefreshFilesList && onRefreshFilesList();
   };
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const openDeleteConfirm = async (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -87,7 +85,12 @@ export default function FilesListFolderItemRightClickMenu({
   return (
     <>
       <Box position="absolute" top={menuPosition.y} left={menuPosition.x}>
-        <Menu isOpen={isopen} onClose={onClose} isLazy>
+        <Menu
+          isOpen={isopen}
+          onClose={onClose}
+          isLazy
+          lazyBehavior="keepMounted"
+        >
           <MenuList>
             <MenuItem
               icon={<IconPencil size={19} />}
@@ -114,22 +117,14 @@ export default function FilesListFolderItemRightClickMenu({
             <MenuItem onClick={onClickNewFile} icon={<IconPlus size={19} />}>
               New file
             </MenuItem>
-            <MenuItem
-              onClick={(e) => {
-                e.stopPropagation();
-                fileInputRef.current?.click();
-              }}
-              icon={<IconFileImport size={19} />}
-            >
-              Import workflows
-            </MenuItem>
+            <ImportFlowsFileInput
+              parentFolderID={folder.id}
+              onlyImportFile={true}
+            />
           </MenuList>
         </Menu>
       </Box>
-      <ImportFlowsFileInput
-        parentFolderID={folder.id}
-        fileInputRef={fileInputRef}
-      />
+
       {isRenameOpen && (
         <EditFolderNameModal
           folder={folder}

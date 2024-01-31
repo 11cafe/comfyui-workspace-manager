@@ -26,3 +26,21 @@ export type ImportWorkflow = {
   json: string;
   name?: string;
 };
+
+export const importMenuItemList = [
+  {
+    title: "Import Workflows",
+    type: "file",
+  },
+  {
+    title: "Import Folder",
+    type: "folder",
+  },
+];
+
+// Solve TS errors caused by webkitdirectory
+declare module "react" {
+  interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
+    webkitdirectory?: string;
+  }
+}
