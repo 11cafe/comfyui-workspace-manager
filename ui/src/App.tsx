@@ -77,7 +77,6 @@ export default function App() {
   }, []);
 
   const discardUnsavedChanges = async () => {
-    console.log("discardUnsavedChanges");
     const userInput = confirm(
       "Are you sure you want to discard unsaved changes? This will revert current workflow to your last saved version. You will lose all changes made since your last save.",
     );
@@ -232,13 +231,15 @@ export default function App() {
   };
   const showSaveOrDiscardCurWorkflowDialog = async (newIDToLoad?: string) => {
     const buttons = [
-      {
-        label: "Open in new tab",
-        icon: <IconExternalLink />,
-        onClick: () => {
-          newIDToLoad && openWorkflowInNewTab(newIDToLoad);
-        },
-      },
+      newIDToLoad
+        ? {
+            label: "Open in new tab",
+            icon: <IconExternalLink />,
+            onClick: () => {
+              openWorkflowInNewTab(newIDToLoad);
+            },
+          }
+        : null,
       {
         label: "Save",
         colorScheme: "teal",
