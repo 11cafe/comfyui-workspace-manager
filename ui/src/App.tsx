@@ -87,7 +87,12 @@ export default function App() {
         const flow = await workflowsTable?.get(curFlowID.current);
         if (flow) {
           if (flow.lastSavedJson) {
-            app.loadGraphData(JSON.parse(flow.lastSavedJson));
+            await app.loadGraphData(JSON.parse(flow.lastSavedJson), true);
+            // sometimes the app.loadGraphData doesn't load the graph exactly like the lastSavedJson,
+            // e.g. the node.order can be different, resulting isDirty cannot be cleared. so we need to save the graph again
+            workflowsTable?.updateFlow(curFlowID.current, {
+              lastSavedJson: JSON.stringify(app.graph.serialize()),
+            });
           } else {
             // no last saved json, may cuz user just disabled autosave
             // save current json as last saved json
