@@ -92,9 +92,9 @@ export default function App() {
             // sometimes the app.loadGraphData doesn't load the graph exactly like the lastSavedJson,
             // e.g. the node.order can be different, resulting isDirty cannot be cleared.
             // TODO: so we need to save the graph again after graph finish loading but its hard to get notified when it finished...
-            setTimeout(() => {
-              saveCurWorkflow();
-            }, 1000);
+            // setTimeout(() => {
+            //   saveCurWorkflow();
+            // }, 1000);
           }
         }
       }
