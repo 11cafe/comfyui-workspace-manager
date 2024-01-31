@@ -35,6 +35,7 @@ const RecentFilesDrawer = React.lazy(
 const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
 import { scanLocalNewFiles } from "./Api";
 import { IconExternalLink } from "@tabler/icons-react";
+import { deepCompare } from "./utils/jsonUtils";
 const ModelManagerTopbar = React.lazy(
   () => import("./model-manager/topbar/ModelManagerTopbar"),
 );
@@ -87,12 +88,13 @@ export default function App() {
         const flow = await workflowsTable?.get(curFlowID.current);
         if (flow) {
           if (flow.lastSavedJson) {
-            await app.loadGraphData(JSON.parse(flow.lastSavedJson), true);
+            await app.loadGraphData(JSON.parse(flow.lastSavedJson));
             // sometimes the app.loadGraphData doesn't load the graph exactly like the lastSavedJson,
-            // e.g. the node.order can be different, resulting isDirty cannot be cleared. so we need to save the graph again
-            workflowsTable?.updateFlow(curFlowID.current, {
-              lastSavedJson: JSON.stringify(app.graph.serialize()),
-            });
+            // e.g. the node.order can be different, resulting isDirty cannot be cleared.
+            // TODO: so we need to save the graph again after graph finish loading but its hard to get notified when it finished...
+            setTimeout(() => {
+              saveCurWorkflow();
+            }, 1000);
           }
         }
       }
@@ -191,7 +193,7 @@ export default function App() {
     } catch (e) {
       console.error("error parsing json", e);
     }
-    const equal = JSON.stringify(graphJson) === JSON.stringify(lastSaved);
+    const equal = deepCompare(graphJson, lastSaved);
     return !equal;
   };
 
@@ -253,14 +255,15 @@ export default function App() {
       buttons.push({
         label: "Discard",
         colorScheme: "red",
-        onClick: () => {
-          discardUnsavedChanges();
+        onClick: async () => {
+          // must await here, cuz we need to wait for the graph to finish loading and resave the graph to clear isDirty state in some cases
+          await discardUnsavedChanges();
           newIDToLoad && loadWorkflowIDImpl(newIDToLoad);
         },
       });
     }
     showDialog(
-      `Do you want to save the changes you made to, ${workflowsTable?.curWorkflow?.name}?`,
+      `Please save or discard your changes to "${workflowsTable?.curWorkflow?.name}" before leaving, or your changes will be lost.`,
       buttons,
     );
   };
