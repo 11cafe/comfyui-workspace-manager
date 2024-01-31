@@ -85,8 +85,16 @@ export default function App() {
       // User clicked OK
       if (curFlowID.current) {
         const flow = await workflowsTable?.get(curFlowID.current);
-        if (flow && flow.lastSavedJson) {
-          app.loadGraphData(JSON.parse(flow.lastSavedJson));
+        if (flow) {
+          if (flow.lastSavedJson) {
+            app.loadGraphData(JSON.parse(flow.lastSavedJson));
+          } else {
+            // no last saved json, may cuz user just disabled autosave
+            // save current json as last saved json
+            // this maynot be ideal but better than losing all changes
+            app.loadGraphData(JSON.parse(flow.json));
+            saveCurWorkflow();
+          }
         }
       }
     }
@@ -239,6 +247,7 @@ export default function App() {
         label: "Discard",
         colorScheme: "red",
         onClick: () => {
+          discardUnsavedChanges();
           loadWorkflowIDImpl(id);
         },
       },

@@ -44,6 +44,10 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
     };
 
     loadData(curFlowID ?? "");
+    app.canvasEl.addEventListener("click", onClose);
+    return () => {
+      app.canvasEl.removeEventListener("click", onClose);
+    };
   }, []);
 
   if (!curFlowID || !curWorkflow) {
