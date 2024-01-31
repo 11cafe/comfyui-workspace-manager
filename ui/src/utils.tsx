@@ -1,5 +1,11 @@
 // @ts-ignore
-import { ScanLocalFile, ScanLocalFolder, ScanLocalResult, deleteFile, updateFile } from "./Api";
+import {
+  ScanLocalFile,
+  ScanLocalFolder,
+  ScanLocalResult,
+  deleteFile,
+  updateFile,
+} from "./Api";
 import { ESortTypes } from "./RecentFilesDrawer/types";
 import {
   workflowsTable,
@@ -219,37 +225,6 @@ export function insertWorkflowToCanvas(json: string, insertPos?: number[]) {
   // Nullify the references to help with garbage collection
   tempGraph = null;
   canvas = null;
-}
-
-export async function generateUniqueName(
-  name?: string,
-  parentFolderID?: string,
-) {
-  /**
-   * Generate a unique name
-   * For imported scenes, the default name is the file name.
-   * For new scenes, the default name is Untitled Flow.
-   * Get the full workflow list. If the default name already exists, search incrementally starting from 2.
-   * Looks for a unique name in the format `${default name} ${number}`.
-   */
-  let newFlowName = name ?? "Untitled Flow";
-  const flowList = (await workflowsTable?.listAll()) ?? [];
-  const flowNameList = flowList
-    .filter((f) => f.parentFolderID == parentFolderID)
-    .map((flow) => flow.name);
-  if (flowNameList.includes(newFlowName)) {
-    let num = 2;
-    let flag = true;
-    while (flag) {
-      if (flowNameList.includes(`${newFlowName} ${num}`)) {
-        num++;
-      } else {
-        newFlowName = `${newFlowName} ${num}`;
-        flag = false;
-      }
-    }
-  }
-  return newFlowName;
 }
 
 export function getPngMetadata(file: File) {
