@@ -26,6 +26,10 @@ export class UserSettingsTable extends TableBase<UserSettings> {
         top: 0,
         left: 0,
       },
+      modelManagerTopBarStyle: {
+        top: 0,
+        right: 0,
+      },
       myWorkflowsDir: "",
       shortcuts: {
         save: "Shift+S",

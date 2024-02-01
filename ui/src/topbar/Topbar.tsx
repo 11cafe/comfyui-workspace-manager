@@ -38,6 +38,7 @@ export function Topbar({
       onDragEnd={(position: { x: number; y: number }) => {
         updatePanelPosition({ top: position.y, left: position.x }, true);
       }}
+      dragIconId="dragPanelIcon"
     >
       <HStack
         style={{

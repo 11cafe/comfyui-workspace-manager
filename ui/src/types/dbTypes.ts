@@ -45,10 +45,16 @@ export type Model = {
   imageUrl?: string | null;
 };
 
+export interface ModelManagerPosition {
+  top: number;
+  right: number;
+}
+
 export type UserSettings = {
   id: string;
   myWorkflowsDir: string;
   topBarStyle: PanelPosition;
+  modelManagerTopBarStyle: ModelManagerPosition;
   shortcuts: {
     save: string;
   };

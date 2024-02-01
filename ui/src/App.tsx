@@ -514,11 +514,10 @@ export default function App() {
         <Portal containerRef={workspaceContainerRef}>
           <Box
             style={{
-              width: "100vh",
               position: "absolute",
               top: 0,
+              right: 0,
               left: 0,
-              lineHeight: "24px",
             }}
             zIndex={DRAWER_Z_INDEX}
             draggable={false}
