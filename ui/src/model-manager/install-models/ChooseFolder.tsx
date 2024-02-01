@@ -12,14 +12,17 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { getAllFoldersList } from "../../Api";
+import { CivitiModelFileVersion } from "../types";
 
 interface ChooseFolderProps {
   isOpen: boolean;
+  file?: CivitiModelFileVersion;
   onClose: () => void;
   selectFolder: (folderPath: string, url: string) => void;
 }
 export default function ChooseFolder({
   isOpen,
+  file,
   onClose,
   selectFolder,
 }: ChooseFolderProps) {
@@ -57,12 +60,16 @@ export default function ChooseFolder({
           </AlertDialogHeader>
 
           <AlertDialogBody>
-            <Text>Model download url</Text>
-            <Input
-              placeholder="https://civitai.com/api/download/models/311399"
-              onChange={(e) => setUrl(e.target.value)}
-              value={url}
-            />
+            {file?.downloadUrl || (
+              <>
+                <Text>Model download url</Text>
+                <Input
+                  placeholder="https://civitai.com/api/download/models/311399"
+                  onChange={(e) => setUrl(e.target.value)}
+                  value={url}
+                />
+              </>
+            )}
             <Select
               placeholder="Select option"
               value={folderPath}

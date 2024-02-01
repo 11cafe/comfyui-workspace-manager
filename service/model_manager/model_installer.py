@@ -10,7 +10,7 @@ import threading
 import server
 import time
 from .missing_models import find_missing_models # type: ignore noqa
-from .model_list import start_populate_file_hash_dict 
+from .model_list import start_populate_file_hash_dict, save_file_hash 
 
 comfy_path = os.path.dirname(folder_paths.__file__)
 def download_url_with_wget(url, save_path):
@@ -91,6 +91,9 @@ async def install_model(request):
     json_data = await request.json()
     url = json_data['url']
     save_path = get_model_path(json_data)
+    file_hash = json_data['file_hash']
+    if file_hash is not None:
+        save_file_hash(save_path, file_hash)
 
     with download_tasks_lock:
         # Add the task to the list

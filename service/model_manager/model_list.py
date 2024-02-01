@@ -25,6 +25,10 @@ file_list_lock = threading.Lock()
 populate_started = False
 populate_done = False
 
+def save_file_hash(file_path, file_hash):
+    global file_hash_dict
+    file_hash_dict[file_path] = file_hash
+
 def compute_hash(file_path):
     # sha256 hash of the file
     sha256_hash = hashlib.sha256()
