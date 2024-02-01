@@ -7,7 +7,7 @@ export default function FolderOnTopSettings() {
   const { setRefreshFolderStamp } = useContext(RecentFilesContext);
   const [checked, setChecked] = useState(false);
 
-  const getAutoSave = () => {
+  const getSettings = () => {
     userSettingsTable?.getSetting("foldersOnTop").then((res) => {
       setChecked(!!res);
     });
@@ -20,13 +20,13 @@ export default function FolderOnTopSettings() {
         foldersOnTop: state,
       })
       .then(() => {
-        getAutoSave();
+        getSettings();
         setRefreshFolderStamp(Date.now());
       });
   };
 
   useEffect(() => {
-    getAutoSave();
+    getSettings();
   }, []);
 
   return (
