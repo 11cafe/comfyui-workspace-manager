@@ -326,10 +326,6 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
                   </MenuOptionGroup>
                 </MenuList>
               </Menu>
-              <Flex gap={2} align="center">
-                <Text>Folders on Top</Text>
-                <Switch />
-              </Flex>
             </HStack>
             <SearchInput
               searchValue={searchValue}
