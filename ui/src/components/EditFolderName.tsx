@@ -67,7 +67,7 @@ export default function EditFolderNameModal({ folder, onclose }: Props) {
               onChange={handleChange}
               autoFocus
               onKeyUp={(e) => {
-                e.code === "Enter" && !submitError && onSubmit();
+                e.code === "Enter" && !submitError && editName && onSubmit();
               }}
             />
             {submitError && <FormErrorMessage>{submitError}</FormErrorMessage>}

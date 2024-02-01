@@ -2,3 +2,4 @@ export const LEGACY_COMFYSPACE_TRACKING_FIELD_NAME = "comfyspace_tracking";
 export const COMFYSPACE_TRACKING_FIELD_NAME = "workspace_info";
 export const COMFYSPACE_AUTH_ENDPOINT = "comfyspace_auth";
 export const COMFYSPACE_AUTH_REDIRECT_URL = "http://localhost:8188/";
+export const DRAWER_Z_INDEX = 9999999;

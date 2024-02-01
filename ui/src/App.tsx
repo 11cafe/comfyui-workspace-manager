@@ -35,6 +35,7 @@ const RecentFilesDrawer = React.lazy(
 const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
 import { scanLocalNewFiles } from "./Api";
 import { IconExternalLink } from "@tabler/icons-react";
+import { DRAWER_Z_INDEX } from "./const";
 const ModelManagerTopbar = React.lazy(
   () => import("./model-manager/topbar/ModelManagerTopbar"),
 );
@@ -513,13 +514,12 @@ export default function App() {
         <Portal containerRef={workspaceContainerRef}>
           <Box
             style={{
-              width: "100vh",
               position: "absolute",
               top: 0,
+              right: 0,
               left: 0,
-              lineHeight: "24px",
             }}
-            zIndex={1000}
+            zIndex={DRAWER_Z_INDEX}
             draggable={false}
           >
             <Topbar
