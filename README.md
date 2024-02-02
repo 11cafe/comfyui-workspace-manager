@@ -41,6 +41,8 @@ It is recommended to do git clone than downloading zip folder, because you can g
 - 📑Quickly duplicate flow in right-click menu
 - cloud sync & backup workspace so you will never lose your data (Upcoming!)
 - One-click share workflow (Upcoming!)
+  
+Recommend using Chrome browser for the best experience. Safari doesn't work well. Edge or firefox should be fine too.
 
 ### v1.7
 open workflow in new tab, 1click model install from civitai, automatic install missing models for workflow, view image gen metadata in gallery (prompt, sampler, models used). 
