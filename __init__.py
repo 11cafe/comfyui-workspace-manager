@@ -215,7 +215,7 @@ async def api_view_file(request):
     file_path = os.path.join(output_path, filename)
 
     if not os.path.exists(file_path):
-        return web.Response(status=200)
+        return web.Response(status=404)
 
     with open(file_path, 'rb') as f:
         media_file = f.read()

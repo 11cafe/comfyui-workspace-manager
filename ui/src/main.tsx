@@ -42,7 +42,7 @@ ReactDOM.createRoot(topbar).render(
   <React.StrictMode>
     <ChakraProvider resetCSS={false} disableGlobalStyle={true} theme={theme}>
       <CSSReset scope=".workspace_manager" />
-      <ColorModeScript />
+      <ColorModeScript initialColorMode="dark" />
       <AlertDialogProvider>
         <Suspense>
           <App />
