@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useContext, useState } from "react";
 import {
   Link,
   Checkbox,
-  Image,
   Stack,
   HStack,
   Tooltip,
@@ -10,7 +9,7 @@ import {
   Text,
   Button,
 } from "@chakra-ui/react";
-import { formatTimestamp, isImageFormat } from "../../utils";
+import { formatTimestamp } from "../../utils";
 import { Media } from "../../types/dbTypes";
 import {
   IconDownload,
@@ -21,6 +20,7 @@ import {
 import { mediaTable, workflowsTable } from "../../db-tables/WorkspaceDB";
 import { WorkspaceContext } from "../../WorkspaceContext";
 import { useDialog } from "../../components/AlertDialogProvider";
+import MediaPreview from "../../components/MediaPreview";
 
 interface MediaPreviewProps {
   media: Media;
@@ -32,7 +32,7 @@ interface MediaPreviewProps {
   setCoverPath: (path: string) => void;
 }
 
-const MediaPreview: React.FC<MediaPreviewProps> = ({
+const GalleryMediaItem: React.FC<MediaPreviewProps> = ({
   media,
   isSelecting,
   selectedID,
@@ -41,28 +41,9 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
   coverPath,
   setCoverPath,
 }) => {
-  const [isVisible, setIsVisible] = useState(true);
-  const IMAGE_SIZE = 150; // Define your image size
+  const IMAGE_SIZE = 180; // Define your image size
   const { curFlowID, loadFilePath } = useContext(WorkspaceContext);
   const { showDialog } = useDialog();
-
-  useEffect(() => {
-    const checkMediaExists = async () => {
-      try {
-        const response = await fetch(
-          `/workspace/view_media?filename=${media.localPath}`,
-        );
-        if (!response.ok) throw new Error("Media not found");
-        setIsVisible(true);
-      } catch (error) {
-        setIsVisible(false);
-      }
-    };
-
-    checkMediaExists();
-  }, [media.localPath]);
-
-  if (!isVisible) return null;
   if (media.localPath == null) {
     return null;
   }
@@ -70,7 +51,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
   if (curFlowID == null) {
     return null;
   }
-  const mediaPreview = isImageFormat(media.localPath) ? (
+  const mediaPreview = (
     <Link isExternal onClick={() => onClickMedia(media)} position="relative">
       {isSelecting && (
         <Checkbox
@@ -80,32 +61,19 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
           left={2}
         />
       )}
-      <Image
-        borderRadius={3}
-        boxSize={`${IMAGE_SIZE}px`}
-        objectFit="cover"
-        src={`/workspace/view_media?filename=${media.localPath}`}
-        alt="workflow image renamed or moved from output folder"
-      />
-    </Link>
-  ) : (
-    <Link isExternal onClick={() => onClickMedia(media)}>
-      {isSelecting && <Checkbox isChecked={selectedID.includes(media.id)} />}
-      <video
-        width={IMAGE_SIZE}
-        height={IMAGE_SIZE}
-        src={`/workspace/view_media?filename=${media.localPath}`}
-        loop={true}
+      <MediaPreview
+        mediaLocalPath={media.localPath}
+        size={IMAGE_SIZE}
+        onBrokenLink={() => {
+          // setIsVisible(false);
+        }}
         autoPlay={true}
-        muted={true}
-      >
-        <track kind="captions" />
-      </video>
+      />
     </Link>
   );
 
   return (
-    <Stack width={IMAGE_SIZE} justifyContent={"space-between"} mb={2}>
+    <Stack width={IMAGE_SIZE} mb={2}>
       <Tooltip label={formatTimestamp(media.createTime, true)}>
         {mediaPreview}
       </Tooltip>
@@ -114,14 +82,13 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
           {media.localPath}
         </Text>
       </Tooltip>
-      <HStack justifyContent={"space-between"} hidden={isSelecting}>
+      <HStack hidden={isSelecting} gap={0}>
         <Tooltip label="Set as cover">
           <IconButton
             size={"sm"}
             variant={"ghost"}
             icon={isCover ? <IconPinFilled size={19} /> : <IconPin size={19} />}
             aria-label="set as cover"
-            isActive={isCover}
             onClick={() => {
               workflowsTable?.updateFlow(curFlowID, {
                 coverMediaPath: media.localPath,
@@ -193,4 +160,4 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
   );
 };
 
-export default MediaPreview;
+export default GalleryMediaItem;

@@ -17,7 +17,7 @@ import { IconArrowLeft, IconX } from "@tabler/icons-react";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { Media } from "../types/dbTypes";
 import { MetaDataInfo } from "./components/MetaDataInfo.tsx";
-import MediaPreview from "./components/MediaPreview.tsx";
+import MediaPreview from "./components/GalleryMediaItem.tsx";
 
 export default function GalleryModal({ onclose }: { onclose: () => void }) {
   const { curFlowID } = useContext(WorkspaceContext);
