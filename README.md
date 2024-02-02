@@ -29,6 +29,19 @@ and restart your ComfyUI.
 It is recommended to do git clone than downloading zip folder, because you can get latest updates by `git pull`!
 
 ## Features
+
+- 🔁Effortlessly switch between different workflows in your workspace. 1click open workflow in new browser tab.
+- [new!] 1click install models from civitai to models/ folder, automatic detect and install missing models for workflow
+- 🗂️Organize workflows with folders, 🏷️tags
+- 🤏**Drag and drop** to insert subworkflows into current flow.
+- 📂Saves all your workflows in a single folder (by default under `/ComfyUI/my_workflows`), customize this location in Settings
+- 🖼️Gallery and thumbnail: Every image/video you generate will be saved in the gallery of the current workflow. You can set any image in the gallery as the cover photo of the workflow
+- 🕛**Version control** of workflow, never lose any changes (Everytime you press save, it will log a new version in history. you can easily revert back to any versions like git)
+- **Bulk import/export** workflows into your workspace or select all to download into .zip
+- 📑Quickly duplicate flow in right-click menu
+- cloud sync & backup workspace so you will never lose your data (Upcoming!)
+- One-click share workflow (Upcoming!)
+
 ### v1.7
 open workflow in new tab, 1click model install from civitai, automatic install missing models for workflow, view image gen metadata in gallery (prompt, sampler, models used). 
 
@@ -48,19 +61,6 @@ Every image/video you generate will be saved in the gallery of the current workf
 <img width="467" alt="sidebar" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/0b9b5e1a-02b4-46ed-ab5c-cb8ed366765f">
 
 <img width="460" alt="gallery" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/2b7886c9-2d4a-46c6-adac-429720f74f11">
-
-
-- 🔁Effortlessly switch between different workflows in your workspace.
-- 🤏**Drag and drop** to insert subworkflows into current flow.
-- Create and name workflows
-- 🗂️Organize workflows with folders, 🏷️tags
-- 📂Saves all your workflows in a single folder (by default under `/ComfyUI/my_workflows`), customize this location in Settings
-- 🖼️Gallery and cover images: Every image/video you generate will be saved in the gallery of the current workflow. You can set any image in the gallery as the cover photo of the workflow
-- 🕛**Version control** of workflow, never lose any changes (Everytime you press save, it will log a new version in history. you can easily revert back to any versions like git)
-- **Bulk import** workflows into your workspace
-- 📑Quickly duplicate flow in right-click menu
-- cloud sync & backup workspace so you will never lose your data (Upcoming!)
-- One-click share workflow (Upcoming!)
 
 switch between flows:
 
