@@ -39,7 +39,7 @@ import { WorkspaceContext } from "../WorkspaceContext";
 import { Overlay } from "./Overlay";
 import { VersionHistoryDrawer } from "./VersionHistoryDrawer";
 import { Workflow } from "../types/dbTypes";
-import ShareDialog from "./ShareDialog";
+import ShareDialog from "../share/ShareDialog";
 
 export default function DropdownTitle() {
   const {

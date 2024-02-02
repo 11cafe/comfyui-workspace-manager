@@ -12,7 +12,9 @@ import {
 } from "@chakra-ui/react";
 import { Workflow } from "../types/dbTypes";
 import { useState } from "react";
-import CustomDropdown, { CustomSelectorOption } from "./CustomSelector";
+import CustomDropdown, {
+  CustomSelectorOption,
+} from "../components/CustomSelector";
 import {
   IconExternalLink,
   IconLink,

@@ -10,17 +10,18 @@ import {
 } from "@chakra-ui/react";
 import { Workflow } from "../types/dbTypes";
 import { workflowVersionsTable } from "../db-tables/WorkspaceDB";
-import { v4 } from "uuid";
+import { useState } from "react";
 
 interface Props {
   onClose: () => void;
   workflow: Workflow;
 }
 export default function CreateVersionDialog({ onClose, workflow }: Props) {
+  const [newVersionName, setNewVersionName] = useState("");
   const onCreateVersion = async () => {
-    const newVersion = await workflowVersionsTable?.add({
-      id: v4(),
-      name: "Added lora",
+    if (newVersionName.length == 0) return;
+    await workflowVersionsTable?.add({
+      name: newVersionName,
       workflowID: workflow.id,
       createTime: Date.now(),
       json: workflow.json,
@@ -34,8 +35,19 @@ export default function CreateVersionDialog({ onClose, workflow }: Props) {
 
         <ModalBody>
           <Text>Name</Text>
-          <Input placeholder="Added lora" />
-          <Button mt={4} colorScheme="teal" onClick={onCreateVersion}>
+          <Input
+            placeholder="Added lora"
+            value={newVersionName}
+            onChange={(e) => {
+              setNewVersionName(e.target.value);
+            }}
+          />
+          <Button
+            isDisabled={newVersionName.length == 0}
+            mt={4}
+            colorScheme="teal"
+            onClick={onCreateVersion}
+          >
             Create
           </Button>
         </ModalBody>

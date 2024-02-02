@@ -28,13 +28,19 @@ export class TableBase<T extends TableBaseModel> {
     saveDB(this.tableName, JSON.stringify(backup));
   }
 
-  public async add(newItem: T): Promise<T> {
+  public async add(
+    newItem: Omit<T, "id" | "createTime"> &
+      Partial<Pick<T, "id" | "createTime">>,
+  ): Promise<T> {
     if (!newItem.id) {
       newItem.id = v4();
     }
+    if (!newItem.createTime) {
+      newItem.createTime = Date.now();
+    }
     await indexdb[this.tableName].add(newItem as any);
     await this.saveDiskDB();
-    return newItem;
+    return newItem as T;
   }
 
   public async put(newItem: T): Promise<T> {
