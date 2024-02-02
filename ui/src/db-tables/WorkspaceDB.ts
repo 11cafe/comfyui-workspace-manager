@@ -32,16 +32,36 @@ export let mediaTable: MediaTable | null = null;
 export let workflowVersionsTable: WorkflowVersionsTable | null = null;
 
 export async function loadDBs() {
-  const loadDBs = async () => {
-    mediaTable = new MediaTable();
-    changelogsTable = await ChangelogsTable.load();
-    foldersTable = await FoldersTable.load();
-    userSettingsTable = await UserSettingsTable.load();
-    tagsTable = await TagsTable.load();
+  const loadWorkflows = async () => {
     workflowsTable = await WorkflowsTable.load();
+  };
+  const loadTags = async () => {
+    tagsTable = await TagsTable.load();
+  };
+  const loadUserSettings = async () => {
+    userSettingsTable = await UserSettingsTable.load();
+  };
+  const loadFolders = async () => {
+    foldersTable = await FoldersTable.load();
+  };
+  const loadChangelogs = async () => {
+    changelogsTable = await ChangelogsTable.load();
+  };
+  const loadMedia = async () => {
+    mediaTable = new MediaTable();
+  };
+  const loadWorkflowVersions = async () => {
     workflowVersionsTable = await WorkflowVersionsTable.load();
   };
-  await loadDBs();
+  await Promise.all([
+    loadWorkflows(),
+    loadTags(),
+    loadUserSettings(),
+    loadFolders(),
+    loadChangelogs(),
+    loadMedia(),
+    loadWorkflowVersions(),
+  ]);
   if (localStorage.getItem("WORKSPACE_INDEXDB_BACKFILL") !== "true") {
     await backfillIndexdb();
     localStorage.setItem("WORKSPACE_INDEXDB_BACKFILL", "true");

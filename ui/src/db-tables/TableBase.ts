@@ -5,7 +5,7 @@ import { Table } from "./WorkspaceDB";
 import { indexdb } from "./indexdb";
 import { v4 } from "uuid";
 
-export class TableBase<T> {
+export class TableBase<T extends TableBaseModel> {
   public readonly tableName: Table;
 
   protected constructor(tableName: Table) {
@@ -17,7 +17,13 @@ export class TableBase<T> {
     objs.forEach((f) => {
       // only tags table is using name as primary key, we either give up backup that table to diskDB
       // or add a id as primary key to it
-      backup[f.id ?? f.name] = f;
+      if (f.id) {
+        backup[f.id] = f;
+      } else if (f.name) {
+        backup[f.name] = f;
+      } else {
+        console.error("TableBaseModel should have id or name");
+      }
     });
     saveDB(this.tableName, JSON.stringify(backup));
   }
@@ -30,6 +36,7 @@ export class TableBase<T> {
     await this.saveDiskDB();
     return newItem;
   }
+
   public async put(newItem: T): Promise<T> {
     await indexdb[this.tableName].put(newItem as any);
     await this.saveDiskDB();
@@ -37,12 +44,12 @@ export class TableBase<T> {
   }
   public async listAll(): Promise<T[]> {
     const list = await indexdb[this.tableName].toArray();
-    return list as T[];
+    return list as any[];
   }
 
   public async batchQuery(ids: string[]): Promise<T[]> {
     const list = await indexdb[this.tableName].bulkGet(ids);
-    return list as T[];
+    return list as any[];
   }
 
   public async getRecords(): Promise<Record<string, T>> {
@@ -66,7 +73,7 @@ export class TableBase<T> {
 
   public async get(id: string): Promise<T | undefined> {
     const obj = await indexdb[this.tableName].get(id);
-    return obj as T;
+    return obj as any;
   }
 
   public async delete(id: string) {
