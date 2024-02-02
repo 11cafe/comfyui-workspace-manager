@@ -18,6 +18,7 @@ import WorkflowListItemRightClickMenu from "./WorkflowListItemRightClickMenu";
 import DeleteConfirm from "../components/DeleteConfirm";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 import { Workflow } from "../types/dbTypes";
+import MediaPreview from "../components/MediaPreview";
 
 type Props = {
   workflow: Workflow;
@@ -71,25 +72,13 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
       }}
     >
       <HStack>
-        {workflow.coverMediaPath != null &&
-          (isImageFormat(workflow.coverMediaPath) ? (
-            <Image
-              borderRadius={3}
-              boxSize="60px"
-              objectFit="cover"
-              src={`/workspace/view_media?filename=${workflow.coverMediaPath}`}
-              alt={workflow.name ?? "workflow cover image"}
-            />
-          ) : (
-            <video
-              width={60}
-              height={60}
-              src={`/workspace/view_media?filename=${workflow.coverMediaPath}`}
-              muted={true}
-            >
-              <track kind="captions" />
-            </video>
-          ))}
+        {workflow.coverMediaPath != null && (
+          <MediaPreview
+            mediaLocalPath={workflow.coverMediaPath}
+            size={60}
+            hideBrokenImage
+          />
+        )}
 
         <Stack textAlign={"left"} gap={0}>
           <Text fontWeight={"500"}>{workflow.name ?? "untitled"}</Text>
