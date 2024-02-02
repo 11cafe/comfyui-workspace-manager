@@ -31,7 +31,7 @@ It is recommended to do git clone than downloading zip folder, because you can g
 ## Features
 
 - 🔁Effortlessly switch between different workflows in your workspace. 1click open workflow in new browser tab.
-- [new!] 1click install models from civitai to `models/` subfolder of the matching model type, automatic detect and install missing models for workflow
+- [new!] 1click install models from civitai to `models/` subfolder of the matching model type, automatic detect and install missing models for workflow from civit ai and hugging face
 - 🗂️Organize workflows with folders, 🏷️tags
 - 🤏**Drag and drop** to insert subworkflows into current flow.
 - 📂Saves all your workflows in a single folder (by default under `/ComfyUI/my_workflows`), customize this location in Settings
@@ -44,7 +44,7 @@ It is recommended to do git clone than downloading zip folder, because you can g
   
 Recommend using Chrome browser for the best experience. Safari doesn't work well. Edge or firefox should be fine too.
 
-### v1.7
+### v1.7 ✨New ComfyUI model manager, view all your models, browse and install models from civit ai, find missing models in workflow automatically in civit ai and hugging face!
 open workflow in new tab, 1click model install from civitai, automatic install missing models for workflow, view image gen metadata in gallery (prompt, sampler, models used). 
 
 <img width="300" alt="Screenshot 2024-02-02 at 5 51 31 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/a95dbf03-bd5a-43ce-af1f-b6ff246acf77">
