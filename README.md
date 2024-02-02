@@ -106,8 +106,6 @@ By default, We also enabled auto-saving your current workflow as a cache in case
 <img width="402" alt="Screenshot 2024-01-22 at 2 33 00 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/061a8463-f7e6-4985-9516-8117d7a5edd5">
 
 
-⚠️ **Avoid using multi browser tab** with this extension for now since it may use old versions to overwrite your workflows. Make sure you only have one tab opening ComfyUI (127.0.0.1:8188). We will have a fundamental fix for this problem in a week
-
 **Looking for colaborators and coworkers** to develop this ComfyUI project management tool. If you know React, Python or ML model deployment, please reach out to weixuanfu01@gmail.com We want to make it easy to **manage, share and deploy** ComfyUI project.
 
 ## Upcoming Features
