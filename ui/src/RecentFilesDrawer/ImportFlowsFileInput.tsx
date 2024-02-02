@@ -3,7 +3,7 @@ import { Button, Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
 import { IconFileImport } from "@tabler/icons-react";
 import { workflowsTable, foldersTable } from "../db-tables/WorkspaceDB";
 import { RecentFilesContext } from "../WorkspaceContext";
-import { getPngMetadata } from "../utils";
+import { getPngMetadata } from "../utils/mediaMetadataUtils";
 import { ImportWorkflow, importMenuItemList } from "./types";
 
 interface WorkflowFile {

@@ -32,12 +32,14 @@ import {
   IconDeviceFloppy,
   IconDownload,
   IconHistory,
+  IconShare2,
 } from "@tabler/icons-react";
 import { workflowsTable, userSettingsTable } from "../db-tables/WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { Overlay } from "./Overlay";
 import { VersionHistoryDrawer } from "./VersionHistoryDrawer";
 import { Workflow } from "../types/dbTypes";
+import ShareDialog from "../share/ShareDialog";
 
 export default function DropdownTitle() {
   const {
@@ -54,6 +56,7 @@ export default function DropdownTitle() {
   const [workflow, setWorkflow] = useState<Workflow>();
   const [isOpen, setIsOpen] = useState(false);
   const [saveShortcut, setSaveShortcut] = useState("");
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   useEffect(() => {
     if (curFlowID) {
@@ -176,10 +179,23 @@ export default function DropdownTitle() {
             >
               Versions History
             </MenuItem>
+            <MenuItem
+              onClick={() => setIsShareOpen(true)}
+              icon={<IconShare2 size={20} />}
+              iconSpacing={1}
+            >
+              Share
+            </MenuItem>
           </MenuList>
           {isOpen && <Overlay backgroundColor={null} />}
         </Portal>
       </Menu>
+      {isShareOpen && workflowsTable?.curWorkflow && (
+        <ShareDialog
+          workflow={workflowsTable?.curWorkflow}
+          onClose={() => setIsShareOpen(false)}
+        />
+      )}
       {isVersionHistoryOpen && (
         <VersionHistoryDrawer onClose={() => setIsVersionHistoryOpen(false)} />
       )}

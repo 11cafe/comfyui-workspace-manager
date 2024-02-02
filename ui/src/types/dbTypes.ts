@@ -17,8 +17,9 @@ export interface Workflow extends SortableItem {
 }
 
 export interface TableBaseModel {
-  id: string;
-  name: string;
+  id?: string;
+  name?: string;
+  createTime?: number;
 }
 
 export type Tags = {
@@ -49,6 +50,15 @@ export interface ModelManagerPosition {
   top: number;
   right: number;
 }
+export type WorkflowVersion = {
+  id: string;
+  name: string;
+  workflowID: string;
+  json: string;
+  createTime: number;
+  privacy?: "public" | "private";
+  remoteUrl?: string;
+};
 
 export type UserSettings = {
   id: string;
