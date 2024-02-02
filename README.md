@@ -31,7 +31,7 @@ It is recommended to do git clone than downloading zip folder, because you can g
 ## Features
 
 - 🔁Effortlessly switch between different workflows in your workspace. 1click open workflow in new browser tab.
-- [new!] 1click install models from civitai to models/ folder, automatic detect and install missing models for workflow
+- [new!] 1click install models from civitai to `models/` subfolder of the matching model type, automatic detect and install missing models for workflow
 - 🗂️Organize workflows with folders, 🏷️tags
 - 🤏**Drag and drop** to insert subworkflows into current flow.
 - 📂Saves all your workflows in a single folder (by default under `/ComfyUI/my_workflows`), customize this location in Settings
