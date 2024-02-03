@@ -1,33 +1,29 @@
-import React, { useState, useRef } from "react";
-import { Box, Button, Card, useOutsideClick } from "@chakra-ui/react";
-import { IconChevronDown } from "@tabler/icons-react";
-
-export interface CustomSelectorOption {
-  label: string;
-  value: string;
-  icon?: React.ReactElement;
-}
+import React, { useRef } from "react";
+import { Box, Card, useOutsideClick } from "@chakra-ui/react";
 
 type Props = {
   menuButton: React.ReactElement;
-
-  options: CustomSelectorOption[];
+  options: React.ReactElement;
+  isOpen: boolean;
+  onClose: () => void;
 };
-export default function CustomSelector({ options, menuButton }: Props) {
-  const [isOpen, setIsOpen] = useState(false);
+export default function CustomMenu({
+  options,
+  menuButton,
+  isOpen,
+  onClose,
+}: Props) {
   const ref = useRef<HTMLDivElement>(null);
   useOutsideClick({
     ref: ref,
-    handler: () => setIsOpen(false),
+    handler: () => onClose(),
   });
-
-  const toggleDropdown = () => setIsOpen(!isOpen);
 
   return (
     <Box position="relative">
-      <Box onClick={toggleDropdown}>{menuButton}</Box>
+      <Box>{menuButton}</Box>
       {isOpen && (
-        <Card
+        <Box
           gap={4}
           ref={ref}
           mt="2"
@@ -37,21 +33,8 @@ export default function CustomSelector({ options, menuButton }: Props) {
           position="absolute"
           zIndex="dropdown"
         >
-          {options.map((option) => (
-            <Button
-              key={option.value}
-              onClick={() => {
-                setIsOpen(false);
-              }}
-              leftIcon={option.icon}
-              justifyContent="flex-start"
-              variant="ghost"
-              width="full"
-            >
-              {option.label}
-            </Button>
-          ))}
-        </Card>
+          {options}
+        </Box>
       )}
     </Box>
   );

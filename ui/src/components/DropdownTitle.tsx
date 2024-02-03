@@ -42,6 +42,7 @@ import { Overlay } from "./Overlay";
 import { VersionHistoryDrawer } from "./VersionHistoryDrawer";
 import { Workflow } from "../types/dbTypes";
 import ShareDialog from "../share/ShareDialog";
+import CustomMenu from "./CustomMenu";
 
 export default function DropdownTitle() {
   const {
@@ -125,13 +126,10 @@ export default function DropdownTitle() {
 
   return (
     <>
-      <Menu isLazy={true} isOpen={isOpen} gutter={4}>
-        <MenuButton
-          as="div"
-          onClick={onOpen}
-          onMouseEnter={onOpen}
-          onMouseLeave={delayedClose}
-        >
+      <CustomMenu
+        isOpen={isOpen}
+        onClose={delayedClose}
+        menuButton={
           <Button
             // style={{ width: "30px", height: "30px" }}
             px={1}
@@ -139,68 +137,72 @@ export default function DropdownTitle() {
             aria-label="menu"
             size={"sm"}
             colorScheme="teal"
+            onClick={onOpen}
+            onMouseEnter={onOpen}
+            onMouseLeave={delayedClose}
           >
             File
             <IconChevronDown size={20} />
           </Button>
-        </MenuButton>
-        <Portal>
-          <MenuList
-            minWidth={150}
-            zIndex={1000}
-            onMouseEnter={onOpen}
-            onMouseLeave={delayedClose}
-          >
-            <MenuItem
-              onClick={saveCurWorkflow}
-              icon={<IconDeviceFloppy size={20} />}
-              iconSpacing={1}
-              command={saveShortcut}
+        }
+        options={
+          <Menu isOpen={true}>
+            <MenuList
+              minWidth={150}
+              zIndex={1000}
+              onMouseEnter={onOpen}
+              onMouseLeave={delayedClose}
             >
-              Save
-            </MenuItem>
-            <Tooltip label="Revert workflow to your last saved version. You will lose all changes made since your last save.">
               <MenuItem
-                onClick={discardUnsavedChanges}
-                icon={<IconArrowBackUpDouble size={20} />}
+                onClick={saveCurWorkflow}
+                icon={<IconDeviceFloppy size={20} />}
                 iconSpacing={1}
-                isDisabled={workflow?.lastSavedJson == null}
+                command={saveShortcut}
               >
-                Discard unsaved changes
+                Save
               </MenuItem>
-            </Tooltip>
-            <MenuItem
-              onClick={handleDownload}
-              icon={<IconDownload size={20} />}
-              iconSpacing={1}
-            >
-              Download
-            </MenuItem>
-            <MenuItem
-              onClick={() => setIsOpenNewName(true)}
-              icon={<IconDeviceFloppy size={20} />}
-              iconSpacing={1}
-            >
-              Save As
-            </MenuItem>
-            <MenuItem
-              onClick={() => setIsVersionHistoryOpen(true)}
-              icon={<IconHistory size={20} />}
-              iconSpacing={1}
-            >
-              Versions History
-            </MenuItem>
-            <MenuItem
-              onClick={() => setIsShareOpen(true)}
-              icon={<IconShare2 size={20} />}
-              iconSpacing={1}
-            >
-              Share
-            </MenuItem>
-          </MenuList>
-          {isOpen && <Overlay backgroundColor={null} />}
-        </Portal>
-      </Menu>
+              <Tooltip label="Revert workflow to your last saved version. You will lose all changes made since your last save.">
+                <MenuItem
+                  onClick={discardUnsavedChanges}
+                  icon={<IconArrowBackUpDouble size={20} />}
+                  iconSpacing={1}
+                  isDisabled={workflow?.lastSavedJson == null}
+                >
+                  Discard unsaved changes
+                </MenuItem>
+              </Tooltip>
+              <MenuItem
+                onClick={handleDownload}
+                icon={<IconDownload size={20} />}
+                iconSpacing={1}
+              >
+                Download
+              </MenuItem>
+              <MenuItem
+                onClick={() => setIsOpenNewName(true)}
+                icon={<IconDeviceFloppy size={20} />}
+                iconSpacing={1}
+              >
+                Save As
+              </MenuItem>
+              <MenuItem
+                onClick={() => setIsVersionHistoryOpen(true)}
+                icon={<IconHistory size={20} />}
+                iconSpacing={1}
+              >
+                Versions History
+              </MenuItem>
+              <MenuItem
+                onClick={() => setIsShareOpen(true)}
+                icon={<IconShare2 size={20} />}
+                iconSpacing={1}
+              >
+                Share
+              </MenuItem>
+            </MenuList>
+          </Menu>
+        }
+      />
       {isShareOpen && workflowsTable?.curWorkflow && (
         <ShareDialog
           workflow={workflowsTable?.curWorkflow}
