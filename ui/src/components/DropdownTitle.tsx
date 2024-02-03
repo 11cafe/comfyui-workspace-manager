@@ -7,10 +7,8 @@ import {
 } from "react";
 import {
   Menu,
-  MenuButton,
   MenuList,
   MenuItem,
-  IconButton,
   Button,
   Modal,
   ModalOverlay,
@@ -23,22 +21,18 @@ import {
   FormLabel,
   FormErrorMessage,
   Input,
-  Portal,
   Tooltip,
-  HStack,
 } from "@chakra-ui/react";
 import {
   IconArrowBackUpDouble,
   IconChevronDown,
   IconDeviceFloppy,
   IconDownload,
-  IconFile,
   IconHistory,
   IconShare2,
 } from "@tabler/icons-react";
 import { workflowsTable, userSettingsTable } from "../db-tables/WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
-import { Overlay } from "./Overlay";
 import { VersionHistoryDrawer } from "./VersionHistoryDrawer";
 import { Workflow } from "../types/dbTypes";
 import ShareDialog from "../share/ShareDialog";
