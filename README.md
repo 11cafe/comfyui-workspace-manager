@@ -1,6 +1,6 @@
 # ☕️ ComfyUI Workspace Manager - Comfyspace
 
-A ComfyUI workflow management extension to **organize and manage all your workflows and generated images in one place**. Seamlessly switch between workflows, track version history and image generation history within a single workspace.
+A ComfyUI workflow management extension to **organize and manage all your workflows, models and generated images in one place**. Seamlessly switch between workflows, track version history and image generation history, 1 click install models from Civit ai, browse/update your installed models
 
 If you have questions or suggestions, please [join our Discord](https://discord.gg/HHvfEurv2Z)! 
 
@@ -31,7 +31,7 @@ It is recommended to do git clone than downloading zip folder, because you can g
 ## Features
 
 - 🔁Effortlessly switch between different workflows in your workspace. 1click open workflow in new browser tab.
-- [new!] 1click install models from civitai to `models/` subfolder of the matching model type, browse all your installed models and drag and drop to insert "load model_type" node into workflow, automatic detect and install missing models for workflow from civit ai and hugging face
+- [new!] **Model manager**: 1click install models from civitai to `models/` subfolder of the matching model type, browse all your installed models and drag and drop to insert "load model_type" node into workflow, automatic detect and install missing models for workflow from civit ai and hugging face
 - 🗂️Organize workflows with folders, 🏷️tags
 - 🤏**Drag and drop** to insert subworkflows into current flow.
 - 📂Saves all your workflows in a single folder (by default under `/ComfyUI/my_workflows`), customize this location in Settings
