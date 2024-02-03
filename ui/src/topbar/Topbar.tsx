@@ -76,9 +76,6 @@ export function Topbar({
           >
             <HStack gap={0}>
               <IconPlus size={16} color={"white"} />
-              {/* <Text color={"white"} fontSize={"sm"}>
-              New
-            </Text> */}
             </HStack>
           </Button>
         </Tooltip>
@@ -93,11 +90,11 @@ export function Topbar({
           }}
         />
         {curFlowID && (
-          <HStack gap={"1px"}>
+          <HStack gap={"3px"}>
             <Tooltip label="Open gallery">
               <IconButton
                 onClick={() => setRoute("gallery")}
-                icon={<IconPhoto size={20} color="white" />}
+                icon={<IconPhoto size={21} color="white" />}
                 size={"sm"}
                 aria-label="open gallery"
                 variant={"ghost"}
@@ -118,7 +115,7 @@ export function Topbar({
             />
           </Tooltip>
         ) : (
-          <div style={{ width: 22 }} />
+          <div style={{ width: 1 }} />
         )}
         <IconGripVertical
           id="dragPanelIcon"

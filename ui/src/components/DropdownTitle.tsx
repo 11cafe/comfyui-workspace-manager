@@ -25,12 +25,14 @@ import {
   Input,
   Portal,
   Tooltip,
+  HStack,
 } from "@chakra-ui/react";
 import {
   IconArrowBackUpDouble,
   IconChevronDown,
   IconDeviceFloppy,
   IconDownload,
+  IconFile,
   IconHistory,
   IconShare2,
 } from "@tabler/icons-react";
@@ -109,7 +111,7 @@ export default function DropdownTitle() {
   const [closeTimeoutId, setCloseTimeoutId] = useState<number>();
 
   const delayedClose = () => {
-    setCloseTimeoutId(setTimeout(() => setIsOpen(false), 300)); // delay of 300ms
+    setCloseTimeoutId(setTimeout(() => setIsOpen(false), 380)); // delay of 300ms
   };
 
   const onOpen = () => {
@@ -124,14 +126,23 @@ export default function DropdownTitle() {
   return (
     <>
       <Menu isLazy={true} isOpen={isOpen} gutter={4}>
-        <MenuButton as="div" onMouseEnter={onOpen} onMouseLeave={delayedClose}>
-          <IconButton
-            icon={<IconChevronDown size={20} />}
+        <MenuButton
+          as="div"
+          onClick={onOpen}
+          onMouseEnter={onOpen}
+          onMouseLeave={delayedClose}
+        >
+          <Button
+            // style={{ width: "30px", height: "30px" }}
+            px={1}
+            height={"27px"}
             aria-label="menu"
-            size={"xs"}
-            backgroundColor={"#323232"}
-            color={"white"}
-          />
+            size={"sm"}
+            colorScheme="teal"
+          >
+            File
+            <IconChevronDown size={20} />
+          </Button>
         </MenuButton>
         <Portal>
           <MenuList
