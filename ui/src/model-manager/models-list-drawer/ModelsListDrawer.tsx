@@ -8,9 +8,8 @@ import {
   Text,
   Portal,
   Input,
-  Switch,
 } from "@chakra-ui/react";
-import { ChangeEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ModelsTags } from "./ModelsTags";
 import { ModelsList } from "./ModelsList";
 // @ts-expect-error ComfyUI imports
@@ -19,7 +18,6 @@ import InstallModelsButton from "../install-models/InstallModelsButton";
 import { ModelsListRespItem } from "../types";
 import { useUpdateModels } from "../hooks/useUpdateModels";
 import { DRAWER_Z_INDEX } from "../../const";
-import { userSettingsTable } from "../../db-tables/WorkspaceDB";
 interface Props {
   onClose: () => void;
 }
@@ -47,24 +45,6 @@ export default function ModelsListDrawer({ onClose }: Props) {
       app.canvasEl.removeEventListener("click", onClose);
     };
   }, []);
-
-  const [showThumbnails, setShowThumbnails] = useState(true);
-  useEffect(() => {
-    userSettingsTable?.getSetting("showModelThumbnail").then((res) => {
-      setShowThumbnails(res ?? true);
-    });
-  }, []);
-  const onShowThumbnailsChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const state = e.target.checked;
-    userSettingsTable
-      ?.upsert({
-        showModelThumbnail: state,
-      })
-      .then(() => {
-        setShowThumbnails(state);
-        window.dispatchEvent(new Event("showModelThumbnail"));
-      });
-  };
 
   const DRAWER_WIDTH = 440;
 
@@ -116,13 +96,6 @@ export default function ModelsListDrawer({ onClose }: Props) {
               <InstallModelsButton />
             </Flex>
           </CardHeader>
-          <Flex gap={2} align="center">
-            <Text>Show Thumbnails</Text>
-            <Switch
-              isChecked={showThumbnails}
-              onChange={onShowThumbnailsChange}
-            />
-          </Flex>
           {renderContent()}
         </Card>
       </Box>
