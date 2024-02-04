@@ -23,7 +23,8 @@ export class WorkflowVersionsTable extends TableBase<WorkflowVersion> {
       .sortBy("createTime")) as WorkflowVersion[];
     return objects ?? [];
   }
-  public async getLastestByWorkflowID(
+
+  public async getLatestByWorkflowID(
     workflowID: string,
   ): Promise<WorkflowVersion | null> {
     const objects = await this.listByWorkflowID(workflowID);
