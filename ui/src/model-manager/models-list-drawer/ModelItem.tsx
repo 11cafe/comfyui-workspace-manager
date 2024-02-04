@@ -18,7 +18,7 @@ interface ResponsePartial {
   };
   images: {
     url: string;
-    nsfw: string;
+    nsfw: "None" | "Soft" | "Mature" | "X";
     width: number;
     height: number;
     hash: string;
@@ -79,7 +79,7 @@ export function ModelItem({ data }: Props) {
         if (showNsfwThumbnail) {
           image_url = json?.images?.[0]?.url;
         } else if (!json.model.nsfw) {
-          const sfwImage = json.images.find((i) => !i.nsfw);
+          const sfwImage = json.images.find((i) => i.nsfw === "None");
           image_url = sfwImage?.url;
         }
         image_url && setUrl(image_url);

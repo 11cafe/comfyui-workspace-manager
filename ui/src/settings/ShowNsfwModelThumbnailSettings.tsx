@@ -1,8 +1,9 @@
 import { Checkbox, Stack } from "@chakra-ui/react";
-import { useState, useEffect, ChangeEvent } from "react";
+import {  useEffect, ChangeEvent } from "react";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { indexdb } from "../db-tables/indexdb";
 import { Model } from "../types/dbTypes";
+import { useStateRef } from "../customHooks/useStateRef";
 
 interface ResponsePartial {
   id: number;
@@ -15,7 +16,7 @@ interface ResponsePartial {
   };
   images: {
     url: string;
-    nsfw: string;
+    nsfw: "None" | "Soft" | "Mature" | "X";
     width: number;
     height: number;
     hash: string;
@@ -23,7 +24,7 @@ interface ResponsePartial {
 }
 
 export default function ShowNsfwModelThumbnailSettings() {
-  const [checked, setChecked] = useState(false);
+  const [checkedState, setChecked, checked] = useStateRef(false);
 
   const updateShowThumbnail = () => {
     userSettingsTable?.getSetting("showNsfwModelThumbnail").then((res) => {
@@ -62,10 +63,10 @@ export default function ShowNsfwModelThumbnailSettings() {
       const resp = await fetch(url);
       const json: ResponsePartial = await resp.json();
       let image_url: string | undefined;
-      if (checked) {
+      if (checked.current) {
         image_url = json?.images?.[0]?.url;
       } else if (!json.model.nsfw) {
-        const sfwImage = json.images.find((i) => !i.nsfw);
+        const sfwImage = json.images.find((i) => i.nsfw === "None");
         image_url = sfwImage?.url;
       }
 
@@ -79,7 +80,7 @@ export default function ShowNsfwModelThumbnailSettings() {
 
   return (
     <Stack>
-      <Checkbox isChecked={checked} onChange={onShowThumbnailsChange}>
+      <Checkbox isChecked={checkedState} onChange={onShowThumbnailsChange}>
         Show NSFW model thumbnails
       </Checkbox>
     </Stack>
