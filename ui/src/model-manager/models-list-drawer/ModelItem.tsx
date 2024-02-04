@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { indexdb } from "../../db-tables/indexdb";
 import { Model } from "../../types/dbTypes";
 import type { DragEvent } from "react";
-// @ts-ignore
-import { app } from "/scripts/app.js";
+
+import { userSettingsTable } from "../../db-tables/WorkspaceDB";
 
 interface Props {
   data: ModelsListRespItem;
@@ -25,6 +25,20 @@ export function ModelItem({ data }: Props) {
   );
   const [hashing, setHashing] = useState(!data.file_hash);
   const [model, setModel] = useState<Model>();
+  const [showThumbnail, setShowThumbnail] = useState(true);
+  const updateShowThumbnail = () => {
+    userSettingsTable?.getSetting("showModelThumbnail").then((res) => {
+      setShowThumbnail(res ?? true);
+    });
+  };
+
+  useEffect(() => {
+    updateShowThumbnail();
+    window.addEventListener("showModelThumbnail", updateShowThumbnail);
+    return () => {
+      window.removeEventListener("showModelThumbnail", updateShowThumbnail);
+    };
+  }, []);
 
   useEffect(() => {
     setHashing(!data.file_hash);
@@ -73,7 +87,7 @@ export function ModelItem({ data }: Props) {
     e.dataTransfer.setData("nodeType", nodeType);
   };
 
-  if (hashing) {
+  if (hashing || !showThumbnail) {
     return (
       <Flex
         position="relative"
@@ -83,7 +97,7 @@ export function ModelItem({ data }: Props) {
         justifyContent="center"
         alignItems="center"
       >
-        <Spinner />
+        {hashing && <Spinner />}
         <Text
           position="absolute"
           bottom="0"

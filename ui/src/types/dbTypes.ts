@@ -71,6 +71,7 @@ export type UserSettings = {
   autoSave?: boolean;
   twoWaySync?: boolean;
   foldersOnTop?: boolean;
+  showModelThumbnail?: boolean;
 };
 
 export interface PanelPosition {
