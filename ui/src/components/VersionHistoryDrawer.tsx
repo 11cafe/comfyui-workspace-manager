@@ -47,12 +47,22 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
     selectedChangelogID && setSelectedVersion(selectedChangelogID);
   };
 
+  const loadVersions = () => {
+    workflowVersionsTable?.listByWorkflowID(curFlowID!).then((res) => {
+      setVersions(res);
+    });
+  };
+
+  const onDelete = (id: string) => {
+    workflowVersionsTable?.delete(id).then(() => {
+      loadVersions();
+    });
+  };
+
   useEffect(() => {
     switch (active) {
       case 0:
-        workflowVersionsTable?.listByWorkflowID(curFlowID!).then((res) => {
-          setVersions(res);
-        });
+        loadVersions();
         break;
       case 1:
         loadChangeLogs(curFlowID!);
@@ -100,7 +110,12 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
               <Stack divider={<StackDivider />} spacing={2}>
                 {versions?.map((version) => {
                   return (
-                    <Flex w={"100%"} mb={1} justify={"space-between"}>
+                    <Flex
+                      key={version.id}
+                      w={"100%"}
+                      mb={1}
+                      justify={"space-between"}
+                    >
                       <Stack textAlign={"left"} gap={0}>
                         <Text fontWeight={"500"}>
                           {version.name ?? "untitled"}
@@ -113,7 +128,7 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
                         <DeleteConfirm
                           promptMessage="Are you sure you want to delete this version?"
                           onDelete={() => {
-                            // TODO
+                            onDelete(version.id);
                           }}
                         />
                       </Flex>

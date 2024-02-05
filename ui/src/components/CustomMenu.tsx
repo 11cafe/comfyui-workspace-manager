@@ -28,7 +28,6 @@ export default function CustomMenu({
           ref={ref}
           mt="2"
           shadow="md"
-          borderWidth="1px"
           p="2"
           position="absolute"
           zIndex="dropdown"
