@@ -110,7 +110,7 @@ export default function DropdownTitle() {
   const [closeTimeoutId, setCloseTimeoutId] = useState<number>();
 
   const delayedClose = () => {
-    setCloseTimeoutId(setTimeout(() => setIsOpen(false), 380)); // delay of 300ms
+    setCloseTimeoutId(setTimeout(() => setIsOpen(false), 400)); // delay of 300ms
   };
 
   const onOpen = () => {
@@ -189,7 +189,7 @@ export default function DropdownTitle() {
                 icon={<IconVersions size={20} />}
                 iconSpacing={1}
               >
-                New Version
+                Create Version
               </MenuItem>
               <MenuItem
                 onClick={() => setIsVersionHistoryOpen(true)}
