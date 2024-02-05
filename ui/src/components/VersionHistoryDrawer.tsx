@@ -143,6 +143,7 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
                 {changelogs?.map((c) => {
                   return (
                     <Button
+                      key={c.id}
                       size={"sm"}
                       variant={"ghost"}
                       onClick={() => {
