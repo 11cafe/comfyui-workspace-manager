@@ -31,6 +31,7 @@ import {
   IconDownload,
   IconHistory,
   IconShare2,
+  IconVersions,
 } from "@tabler/icons-react";
 import { workflowsTable, userSettingsTable } from "../db-tables/WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
@@ -38,6 +39,7 @@ import { VersionHistoryDrawer } from "./VersionHistoryDrawer";
 import { Workflow } from "../types/dbTypes";
 import ShareDialog from "../share/ShareDialog";
 import CustomMenu from "./CustomMenu";
+import CreateVersionDialog from "./CreateVersionDialog";
 
 export default function DropdownTitle() {
   const {
@@ -47,6 +49,7 @@ export default function DropdownTitle() {
     saveCurWorkflow,
   } = useContext(WorkspaceContext);
 
+  const [isOpenNewVersion, setIsOpenNewVersion] = useState(false);
   const [isOpenNewName, setIsOpenNewName] = useState(false);
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [newFlowName, setNewFlowName] = useState("");
@@ -182,6 +185,13 @@ export default function DropdownTitle() {
                 Save As
               </MenuItem>
               <MenuItem
+                onClick={() => setIsOpenNewVersion(true)}
+                icon={<IconVersions size={20} />}
+                iconSpacing={1}
+              >
+                New Version
+              </MenuItem>
+              <MenuItem
                 onClick={() => setIsVersionHistoryOpen(true)}
                 icon={<IconHistory size={20} />}
                 iconSpacing={1}
@@ -246,6 +256,12 @@ export default function DropdownTitle() {
             </ModalFooter>
           </ModalContent>
         </Modal>
+      )}
+      {isOpenNewVersion && (
+        <CreateVersionDialog
+          workflowId={curFlowID!}
+          onClose={() => setIsOpenNewVersion(false)}
+        />
       )}
     </>
   );
