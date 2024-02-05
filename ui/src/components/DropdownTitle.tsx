@@ -22,6 +22,7 @@ import {
   FormErrorMessage,
   Input,
   Tooltip,
+  DarkMode,
 } from "@chakra-ui/react";
 import {
   IconArrowBackUpDouble,
@@ -127,20 +128,21 @@ export default function DropdownTitle() {
         isOpen={isOpen}
         onClose={delayedClose}
         menuButton={
-          <Button
-            // style={{ width: "30px", height: "30px" }}
-            px={1}
-            height={"27px"}
-            aria-label="menu"
-            size={"sm"}
-            colorScheme="teal"
-            onClick={onOpen}
-            onMouseEnter={onOpen}
-            onMouseLeave={delayedClose}
-          >
-            File
-            <IconChevronDown size={20} />
-          </Button>
+          <DarkMode>
+            <Button
+              px={1}
+              height={"29px"}
+              aria-label="menu"
+              size={"sm"}
+              colorScheme="teal"
+              onClick={onOpen}
+              onMouseEnter={onOpen}
+              onMouseLeave={delayedClose}
+            >
+              File
+              <IconChevronDown size={20} />
+            </Button>
+          </DarkMode>
         }
         options={
           <Menu isOpen={true}>

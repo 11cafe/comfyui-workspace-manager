@@ -5,23 +5,27 @@ import {
   Flex,
   Heading,
   Spinner,
+  Text,
   Portal,
+  Input,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { ModelsTags } from "./ModelsTags";
 import { ModelsList } from "./ModelsList";
-// @ts-ignore
+// @ts-expect-error ComfyUI imports
 import { app } from "/scripts/app.js";
 import InstallModelsButton from "../install-models/InstallModelsButton";
 import { ModelsListRespItem } from "../types";
 import { useUpdateModels } from "../hooks/useUpdateModels";
 import { DRAWER_Z_INDEX } from "../../const";
+import ShowNsfwModelThumbnailSettings from "../../settings/ShowNsfwModelThumbnailSettings";
 interface Props {
   onClose: () => void;
 }
 
 export default function ModelsListDrawer({ onClose }: Props) {
   const [selectedModel, setSelectedModel] = useState("checkpoints");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { loading, modelTypeList, modelsList } = useUpdateModels();
 
@@ -31,10 +35,13 @@ export default function ModelsListDrawer({ onClose }: Props) {
   // filter by model type
   useEffect(() => {
     const res = modelsList.filter((item) => {
+      if (searchQuery.length) {
+        return item.model_name.includes(searchQuery);
+      }
       return item.model_type === selectedModel;
     });
     setCurModelList(res);
-  }, [selectedModel, modelsList]);
+  }, [selectedModel, modelsList, searchQuery]);
 
   useEffect(() => {
     app.canvasEl.addEventListener("click", onClose);
@@ -48,6 +55,15 @@ export default function ModelsListDrawer({ onClose }: Props) {
   const renderContent = () => {
     return (
       <>
+        <Flex gap={4} justifyContent={"center"} alignItems={"center"} mb={2}>
+          <Input
+            size={"sm"}
+            placeholder="Search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <ShowNsfwModelThumbnailSettings />
+        </Flex>
         <ModelsTags
           modelTypeList={modelTypeList}
           setSelectedModel={setSelectedModel}
@@ -83,6 +99,7 @@ export default function ModelsListDrawer({ onClose }: Props) {
               <Heading size={"md"} mr={2}>
                 Models
               </Heading>
+
               <InstallModelsButton />
             </Flex>
           </CardHeader>

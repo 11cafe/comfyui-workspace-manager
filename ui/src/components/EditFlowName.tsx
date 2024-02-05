@@ -79,7 +79,7 @@ export default function EditFlowName({
           as="div"
           color="white"
           onClick={startEdit}
-          maxW={240}
+          maxW={200}
           fontWeight={500}
           whiteSpace="nowrap"
           overflow="hidden"

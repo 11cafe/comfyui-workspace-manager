@@ -19,8 +19,7 @@ export type Table =
   | "workflowVersions";
 
 export function isFolder(n: Folder | Workflow): n is Folder {
-  // @ts-ignore
-  return n.type === "folder";
+  return "type" in n && n.type === "folder";
 }
 
 export let workflowsTable: WorkflowsTable | null = null;

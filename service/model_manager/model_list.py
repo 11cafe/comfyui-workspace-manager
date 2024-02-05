@@ -51,7 +51,8 @@ def process_file(folder, file):
 def populate_file_hash_dict():
     global populate_done, file_list
     local_file_list = []
-    for folder in folder_paths.folder_names_and_paths:
+    folder_list = dict(folder_paths.folder_names_and_paths)
+    for folder in folder_list:
         if (folder == "configs" or folder == "custom_nodes"):
             continue
         files = folder_paths.get_filename_list(folder)
