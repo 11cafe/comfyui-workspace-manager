@@ -36,7 +36,9 @@ export default function ModelsListDrawer({ onClose }: Props) {
   useEffect(() => {
     const res = modelsList.filter((item) => {
       if (searchQuery.length) {
-        return item.model_name.includes(searchQuery);
+        return item.model_name
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase());
       }
       return item.model_type === selectedModel;
     });

@@ -14,6 +14,7 @@ import {
   TabPanels,
   Tab,
   TabPanel,
+  useToast,
 } from "@chakra-ui/react";
 import { IconX } from "@tabler/icons-react";
 import {
@@ -30,6 +31,7 @@ import { Changelog, WorkflowVersion } from "../types/dbTypes";
 import DeleteConfirm from "./DeleteConfirm";
 
 export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
+  const toast = useToast();
   const { curFlowID, isDirty } = useContext(WorkspaceContext);
   const [active, setActive] = useState(0); // 0: version、1: changelog
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
@@ -47,10 +49,15 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
     selectedChangelogID && setSelectedVersion(selectedChangelogID);
   };
 
-  const loadVersions = () => {
-    workflowVersionsTable?.listByWorkflowID(curFlowID!).then((res) => {
-      setVersions(res);
-    });
+  const loadVersions = async () => {
+    const vers =
+      (await workflowVersionsTable?.listByWorkflowID(curFlowID!)) ?? [];
+    setVersions(vers);
+
+    const graphJson = JSON.stringify(app.graph.serialize());
+    const selectedVer = vers?.filter((c) => c.json === graphJson);
+    const selectedVerID = selectedVer?.[0]?.id;
+    selectedVerID && setSelectedVersion(selectedVerID);
   };
 
   const onDelete = (id: string) => {
@@ -115,6 +122,10 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
                       w={"100%"}
                       mb={1}
                       justify={"space-between"}
+                      backgroundColor={
+                        version.id === selectedVersion ? "teal.300" : undefined
+                      }
+                      borderRadius={4}
                     >
                       <Stack textAlign={"left"} gap={0}>
                         <Text fontWeight={"500"}>
@@ -124,7 +135,32 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
                           Created: {formatTimestamp(version.createTime)}
                         </Text>
                       </Stack>
-                      <Flex alignItems="center">
+                      <Flex alignItems="center" gap={2}>
+                        <Button
+                          size={"sm"}
+                          onClick={() => {
+                            if (isDirty) {
+                              alert(
+                                "You have unsaved changes, please save or discard your changes to proceed switching version, in case losing your changes.",
+                              );
+                              return;
+                            }
+                            app.loadGraphData(JSON.parse(version.json));
+                            workflowsTable?.updateFlow(curFlowID!, {
+                              lastSavedJson: version.json,
+                              json: version.json,
+                            });
+                            toast({
+                              title: `Switched to version "${version.name}"`,
+                              status: "success",
+                              duration: 3000,
+                              isClosable: true,
+                            });
+                            onClose();
+                          }}
+                        >
+                          Load
+                        </Button>
                         <DeleteConfirm
                           promptMessage="Are you sure you want to delete this version?"
                           onDelete={() => {

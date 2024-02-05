@@ -25,7 +25,7 @@ export default function CustomMenu({
       {isOpen && (
         <Box
           ref={ref}
-          mt="4px"
+          mt="8px"
           shadow="md"
           p="2"
           position="absolute"

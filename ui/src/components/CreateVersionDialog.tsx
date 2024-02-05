@@ -12,11 +12,10 @@ import {
   FormErrorMessage,
   Input,
 } from "@chakra-ui/react";
-import {
-  workflowVersionsTable,
-  workflowsTable,
-} from "../db-tables/WorkspaceDB";
+import { workflowVersionsTable } from "../db-tables/WorkspaceDB";
 import { useState, ChangeEvent } from "react";
+// @ts-ignore
+import { app } from "/scripts/app.js";
 
 interface Props {
   workflowId: string;
@@ -41,11 +40,12 @@ export default function CreateVersionDialog({ workflowId, onClose }: Props) {
         "The name is duplicated, please modify it and submit again.",
       );
     } else {
+      const graphJson = JSON.stringify(app.graph.serialize());
       await workflowVersionsTable?.add({
         name: newVersionName,
         workflowID: workflowId,
         createTime: Date.now(),
-        json: workflowsTable?.curWorkflow?.json!,
+        json: graphJson,
       });
       onClose();
     }

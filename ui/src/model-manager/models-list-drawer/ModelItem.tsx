@@ -143,6 +143,7 @@ export function ModelItem({ data }: Props) {
         height={178}
         objectFit="cover"
         borderRadius={4}
+        cursor={model?.civitModelID != null ? "pointer" : "auto"}
         onClick={() => {
           if (
             model?.civitModelID == null ||
@@ -164,7 +165,7 @@ export function ModelItem({ data }: Props) {
         color="white"
         textAlign="center"
         p="0"
-        fontSize={12}
+        fontSize={14}
         borderBottomRightRadius={4}
         borderBottomLeftRadius={4}
       >
