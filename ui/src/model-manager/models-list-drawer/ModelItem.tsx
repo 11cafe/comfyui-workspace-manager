@@ -43,20 +43,6 @@ export function ModelItem({ data }: Props) {
   );
   const [hashing, setHashing] = useState(!data.file_hash);
   const [model, setModel] = useState<Model>();
-  const [showNsfwThumbnail, setShowNsfwThumbnail] = useState(false);
-  const updateShowThumbnail = () => {
-    userSettingsTable?.getSetting("showNsfwModelThumbnail").then((res) => {
-      setShowNsfwThumbnail(res ?? false);
-    });
-  };
-
-  useEffect(() => {
-    updateShowThumbnail();
-    window.addEventListener("showNsfwModelThumbnail", updateShowThumbnail);
-    return () => {
-      window.removeEventListener("showNsfwModelThumbnail", updateShowThumbnail);
-    };
-  }, []);
 
   useEffect(() => {
     setHashing(!data.file_hash);
@@ -76,7 +62,10 @@ export function ModelItem({ data }: Props) {
         const resp = await fetch(url);
         const json: ResponsePartial = await resp.json();
         let image_url: string | undefined;
-        if (showNsfwThumbnail) {
+        const showNsfwThumbnail = await userSettingsTable?.getSetting(
+          "showNsfwModelThumbnail",
+        );
+        if (showNsfwThumbnail === true) {
           image_url = json?.images?.[0]?.url;
         } else if (!json.model.nsfw) {
           const sfwImage = json.images.find((i) => i.nsfw === "None");
