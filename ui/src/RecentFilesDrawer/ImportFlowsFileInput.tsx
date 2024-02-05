@@ -1,6 +1,6 @@
 import { ChangeEvent, useContext, useRef, useState } from "react";
 import { Button, Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
-import { IconFileImport } from "@tabler/icons-react";
+import { IconFile, IconFileImport, IconFolder } from "@tabler/icons-react";
 import { workflowsTable, foldersTable } from "../db-tables/WorkspaceDB";
 import { RecentFilesContext } from "../WorkspaceContext";
 import { getPngMetadata } from "../utils/mediaMetadataUtils";
@@ -216,6 +216,14 @@ export default function ImportFlowsFileInput({
                 onClick={() => {
                   onClick(item.type);
                 }}
+                iconSpacing={2}
+                icon={
+                  item.type === "folder" ? (
+                    <IconFolder size={18} />
+                  ) : (
+                    <IconFile size={18} />
+                  )
+                }
               >
                 {item.title}
               </MenuItem>

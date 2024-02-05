@@ -90,11 +90,11 @@ export function Topbar({
           }}
         />
         {curFlowID && (
-          <HStack gap={"3px"}>
+          <HStack gap={"4px"}>
             <Tooltip label="Open gallery">
               <IconButton
                 onClick={() => setRoute("gallery")}
-                icon={<IconPhoto size={21} color="white" />}
+                icon={<IconPhoto size={22} color="white" />}
                 size={"sm"}
                 aria-label="open gallery"
                 variant={"ghost"}
@@ -106,10 +106,11 @@ export function Topbar({
         {curFlowID && isDirty ? (
           <Tooltip label="Save workflow">
             <IconButton
-              style={{ width: 22 }}
+              // style={{ width: 26 }}
               onClick={saveCurWorkflow}
-              icon={<IconDeviceFloppy size={22} color="white" />}
+              icon={<IconDeviceFloppy size={23} color="white" />}
               size={"xs"}
+              paddingY={4}
               aria-label="save workspace"
               variant={"ghost"}
             />
