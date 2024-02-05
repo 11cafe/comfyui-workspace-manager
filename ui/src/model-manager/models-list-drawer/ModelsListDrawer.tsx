@@ -18,6 +18,7 @@ import InstallModelsButton from "../install-models/InstallModelsButton";
 import { ModelsListRespItem } from "../types";
 import { useUpdateModels } from "../hooks/useUpdateModels";
 import { DRAWER_Z_INDEX } from "../../const";
+import ShowNsfwModelThumbnailSettings from "../../settings/ShowNsfwModelThumbnailSettings";
 interface Props {
   onClose: () => void;
 }
@@ -33,9 +34,12 @@ export default function ModelsListDrawer({ onClose }: Props) {
 
   // filter by model type
   useEffect(() => {
-    const res = modelsList
-      .filter((item) => item.model_type === selectedModel)
-      .filter((item) => item.model_name.includes(searchQuery));
+    const res = modelsList.filter((item) => {
+      if (searchQuery.length) {
+        return item.model_name.includes(searchQuery);
+      }
+      return item.model_type === selectedModel;
+    });
     setCurModelList(res);
   }, [selectedModel, modelsList, searchQuery]);
 
@@ -52,11 +56,13 @@ export default function ModelsListDrawer({ onClose }: Props) {
     return (
       <>
         <Flex gap={4} justifyContent={"center"} alignItems={"center"} mb={2}>
-          <Text>Search</Text>
           <Input
+            size={"sm"}
+            placeholder="Search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+          <ShowNsfwModelThumbnailSettings />
         </Flex>
         <ModelsTags
           modelTypeList={modelTypeList}
@@ -93,6 +99,7 @@ export default function ModelsListDrawer({ onClose }: Props) {
               <Heading size={"md"} mr={2}>
                 Models
               </Heading>
+
               <InstallModelsButton />
             </Flex>
           </CardHeader>

@@ -1,5 +1,5 @@
-import { Checkbox, Stack } from "@chakra-ui/react";
-import {  useEffect, ChangeEvent } from "react";
+import { Checkbox } from "@chakra-ui/react";
+import { useEffect, ChangeEvent } from "react";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { indexdb } from "../db-tables/indexdb";
 import { Model } from "../types/dbTypes";
@@ -79,10 +79,12 @@ export default function ShowNsfwModelThumbnailSettings() {
   };
 
   return (
-    <Stack>
-      <Checkbox isChecked={checkedState} onChange={onShowThumbnailsChange}>
-        Show NSFW model thumbnails
-      </Checkbox>
-    </Stack>
+    <Checkbox
+      isChecked={checkedState}
+      onChange={onShowThumbnailsChange}
+      width={"100px"}
+    >
+      Show NSFW
+    </Checkbox>
   );
 }

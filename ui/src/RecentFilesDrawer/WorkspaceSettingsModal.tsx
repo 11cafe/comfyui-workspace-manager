@@ -28,7 +28,6 @@ import { ShortcutSettings } from "../settings/ShortcutSettings";
 import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
 import AutoSaveSettings from "../settings/AutoSaveSettings";
 import FolderOnTopSettings from "../settings/FolderOnTopSettings";
-import ShowNsfwModelThumbnailSettings from "../settings/showNsfwModelThumbnailSettings";
 
 export default function WorkspaceSettingsModal({
   onClose,
@@ -291,7 +290,6 @@ export default function WorkspaceSettingsModal({
                 <AutoSaveSettings />
                 {/* <TwoWaySyncSettings /> */}
                 <FolderOnTopSettings />
-                <ShowNsfwModelThumbnailSettings />
               </VStack>
             </HStack>
           </ModalBody>
