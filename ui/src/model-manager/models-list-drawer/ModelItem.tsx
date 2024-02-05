@@ -4,8 +4,26 @@ import { useEffect, useState } from "react";
 import { indexdb } from "../../db-tables/indexdb";
 import { Model } from "../../types/dbTypes";
 import type { DragEvent } from "react";
-// @ts-ignore
-import { app } from "/scripts/app.js";
+
+import { userSettingsTable } from "../../db-tables/WorkspaceDB";
+
+interface ResponsePartial {
+  id: number;
+  modelId: number;
+  name: string;
+  model: {
+    name: string;
+    type: string;
+    nsfw: boolean;
+  };
+  images: {
+    url: string;
+    nsfw: "None" | "Soft" | "Mature" | "X";
+    width: number;
+    height: number;
+    hash: string;
+  }[];
+}
 
 interface Props {
   data: ModelsListRespItem;
@@ -25,6 +43,20 @@ export function ModelItem({ data }: Props) {
   );
   const [hashing, setHashing] = useState(!data.file_hash);
   const [model, setModel] = useState<Model>();
+  const [showNsfwThumbnail, setShowNsfwThumbnail] = useState(false);
+  const updateShowThumbnail = () => {
+    userSettingsTable?.getSetting("showNsfwModelThumbnail").then((res) => {
+      setShowNsfwThumbnail(res ?? false);
+    });
+  };
+
+  useEffect(() => {
+    updateShowThumbnail();
+    window.addEventListener("showNsfwModelThumbnail", updateShowThumbnail);
+    return () => {
+      window.removeEventListener("showNsfwModelThumbnail", updateShowThumbnail);
+    };
+  }, []);
 
   useEffect(() => {
     setHashing(!data.file_hash);
@@ -42,9 +74,14 @@ export function ModelItem({ data }: Props) {
       try {
         const url = `https://civitai.com/api/v1/model-versions/by-hash/${data.file_hash}`;
         const resp = await fetch(url);
-        const json = await resp.json();
-        const image = json?.images?.at(0);
-        const image_url = image?.url;
+        const json: ResponsePartial = await resp.json();
+        let image_url: string | undefined;
+        if (showNsfwThumbnail) {
+          image_url = json?.images?.[0]?.url;
+        } else if (!json.model.nsfw) {
+          const sfwImage = json.images.find((i) => i.nsfw === "None");
+          image_url = sfwImage?.url;
+        }
         image_url && setUrl(image_url);
 
         indexdb.models.add({
@@ -52,8 +89,8 @@ export function ModelItem({ data }: Props) {
           fileHash: data.file_hash,
           fileFolder: data.model_type,
           fileName: data.model_name,
-          civitModelID: json.modelId,
-          civitModelVersionID: json.id,
+          civitModelID: String(json.modelId),
+          civitModelVersionID: String(json.id),
           imageUrl: image_url ?? null,
         });
       } catch (e) {}
@@ -83,7 +120,7 @@ export function ModelItem({ data }: Props) {
         justifyContent="center"
         alignItems="center"
       >
-        <Spinner />
+        {hashing && <Spinner />}
         <Text
           position="absolute"
           bottom="0"

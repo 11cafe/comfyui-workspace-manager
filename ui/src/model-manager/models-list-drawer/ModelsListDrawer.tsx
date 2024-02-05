@@ -5,12 +5,14 @@ import {
   Flex,
   Heading,
   Spinner,
+  Text,
   Portal,
+  Input,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { ModelsTags } from "./ModelsTags";
 import { ModelsList } from "./ModelsList";
-// @ts-ignore
+// @ts-expect-error ComfyUI imports
 import { app } from "/scripts/app.js";
 import InstallModelsButton from "../install-models/InstallModelsButton";
 import { ModelsListRespItem } from "../types";
@@ -22,6 +24,7 @@ interface Props {
 
 export default function ModelsListDrawer({ onClose }: Props) {
   const [selectedModel, setSelectedModel] = useState("checkpoints");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { loading, modelTypeList, modelsList } = useUpdateModels();
 
@@ -30,11 +33,11 @@ export default function ModelsListDrawer({ onClose }: Props) {
 
   // filter by model type
   useEffect(() => {
-    const res = modelsList.filter((item) => {
-      return item.model_type === selectedModel;
-    });
+    const res = modelsList
+      .filter((item) => item.model_type === selectedModel)
+      .filter((item) => item.model_name.includes(searchQuery));
     setCurModelList(res);
-  }, [selectedModel, modelsList]);
+  }, [selectedModel, modelsList, searchQuery]);
 
   useEffect(() => {
     app.canvasEl.addEventListener("click", onClose);
@@ -48,6 +51,13 @@ export default function ModelsListDrawer({ onClose }: Props) {
   const renderContent = () => {
     return (
       <>
+        <Flex gap={4} justifyContent={"center"} alignItems={"center"} mb={2}>
+          <Text>Search</Text>
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </Flex>
         <ModelsTags
           modelTypeList={modelTypeList}
           setSelectedModel={setSelectedModel}
