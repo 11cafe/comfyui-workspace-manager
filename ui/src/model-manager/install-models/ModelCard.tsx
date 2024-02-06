@@ -11,13 +11,19 @@ import {
 } from "@chakra-ui/react";
 import { useCallback, useState } from "react";
 import { IconDownload } from "@tabler/icons-react";
-import { SearchHit, SearchModelVersion } from "../civitSearchTypes";
 import { findLeastNsfwImage } from "../../utils/findLeastNsfwImage";
+import {
+  FileEssential,
+  apiResponse,
+  isCivitModel,
+  isCivitVersion,
+} from "./util/modelTypes";
+import { KBtoGB } from "../utils";
 const IMAGE_SIZE = 280;
 
 interface ModelCardProps {
-  model: SearchHit;
-  onClickInstallModel: (file: SearchModelVersion, model: SearchHit) => void;
+  model: apiResponse;
+  onClickInstallModel: (file: FileEssential, model: apiResponse) => void;
   installing: string[];
 }
 export default function ModelCard({
@@ -25,8 +31,10 @@ export default function ModelCard({
   onClickInstallModel,
   installing,
 }: ModelCardProps) {
-  const modelPhoto = `https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/${findLeastNsfwImage(model.images)?.url}/width=${IMAGE_SIZE}/`;
-  const versions = model.versions;
+  const modelPhoto = isCivitModel(model)
+    ? model.modelVersions?.at(0)?.images?.at(0)?.url
+    : `https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/${findLeastNsfwImage(model.images)?.url}/width=${IMAGE_SIZE}/`;
+  const versions = isCivitModel(model) ? model.modelVersions : model.versions;
   const [selectedFile, setSelectedFile] = useState<string>(
     versions?.[0]?.name ?? "",
   );
@@ -41,8 +49,18 @@ export default function ModelCard({
       console.error("no file is find by name", selectedFile);
       return;
     }
-    onClickInstallModel(curFile, model);
+    let SHA256;
+    if (isCivitVersion(curFile)) {
+      SHA256 = curFile.files?.[0].hashes?.SHA256;
+    } else {
+      SHA256 = curFile.hashes?.[2];
+    }
+    onClickInstallModel({ ...curFile, SHA256 }, model);
   }, [selectedFile]);
+  const sizeKB =
+    curFile && isCivitVersion(curFile)
+      ? curFile?.files?.[0]?.sizeKB
+      : undefined;
   return (
     <Card width={IMAGE_SIZE} justifyContent={"space-between"} mb={2} gap={1}>
       <Image
@@ -115,6 +133,13 @@ export default function ModelCard({
               );
             })}
           </Select>
+          {sizeKB && (
+            <Tooltip label={KBtoGB(sizeKB)}>
+              <Text flexShrink={1} noOfLines={1} width={"40%"}>
+                {KBtoGB(sizeKB)}
+              </Text>
+            </Tooltip>
+          )}
         </HStack>
       </Stack>
     </Card>
