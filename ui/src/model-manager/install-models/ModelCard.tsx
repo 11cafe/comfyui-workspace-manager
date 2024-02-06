@@ -11,16 +11,12 @@ import {
 } from "@chakra-ui/react";
 import { useCallback, useState } from "react";
 import { IconDownload } from "@tabler/icons-react";
-import { CivitiModel, CivitiModelFileVersion } from "../types";
-import { KBtoGB } from "../utils";
+import { SearchHit, SearchModelVersion } from "../civitSearchTypes";
 const IMAGE_SIZE = 280;
 
 interface ModelCardProps {
-  model: CivitiModel;
-  onClickInstallModel: (
-    file: CivitiModelFileVersion,
-    model: CivitiModel,
-  ) => void;
+  model: SearchHit;
+  onClickInstallModel: (file: SearchModelVersion, model: SearchHit) => void;
   installing: string[];
 }
 export default function ModelCard({
@@ -28,13 +24,12 @@ export default function ModelCard({
   onClickInstallModel,
   installing,
 }: ModelCardProps) {
-  const modelPhoto = model.modelVersions?.at(0)?.images?.at(0)?.url;
-  const versions = model.modelVersions;
-  const versionFiles = versions?.map((version) => version?.files?.at(0));
+  const modelPhoto = `https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/${model.images?.[0]?.url}/width=${IMAGE_SIZE}/`;
+  const versions = model.versions;
   const [selectedFile, setSelectedFile] = useState<string>(
-    versionFiles?.at(0)?.name ?? "",
+    versions?.[0]?.name ?? "",
   );
-  const curFile = versionFiles?.find(
+  const curFile = versions?.find(
     (versionFile) => versionFile?.name === selectedFile,
   );
   const onClickMedia = () => {
@@ -105,7 +100,7 @@ export default function ModelCard({
               setSelectedFile(e.target.value);
             }}
           >
-            {versionFiles?.map((versionFile) => {
+            {versions?.map((versionFile) => {
               const filename = versionFile?.name;
               if (!filename) return null;
               return (
@@ -119,13 +114,6 @@ export default function ModelCard({
               );
             })}
           </Select>
-          {curFile?.sizeKB && (
-            <Tooltip label={KBtoGB(curFile.sizeKB)}>
-              <Text flexShrink={1} noOfLines={1} width={"40%"}>
-                {KBtoGB(curFile.sizeKB)}
-              </Text>
-            </Tooltip>
-          )}
         </HStack>
       </Stack>
     </Card>
