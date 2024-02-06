@@ -12,6 +12,7 @@ import {
 import { useCallback, useState } from "react";
 import { IconDownload } from "@tabler/icons-react";
 import { SearchHit, SearchModelVersion } from "../civitSearchTypes";
+import { findLeastNsfwImage } from "../../utils/findLeastNsfwImage";
 const IMAGE_SIZE = 280;
 
 interface ModelCardProps {
@@ -24,7 +25,7 @@ export default function ModelCard({
   onClickInstallModel,
   installing,
 }: ModelCardProps) {
-  const modelPhoto = `https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/${model.images?.[0]?.url}/width=${IMAGE_SIZE}/`;
+  const modelPhoto = `https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/${findLeastNsfwImage(model.images)?.url}/width=${IMAGE_SIZE}/`;
   const versions = model.versions;
   const [selectedFile, setSelectedFile] = useState<string>(
     versions?.[0]?.name ?? "",

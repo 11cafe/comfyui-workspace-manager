@@ -161,7 +161,7 @@ export interface Image {
   userId: number;
   name: string;
   url: string;
-  nsfw: string;
+  nsfw: "None" | "Soft" | "Mature" | "X";
   width: number;
   height: number;
   hash: string;

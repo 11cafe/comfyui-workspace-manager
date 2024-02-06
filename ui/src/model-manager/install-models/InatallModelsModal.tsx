@@ -106,18 +106,14 @@ export default function InatallModelsModal({
       }
     }
 
-    const data = await fetch(
-      "https://meilisearch-v1-6.civitai.com/indexes/models_v5/search",
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization:
-            "Bearer 102312c2b83ea0ef9ac32e7858f742721bbfd7319a957272e746f84fd1e974af",
-        },
-        method: "POST",
-        body,
+    const data = await fetch(import.meta.env.VITE_CMODEL_SEARCH_URL as string, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: import.meta.env.VITE_CMODEL_APP_KEY as string,
       },
-    );
+      method: "POST",
+      body,
+    });
     const json: SearchResponse = await data.json();
     setModels(json.hits);
     // only cache if there is no search query
@@ -262,7 +258,7 @@ export default function InatallModelsModal({
         </ModalContent>
       </Modal>
       <ChooseFolder
-        file={fileState}
+        fileSelected={!!fileState}
         isOpen={isOpen}
         onClose={onCloseChooseFolderModal}
         selectFolder={(folderPath: string, customUrl?: string) => {
