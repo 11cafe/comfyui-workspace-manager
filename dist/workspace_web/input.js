@@ -391,6 +391,7 @@ Error generating stack: `+i.message+`
   :root,
   :host {
     --chakra-vh: 100vh;
+    --toast-z-index: 17000000;
   }
 
   @supports (height: -webkit-fill-available) {
@@ -678,10 +679,10 @@ Error generating stack: `+i.message+`
       }
 
       ${fB}
-    `}),Lw=document.createElement("div");document.body.append(Lw);const pB=Ar.lazy(()=>Jk(()=>import("./App-MJrK7SYH.js").then(e=>e.aj),__vite__mapDeps([0,1])).then(({default:e})=>({default:e}))),mB={hide:-1,auto:"auto",base:0,docked:10,dropdown:1e7,sticky:11e6,banner:12e6,overlay:13e6,modal:14e6,popover:15e6,skipLink:16e6,toast:17e6,tooltip:18e6},vB=Mz({zIndices:mB});bd.createRoot(Lw).render(E.jsx(Ar.StrictMode,{children:E.jsxs(HI,{resetCSS:!1,disableGlobalStyle:!0,theme:vB,children:[E.jsx(hB,{scope:".workspace_manager"}),E.jsx(NP,{initialColorMode:"dark"}),E.jsx(dB,{children:E.jsx(S.Suspense,{children:E.jsx(pB,{})})})]})}));const Yf=document.body,gB={attributes:!0,attributeFilter:["class"]},yB=function(e,t){const r=document.documentElement;r.style.colorScheme==="dark"&&r.style.removeProperty("color-scheme");for(const n of e)if(n.type==="attributes"&&n.attributeName==="class")for(const o of Yf.classList)o.includes("chakra")&&Yf.classList.remove(o)},bB=new MutationObserver(yB);bB.observe(Yf,gB);export{SB as $,lr as A,Ix as B,ii as C,CB as D,PB as E,Ya as F,Mw as G,$w as H,Xa as I,Rw as J,zw as K,Fw as L,ww as M,Aw as N,LB as O,Na as P,$B as Q,Ar as R,Du as S,is as T,vL as U,rL as V,mL as W,Wf as X,Ra as Y,wP as Z,Jk as _,EB as a,Hn as a0,Uh as a1,xP as a2,zp as a3,xB as a4,wB as a5,_B as a6,lB as a7,uB as a8,VP as a9,MB as aa,RB as ab,Ip as ac,_e as b,mn as c,Be as d,eS as e,pt as f,Rv as g,Nu as h,kB as i,E as j,$i as k,Xf as l,Bf as m,hw as n,Ou as o,TB as p,Kt as q,S as r,Cg as s,ka as t,d3 as u,mO as v,DB as w,IB as x,FB as y,zP as z};
+    `}),Lw=document.createElement("div");document.body.append(Lw);const pB=Ar.lazy(()=>Jk(()=>import("./App-iYdfaemK.js").then(e=>e.am),__vite__mapDeps([0,1])).then(({default:e})=>({default:e}))),mB={hide:-1,auto:"auto",base:0,docked:10,dropdown:1e7,sticky:11e6,banner:12e6,overlay:13e6,modal:14e6,popover:15e6,skipLink:16e6,toast:17e6,tooltip:18e6},vB=Mz({zIndices:mB});bd.createRoot(Lw).render(E.jsx(Ar.StrictMode,{children:E.jsxs(HI,{resetCSS:!1,disableGlobalStyle:!0,theme:vB,children:[E.jsx(hB,{scope:".workspace_manager"}),E.jsx(NP,{initialColorMode:"dark"}),E.jsx(dB,{children:E.jsx(S.Suspense,{children:E.jsx(pB,{})})})]})}));const Yf=document.body,gB={attributes:!0,attributeFilter:["class"]},yB=function(e,t){const r=document.documentElement;r.style.colorScheme==="dark"&&r.style.removeProperty("color-scheme");for(const n of e)if(n.type==="attributes"&&n.attributeName==="class")for(const o of Yf.classList)o.includes("chakra")&&Yf.classList.remove(o)},bB=new MutationObserver(yB);bB.observe(Yf,gB);export{rL as $,IB as A,Ix as B,FB as C,zP as D,lr as E,ii as F,CB as G,Ip as H,Xa as I,PB as J,Ya as K,Mw as L,ww as M,$w as N,Rw as O,Na as P,zw as Q,Fw as R,Aw as S,Pb as T,LB as U,Ar as V,$B as W,Du as X,is as Y,vL as Z,Jk as _,MB as a,mL as a0,Wf as a1,Ra as a2,wP as a3,SB as a4,Hn as a5,Uh as a6,xP as a7,zp as a8,xB as a9,wB as aa,_B as ab,lB as ac,uB as ad,mn as b,RB as c,d3 as d,EB as e,pt as f,_e as g,Be as h,eS as i,E as j,Rv as k,Nu as l,Bf as m,kB as n,Ou as o,$i as p,Xf as q,S as r,hw as s,TB as t,VP as u,Kt as v,Cg as w,ka as x,mO as y,DB as z};
 function __vite__mapDeps(indexes) {
   if (!__vite__mapDeps.viteFileDeps) {
-    __vite__mapDeps.viteFileDeps = ["workspace_web/App-MJrK7SYH.js","workspace_web/assets/App-JXePnJiV.css"]
+    __vite__mapDeps.viteFileDeps = ["workspace_web/App-iYdfaemK.js","workspace_web/assets/App-JXePnJiV.css"]
   }
   return indexes.map((i) => __vite__mapDeps.viteFileDeps[i])
 }
