@@ -8,8 +8,6 @@ If you have questions or suggestions, please [join our Discord](https://discord.
   <img src="https://animeartmagazine.com/wp-content/uploads/2022/05/discord-button600.webp" alt="Join Discord" width="120"/>
 </a>
 
-✨Checkout our new ComfyUI custom nodes library wiki 📚 (beta testing): https://www.comfyspace.art/
-
 ## Installation
 
 ### [Option 1] via ComfyUI Manager (Preferred)
