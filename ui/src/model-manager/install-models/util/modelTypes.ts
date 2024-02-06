@@ -34,6 +34,7 @@ export type FileEssential = {
   id: number;
   name?: string;
   SHA256?: string;
+  sizeKB?: number;
 };
 
 export type apiResponse = CivitiModel | SearchHit;
@@ -48,4 +49,37 @@ export function isCivitVersion(
   version: CivitiModelVersion | SearchModelVersion,
 ): version is CivitiModelVersion {
   return (version as CivitiModelVersion).files?.[0] !== undefined;
+}
+
+export function getFileEssential(
+  version: CivitiModelVersion | SearchModelVersion,
+  modelName?: string,
+): FileEssential;
+export function getFileEssential(
+  version?: CivitiModelVersion | SearchModelVersion,
+  modelName?: string,
+): FileEssential | undefined;
+
+export function getFileEssential(
+  version?: CivitiModelVersion | SearchModelVersion,
+  modelName?: string,
+): FileEssential | undefined {
+  if (!version) return;
+  let fileData: FileEssential;
+  if (isCivitVersion(version)) {
+    fileData = {
+      id: version.id,
+      SHA256: version.files?.[0].hashes?.SHA256,
+      name: version.files?.[0].name,
+      sizeKB: version.files?.[0]?.sizeKB,
+    };
+  } else {
+    fileData = {
+      id: version.id,
+      SHA256: version.hashes?.[2],
+      name: `${modelName} ${version.name}`,
+    };
+  }
+
+  return fileData;
 }
