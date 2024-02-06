@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { Box, Card, useOutsideClick } from "@chakra-ui/react";
+import { Box, useOutsideClick } from "@chakra-ui/react";
 
 type Props = {
   menuButton: React.ReactElement;
@@ -24,11 +24,9 @@ export default function CustomMenu({
       <Box>{menuButton}</Box>
       {isOpen && (
         <Box
-          gap={4}
           ref={ref}
-          mt="2"
+          mt="8px"
           shadow="md"
-          borderWidth="1px"
           p="2"
           position="absolute"
           zIndex="dropdown"

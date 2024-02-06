@@ -1,56 +1,90 @@
 import {
   Button,
-  Input,
   Modal,
-  ModalBody,
+  ModalOverlay,
   ModalContent,
   ModalHeader,
-  ModalOverlay,
-  Text,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  FormControl,
+  FormLabel,
+  FormErrorMessage,
+  Input,
 } from "@chakra-ui/react";
-import { Workflow } from "../types/dbTypes";
 import { workflowVersionsTable } from "../db-tables/WorkspaceDB";
-import { useState } from "react";
+import { useState, ChangeEvent } from "react";
+// @ts-ignore
+import { app } from "/scripts/app.js";
 
 interface Props {
+  workflowId: string;
   onClose: () => void;
-  workflow: Workflow;
 }
-export default function CreateVersionDialog({ onClose, workflow }: Props) {
+export default function CreateVersionDialog({ workflowId, onClose }: Props) {
   const [newVersionName, setNewVersionName] = useState("");
-  const onCreateVersion = async () => {
-    if (newVersionName.length == 0) return;
-    await workflowVersionsTable?.add({
-      name: newVersionName,
-      workflowID: workflow.id,
-      createTime: Date.now(),
-      json: workflow.json,
-    });
-  };
-  return (
-    <Modal isOpen={true} onClose={onClose} size={"lg"}>
-      <ModalOverlay />
-      <ModalContent width={"50%"} maxWidth={"90vw"}>
-        <ModalHeader>Create Version</ModalHeader>
+  const [submitError, setSubmitError] = useState("");
 
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setNewVersionName(event.target.value);
+    submitError && setSubmitError("");
+  };
+
+  const onSubmit = async () => {
+    const trimName = newVersionName.trim();
+    setNewVersionName(trimName);
+    const versionList =
+      (await workflowVersionsTable?.listByWorkflowID(workflowId)) ?? [];
+    if (versionList.some((version) => version.name === trimName)) {
+      setSubmitError(
+        "The name is duplicated, please modify it and submit again.",
+      );
+    } else {
+      const graphJson = JSON.stringify(app.graph.serialize());
+      await workflowVersionsTable?.add({
+        name: newVersionName,
+        workflowID: workflowId,
+        createTime: Date.now(),
+        json: graphJson,
+      });
+      onClose();
+    }
+  };
+
+  return (
+    <Modal isOpen={true} onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Create Version</ModalHeader>
+        <ModalCloseButton />
         <ModalBody>
-          <Text>Name</Text>
-          <Input
-            placeholder="Added lora"
-            value={newVersionName}
-            onChange={(e) => {
-              setNewVersionName(e.target.value);
-            }}
-          />
+          <FormControl isInvalid={!!submitError}>
+            <FormLabel>Name</FormLabel>
+            <Input
+              value={newVersionName}
+              onChange={handleChange}
+              autoFocus
+              onKeyUp={(e) => {
+                e.code === "Enter" &&
+                  !submitError &&
+                  newVersionName &&
+                  onSubmit();
+              }}
+            />
+            {submitError && <FormErrorMessage>{submitError}</FormErrorMessage>}
+          </FormControl>
+        </ModalBody>
+        <ModalFooter>
           <Button
-            isDisabled={newVersionName.length == 0}
-            mt={4}
             colorScheme="teal"
-            onClick={onCreateVersion}
+            mr={3}
+            onClick={onSubmit}
+            isDisabled={!newVersionName || !!submitError}
           >
             Create
           </Button>
-        </ModalBody>
+          <Button onClick={onClose}>Cancel</Button>
+        </ModalFooter>
       </ModalContent>
     </Modal>
   );

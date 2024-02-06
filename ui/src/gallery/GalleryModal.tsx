@@ -124,6 +124,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
               {images.map((media) => {
                 return (
                   <MediaPreview
+                    key={media.id}
                     selectedID={selectedID}
                     media={media}
                     isSelecting={isSelecting}

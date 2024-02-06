@@ -9,6 +9,7 @@ import {
   Select,
   Text,
   Input,
+  Stack,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { getAllFoldersList } from "../../Api";
@@ -60,27 +61,30 @@ export default function ChooseFolder({
           </AlertDialogHeader>
 
           <AlertDialogBody>
-            {file?.downloadUrl || (
-              <>
-                <Text>Model download url</Text>
-                <Input
-                  placeholder="https://civitai.com/api/download/models/311399"
-                  onChange={(e) => setUrl(e.target.value)}
-                  value={url}
-                />
-              </>
-            )}
-            <Select
-              placeholder="Select option"
-              value={folderPath}
-              onChange={(e) => setFolderPath(e.target.value)}
-            >
-              {foldersList.map((folderPath) => (
-                <option key={folderPath} value={folderPath}>
-                  {folderPath}
-                </option>
-              ))}
-            </Select>
+            <Stack spacing={4}>
+              {file?.downloadUrl || (
+                <>
+                  <Text>Model download url</Text>
+                  <Input
+                    placeholder="https://civitai.com/api/download/models/311399"
+                    onChange={(e) => setUrl(e.target.value)}
+                    value={url}
+                  />
+                </>
+              )}
+              <Text>Choose model install folder</Text>
+              <Select
+                placeholder="Select option"
+                value={folderPath}
+                onChange={(e) => setFolderPath(e.target.value)}
+              >
+                {foldersList.map((folderPath) => (
+                  <option key={folderPath} value={folderPath}>
+                    {folderPath}
+                  </option>
+                ))}
+              </Select>
+            </Stack>
           </AlertDialogBody>
 
           <AlertDialogFooter>

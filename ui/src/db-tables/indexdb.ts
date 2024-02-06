@@ -36,6 +36,20 @@ class ManagerDB extends Dexie {
         userSettings: "&id",
         models: "&id, fileName, fileHash",
         cache: "&id",
+      })
+      .upgrade((trans) => {
+        // Here you can write logic to initialize or migrate data to the new 'media' table, if necessary
+      });
+    this.version(2)
+      .stores({
+        workflows: "&id, name, parentFolderID", // Primary key and indexed props
+        changelogs: "&id, workflowID",
+        media: "&id, workflowID",
+        folders: "&id, name, parentFolderID",
+        tags: "&name",
+        userSettings: "&id",
+        models: "&id, fileName, fileHash",
+        cache: "&id",
         workflowVersions: "&id, name, workflowID",
       })
       .upgrade((trans) => {
