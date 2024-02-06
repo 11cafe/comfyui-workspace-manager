@@ -64,11 +64,13 @@ export default function ModelsListDrawer({ onClose }: Props) {
           />
           <ShowNsfwModelThumbnailSettings />
         </Flex>
-        <ModelsTags
-          modelTypeList={modelTypeList}
-          setSelectedModel={setSelectedModel}
-          selectedModel={selectedModel}
-        />
+        {!searchQuery.length && (
+          <ModelsTags
+            modelTypeList={modelTypeList}
+            setSelectedModel={setSelectedModel}
+            selectedModel={selectedModel}
+          />
+        )}
         <ModelsList list={curModelList} />
         {loading && (
           <Flex justifyContent={"center"} alignItems={"center"} height={"100%"}>

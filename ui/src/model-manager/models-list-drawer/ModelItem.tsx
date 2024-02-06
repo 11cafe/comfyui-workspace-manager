@@ -77,7 +77,7 @@ export function ModelItem({ data }: Props) {
           id: data.model_name + "@" + data.model_type,
           fileHash: data.file_hash,
           fileFolder: data.model_type,
-          fileName: data.model_name,
+          fileName: data.model_name + data.model_extension,
           civitModelID: String(json.modelId),
           civitModelVersionID: String(json.id),
           imageUrl: image_url ?? null,

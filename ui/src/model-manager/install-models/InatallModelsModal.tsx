@@ -12,8 +12,7 @@ import {
   useToast,
   useDisclosure,
 } from "@chakra-ui/react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { CivitiModel, CivitiModelFileVersion } from "../types";
+import { useCallback, useEffect, useState } from "react";
 import { installModelsApi } from "../api/modelsApi";
 import ModelCard from "./ModelCard";
 import InstallModelSearchBar from "./InstallModelSearchBar";
@@ -23,13 +22,13 @@ import { indexdb } from "../../db-tables/indexdb";
 import AddApiKeyPopover from "./AddApiKeyPopover";
 import { getCivitApiKey } from "../../utils/civitUtils";
 import { useStateRef } from "../../customHooks/useStateRef";
+import {
+  SearchHit,
+  SearchRequestBody,
+  SearchResponse,
+  SearchModelVersion,
+} from "../civitSearchTypes";
 
-type CivitModelQueryParams = {
-  types?: MODEL_TYPE;
-  query?: string;
-  limit?: string;
-  nsfw?: "false";
-};
 const ALL_MODEL_TYPES = [
   "Checkpoint",
   "TextualInversion",
@@ -69,31 +68,29 @@ export default function InatallModelsModal({
   searchQuery: searchQueryProp = "",
   modelType: modelTypeProp,
 }: Props) {
-  const [models, setModels] = useState<CivitiModel[]>([]);
+  const [models, setModels] = useState<SearchHit[]>([]);
   const [loading, setLoading] = useState(false);
   const [modelType, setModelType] = useState(modelTypeProp);
   const toast = useToast();
   const [installing, setInstalling] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState(searchQueryProp);
   const { isOpen, onOpen, onClose: onCloseChooseFolderModal } = useDisclosure();
-  const [fileState, setFile, file] = useStateRef<CivitiModelFileVersion>();
+  const [fileState, setFile, file] = useStateRef<SearchModelVersion>();
   const loadData = useCallback(async () => {
     setLoading(true);
-    const params: CivitModelQueryParams = {
-      limit: "30",
-      nsfw: "false",
+    const params: SearchRequestBody = {
+      limit: 30,
+      filter: "nsfw = false ",
     };
     if (searchQuery !== "") {
-      params.query = searchQuery;
+      params.q = searchQuery;
     }
     if (modelType != null) {
-      params.types = modelType;
+      params.filter += `AND type = ${modelType}`;
     }
+    const body = JSON.stringify(params);
 
-    const queryString = new URLSearchParams(params).toString();
-    const fullURL = `https://civitai.com/api/v1/models?${queryString}`;
-
-    const cacheEntry = await indexdb.cache?.get(fullURL);
+    const cacheEntry = await indexdb.cache?.get(body);
     if (cacheEntry?.value != null) {
       try {
         const { data, timestamp } = JSON.parse(cacheEntry?.value);
@@ -109,15 +106,26 @@ export default function InatallModelsModal({
       }
     }
 
-    const data = await fetch(fullURL);
-    const json = await data.json();
-    setModels(json.items);
+    const data = await fetch(
+      "https://meilisearch-v1-6.civitai.com/indexes/models_v5/search",
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:
+            "Bearer 102312c2b83ea0ef9ac32e7858f742721bbfd7319a957272e746f84fd1e974af",
+        },
+        method: "POST",
+        body,
+      },
+    );
+    const json: SearchResponse = await data.json();
+    setModels(json.hits);
     // only cache if there is no search query
     if (searchQuery === "") {
       indexdb.cache.put({
-        id: fullURL,
+        id: body,
         value: JSON.stringify({
-          data: json.items,
+          data: json.hits,
           timestamp: Date.now(),
         }),
       });
@@ -125,46 +133,44 @@ export default function InatallModelsModal({
     setLoading(false);
   }, [searchQuery, modelType]);
 
-  const downloadModels = (folderPath: string) => {
-    if (!file.current?.downloadUrl) {
-      console.error("file.downloadUrl is null");
+  const downloadModels = (folderPath: string, downloadUrl?: string) => {
+    if (!file.current?.id && !downloadUrl) {
+      console.error("no url to download");
       return;
     }
-    if (!file.current.name) {
-      file.current.name = file.current.downloadUrl.split("/").pop();
-      if (!file.current.name) {
-        console.error("file.downloadUrl is malformed");
+    let url =
+      downloadUrl ??
+      `https://civitai.com/api/download/models/${file.current?.id}`;
+    let version = file.current?.name;
+
+    if (!version) {
+      version = url.split("/").pop();
+      if (!version) {
+        console.error("downloadUrl is malformed");
         return;
       }
     }
     toast({
       title: "Installing...",
-      description: file.current.name,
+      description: version,
       status: "info",
       duration: 4000,
       isClosable: true,
     });
-    file.current.name != null &&
-      setInstalling((cur) => [...cur, file.current?.name ?? ""]);
-    let url = file.current.downloadUrl;
+    version != null && setInstalling((cur) => [...cur, version ?? ""]);
     const apiKey = getCivitApiKey();
     if (apiKey) {
       url += `?token=${apiKey}`;
     }
     installModelsApi({
-      filename: file.current.name,
-      name: file.current.name,
-      file_hash: file.current.hashes?.SHA256,
+      file_hash: file.current?.hashes?.[2],
       save_path: folderPath,
       url,
     });
     setFile(undefined);
     onCloseChooseFolderModal();
   };
-  const onClickInstallModel = (
-    _file: CivitiModelFileVersion,
-    model: CivitiModel,
-  ) => {
+  const onClickInstallModel = (_file: SearchModelVersion, model: SearchHit) => {
     const folderPath = MODEL_TYPE_TO_FOLDER_MAPPING[model.type as MODEL_TYPE];
     setFile(_file);
     if (folderPath == null) {
@@ -260,8 +266,7 @@ export default function InatallModelsModal({
         isOpen={isOpen}
         onClose={onCloseChooseFolderModal}
         selectFolder={(folderPath: string, customUrl?: string) => {
-          if (!file.current) setFile({ id: 0, downloadUrl: customUrl });
-          downloadModels(folderPath);
+          downloadModels(folderPath, file.current ? undefined : customUrl);
         }}
       />
     </>
