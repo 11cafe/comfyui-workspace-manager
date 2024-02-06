@@ -28,6 +28,7 @@ import { ShortcutSettings } from "../settings/ShortcutSettings";
 import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
 import AutoSaveSettings from "../settings/AutoSaveSettings";
 import FolderOnTopSettings from "../settings/FolderOnTopSettings";
+import TwoWaySyncSettings from "../settings/TwoWaySyncSettings";
 
 export default function WorkspaceSettingsModal({
   onClose,
@@ -288,7 +289,7 @@ export default function WorkspaceSettingsModal({
                 </Box>
                 <ShortcutSettings />
                 <AutoSaveSettings />
-                {/* <TwoWaySyncSettings /> */}
+                <TwoWaySyncSettings />
                 <FolderOnTopSettings />
               </VStack>
             </HStack>
