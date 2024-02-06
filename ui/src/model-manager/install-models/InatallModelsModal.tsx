@@ -18,45 +18,18 @@ import ModelCard from "./ModelCard";
 import InstallModelSearchBar from "./InstallModelSearchBar";
 import ChooseFolder from "./ChooseFolder";
 import InstallProgress from "./InstallProgress";
-import { indexdb } from "../../db-tables/indexdb";
 import AddApiKeyPopover from "./AddApiKeyPopover";
 import { getCivitApiKey } from "../../utils/civitUtils";
 import { useStateRef } from "../../customHooks/useStateRef";
 import {
-  SearchHit,
-  SearchRequestBody,
-  SearchResponse,
-  SearchModelVersion,
-} from "../civitSearchTypes";
-
-const ALL_MODEL_TYPES = [
-  "Checkpoint",
-  "TextualInversion",
-  "Hypernetwork",
-  "LORA",
-  "Controlnet",
-  "Upscaler",
-  "VAE",
-  // "Poses",
-  // "MotionModule",
-  // "LoCon",
-  // "AestheticGradient",
-  // "Wildcards",
-] as const; // `as const` makes the array readonly and its elements literal types
-
-const CACHE_EXPIRY_DAYS = 2;
-
-// Infer MODEL_TYPE from the ALL_MODEL_TYPES array
-type MODEL_TYPE = (typeof ALL_MODEL_TYPES)[number];
-const MODEL_TYPE_TO_FOLDER_MAPPING: Record<MODEL_TYPE, string> = {
-  Checkpoint: "checkpoints",
-  TextualInversion: "embeddings",
-  Hypernetwork: "hypernetworks",
-  LORA: "loras",
-  Controlnet: "controlnet",
-  Upscaler: "upscale_models",
-  VAE: "vae",
-};
+  ALL_MODEL_TYPES,
+  FileEssential,
+  MODEL_TYPE,
+  MODEL_TYPE_TO_FOLDER_MAPPING,
+  apiResponse,
+} from "./util/modelTypes";
+import { getModelFromCivitAPi } from "./util/getModelFromCivitAPI";
+import { getModelFromSearch } from "./util/getModelFromSearch";
 
 interface Props {
   onclose: () => void;
@@ -68,63 +41,22 @@ export default function InatallModelsModal({
   searchQuery: searchQueryProp = "",
   modelType: modelTypeProp,
 }: Props) {
-  const [models, setModels] = useState<SearchHit[]>([]);
+  const [models, setModels] = useState<apiResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [modelType, setModelType] = useState(modelTypeProp);
   const toast = useToast();
   const [installing, setInstalling] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState(searchQueryProp);
   const { isOpen, onOpen, onClose: onCloseChooseFolderModal } = useDisclosure();
-  const [fileState, setFile, file] = useStateRef<SearchModelVersion>();
+  const [fileState, setFile, file] = useStateRef<FileEssential>();
   const loadData = useCallback(async () => {
     setLoading(true);
-    const params: SearchRequestBody = {
-      limit: 30,
-      filter: "nsfw = false ",
-    };
-    if (searchQuery !== "") {
-      params.q = searchQuery;
-    }
-    if (modelType != null) {
-      params.filter += `AND type = ${modelType}`;
-    }
-    const body = JSON.stringify(params);
-
-    const cacheEntry = await indexdb.cache?.get(body);
-    if (cacheEntry?.value != null) {
-      try {
-        const { data, timestamp } = JSON.parse(cacheEntry?.value);
-        // Check if cached data is still valid
-        const ageInDays = (Date.now() - timestamp) / (1000 * 60 * 60 * 24);
-        if (ageInDays < CACHE_EXPIRY_DAYS) {
-          setModels(data);
-          setLoading(false);
-          return;
-        }
-      } catch (e) {
-        console.error("err fetching cache", e);
-      }
-    }
-
-    const data = await fetch(import.meta.env.VITE_CMODEL_SEARCH_URL as string, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: import.meta.env.VITE_CMODEL_APP_KEY as string,
-      },
-      method: "POST",
-      body,
-    });
-    const json: SearchResponse = await data.json();
-    setModels(json.hits);
-    // only cache if there is no search query
-    if (searchQuery === "") {
-      indexdb.cache.put({
-        id: body,
-        value: JSON.stringify({
-          data: json.hits,
-          timestamp: Date.now(),
-        }),
-      });
+    if (!searchQuery) {
+      const models = await getModelFromCivitAPi(modelType);
+      setModels(models);
+    } else {
+      const models = await getModelFromSearch(searchQuery, modelType);
+      setModels(models);
     }
     setLoading(false);
   }, [searchQuery, modelType]);
@@ -159,14 +91,14 @@ export default function InatallModelsModal({
       url += `?token=${apiKey}`;
     }
     installModelsApi({
-      file_hash: file.current?.hashes?.[2],
+      file_hash: file.current?.SHA256,
       save_path: folderPath,
       url,
     });
     setFile(undefined);
     onCloseChooseFolderModal();
   };
-  const onClickInstallModel = (_file: SearchModelVersion, model: SearchHit) => {
+  const onClickInstallModel = (_file: FileEssential, model: apiResponse) => {
     const folderPath = MODEL_TYPE_TO_FOLDER_MAPPING[model.type as MODEL_TYPE];
     setFile(_file);
     if (folderPath == null) {
