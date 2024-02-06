@@ -4,26 +4,37 @@ import {
   isFolder,
   workflowsTable,
 } from "../db-tables/WorkspaceDB";
-import { useState, memo, useContext, useEffect, MouseEvent } from "react";
+import {
+  useState,
+  memo,
+  useContext,
+  useEffect,
+  MouseEvent,
+  DragEvent,
+} from "react";
 import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 import { RecentFilesContext } from "../WorkspaceContext";
-import WorkflowListItem from "./WorkflowListItem";
 import FilesListFolderItemRightClickMenu from "./FilesListFolderItemRightClickMenu";
 import { ESortTypes, sortTypeLocalStorageKey } from "./types";
 import { Folder, Workflow } from "../types/dbTypes";
+import ItemsList from "./ItemsList";
 
 type Props = {
   folder: Folder;
 };
 export default memo(function FilesListFolderItem({ folder }: Props) {
   const [isActive, setIsActive] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(folder.isCollapse ?? false);
+  const [isCollapsed, setIsCollapsed] = useState(folder.isCollapse ?? true);
   const [children, setChildren] = useState<Array<Folder | Workflow>>([]);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { colorMode } = useColorMode();
-  const { draggingFile, refreshFolderStamp, onRefreshFilesList } =
-    useContext(RecentFilesContext);
+  const {
+    draggingFile,
+    setDraggingFile,
+    refreshFolderStamp,
+    onRefreshFilesList,
+  } = useContext(RecentFilesContext);
   const activeStyle =
     colorMode === "light"
       ? { backgroundColor: "#E2E8F0" }
@@ -45,6 +56,24 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
     setMenuPosition({ x: event.clientX, y: event.clientY });
     setIsMenuOpen(true);
   };
+  const handleDrop = async (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!draggingFile) return setIsActive(false);
+    if (isFolder(draggingFile)) {
+      if (draggingFile.id === folder.id) return setIsActive(false);
+      await foldersTable?.update({
+        id: draggingFile.id,
+        parentFolderID: folder.id,
+      });
+    } else if (!isFolder(draggingFile)) {
+      await workflowsTable?.updateFlow(draggingFile.id, {
+        parentFolderID: folder.id,
+      });
+    }
+    await onRefreshFilesList?.();
+    setIsActive(false);
+  };
   useEffect(() => {
     if (!!folder.isCollapse === isCollapsed) return;
     foldersTable?.update({
@@ -62,24 +91,22 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
           setIsCollapsed(!isCollapsed);
         }}
         onContextMenu={handleContextMenu}
+        draggable="true"
         onDragOver={(e) => {
           e.preventDefault();
+          e.stopPropagation();
           setIsActive(true);
         }}
-        onDragLeave={() => {
+        onDragLeave={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
           setIsActive(false);
         }}
-        onDrop={async () => {
-          if (draggingFile && !isFolder(draggingFile)) {
-            await workflowsTable?.updateFlow(draggingFile.id, {
-              parentFolderID: folder.id,
-            });
-            await onRefreshFilesList?.();
-          }
-          setIsActive(false);
-        }}
+        onDragStart={() => setDraggingFile?.(folder)}
+        onDrop={handleDrop}
         _hover={activeStyle}
         style={isActive || isMenuOpen ? activeStyle : undefined}
+        className="droppable"
       >
         <HStack gap={1}>
           {isCollapsed ? (
@@ -97,23 +124,16 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
           </svg>
         </HStack>
         <Text>{folder.name}</Text>
-
-        <FilesListFolderItemRightClickMenu
-          isopen={isMenuOpen}
-          menuPosition={menuPosition}
-          onClose={() => setIsMenuOpen(false)}
-          folder={folder}
-        />
       </HStack>
+      <FilesListFolderItemRightClickMenu
+        isopen={isMenuOpen}
+        menuPosition={menuPosition}
+        onClose={() => setIsMenuOpen(false)}
+        folder={folder}
+      />
       {!isCollapsed && (
         <Stack ml={4} gap={0}>
-          {children.map((file) => {
-            if (isFolder(file)) {
-              return <FilesListFolderItem key={file.id} folder={file} />;
-            } else {
-              return <WorkflowListItem key={file.id} workflow={file} />;
-            }
-          })}
+          <ItemsList items={children} />
         </Stack>
       )}
     </Stack>

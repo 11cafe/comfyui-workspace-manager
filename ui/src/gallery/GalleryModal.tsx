@@ -1,5 +1,4 @@
 import {
-  Button,
   HStack,
   Text,
   Modal,
@@ -8,38 +7,25 @@ import {
   ModalHeader,
   ModalBody,
   ModalCloseButton,
-  Image,
-  Link,
-  Stack,
-  Tooltip,
   IconButton,
   Heading,
   Checkbox,
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState } from "react";
 import { mediaTable, workflowsTable } from "../db-tables/WorkspaceDB";
-import {
-  IconArrowLeft,
-  IconDownload,
-  IconPin,
-  IconPinFilled,
-  IconTrash,
-  IconX,
-} from "@tabler/icons-react";
+import { IconArrowLeft, IconX } from "@tabler/icons-react";
 import { WorkspaceContext } from "../WorkspaceContext";
-import { formatTimestamp, isImageFormat } from "../utils";
-import { useDialog } from "../components/AlertDialogProvider";
 import { Media } from "../types/dbTypes";
 import { MetaDataInfo } from "./components/MetaDataInfo.tsx";
-const IMAGE_SIZE = 200;
+import MediaPreview from "./components/GalleryMediaItem.tsx";
+
 export default function GalleryModal({ onclose }: { onclose: () => void }) {
-  const { curFlowID, loadFilePath } = useContext(WorkspaceContext);
+  const { curFlowID } = useContext(WorkspaceContext);
   const [workflowName, setWorkflowName] = useState("");
   const [selectedID, setSelectedID] = useState<string[]>([]);
   const [isSelecting, setIsSelecting] = useState(false);
   const [coverPath, setCoverPath] = useState("");
   const [images, setImages] = useState<Media[]>([]);
-  const { showDialog } = useDialog();
   const [metaData, setMetaData] = useState<Media>();
 
   const loadData = async () => {
@@ -63,9 +49,6 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
     return null;
   }
 
-  const onRefreshImagesList = () => {
-    loadData();
-  };
   const onClickMedia = (media: Media) => {
     if (isSelecting) {
       if (selectedID.includes(media.id)) {
@@ -139,151 +122,17 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
           {!metaData ? (
             <HStack wrap={"wrap"}>
               {images.map((media) => {
-                if (media.localPath == null) {
-                  return null;
-                }
-                const mediaPreview = isImageFormat(media.localPath) ? (
-                  <Link
-                    isExternal
-                    onClick={() => onClickMedia(media)}
-                    position={"relative"}
-                  >
-                    {isSelecting && (
-                      <Checkbox
-                        isChecked={selectedID.includes(media.id)}
-                        position={"absolute"}
-                        top={2}
-                        left={2}
-                      />
-                    )}
-                    <Image
-                      borderRadius={3}
-                      boxSize={IMAGE_SIZE + "px"}
-                      objectFit="cover"
-                      src={`/workspace/view_media?filename=${media.localPath}`}
-                      alt={"workflow image renamed or moved from output folder"}
-                    />
-                  </Link>
-                ) : (
-                  <Link isExternal onClick={() => onClickMedia(media)}>
-                    {isSelecting && (
-                      <Checkbox isChecked={selectedID.includes(media.id)} />
-                    )}
-                    <video
-                      width={IMAGE_SIZE}
-                      height={IMAGE_SIZE}
-                      src={`/workspace/view_media?filename=${media.localPath}`}
-                      loop={true}
-                      autoPlay={true}
-                      muted={true}
-                    >
-                      <track kind="captions" />
-                    </video>
-                  </Link>
-                );
-                const isCover =
-                  coverPath != null && coverPath === media.localPath;
-
                 return (
-                  <Stack
-                    width={IMAGE_SIZE}
-                    justifyContent={"space-between"}
-                    mb={2}
-                  >
-                    <Tooltip label={formatTimestamp(media.createTime, true)}>
-                      {mediaPreview}
-                    </Tooltip>
-                    <Tooltip label={media.localPath}>
-                      <Text color={"GrayText"} noOfLines={1}>
-                        {media.localPath}
-                      </Text>
-                    </Tooltip>
-                    <HStack
-                      justifyContent={"space-between"}
-                      hidden={isSelecting}
-                    >
-                      <Tooltip label="Set as cover">
-                        <IconButton
-                          size={"sm"}
-                          variant={"ghost"}
-                          icon={
-                            isCover ? (
-                              <IconPinFilled size={19} />
-                            ) : (
-                              <IconPin size={19} />
-                            )
-                          }
-                          aria-label="set as cover"
-                          isActive={isCover}
-                          onClick={() => {
-                            workflowsTable?.updateFlow(curFlowID, {
-                              coverMediaPath: media.localPath,
-                            });
-                            setCoverPath(media.localPath);
-                          }}
-                        />
-                      </Tooltip>
-                      <Button
-                        flexGrow={1}
-                        onClick={() =>
-                          showDialog("How do you want to load this workflow?", [
-                            {
-                              label: "Load in new workflow",
-                              onClick: () => {
-                                loadFilePath(media.localPath);
-                              },
-                              colorScheme: "teal",
-                            },
-                            {
-                              label: "Overwrite current workflow",
-                              onClick: () =>
-                                loadFilePath(media.localPath, true),
-                              colorScheme: "red",
-                            },
-                          ])
-                        }
-                        size={"sm"}
-                      >
-                        Load
-                      </Button>
-                      <Tooltip label="Donwload image from gallery">
-                        <Link
-                          href={`/workspace/view_media?filename=${media.localPath}`}
-                          download={media.localPath}
-                        >
-                          <IconButton
-                            size={"sm"}
-                            variant={"ghost"}
-                            icon={<IconDownload size={19} />}
-                            aria-label="donwload image from gallery"
-                          />
-                        </Link>
-                      </Tooltip>
-                      <Tooltip label="Remove image from gallery">
-                        <IconButton
-                          size={"sm"}
-                          variant={"ghost"}
-                          icon={<IconTrash size={19} />}
-                          aria-label="remove image from gallery"
-                          colorScheme="red"
-                          onClick={async () => {
-                            const res = confirm(
-                              "Are you sure to remove this image from gallery? (won't delete image on your disk)",
-                            );
-                            if (!res) return;
-                            await mediaTable?.delete(media.id);
-                            if (isCover) {
-                              await workflowsTable?.updateFlow(curFlowID, {
-                                coverMediaPath: undefined,
-                              });
-                              setCoverPath("");
-                            }
-                            onRefreshImagesList();
-                          }}
-                        />
-                      </Tooltip>
-                    </HStack>
-                  </Stack>
+                  <MediaPreview
+                    key={media.id}
+                    selectedID={selectedID}
+                    media={media}
+                    isSelecting={isSelecting}
+                    onClickMedia={onClickMedia}
+                    onRefreshImagesList={loadData}
+                    coverPath={coverPath}
+                    setCoverPath={setCoverPath}
+                  />
                 );
               })}
             </HStack>

@@ -215,7 +215,7 @@ async def api_view_file(request):
     file_path = os.path.join(output_path, filename)
 
     if not os.path.exists(file_path):
-        return web.Response(status=200)
+        return web.Response(status=404)
 
     with open(file_path, 'rb') as f:
         media_file = f.read()
@@ -261,6 +261,22 @@ def file_handle(name, file, existFlowIds, fileList):
     else:
         fileList.append(fileInfo)
 
+def folder_handle(path, existFlowIds):
+    fileList = []
+    for item in os.listdir(path):
+        item_path = os.path.join(path, item)
+        if os.path.isfile(item_path) and item_path.endswith('.json'):
+            with open(item_path, 'r') as f:
+                file_handle(item, f, existFlowIds, fileList)
+
+        elif os.path.isdir(item_path):
+            fileList.append({
+                'name': item,
+                'list': folder_handle(item_path, existFlowIds)
+            })
+    return fileList
+            
+
 # Scan all files and subfolders in the local save directory.
 # For files, compare the extra.workspace_info.id in the json format file with the flow of the current DB to determine whether it is a flow that needs to be added;
 # For subfolders, scan the json files in the subfolder and use the same processing method as the file to determine whether it is a flow that needs to be added;
@@ -270,29 +286,8 @@ async def scan_local_new_files(request):
     path = reqJson['path']
     existFlowIds = reqJson['existFlowIds']
 
-    fileList = []
-    folderList = []
-
-    for item in os.listdir(path):
-        item_path = os.path.join(path, item)
-        if os.path.isfile(item_path) and item_path.endswith('.json'):
-            with open(item_path, 'r') as f:
-                file_handle(item, f, existFlowIds, fileList)
-               
-        elif os.path.isdir(item_path):
-            folder = {
-                'name': item,
-                'list': []
-            }
-            for sub_item in os.listdir(item_path):
-                sub_item_path = os.path.join(item_path, sub_item)
-                if os.path.isfile(sub_item_path) and sub_item_path.endswith('.json'):
-                    with open(sub_item_path, 'r') as f: 
-                        file_handle(sub_item, f, existFlowIds, folder['list'])
-
-            if len(folder['list']) > 0:
-                folderList.append(folder)
-    return web.Response(text=json.dumps({'fileList': fileList, 'folderList': folderList}), content_type='application/json')
+    fileList = folder_handle(path, existFlowIds)
+    return web.Response(text=json.dumps(fileList), content_type='application/json')
 
 
 @server.PromptServer.instance.routes.post("/workspace/delete_folder")

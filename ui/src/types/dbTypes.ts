@@ -17,8 +17,9 @@ export interface Workflow extends SortableItem {
 }
 
 export interface TableBaseModel {
-  id: string;
-  name: string;
+  id?: string;
+  name?: string;
+  createTime?: number;
 }
 
 export type Tags = {
@@ -45,15 +46,32 @@ export type Model = {
   imageUrl?: string | null;
 };
 
+export interface ModelManagerPosition {
+  top: number;
+  right: number;
+}
+export type WorkflowVersion = {
+  id: string;
+  name: string;
+  workflowID: string;
+  json: string;
+  createTime: number;
+  privacy?: "public" | "private";
+  remoteUrl?: string;
+};
+
 export type UserSettings = {
   id: string;
   myWorkflowsDir: string;
   topBarStyle: PanelPosition;
+  modelManagerTopBarStyle: ModelManagerPosition;
   shortcuts: {
     save: string;
   };
   autoSave?: boolean;
   twoWaySync?: boolean;
+  foldersOnTop?: boolean;
+  showNsfwModelThumbnail?: boolean;
 };
 
 export interface PanelPosition {

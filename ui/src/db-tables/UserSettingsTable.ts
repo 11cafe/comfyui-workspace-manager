@@ -26,12 +26,17 @@ export class UserSettingsTable extends TableBase<UserSettings> {
         top: 0,
         left: 0,
       },
+      modelManagerTopBarStyle: {
+        top: 0,
+        right: 0,
+      },
       myWorkflowsDir: "",
       shortcuts: {
         save: "Shift+S",
       },
       autoSave: true,
       twoWaySync: false,
+      foldersOnTop: false,
     };
   }
 
@@ -53,7 +58,7 @@ export class UserSettingsTable extends TableBase<UserSettings> {
     };
     await this.put(newSettings);
     if (
-      Object.prototype.hasOwnProperty.call(newPairs, "autoSave") &&
+      Object.hasOwn(newPairs, "autoSave") &&
       newPairs.autoSave !== undefined
     ) {
       this._autoSave = newPairs.autoSave;

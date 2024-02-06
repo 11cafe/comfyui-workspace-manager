@@ -6,6 +6,7 @@ const vhPolyfill = css`
   :root,
   :host {
     --chakra-vh: 100vh;
+    --toast-z-index: 17000000;
   }
 
   @supports (height: -webkit-fill-available) {

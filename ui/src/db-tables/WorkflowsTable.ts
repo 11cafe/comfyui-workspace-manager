@@ -1,6 +1,6 @@
 import { foldersTable } from "./WorkspaceDB";
 import { Workflow } from "../types/dbTypes";
-import { generateUniqueName, sortFileItem } from "../utils";
+import { sortFileItem } from "../utils";
 import { v4 as uuidv4 } from "uuid";
 import { TableBase } from "./TableBase";
 import { indexdb } from "./indexdb";
@@ -46,14 +46,48 @@ export class WorkflowsTable extends TableBase<Workflow> {
   public async latestVersionCheck() {
     if (this._curWorkflow) {
       const curFlowInDB = await this.get(this._curWorkflow.id);
-      return curFlowInDB?.updateTime === this._curWorkflow.updateTime;
+      if (curFlowInDB) {
+        return curFlowInDB?.updateTime === this._curWorkflow.updateTime;
+      }
+      return true;
     }
     return true;
   }
 
+  async generateUniqueName(name?: string, parentFolderID?: string) {
+    /**
+     * Generate a unique name
+     * For imported scenes, the default name is the file name.
+     * For new scenes, the default name is Untitled Flow.
+     * Get the full workflow list. If the default name already exists, search incrementally starting from 2.
+     * Looks for a unique name in the format `${default name} ${number}`.
+     */
+    let newFlowName = name ?? "Untitled Flow";
+    const flowList = (await this.listAll()) ?? [];
+    const flowNameList = flowList
+      .filter((f) => f.parentFolderID == parentFolderID)
+      .map((flow) => flow.name);
+    if (flowNameList.includes(newFlowName)) {
+      let num = 2;
+      let flag = true;
+      while (flag) {
+        if (flowNameList.includes(`${newFlowName} ${num}`)) {
+          num++;
+        } else {
+          newFlowName = `${newFlowName} ${num}`;
+          flag = false;
+        }
+      }
+    }
+    return newFlowName;
+  }
+
   public async createFlow(input: Partial<Workflow>): Promise<Workflow> {
     const { id, json, name } = input;
-    const newFlowName = await generateUniqueName(name);
+    const newFlowName = await this.generateUniqueName(
+      name,
+      input.parentFolderID,
+    );
     const uuid = id ?? uuidv4(); // ⇨ '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
     const time = Date.now();
     const newWorkflow: Workflow = {
@@ -113,10 +147,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
     }
     await this.saveDiskDB();
     // save to my_workflows/
-    if (
-      Object.prototype.hasOwnProperty.call(input, "name") ||
-      Object.prototype.hasOwnProperty.call(input, "parentFolderID")
-    ) {
+    if ("name" in input || "parentFolderID" in input) {
       // renamed file or moved file folder
       await deleteJsonFileMyWorkflows(before);
       await saveJsonFileMyWorkflows(after);
@@ -146,7 +177,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
       const newFlowName =
         flow.name && isOverwriteExistingFile
           ? flow.name
-          : await generateUniqueName(flow.name);
+          : await this.generateUniqueName(flow.name, parentFolderID);
       const uuid = uuidv4();
       const time = Date.now();
       const newWorkflow: Workflow = {

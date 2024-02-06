@@ -23,7 +23,10 @@ export class FoldersTable extends TableBase<Folder> {
     name: string;
     parentFolderID?: string;
   }): Promise<Folder> {
-    const uniqueName = await this.generateUniqueName(input.name);
+    const uniqueName = await this.generateUniqueName(
+      input.name,
+      input.parentFolderID,
+    );
     const folder: Folder = {
       id: uuidv4(),
       name: uniqueName,
@@ -46,6 +49,10 @@ export class FoldersTable extends TableBase<Folder> {
     if (folder == null) {
       return;
     }
+    const nameChanged = "name" in input && input.name != folder.name;
+    const parentFolderChanged =
+      "parentFolderID" in input &&
+      input.parentFolderID != folder.parentFolderID;
     const newRecord = {
       ...folder,
       ...input,
@@ -53,11 +60,17 @@ export class FoldersTable extends TableBase<Folder> {
     if (input.name != null) {
       newRecord.updateTime = Date.now();
     }
+    if (parentFolderChanged) {
+      input.name = await this.generateUniqueName(
+        newRecord.name,
+        newRecord.parentFolderID ?? undefined,
+      );
+    }
     await indexdb.folders.update(input.id, input);
     this.saveDiskDB();
 
     // folder moved or renamed - move all workflows to the right directory(not required when folded state changes)
-    if (input.name != null || input.parentFolderID != null) {
+    if (nameChanged || parentFolderChanged) {
       validateOrSaveAllJsonFileMyWorkflows(true);
     }
   }
@@ -109,10 +122,10 @@ export class FoldersTable extends TableBase<Folder> {
     this.saveDiskDB();
   }
 
-  public async generateUniqueName(name?: string) {
+  public async generateUniqueName(name?: string, parentFolderID?: string) {
     let newFlowName = name ?? "New folder";
     const folderNameList = await this.listAll().then((list) =>
-      list.map((f) => f.name),
+      list.filter((f) => f.parentFolderID == parentFolderID).map((f) => f.name),
     );
     if (folderNameList.includes(newFlowName)) {
       let num = 2;

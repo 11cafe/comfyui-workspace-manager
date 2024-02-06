@@ -12,6 +12,7 @@ import {
   Box,
   Flex,
   Tooltip,
+  Switch,
 } from "@chakra-ui/react";
 import { useEffect, useState, useRef, useCallback, useContext } from "react";
 import {
@@ -28,19 +29,19 @@ import {
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
 import { sortFileItem } from "../utils";
-import WorkflowListItem from "./WorkflowListItem";
 import MultipleSelectionOperation from "./MultipleSelectionOperation";
 import { ESortTypes, sortTypeLocalStorageKey } from "./types";
-// @ts-ignore
+// @ts-expect-error ComfyUI import
 import { app } from "/scripts/app.js";
 import { insertWorkflowToCanvas3 } from "./InsertWorkflowToCanvas";
-import FilesListFolderItem from "./FilesListFolderItem";
 import { useDebounce } from "../customHooks/useDebounce";
 import SearchInput from "../components/SearchInput";
 import { openWorkflowsFolder } from "../Api";
 import { Folder, Workflow } from "../types/dbTypes";
-import ImportFileButton from "./ImportFileButton";
 import MyTagsRow from "./MyTagsRow";
+import ImportFlowsFileInput from "./ImportFlowsFileInput";
+import ItemsList from "./ItemsList";
+import { DRAWER_Z_INDEX } from "../const";
 
 type Props = {
   onClose: () => void;
@@ -53,7 +54,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   >([]);
   const aloneFlowsAndFoldersRef = useRef<Array<Folder | Workflow>>([]);
   const allFlowsRef = useRef<Array<Workflow>>([]);
-  const { loadWorkflowID } = useContext(WorkspaceContext);
+  const { loadWorkflowID, curFlowID } = useContext(WorkspaceContext);
   const [selectedTag, setSelectedTag] = useState<string>();
   const [multipleState, setMultipleState] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
@@ -129,7 +130,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
 
   useEffect(() => {
     loadLatestWorkflows();
-    const handleDrop = async (e: any) => {
+    const handleDrop = async (e: { canvasX: number; canvasY: number }) => {
       if (draggingWorkflowID.current) {
         const flow = await workflowsTable?.get(draggingWorkflowID.current);
         flow &&
@@ -162,6 +163,12 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   const batchOperationCallback = (type: string, value: unknown) => {
     switch (type) {
       case "batchDelete":
+        curFlowID &&
+          workflowsTable?.get(curFlowID).then((res) => {
+            if (!res) {
+              loadWorkflowID?.(null);
+            }
+          });
         loadLatestWorkflows();
         setMultipleState(false);
         setSelectedKeys([]);
@@ -212,7 +219,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
           top={0}
           left={0}
           shadow={"xl"}
-          zIndex={1000}
+          zIndex={DRAWER_Z_INDEX}
           // boxShadow={"rgba(200, 200, 200, 0.4) 1px 4px 8px 1px"}
         >
           <Flex alignItems={"center"} justifyContent={"space-between"}>
@@ -225,7 +232,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
                   <Link onClick={openCognitoPopup}>Login</Link>
                 </Tooltip> */}
               </HStack>
-              <ImportFileButton />
+              <ImportFlowsFileInput />
               <Tooltip label="Open workspace save directory">
                 <IconButton
                   aria-label="Open workspace save directory"
@@ -325,12 +332,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
               onUpdateSearchValue={onUpdateSearchValue}
             />
             <Flex overflowY={"auto"} overflowX={"hidden"} direction="column">
-              {currentRenderingData.map((n) => {
-                if (isFolder(n)) {
-                  return <FilesListFolderItem folder={n} key={n.id} />;
-                }
-                return <WorkflowListItem key={n.id} workflow={n} />;
-              })}
+              <ItemsList items={currentRenderingData} />
             </Flex>
           </Flex>
         </Card>
