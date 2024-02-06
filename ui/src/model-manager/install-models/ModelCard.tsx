@@ -49,13 +49,21 @@ export default function ModelCard({
       console.error("no file is find by name", selectedFile);
       return;
     }
-    let SHA256;
+    let fileData: FileEssential;
     if (isCivitVersion(curFile)) {
-      SHA256 = curFile.files?.[0].hashes?.SHA256;
+      fileData = {
+        id: curFile.id,
+        SHA256: curFile.files?.[0].hashes?.SHA256,
+        name: curFile.files?.[0].name,
+      };
     } else {
-      SHA256 = curFile.hashes?.[2];
+      fileData = {
+        id: curFile.id,
+        SHA256: curFile.hashes?.[2],
+        name: `${model.name} ${curFile.name}`,
+      };
     }
-    onClickInstallModel({ ...curFile, SHA256 }, model);
+    onClickInstallModel(fileData, model);
   }, [selectedFile]);
   const sizeKB =
     curFile && isCivitVersion(curFile)
