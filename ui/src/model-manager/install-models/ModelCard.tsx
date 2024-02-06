@@ -15,8 +15,8 @@ import { findLeastNsfwImage } from "../../utils/findLeastNsfwImage";
 import {
   FileEssential,
   apiResponse,
+  getFileEssential,
   isCivitModel,
-  isCivitVersion,
 } from "./util/modelTypes";
 import { KBtoGB } from "../utils";
 const IMAGE_SIZE = 280;
@@ -49,26 +49,9 @@ export default function ModelCard({
       console.error("no file is find by name", selectedFile);
       return;
     }
-    let fileData: FileEssential;
-    if (isCivitVersion(curFile)) {
-      fileData = {
-        id: curFile.id,
-        SHA256: curFile.files?.[0].hashes?.SHA256,
-        name: curFile.files?.[0].name,
-      };
-    } else {
-      fileData = {
-        id: curFile.id,
-        SHA256: curFile.hashes?.[2],
-        name: `${model.name} ${curFile.name}`,
-      };
-    }
-    onClickInstallModel(fileData, model);
+    onClickInstallModel(getFileEssential(curFile), model);
   }, [selectedFile]);
-  const sizeKB =
-    curFile && isCivitVersion(curFile)
-      ? curFile?.files?.[0]?.sizeKB
-      : undefined;
+  const sizeKB = getFileEssential(curFile)?.sizeKB;
   return (
     <Card width={IMAGE_SIZE} justifyContent={"space-between"} mb={2} gap={1}>
       <Image
