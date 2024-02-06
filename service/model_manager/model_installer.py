@@ -97,7 +97,7 @@ async def install_model(request):
 
     with download_tasks_lock:
         # Add the task to the list
-        download_tasks.append({ 'url': url, 'save_path': save_path })
+        download_tasks.append({ 'url': url, 'save_path': save_path, 'filename': json_data['filename'] })
 
     # If the previous thread is not active, start a new one
     if download_thread is None or not download_thread.is_alive():
@@ -252,7 +252,7 @@ def send_download_status(data):
     with download_tasks_lock:
         progress_list = [data]
         for task in download_tasks:
-            progress_list.append({'save_path': task['save_path'], 'progress': 0})
+            progress_list.append({'save_path': task['filename'], 'progress': 0})
         send_ws('download_progress', progress_list)
 
 loop = asyncio.get_event_loop()

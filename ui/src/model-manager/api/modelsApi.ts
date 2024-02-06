@@ -3,6 +3,7 @@ import { api } from "/scripts/api.js";
 
 export type InstallModelsApiInput = {
   save_path: string;
+  filename: string;
   url: string;
   file_hash?: string;
 };

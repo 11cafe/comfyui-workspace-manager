@@ -92,6 +92,7 @@ export default function InatallModelsModal({
     }
     installModelsApi({
       file_hash: file.current?.SHA256,
+      filename: version,
       save_path: folderPath,
       url,
     });
