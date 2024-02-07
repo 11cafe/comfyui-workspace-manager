@@ -27,7 +27,7 @@ interface DialogButton {
 interface DialogContextType {
   showDialog: (
     message: string,
-    buttons: DialogButton[],
+    buttons: (DialogButton | null)[],
     hideCloseIcon?: boolean,
   ) => void;
 }
@@ -47,7 +47,7 @@ export const AlertDialogProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
-  const [buttons, setButtons] = useState<DialogButton[]>([]);
+  const [buttons, setButtons] = useState<(DialogButton | null)[]>([]);
   const [hideCloseIcon, setHideCloseIcon] = useState(false);
   const cancelRef = React.useRef<HTMLButtonElement>(null);
 
@@ -89,21 +89,24 @@ export const AlertDialogProvider: React.FC<{ children: ReactNode }> = ({
                 </AlertDialogBody>
 
                 <AlertDialogFooter>
-                  {buttons.map((button, index) => (
-                    <Button
-                      colorScheme={button.colorScheme ?? "gray"}
-                      onClick={() => {
-                        button.onClick();
-                        handleClose();
-                      }}
-                      iconSpacing={1}
-                      leftIcon={button.icon}
-                      ml={3}
-                      key={index}
-                    >
-                      {button.label}
-                    </Button>
-                  ))}
+                  {buttons.map(
+                    (button, index) =>
+                      button && (
+                        <Button
+                          colorScheme={button.colorScheme ?? "gray"}
+                          onClick={() => {
+                            button.onClick();
+                            handleClose();
+                          }}
+                          iconSpacing={1}
+                          leftIcon={button.icon}
+                          ml={3}
+                          key={index}
+                        >
+                          {button.label}
+                        </Button>
+                      ),
+                  )}
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialogOverlay>

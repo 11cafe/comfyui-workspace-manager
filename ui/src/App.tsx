@@ -36,6 +36,7 @@ const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
 import { scanLocalNewFiles } from "./Api";
 import { IconExternalLink } from "@tabler/icons-react";
 import { DRAWER_Z_INDEX } from "./const";
+
 const ModelManagerTopbar = React.lazy(
   () => import("./model-manager/topbar/ModelManagerTopbar"),
 );
@@ -62,20 +63,33 @@ export default function App() {
   const autoSaveTimer = useRef(0);
   const workflowOverwriteNoticeStateRef = useRef("hide"); // disabled/hide/show;
 
-  const saveCurWorkflow = useCallback(() => {
+  const saveCurWorkflow = useCallback(async () => {
     if (curFlowID.current) {
       const graphJson = JSON.stringify(app.graph.serialize());
-      workflowsTable?.updateFlow(curFlowID.current, {
-        lastSavedJson: graphJson,
-        json: graphJson,
-      });
-
-      changelogsTable?.create({
-        workflowID: curFlowID.current,
-        json: graphJson,
-      });
+      await Promise.all([
+        workflowsTable?.updateFlow(curFlowID.current, {
+          lastSavedJson: graphJson,
+          json: graphJson,
+        }),
+        changelogsTable?.create({
+          workflowID: curFlowID.current,
+          json: graphJson,
+        }),
+      ]);
     }
   }, []);
+  const deleteCurWorkflow = async () => {
+    if (curFlowID.current) {
+      const userInput = confirm(
+        "Are you sure you want to delete this workflow?",
+      );
+      if (userInput) {
+        // User clicked OK
+        await workflowsTable?.delete(curFlowID.current);
+        setCurFlowIDAndName(null, "");
+      }
+    }
+  };
 
   const discardUnsavedChanges = async () => {
     const userInput = confirm(
@@ -88,13 +102,7 @@ export default function App() {
         const flow = await workflowsTable?.get(curFlowID.current);
         if (flow) {
           if (flow.lastSavedJson) {
-            app.loadGraphData(JSON.parse(flow.lastSavedJson));
-          } else {
-            // no last saved json, may cuz user just disabled autosave
-            // save current json as last saved json
-            // this maynot be ideal but better than losing all changes
-            app.loadGraphData(JSON.parse(flow.json));
-            saveCurWorkflow();
+            await app.loadGraphData(JSON.parse(flow.lastSavedJson));
           }
         }
       }
@@ -220,44 +228,67 @@ export default function App() {
   };
 
   const loadWorkflowID = async (id: string | null) => {
-    // curID null is when you deleted current workflow
+    // No current workflow, id is null when you deleted current workflow
     if (id === null) {
       setCurFlowIDAndName(null, "");
       app.graph.clear();
       return;
     }
+    // auto save enabled
     const autoSaveEnabled =
       (await userSettingsTable?.getSetting("autoSave")) ?? true;
     if (autoSaveEnabled || !isDirty) {
       loadWorkflowIDImpl(id);
       return;
     }
-    showDialog(`Do you want to save the changes you made to, ${curFlowName}?`, [
-      {
-        label: "Open in new tab",
-        icon: <IconExternalLink />,
-        onClick: () => {
-          openWorkflowInNewTab(id);
-        },
-      },
+    // prompt when auto save disabled and dirty
+    showSaveOrDiscardCurWorkflowDialog(id);
+  };
+  const showSaveOrDiscardCurWorkflowDialog = async (newIDToLoad?: string) => {
+    const buttons = [
+      newIDToLoad
+        ? {
+            label: "Open in new tab",
+            icon: <IconExternalLink />,
+            onClick: () => {
+              openWorkflowInNewTab(newIDToLoad);
+            },
+          }
+        : null,
       {
         label: "Save",
         colorScheme: "teal",
-        onClick: () => {
-          saveCurWorkflow();
-          loadWorkflowIDImpl(id);
+        onClick: async () => {
+          await saveCurWorkflow();
+          newIDToLoad && loadWorkflowIDImpl(newIDToLoad);
         },
       },
-      {
+    ];
+    if (workflowsTable?.curWorkflow?.lastSavedJson != null) {
+      buttons.push({
         label: "Discard",
         colorScheme: "red",
-        onClick: () => {
-          discardUnsavedChanges();
-          loadWorkflowIDImpl(id);
+        onClick: async () => {
+          await discardUnsavedChanges();
+          newIDToLoad && loadWorkflowIDImpl(newIDToLoad);
         },
-      },
-    ]);
+      });
+    } else {
+      buttons.push({
+        label: "Delete",
+        colorScheme: "red",
+        onClick: async () => {
+          await deleteCurWorkflow();
+          newIDToLoad && loadWorkflowIDImpl(newIDToLoad);
+        },
+      });
+    }
+    showDialog(
+      `Please save or discard your changes to "${workflowsTable?.curWorkflow?.name}" before leaving, or your changes will be lost.`,
+      buttons,
+    );
   };
+
   const loadNewWorkflow = async (input?: { json?: string; name?: string }) => {
     const jsonStr = input?.json ?? JSON.stringify(defaultGraph);
     const flow = await workflowsTable?.createFlow({
@@ -440,25 +471,7 @@ export default function App() {
       if (!autoSaveEnabled && isDirty) {
         e.preventDefault(); // For modern browsers
         e.returnValue = "You have unsaved changes!"; // For older browsers
-        showDialog(
-          `Please save or discard your changes before leaving, or your changes will be lost.`,
-          [
-            {
-              label: "Save",
-              colorScheme: "teal",
-              onClick: () => {
-                saveCurWorkflow();
-              },
-            },
-            {
-              label: "Discard",
-              colorScheme: "red",
-              onClick: () => {
-                discardUnsavedChanges();
-              },
-            },
-          ],
-        );
+        showSaveOrDiscardCurWorkflowDialog();
       }
     };
 
