@@ -35,8 +35,8 @@ const RecentFilesDrawer = React.lazy(
 const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
 import { scanLocalNewFiles } from "./Api";
 import { IconExternalLink } from "@tabler/icons-react";
-
 import { DRAWER_Z_INDEX } from "./const";
+
 const ModelManagerTopbar = React.lazy(
   () => import("./model-manager/topbar/ModelManagerTopbar"),
 );
@@ -77,6 +77,12 @@ export default function App() {
       });
     }
   }, []);
+  const deleteCurWorkflow = async () => {
+    if (curFlowID.current) {
+      await workflowsTable?.delete(curFlowID.current);
+      setCurFlowIDAndName(null, "");
+    }
+  };
 
   const discardUnsavedChanges = async () => {
     const userInput = confirm(
@@ -90,12 +96,6 @@ export default function App() {
         if (flow) {
           if (flow.lastSavedJson) {
             await app.loadGraphData(JSON.parse(flow.lastSavedJson));
-            // sometimes the app.loadGraphData doesn't load the graph exactly like the lastSavedJson,
-            // e.g. the node.order can be different, resulting isDirty cannot be cleared.
-            // TODO: so we need to save the graph again after graph finish loading but its hard to get notified when it finished...
-            // setTimeout(() => {
-            //   saveCurWorkflow();
-            // }, 1000);
           }
         }
       }
@@ -222,18 +222,20 @@ export default function App() {
   };
 
   const loadWorkflowID = async (id: string | null) => {
-    // curID null is when you deleted current workflow
+    // No current workflow, id is null when you deleted current workflow
     if (id === null) {
       setCurFlowIDAndName(null, "");
       app.graph.clear();
       return;
     }
+    // auto save enabled
     const autoSaveEnabled =
       (await userSettingsTable?.getSetting("autoSave")) ?? true;
     if (autoSaveEnabled || !isDirty) {
       loadWorkflowIDImpl(id);
       return;
     }
+    // prompt when auto save disabled and dirty
     showSaveOrDiscardCurWorkflowDialog(id);
   };
   const showSaveOrDiscardCurWorkflowDialog = async (newIDToLoad?: string) => {
@@ -261,8 +263,16 @@ export default function App() {
         label: "Discard",
         colorScheme: "red",
         onClick: async () => {
-          // must await here, cuz we need to wait for the graph to finish loading and resave the graph to clear isDirty state in some cases
           await discardUnsavedChanges();
+          newIDToLoad && loadWorkflowIDImpl(newIDToLoad);
+        },
+      });
+    } else {
+      buttons.push({
+        label: "Delete",
+        colorScheme: "red",
+        onClick: async () => {
+          await deleteCurWorkflow();
           newIDToLoad && loadWorkflowIDImpl(newIDToLoad);
         },
       });
