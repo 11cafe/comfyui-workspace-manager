@@ -1,11 +1,9 @@
 import {
   Box,
   Card,
-  CardHeader,
   Flex,
   Heading,
   Spinner,
-  Text,
   Portal,
   Input,
 } from "@chakra-ui/react";
@@ -57,7 +55,7 @@ export default function ModelsListDrawer({ onClose }: Props) {
   const renderContent = () => {
     return (
       <>
-        <Flex gap={4} justifyContent={"center"} alignItems={"center"} mb={2}>
+        <Flex gap={4} justifyContent={"center"} alignItems={"center"} mb={1}>
           <Input
             size={"sm"}
             placeholder="Search"
@@ -96,15 +94,14 @@ export default function ModelsListDrawer({ onClose }: Props) {
           zIndex={DRAWER_Z_INDEX}
           overflowY={"auto"}
         >
-          <CardHeader>
-            <Flex justifyContent={"space-between"} alignContent={"center"}>
-              <Heading size={"md"} mr={2}>
-                Models
-              </Heading>
+          <Flex justifyContent={"space-between"} alignContent={"center"} py={3}>
+            <Heading size={"md"} mr={2}>
+              Models
+            </Heading>
 
-              <InstallModelsButton />
-            </Flex>
-          </CardHeader>
+            <InstallModelsButton />
+          </Flex>
+
           {renderContent()}
         </Card>
       </Box>
