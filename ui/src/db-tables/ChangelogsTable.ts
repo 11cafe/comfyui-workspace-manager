@@ -20,21 +20,11 @@ export class ChangelogsTable extends TableBase<Changelog> {
       .equals(workflowID)
       .reverse()
       .sortBy("createTime");
-    if (objects?.length) return objects;
-
-    const records = await this.getRecords();
-    return Object.values(records)
-      .filter((c) => c.workflowID === workflowID)
-      .sort((a, b) => b.createTime - a.createTime);
+    return objects;
   }
   public async getLastestByWorkflowID(workflowID: string): Promise<Changelog> {
     const objects = await this.listByWorkflowID(workflowID);
-    if (objects?.length) return objects[0];
-    const records = await this.getRecords();
-    const all = Object.values(records)
-      .filter((c) => c.workflowID === workflowID)
-      .sort((a, b) => b.createTime - a.createTime);
-    return all[0];
+    return objects[0];
   }
   public async create(input: {
     json: string;

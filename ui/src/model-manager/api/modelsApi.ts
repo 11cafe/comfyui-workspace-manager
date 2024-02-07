@@ -5,6 +5,7 @@ export type InstallModelsApiInput = {
   save_path: string;
   url: string;
   filename: string;
+  file_hash?: string;
   name: string;
 };
 let cancelInstall = false;

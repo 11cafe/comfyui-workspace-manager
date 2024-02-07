@@ -6,6 +6,7 @@ import { UserSettingsTable } from "./UserSettingsTable";
 import { TagsTable } from "./tagsTable";
 import { indexdb } from "./indexdb";
 import { Folder, Workflow } from "../types/dbTypes";
+import { WorkflowVersionsTable } from "./WorkflowVersionsTable";
 
 export type Table =
   | "workflows"
@@ -14,11 +15,11 @@ export type Table =
   | "folders"
   | "changelogs"
   | "media"
-  | "models";
+  | "models"
+  | "workflowVersions";
 
 export function isFolder(n: Folder | Workflow): n is Folder {
-  // @ts-ignore
-  return n.type === "folder";
+  return "type" in n && n.type === "folder";
 }
 
 export let workflowsTable: WorkflowsTable | null = null;
@@ -27,6 +28,7 @@ export let userSettingsTable: UserSettingsTable | null = null;
 export let foldersTable: FoldersTable | null = null;
 export let changelogsTable: ChangelogsTable | null = null;
 export let mediaTable: MediaTable | null = null;
+export let workflowVersionsTable: WorkflowVersionsTable | null = null;
 
 export async function loadDBs() {
   const loadWorkflows = async () => {
@@ -47,6 +49,9 @@ export async function loadDBs() {
   const loadMedia = async () => {
     mediaTable = new MediaTable();
   };
+  const loadWorkflowVersions = async () => {
+    workflowVersionsTable = await WorkflowVersionsTable.load();
+  };
   await Promise.all([
     loadWorkflows(),
     loadTags(),
@@ -54,6 +59,7 @@ export async function loadDBs() {
     loadFolders(),
     loadChangelogs(),
     loadMedia(),
+    loadWorkflowVersions(),
   ]);
   if (localStorage.getItem("WORKSPACE_INDEXDB_BACKFILL") !== "true") {
     await backfillIndexdb();
@@ -120,6 +126,14 @@ export async function backfillIndexdb() {
       console.error(error);
     }
   };
+  const backfillWorkflowVersions = async () => {
+    try {
+      const all = await workflowVersionsTable?.getRecords();
+      all && (await indexdb.workflowVersions.bulkAdd(Object.values(all)));
+    } catch (error) {
+      console.error(error);
+    }
+  };
   await Promise.all([
     backfillWorkflows(),
     backfillFolders(),
@@ -127,5 +141,6 @@ export async function backfillIndexdb() {
     backfillChangelogs(),
     backfillTags(),
     backfillUserSettings(),
+    backfillWorkflowVersions(),
   ]);
 }

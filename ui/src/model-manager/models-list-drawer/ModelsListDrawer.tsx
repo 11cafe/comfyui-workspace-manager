@@ -1,26 +1,29 @@
 import {
   Box,
   Card,
-  CardHeader,
   Flex,
   Heading,
   Spinner,
   Portal,
+  Input,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { ModelsTags } from "./ModelsTags";
 import { ModelsList } from "./ModelsList";
-// @ts-ignore
+// @ts-expect-error ComfyUI imports
 import { app } from "/scripts/app.js";
 import InstallModelsButton from "../install-models/InstallModelsButton";
 import { ModelsListRespItem } from "../types";
 import { useUpdateModels } from "../hooks/useUpdateModels";
+import { DRAWER_Z_INDEX } from "../../const";
+import ShowNsfwModelThumbnailSettings from "../../settings/ShowNsfwModelThumbnailSettings";
 interface Props {
   onClose: () => void;
 }
 
 export default function ModelsListDrawer({ onClose }: Props) {
   const [selectedModel, setSelectedModel] = useState("checkpoints");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { loading, modelTypeList, modelsList } = useUpdateModels();
 
@@ -30,10 +33,15 @@ export default function ModelsListDrawer({ onClose }: Props) {
   // filter by model type
   useEffect(() => {
     const res = modelsList.filter((item) => {
+      if (searchQuery.length) {
+        return item.model_name
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase());
+      }
       return item.model_type === selectedModel;
     });
     setCurModelList(res);
-  }, [selectedModel, modelsList]);
+  }, [selectedModel, modelsList, searchQuery]);
 
   useEffect(() => {
     app.canvasEl.addEventListener("click", onClose);
@@ -47,6 +55,15 @@ export default function ModelsListDrawer({ onClose }: Props) {
   const renderContent = () => {
     return (
       <>
+        <Flex gap={4} justifyContent={"center"} alignItems={"center"} mb={1}>
+          <Input
+            size={"sm"}
+            placeholder="Search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <ShowNsfwModelThumbnailSettings />
+        </Flex>
         <ModelsTags
           modelTypeList={modelTypeList}
           setSelectedModel={setSelectedModel}
@@ -74,17 +91,17 @@ export default function ModelsListDrawer({ onClose }: Props) {
           top={0}
           left={0}
           shadow={"xl"}
-          zIndex={1000}
+          zIndex={DRAWER_Z_INDEX}
           overflowY={"auto"}
         >
-          <CardHeader>
-            <Flex justifyContent={"space-between"} alignContent={"center"}>
-              <Heading size={"md"} mr={2}>
-                Models
-              </Heading>
-              <InstallModelsButton />
-            </Flex>
-          </CardHeader>
+          <Flex justifyContent={"space-between"} alignContent={"center"} py={3}>
+            <Heading size={"md"} mr={2}>
+              Models
+            </Heading>
+
+            <InstallModelsButton />
+          </Flex>
+
           {renderContent()}
         </Card>
       </Box>

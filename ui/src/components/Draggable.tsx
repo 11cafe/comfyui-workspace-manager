@@ -10,11 +10,13 @@ const POSITION = { x: 0, y: 0 };
 
 interface Props {
   onDragEnd: (position: { x: number; y: number }) => void;
+  dragIconId: string;
 }
 
 export default function Draggable({
   children,
   onDragEnd,
+  dragIconId,
 }: PropsWithChildren<Props>) {
   const originRef = useRef(POSITION);
   const isDraggingRef = useRef(false);
@@ -27,7 +29,7 @@ export default function Draggable({
     ) {
       return;
     }
-    if ([e.target?.id, e.target?.parentNode?.id].includes("dragPanelIcon")) {
+    if ([e.target?.id, e.target?.parentNode?.id].includes(dragIconId)) {
       originRef.current = {
         x: e.clientX,
         y: e.clientY,

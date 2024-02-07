@@ -22,6 +22,7 @@ import InstallProgress from "./InstallProgress";
 import { indexdb } from "../../db-tables/indexdb";
 import AddApiKeyPopover from "./AddApiKeyPopover";
 import { getCivitApiKey } from "../../utils/civitUtils";
+import { useStateRef } from "../../customHooks/useStateRef";
 
 type CivitModelQueryParams = {
   types?: MODEL_TYPE;
@@ -64,7 +65,7 @@ interface Props {
   modelType?: MODEL_TYPE;
 }
 export default function InatallModelsModal({
-  onclose,
+  onclose: onCloseInstallModelsModal,
   searchQuery: searchQueryProp = "",
   modelType: modelTypeProp,
 }: Props) {
@@ -74,8 +75,8 @@ export default function InatallModelsModal({
   const toast = useToast();
   const [installing, setInstalling] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState(searchQueryProp);
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const file = useRef<CivitiModelFileVersion>();
+  const { isOpen, onOpen, onClose: onCloseChooseFolderModal } = useDisclosure();
+  const [fileState, setFile, file] = useStateRef<CivitiModelFileVersion>();
   const loadData = useCallback(async () => {
     setLoading(true);
     const params: CivitModelQueryParams = {
@@ -153,26 +154,24 @@ export default function InatallModelsModal({
     installModelsApi({
       filename: file.current.name,
       name: file.current.name,
+      file_hash: file.current.hashes?.SHA256,
       save_path: folderPath,
       url,
     });
-    onClose();
+    setFile(undefined);
+    onCloseChooseFolderModal();
   };
   const onClickInstallModel = (
     _file: CivitiModelFileVersion,
     model: CivitiModel,
   ) => {
-    const folderPath: string | null =
-      MODEL_TYPE_TO_FOLDER_MAPPING[model.type as MODEL_TYPE];
-    file.current = _file;
+    const folderPath = MODEL_TYPE_TO_FOLDER_MAPPING[model.type as MODEL_TYPE];
+    setFile(_file);
     if (folderPath == null) {
       onOpen();
     } else {
       downloadModels(folderPath);
     }
-  };
-  const customUrlDownload = () => {
-    onOpen();
   };
 
   useEffect(() => {
@@ -180,7 +179,11 @@ export default function InatallModelsModal({
   }, [modelType]);
   return (
     <>
-      <Modal isOpen={true} onClose={onclose} blockScrollOnMount={true}>
+      <Modal
+        isOpen={true}
+        onClose={onCloseInstallModelsModal}
+        blockScrollOnMount={true}
+      >
         <ModalOverlay />
         <ModalContent width={"90%"} maxWidth={"90vw"} height={"90vh"}>
           <ModalHeader>
@@ -193,7 +196,7 @@ export default function InatallModelsModal({
                 setSearchQuery={setSearchQuery}
                 onSearch={loadData}
               />
-              <Button size={"sm"} py={1} mr={8} onClick={customUrlDownload}>
+              <Button size={"sm"} py={1} mr={8} onClick={onOpen}>
                 Custom URL Install
               </Button>
               <AddApiKeyPopover />
@@ -253,10 +256,11 @@ export default function InatallModelsModal({
         </ModalContent>
       </Modal>
       <ChooseFolder
+        file={fileState}
         isOpen={isOpen}
-        onClose={onClose}
-        selectFolder={(folderPath: string, customUrl: string) => {
-          file.current = { id: 0, downloadUrl: customUrl };
+        onClose={onCloseChooseFolderModal}
+        selectFolder={(folderPath: string, customUrl?: string) => {
+          if (!file.current) setFile({ id: 0, downloadUrl: customUrl });
           downloadModels(folderPath);
         }}
       />

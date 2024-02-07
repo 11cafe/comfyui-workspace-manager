@@ -14,19 +14,11 @@ import {
   Tooltip,
   Switch,
 } from "@chakra-ui/react";
-import {
-  useEffect,
-  useState,
-  useRef,
-  useCallback,
-  useContext,
-  ChangeEvent,
-} from "react";
+import { useEffect, useState, useRef, useCallback, useContext } from "react";
 import {
   workflowsTable,
   isFolder,
   foldersTable,
-  userSettingsTable,
 } from "../db-tables/WorkspaceDB";
 import {
   IconChevronDown,
@@ -46,9 +38,10 @@ import { useDebounce } from "../customHooks/useDebounce";
 import SearchInput from "../components/SearchInput";
 import { openWorkflowsFolder } from "../Api";
 import { Folder, Workflow } from "../types/dbTypes";
-import ImportFileButton from "./ImportFileButton";
 import MyTagsRow from "./MyTagsRow";
+import ImportFlowsFileInput from "./ImportFlowsFileInput";
 import ItemsList from "./ItemsList";
+import { DRAWER_Z_INDEX } from "../const";
 
 type Props = {
   onClose: () => void;
@@ -61,7 +54,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   >([]);
   const aloneFlowsAndFoldersRef = useRef<Array<Folder | Workflow>>([]);
   const allFlowsRef = useRef<Array<Workflow>>([]);
-  const { loadWorkflowID } = useContext(WorkspaceContext);
+  const { loadWorkflowID, curFlowID } = useContext(WorkspaceContext);
   const [selectedTag, setSelectedTag] = useState<string>();
   const [multipleState, setMultipleState] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
@@ -76,12 +69,6 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
     (window.localStorage.getItem(sortTypeLocalStorageKey) as ESortTypes) ??
       ESortTypes.RECENTLY_MODIFIED,
   );
-  const [folderOnTop, setFolderOnTop] = useState(false);
-  useEffect(() => {
-    userSettingsTable?.getSetting("foldersOnTop").then((res) => {
-      setFolderOnTop(res ?? false);
-    });
-  }, []);
 
   const loadLatestWorkflows = async () => {
     const all = (await workflowsTable?.listFolderContent()) ?? [];
@@ -124,18 +111,6 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
     sortTypeRef.current = type;
     window.localStorage.setItem(sortTypeLocalStorageKey, type);
     !isFilter && setRefreshFolderStamp(Date.now());
-  };
-
-  const onFolderOnTopChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const state = e.target.checked;
-    userSettingsTable
-      ?.upsert({
-        foldersOnTop: state,
-      })
-      .then(() => {
-        setFolderOnTop(state);
-        !isFilter && setRefreshFolderStamp(Date.now());
-      });
   };
 
   useEffect(() => {
@@ -188,6 +163,12 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   const batchOperationCallback = (type: string, value: unknown) => {
     switch (type) {
       case "batchDelete":
+        curFlowID &&
+          workflowsTable?.get(curFlowID).then((res) => {
+            if (!res) {
+              loadWorkflowID?.(null);
+            }
+          });
         loadLatestWorkflows();
         setMultipleState(false);
         setSelectedKeys([]);
@@ -238,7 +219,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
           top={0}
           left={0}
           shadow={"xl"}
-          zIndex={1000}
+          zIndex={DRAWER_Z_INDEX}
           // boxShadow={"rgba(200, 200, 200, 0.4) 1px 4px 8px 1px"}
         >
           <Flex alignItems={"center"} justifyContent={"space-between"}>
@@ -251,7 +232,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
                   <Link onClick={openCognitoPopup}>Login</Link>
                 </Tooltip> */}
               </HStack>
-              <ImportFileButton />
+              <ImportFlowsFileInput />
               <Tooltip label="Open workspace save directory">
                 <IconButton
                   aria-label="Open workspace save directory"
@@ -345,13 +326,6 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
                   </MenuOptionGroup>
                 </MenuList>
               </Menu>
-              <Flex gap={2} align="center">
-                <Text>Folders on Top</Text>
-                <Switch
-                  isChecked={folderOnTop}
-                  onChange={onFolderOnTopChange}
-                />
-              </Flex>
             </HStack>
             <SearchInput
               searchValue={searchValue}
