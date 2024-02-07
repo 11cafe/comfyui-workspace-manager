@@ -119,6 +119,11 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody overflowY={"auto"}>
+          <iframe
+            src={"https://www.comfyspace.art/"}
+            width="100%"
+            height={`600px`}
+          ></iframe>
           {!metaData ? (
             <HStack wrap={"wrap"}>
               {images.map((media) => {

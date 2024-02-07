@@ -21,11 +21,25 @@ import {
   IconLock,
   IconWorld,
 } from "@tabler/icons-react";
-import { workflowVersionsTable } from "../db-tables/WorkspaceDB";
+import {
+  userSettingsTable,
+  workflowVersionsTable,
+} from "../db-tables/WorkspaceDB";
 
 interface Props {
   onClose: () => void;
   workflow: Workflow;
+}
+
+function generateRandomKey(length: number) {
+  // Generate a random array of bytes
+  const array = new Uint8Array(length);
+  window.crypto.getRandomValues(array);
+
+  // Convert the bytes to a hex string
+  return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join(
+    "",
+  );
 }
 
 const privacyOptions: CustomSelectorOption[] = [
@@ -41,19 +55,40 @@ export default function ShareDialog({ onClose, workflow }: Props) {
   const [versionName, setVersionName] = useState(
     "version " + getCurDateString(),
   );
-  // const onShare = async () => {
-  //   const url = await workflowVersionsTable?.add({
-  //     workflowID: workflow.id,
-  //     name: versionName,
-  //     createTime: Date.now(),
-  //     privacy: "public",
-  //     json: workflow.json,
-  //     remoteUrl: "",
-  //   });
-  //   if (url) {
-  //     alert(url);
-  //   }
-  // };
+  const onShare = async () => {
+    const secretKey = generateRandomKey(64);
+    console.log(secretKey);
+    const host = userSettingsTable?.getSetting("cloudHost");
+    fetch(host + "/api/share_workflow", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: workflow.name,
+        json: workflow.json,
+        secretKey: secretKey,
+        versionName: versionName,
+      }),
+    });
+    const popupUrl = `https://www.comfyspace.art/`;
+    const popupWindow = window.open(
+      popupUrl,
+      "ComfyspaceLogin",
+      "width=800,height=600",
+    );
+    // const url = await workflowVersionsTable?.add({
+    //   workflowID: workflow.id,
+    //   name: versionName,
+    //   createTime: Date.now(),
+    //   privacy: "public",
+    //   json: workflow.json,
+    //   remoteUrl: "",
+    // });
+    // if (url) {
+    //   alert(url);
+    // }
+  };
   return (
     <Modal isOpen={true} onClose={onClose} size={"lg"}>
       <ModalOverlay />
@@ -74,7 +109,9 @@ export default function ShareDialog({ onClose, workflow }: Props) {
           <Text mt={4} mb={3}></Text>
           <CustomDropdown options={privacyOptions} />
           <HStack justifyContent={"flex-end"} mt={16}>
-            <Button colorScheme="teal">Share</Button>
+            <Button colorScheme="teal" onClick={onShare}>
+              Share
+            </Button>
           </HStack>
         </ModalBody>
       </ModalContent>

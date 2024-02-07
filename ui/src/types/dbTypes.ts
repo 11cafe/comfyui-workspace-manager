@@ -72,6 +72,7 @@ export type UserSettings = {
   twoWaySync?: boolean;
   foldersOnTop?: boolean;
   showNsfwModelThumbnail?: boolean;
+  cloudHost: string;
 };
 
 export interface PanelPosition {
