@@ -80,8 +80,14 @@ export default function App() {
   }, []);
   const deleteCurWorkflow = async () => {
     if (curFlowID.current) {
-      await workflowsTable?.delete(curFlowID.current);
-      setCurFlowIDAndName(null, "");
+      const userInput = confirm(
+        "Are you sure you want to delete this workflow?",
+      );
+      if (userInput) {
+        // User clicked OK
+        await workflowsTable?.delete(curFlowID.current);
+        setCurFlowIDAndName(null, "");
+      }
     }
   };
 
