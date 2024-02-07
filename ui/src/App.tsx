@@ -66,15 +66,16 @@ export default function App() {
   const saveCurWorkflow = useCallback(async () => {
     if (curFlowID.current) {
       const graphJson = JSON.stringify(app.graph.serialize());
-      await workflowsTable?.updateFlow(curFlowID.current, {
-        lastSavedJson: graphJson,
-        json: graphJson,
-      });
-
-      await changelogsTable?.create({
-        workflowID: curFlowID.current,
-        json: graphJson,
-      });
+      await Promise.all([
+        workflowsTable?.updateFlow(curFlowID.current, {
+          lastSavedJson: graphJson,
+          json: graphJson,
+        }),
+        changelogsTable?.create({
+          workflowID: curFlowID.current,
+          json: graphJson,
+        }),
+      ]);
     }
   }, []);
   const deleteCurWorkflow = async () => {
@@ -201,7 +202,6 @@ export default function App() {
   };
 
   const loadWorkflowIDImpl = async (id: string) => {
-    console.log("loadWorkflowIDImpl", id);
     if (app.graph == null) {
       console.error("app.graph is null cannot load workflow");
       return;
@@ -252,8 +252,8 @@ export default function App() {
       {
         label: "Save",
         colorScheme: "teal",
-        onClick: () => {
-          saveCurWorkflow();
+        onClick: async () => {
+          await saveCurWorkflow();
           newIDToLoad && loadWorkflowIDImpl(newIDToLoad);
         },
       },
