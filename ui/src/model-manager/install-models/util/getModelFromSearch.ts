@@ -15,7 +15,7 @@ export async function getModelFromSearch(
   );
   const params: SearchRequestBody = {
     limit: 30,
-    filter: `"nsfw = ${showNsfwThumbnail ?? false} AND type != Workflows"`,
+    filter: `nsfw = ${showNsfwThumbnail ?? false} AND type != Workflows`,
     q,
   };
   if (type) {
