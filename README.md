@@ -42,6 +42,8 @@ It is recommended to do git clone than downloading zip folder, because you can g
 
 Recommend using Chrome browser for the best experience. Safari doesn't work well. Edge or firefox should be fine too.
 
+Roadmap: https://github.com/orgs/11cafe/projects/1/views/1
+
 ### v1.7 ✨New ComfyUI model manager, view all your models, browse and install models from civit ai, find missing models in workflow automatically in civit ai and hugging face!
 
 open workflow in new tab, 1click model install from civitai, automatic install missing models for workflow, view image gen metadata in gallery (prompt, sampler, models used).
