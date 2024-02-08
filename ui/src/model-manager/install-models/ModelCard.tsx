@@ -9,7 +9,7 @@ import {
   Flex,
   Select,
 } from "@chakra-ui/react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { IconDownload } from "@tabler/icons-react";
 import {
   FileEssential,
@@ -18,7 +18,8 @@ import {
   isCivitModel,
 } from "./util/modelTypes";
 import { KBtoGB } from "../utils";
-import { findSfwImageFromModel } from "../../utils/findsfwImage";
+import { findSfwImageFromModel } from "../../utils/findSfwImage";
+import { userSettingsTable } from "../../db-tables/WorkspaceDB";
 const IMAGE_SIZE = 280;
 
 interface ModelCardProps {
@@ -31,7 +32,18 @@ export default function ModelCard({
   onClickInstallModel,
   installing,
 }: ModelCardProps) {
-  const modelPhoto = findSfwImageFromModel(model, IMAGE_SIZE);
+  const [modelPhoto, setModelPhoto] = useState<string>();
+  useEffect(() => {
+    loadPhoto();
+    async function loadPhoto() {
+      const showNsfwThumbnail = await userSettingsTable?.getSetting(
+        "showNsfwModelThumbnail",
+      );
+      setModelPhoto(
+        findSfwImageFromModel(model, IMAGE_SIZE, showNsfwThumbnail),
+      );
+    }
+  }, [model]);
   const versions = isCivitModel(model) ? model.modelVersions : model.versions;
   const [selectedFile, setSelectedFile] = useState<string>(
     versions?.[0]?.name ?? "",
