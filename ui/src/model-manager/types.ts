@@ -102,7 +102,7 @@ export type CivitiFileHashes = {
 export type CivitiModelVersionImage = {
   id: number;
   url?: string;
-  nsfw?: string;
+  nsfw?: "None" | "Soft" | "Mature" | "X";
   width?: number;
   height?: number;
   hash?: string;

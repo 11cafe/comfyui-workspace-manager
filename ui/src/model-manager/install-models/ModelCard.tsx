@@ -11,7 +11,6 @@ import {
 } from "@chakra-ui/react";
 import { useCallback, useState } from "react";
 import { IconDownload } from "@tabler/icons-react";
-import { findLeastNsfwImage } from "../../utils/findLeastNsfwImage";
 import {
   FileEssential,
   apiResponse,
@@ -19,6 +18,7 @@ import {
   isCivitModel,
 } from "./util/modelTypes";
 import { KBtoGB } from "../utils";
+import { findSfwImageFromModel } from "../../utils/findsfwImage";
 const IMAGE_SIZE = 280;
 
 interface ModelCardProps {
@@ -31,9 +31,7 @@ export default function ModelCard({
   onClickInstallModel,
   installing,
 }: ModelCardProps) {
-  const modelPhoto = isCivitModel(model)
-    ? model.modelVersions?.at(0)?.images?.at(0)?.url
-    : `https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/${findLeastNsfwImage(model.images)?.url}/width=${IMAGE_SIZE}/`;
+  const modelPhoto = findSfwImageFromModel(model, IMAGE_SIZE);
   const versions = isCivitModel(model) ? model.modelVersions : model.versions;
   const [selectedFile, setSelectedFile] = useState<string>(
     versions?.[0]?.name ?? "",
