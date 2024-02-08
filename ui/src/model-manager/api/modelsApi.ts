@@ -1,12 +1,11 @@
-// @ts-ignore
+// @ts-expect-error ComfyUI imports
 import { api } from "/scripts/api.js";
 
 export type InstallModelsApiInput = {
   save_path: string;
-  url: string;
   filename: string;
+  url: string;
   file_hash?: string;
-  name: string;
 };
 let cancelInstall = false;
 
@@ -14,11 +13,6 @@ export const setCancelInstall = (value: boolean) => {
   cancelInstall = value;
 };
 export const installModelsApi = async (target: InstallModelsApiInput) => {
-  window.dispatchEvent(
-    new CustomEvent("model_install_message", {
-      detail: `Installing model ${target.filename} to ${target.save_path}, check progress in the server console.`,
-    }),
-  );
   try {
     const response = await api.fetchApi("/model_manager/install_model", {
       method: "POST",

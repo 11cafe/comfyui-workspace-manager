@@ -11,16 +11,19 @@ import {
 } from "@chakra-ui/react";
 import { useCallback, useState } from "react";
 import { IconDownload } from "@tabler/icons-react";
-import { CivitiModel, CivitiModelFileVersion } from "../types";
+import {
+  FileEssential,
+  apiResponse,
+  getFileEssential,
+  isCivitModel,
+} from "./util/modelTypes";
 import { KBtoGB } from "../utils";
+import { findSfwImageFromModel } from "../../utils/findsfwImage";
 const IMAGE_SIZE = 280;
 
 interface ModelCardProps {
-  model: CivitiModel;
-  onClickInstallModel: (
-    file: CivitiModelFileVersion,
-    model: CivitiModel,
-  ) => void;
+  model: apiResponse;
+  onClickInstallModel: (file: FileEssential, model: apiResponse) => void;
   installing: string[];
 }
 export default function ModelCard({
@@ -28,13 +31,12 @@ export default function ModelCard({
   onClickInstallModel,
   installing,
 }: ModelCardProps) {
-  const modelPhoto = model.modelVersions?.at(0)?.images?.at(0)?.url;
-  const versions = model.modelVersions;
-  const versionFiles = versions?.map((version) => version?.files?.at(0));
+  const modelPhoto = findSfwImageFromModel(model, IMAGE_SIZE);
+  const versions = isCivitModel(model) ? model.modelVersions : model.versions;
   const [selectedFile, setSelectedFile] = useState<string>(
-    versionFiles?.at(0)?.name ?? "",
+    versions?.[0]?.name ?? "",
   );
-  const curFile = versionFiles?.find(
+  const curFile = versions?.find(
     (versionFile) => versionFile?.name === selectedFile,
   );
   const onClickMedia = () => {
@@ -45,8 +47,9 @@ export default function ModelCard({
       console.error("no file is find by name", selectedFile);
       return;
     }
-    onClickInstallModel(curFile, model);
+    onClickInstallModel(getFileEssential(curFile), model);
   }, [selectedFile]);
+  const sizeKB = getFileEssential(curFile)?.sizeKB;
   return (
     <Card width={IMAGE_SIZE} justifyContent={"space-between"} mb={2} gap={1}>
       <Image
@@ -105,7 +108,7 @@ export default function ModelCard({
               setSelectedFile(e.target.value);
             }}
           >
-            {versionFiles?.map((versionFile) => {
+            {versions?.map((versionFile) => {
               const filename = versionFile?.name;
               if (!filename) return null;
               return (
@@ -119,10 +122,10 @@ export default function ModelCard({
               );
             })}
           </Select>
-          {curFile?.sizeKB && (
-            <Tooltip label={KBtoGB(curFile.sizeKB)}>
+          {sizeKB && (
+            <Tooltip label={KBtoGB(sizeKB)}>
               <Text flexShrink={1} noOfLines={1} width={"40%"}>
-                {KBtoGB(curFile.sizeKB)}
+                {KBtoGB(sizeKB)}
               </Text>
             </Tooltip>
           )}

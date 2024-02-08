@@ -8,7 +8,7 @@ import {
 } from "@chakra-ui/react";
 import { IconExternalLink } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
-import { modelExtensions } from "../utils";
+import { getModelFromSearch } from "../install-models/util/getModelFromSearch";
 export interface MissingModel {
   class_type: string;
   input_name: string;
@@ -18,7 +18,12 @@ export interface MissingModel {
 interface Props {
   model: MissingModel;
 }
-type missingModelPredict = { url: string; name: string; downloadUrl?: string };
+type missingModelPredict = {
+  url: string;
+  name: string;
+  downloadUrl?: string;
+  icon: string;
+};
 export default function MissingModelItem({ model }: Props) {
   const [suggestedUrls, setSuggestedUrls] = useState<missingModelPredict[]>([]);
   const modelName = formatSearchQuery(model.received_value);
@@ -37,28 +42,25 @@ export default function MissingModelItem({ model }: Props) {
         name: modelId,
         downloadUrl: `https://huggingface.co/${modelId}/resolve/main/`,
         url: `https://huggingface.co/${modelId}/tree/main`,
+        icon: "https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo.png",
       });
     });
-    setSuggestedUrls(hfUrls);
+    setSuggestedUrls((p) => [...p, ...hfUrls]);
   };
   const getCivitaiData = async () => {
-    const civitaiData = await fetch(
-      `https://civitai.com/api/v1/models?limit=3&query=${modelName}`,
-    );
-    const civitaiSearchResult = (await civitaiData.json()) as {
-      items: { id: string; name: string }[];
-    };
-    const civitaiUrls =
-      civitaiSearchResult.items?.map(({ name, id }) => ({
-        name: `${name} on civitAI`,
-        url: `https://civitai.com/models/${id}`,
-        downloadUrl: `https://civitai.com/models/${id}`,
-      })) ?? [];
-    setSuggestedUrls((p) => [...p, ...civitaiUrls]);
+    const civitaiData = await getModelFromSearch(modelName);
+    setSuggestedUrls((p) => [
+      ...p,
+      ...civitaiData?.slice(0, 1).map((c) => ({
+        name: c.name,
+        url: "https://civitai.com/models/" + c.id,
+        icon: "https://images.crunchbase.com/image/upload/c_pad,h_170,w_170,f_auto,b_white,q_auto:eco,dpr_1/gtxrcmtsvpjjevozblfa",
+      })),
+    ]);
   };
   useEffect(() => {
     getHuggingFaceData();
-    // getCivitaiData();
+    getCivitaiData();
   }, []);
 
   return (
@@ -69,19 +71,14 @@ export default function MissingModelItem({ model }: Props) {
           <Text>{model.input_name}: </Text>
           <Text color="red.400">{model.received_value}</Text>
         </HStack>
-        {suggestedUrls.map(({ url, name }) => (
+        {suggestedUrls.map(({ url, name, icon }) => (
           <Button
             size={"sm"}
             onClick={(e) => {
               e.stopPropagation();
               window.open(url, "_blank");
             }}
-            leftIcon={
-              <Image
-                width={5}
-                src="https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo.png"
-              />
-            }
+            leftIcon={<Image width={5} src={icon} />}
             rightIcon={<IconExternalLink size={20} />}
           >
             {name}

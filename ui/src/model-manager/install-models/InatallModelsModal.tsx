@@ -12,52 +12,24 @@ import {
   useToast,
   useDisclosure,
 } from "@chakra-ui/react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { CivitiModel, CivitiModelFileVersion } from "../types";
+import { useCallback, useEffect, useState } from "react";
 import { installModelsApi } from "../api/modelsApi";
 import ModelCard from "./ModelCard";
 import InstallModelSearchBar from "./InstallModelSearchBar";
 import ChooseFolder from "./ChooseFolder";
 import InstallProgress from "./InstallProgress";
-import { indexdb } from "../../db-tables/indexdb";
 import AddApiKeyPopover from "./AddApiKeyPopover";
 import { getCivitApiKey } from "../../utils/civitUtils";
 import { useStateRef } from "../../customHooks/useStateRef";
-
-type CivitModelQueryParams = {
-  types?: MODEL_TYPE;
-  query?: string;
-  limit?: string;
-  nsfw?: "false";
-};
-const ALL_MODEL_TYPES = [
-  "Checkpoint",
-  "TextualInversion",
-  "Hypernetwork",
-  "LORA",
-  "Controlnet",
-  "Upscaler",
-  "VAE",
-  // "Poses",
-  // "MotionModule",
-  // "LoCon",
-  // "AestheticGradient",
-  // "Wildcards",
-] as const; // `as const` makes the array readonly and its elements literal types
-
-const CACHE_EXPIRY_DAYS = 2;
-
-// Infer MODEL_TYPE from the ALL_MODEL_TYPES array
-type MODEL_TYPE = (typeof ALL_MODEL_TYPES)[number];
-const MODEL_TYPE_TO_FOLDER_MAPPING: Record<MODEL_TYPE, string> = {
-  Checkpoint: "checkpoints",
-  TextualInversion: "embeddings",
-  Hypernetwork: "hypernetworks",
-  LORA: "loras",
-  Controlnet: "controlnet",
-  Upscaler: "upscale_models",
-  VAE: "vae",
-};
+import {
+  ALL_MODEL_TYPES,
+  FileEssential,
+  MODEL_TYPE,
+  MODEL_TYPE_TO_FOLDER_MAPPING,
+  apiResponse,
+} from "./util/modelTypes";
+import { getModelFromCivitAPi } from "./util/getModelFromCivitAPI";
+import { getModelFromSearch } from "./util/getModelFromSearch";
 
 interface Props {
   onclose: () => void;
@@ -69,102 +41,65 @@ export default function InatallModelsModal({
   searchQuery: searchQueryProp = "",
   modelType: modelTypeProp,
 }: Props) {
-  const [models, setModels] = useState<CivitiModel[]>([]);
+  const [models, setModels] = useState<apiResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [modelType, setModelType] = useState(modelTypeProp);
   const toast = useToast();
   const [installing, setInstalling] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState(searchQueryProp);
   const { isOpen, onOpen, onClose: onCloseChooseFolderModal } = useDisclosure();
-  const [fileState, setFile, file] = useStateRef<CivitiModelFileVersion>();
+  const [fileState, setFile, file] = useStateRef<FileEssential>();
   const loadData = useCallback(async () => {
     setLoading(true);
-    const params: CivitModelQueryParams = {
-      limit: "30",
-      nsfw: "false",
-    };
-    if (searchQuery !== "") {
-      params.query = searchQuery;
-    }
-    if (modelType != null) {
-      params.types = modelType;
-    }
-
-    const queryString = new URLSearchParams(params).toString();
-    const fullURL = `https://civitai.com/api/v1/models?${queryString}`;
-
-    const cacheEntry = await indexdb.cache?.get(fullURL);
-    if (cacheEntry?.value != null) {
-      try {
-        const { data, timestamp } = JSON.parse(cacheEntry?.value);
-        // Check if cached data is still valid
-        const ageInDays = (Date.now() - timestamp) / (1000 * 60 * 60 * 24);
-        if (ageInDays < CACHE_EXPIRY_DAYS) {
-          setModels(data);
-          setLoading(false);
-          return;
-        }
-      } catch (e) {
-        console.error("err fetching cache", e);
-      }
-    }
-
-    const data = await fetch(fullURL);
-    const json = await data.json();
-    setModels(json.items);
-    // only cache if there is no search query
-    if (searchQuery === "") {
-      indexdb.cache.put({
-        id: fullURL,
-        value: JSON.stringify({
-          data: json.items,
-          timestamp: Date.now(),
-        }),
-      });
+    if (!searchQuery) {
+      const models = await getModelFromCivitAPi(modelType);
+      setModels(models);
+    } else {
+      const models = await getModelFromSearch(searchQuery, modelType);
+      setModels(models);
     }
     setLoading(false);
   }, [searchQuery, modelType]);
 
-  const downloadModels = (folderPath: string) => {
-    if (!file.current?.downloadUrl) {
-      console.error("file.downloadUrl is null");
+  const downloadModels = (folderPath: string, downloadUrl?: string) => {
+    if (!file.current?.id && !downloadUrl) {
+      console.error("no url to download");
       return;
     }
-    if (!file.current.name) {
-      file.current.name = file.current.downloadUrl.split("/").pop();
-      if (!file.current.name) {
-        console.error("file.downloadUrl is malformed");
+    let url =
+      downloadUrl ??
+      `https://civitai.com/api/download/models/${file.current?.id}`;
+    let version = file.current?.name;
+
+    if (!version) {
+      version = url.split("/").pop();
+      if (!version) {
+        console.error("downloadUrl is malformed");
         return;
       }
     }
     toast({
       title: "Installing...",
-      description: file.current.name,
+      description: version,
       status: "info",
       duration: 4000,
       isClosable: true,
     });
-    file.current.name != null &&
-      setInstalling((cur) => [...cur, file.current?.name ?? ""]);
-    let url = file.current.downloadUrl;
+    version != null && setInstalling((cur) => [...cur, version ?? ""]);
     const apiKey = getCivitApiKey();
     if (apiKey) {
       url += `?token=${apiKey}`;
     }
     installModelsApi({
-      filename: file.current.name,
-      name: file.current.name,
-      file_hash: file.current.hashes?.SHA256,
+      file_hash: file.current?.SHA256,
+      filename: version,
       save_path: folderPath,
       url,
     });
     setFile(undefined);
     onCloseChooseFolderModal();
   };
-  const onClickInstallModel = (
-    _file: CivitiModelFileVersion,
-    model: CivitiModel,
-  ) => {
+  const onClickInstallModel = (_file: FileEssential, model: apiResponse) => {
     const folderPath = MODEL_TYPE_TO_FOLDER_MAPPING[model.type as MODEL_TYPE];
     setFile(_file);
     if (folderPath == null) {
@@ -256,12 +191,11 @@ export default function InatallModelsModal({
         </ModalContent>
       </Modal>
       <ChooseFolder
-        file={fileState}
+        fileSelected={!!fileState}
         isOpen={isOpen}
         onClose={onCloseChooseFolderModal}
         selectFolder={(folderPath: string, customUrl?: string) => {
-          if (!file.current) setFile({ id: 0, downloadUrl: customUrl });
-          downloadModels(folderPath);
+          downloadModels(folderPath, file.current ? undefined : customUrl);
         }}
       />
     </>
