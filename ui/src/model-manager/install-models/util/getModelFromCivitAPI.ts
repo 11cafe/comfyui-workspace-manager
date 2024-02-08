@@ -1,3 +1,4 @@
+import { userSettingsTable } from "../../../db-tables/WorkspaceDB";
 import { indexdb } from "../../../db-tables/indexdb";
 import { CivitiModel } from "../../types";
 import { CACHE_EXPIRY_DAYS, MODEL_TYPE } from "./modelTypes";
@@ -6,15 +7,18 @@ type CivitModelQueryParams = {
   types?: MODEL_TYPE;
   query?: string;
   limit?: string;
-  nsfw?: "false";
+  nsfw?: boolean;
 };
 
 export async function getModelFromCivitAPi(
   types?: MODEL_TYPE,
 ): Promise<CivitiModel[]> {
+  const showNsfwThumbnail = await userSettingsTable?.getSetting(
+    "showNsfwModelThumbnail",
+  );
   const params: CivitModelQueryParams = {
     limit: "30",
-    nsfw: "false",
+    nsfw: showNsfwThumbnail ?? false,
     types,
   };
 

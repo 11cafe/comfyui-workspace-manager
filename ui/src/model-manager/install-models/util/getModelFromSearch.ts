@@ -1,3 +1,4 @@
+import { userSettingsTable } from "../../../db-tables/WorkspaceDB";
 import {
   SearchHit,
   SearchRequestBody,
@@ -9,9 +10,12 @@ export async function getModelFromSearch(
   q: string,
   type?: MODEL_TYPE,
 ): Promise<SearchHit[]> {
+  const showNsfwThumbnail = await userSettingsTable?.getSetting(
+    "showNsfwModelThumbnail",
+  );
   const params: SearchRequestBody = {
     limit: 30,
-    filter: "nsfw = false AND type != Workflows",
+    filter: `"nsfw = ${showNsfwThumbnail} AND type != Workflows"`,
     q,
   };
   if (type) {
