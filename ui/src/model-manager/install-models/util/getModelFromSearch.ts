@@ -11,7 +11,7 @@ export async function getModelFromSearch(
 ): Promise<SearchHit[]> {
   const params: SearchRequestBody = {
     limit: 30,
-    filter: "nsfw = false ",
+    filter: "nsfw = false AND type != Workflows",
     q,
   };
   if (type) {
@@ -26,5 +26,5 @@ export async function getModelFromSearch(
     body: JSON.stringify(params),
   });
   const json: SearchResponse = await data.json();
-  return json.hits;
+  return json?.hits ?? [];
 }
