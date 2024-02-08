@@ -7,7 +7,6 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  Select,
   Text,
 } from "@chakra-ui/react";
 import { Workflow } from "../types/dbTypes";
@@ -21,10 +20,7 @@ import {
   IconLock,
   IconWorld,
 } from "@tabler/icons-react";
-import {
-  userSettingsTable,
-  workflowVersionsTable,
-} from "../db-tables/WorkspaceDB";
+import { userSettingsTable } from "../db-tables/WorkspaceDB";
 
 interface Props {
   onClose: () => void;
@@ -56,10 +52,14 @@ export default function ShareDialog({ onClose, workflow }: Props) {
     "version " + getCurDateString(),
   );
   const onShare = async () => {
-    const secretKey = generateRandomKey(64);
-    console.log(secretKey);
-    const host = userSettingsTable?.getSetting("cloudHost");
-    fetch(host + "/api/share_workflow", {
+    const secretKey = generateRandomKey(32);
+    let host;
+    if (import.meta.env.MODE === "production") {
+      host = userSettingsTable?.getSetting("cloudHost");
+    } else {
+      host = "http://localhost:3000";
+    }
+    const resp = await fetch(host + "/api/shareWorkflow", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -67,14 +67,15 @@ export default function ShareDialog({ onClose, workflow }: Props) {
       body: JSON.stringify({
         name: workflow.name,
         json: workflow.json,
-        secretKey: secretKey,
+        keyID: secretKey,
         versionName: versionName,
       }),
     });
-    const popupUrl = `https://www.comfyspace.art/`;
+    console.log("share resp", resp);
+    const popupUrl = host + `/share_workflow_confirm/${secretKey}`;
     const popupWindow = window.open(
       popupUrl,
-      "ComfyspaceLogin",
+      "Share Workflow",
       "width=800,height=600",
     );
     // const url = await workflowVersionsTable?.add({
