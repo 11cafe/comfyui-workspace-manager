@@ -29,7 +29,7 @@ export default function TwoWaySyncSettings() {
           getTwoWaySync();
         }}
       >
-        Enable two way sync (Experimental)
+        Enable two way sync (DO NOT USE!! EXPERIMENTAL!)
       </Checkbox>
     </Stack>
   );
