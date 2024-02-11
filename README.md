@@ -97,7 +97,11 @@ duplicate flow by right click menu option:
 
 <img width="360" alt="Screenshot 2024-01-02 at 10 22 45 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/4751b096-0886-4a32-95b1-87c7ce5b3787">
 
-Our internal db data is stored in your disk under `/ComfyUI/custom_nodes/comfyui-workspace-manager/db/` We also store a backup copy of your db data in your browser cache in case you lose your workspace data when deleting comfyui-workspace-manager and reinstall. Press F12 or Inspect in right click browser menu, go to Application -> IndexedDB -> WorkspaceDB to see your data
+All your data is primarily stored in your browser cache (IndexDB) and backedup in your disk under `/ComfyUI/custom_nodes/comfyui-workspace-manager/db/`. Press F12 or Inspect in right click browser menu, go to Application -> IndexedDB -> comfyui_workspace_db to see your data (workflows, version history, gallery, etc.)
+
+<img width="400" alt="Screenshot 2024-02-11 at 9 03 53 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/c04ca874-03f0-4569-9a40-d8453dd9b031">
+
+
 
 ### How do I save my workflow?
 
