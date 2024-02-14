@@ -209,12 +209,7 @@ export default function DropdownTitle() {
           </Menu>
         }
       />
-      {isShareOpen && workflowsTable?.curWorkflow && (
-        <ShareDialog
-          workflow={workflowsTable?.curWorkflow}
-          onClose={() => setIsShareOpen(false)}
-        />
-      )}
+      {isShareOpen && <ShareDialog onClose={() => setIsShareOpen(false)} />}
       {isVersionHistoryOpen && (
         <VersionHistoryDrawer onClose={() => setIsVersionHistoryOpen(false)} />
       )}

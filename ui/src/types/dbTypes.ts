@@ -14,6 +14,8 @@ export interface Workflow extends SortableItem {
   parentFolderID?: string;
   mediaIDs?: string[];
   coverMediaPath?: string;
+  cloudID?: string;
+  privacy?: WorkflowPrivacy;
 }
 
 export interface TableBaseModel {
@@ -56,8 +58,8 @@ export type WorkflowVersion = {
   workflowID: string;
   json: string;
   createTime: number;
-  privacy?: "public" | "private";
-  remoteUrl?: string;
+  cloudVersionID?: string;
+  nodeDefs?: string; //for cloud workflow version
 };
 
 export type UserSettings = {
@@ -117,5 +119,7 @@ export enum EFlowOperationType {
    */
   DELETE = "delete",
 }
+
+type WorkflowPrivacy = "PUBLIC" | "PRIVATE" | "UNLISTED";
 
 export const WORKSPACE_INDEXDB_NAME = "comfyui_workspace_db";
