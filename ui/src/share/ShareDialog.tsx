@@ -77,8 +77,6 @@ export default function ShareDialog({ onClose }: Props) {
   const toast = useToast();
   const handleShareWorkflowSuccess = async (event: MessageEvent) => {
     const detail = event.data;
-    console.log("event", event);
-    console.log("cloooudhost", cloudHost);
     if (
       event.origin !== cloudHostRef.current ||
       detail.type !== "share_workflow_success"
@@ -92,21 +90,17 @@ export default function ShareDialog({ onClose }: Props) {
     const localVerID = detail.localVersionID;
     const cloudVersionID = detail.version.id;
     const cloudID = detail.version.workflowID;
-    // if (!localID || !localVerID || !cloudID || !cloudVersionID) {
-    //   return;
-    // }
-    console.log("localVerID", localVerID, "cloudVersionID", cloudVersionID);
-    console.log("localID", localID, "cloudID", cloudID);
 
     cloudID &&
       localID &&
       (await workflowsTable?.updateFlow(localID, {
         cloudID: cloudID,
+        cloudURL: cloudHost + "/workflow/" + cloudID,
       }));
     localVerID &&
       cloudVersionID &&
       (await workflowVersionsTable?.update(localVerID, {
-        cloudVersionID: cloudVersionID,
+        cloudID: cloudVersionID,
       }));
     loadData();
   };
@@ -140,11 +134,7 @@ export default function ShareDialog({ onClose }: Props) {
     }
     const workflow = workflowsTable?.curWorkflow ?? undefined;
     setWorkflow(workflow);
-    if (!workflow) {
-      alert("Failed to get workflow, please try again.");
-      return;
-    }
-    workflowVersionsTable?.listByWorkflowID(workflow.id).then((vers) => {
+    workflowVersionsTable?.listByWorkflowID(workflow!.id).then((vers) => {
       setLocalVersions(vers);
     });
   };
@@ -160,7 +150,6 @@ export default function ShareDialog({ onClose }: Props) {
         });
       })
       .catch((err) => {
-        // Error handling
         console.error("Failed to copy text: ", err);
       });
   };
@@ -191,20 +180,21 @@ export default function ShareDialog({ onClose }: Props) {
     const sharePopup = window.open(
       popupUrl,
       "Share Workflow",
-      "width=800,height=600",
+      "width=800,height=800",
     );
     setLoading(false);
     const handleChildReady = (event: MessageEvent) => {
       if (event.origin === host && event.data === "child_ready") {
+        const curWorkflow = workflowsTable?.curWorkflow;
         console.log("Child window is ready.inputdata", {
-          workflow: workflow,
+          workflow: curWorkflow,
           version: newVer,
           nodeDefs: nodeDefs,
         });
         // Send data to the new window after it loads
         sharePopup!.postMessage(
           {
-            workflow: workflow,
+            workflow: curWorkflow,
             version: newVer,
             nodeDefs: nodeDefs,
           },
@@ -256,7 +246,7 @@ export default function ShareDialog({ onClose }: Props) {
               </HStack>
             )}
             <HStack>
-              <Text mb={3}>New Version</Text>
+              <Text>New Version</Text>
               <Input
                 value={versionName}
                 maxWidth={440}
@@ -267,22 +257,24 @@ export default function ShareDialog({ onClose }: Props) {
             </HStack>
             {localVersions.slice(0, 4).map((ver) => {
               return (
-                <HStack>
-                  <Text key={ver.id} mb={3}>
-                    {ver.name} id:{ver.id}
-                  </Text>
-                  {ver.cloudVersionID && (
-                    <Button
-                      size={"sm"}
-                      leftIcon={<IconCloud />}
-                      onClick={() => {
-                        window.open(
-                          cloudHost + "/workflow_ver/" + ver.cloudVersionID,
-                        );
-                      }}
+                <HStack key={ver.id} spacing={4} alignItems={"center"} mb={3}>
+                  <Text>{ver.name}</Text>
+                  {ver.cloudID && (
+                    <a
+                      href={cloudHost + "/workflow_ver/" + ver.cloudID}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ textDecoration: "none" }}
                     >
-                      Cloud
-                    </Button>
+                      <Button
+                        size={"xs"}
+                        colorScheme="teal"
+                        leftIcon={<IconCloud />}
+                        rightIcon={<IconExternalLink size={18} />}
+                      >
+                        Shared
+                      </Button>
+                    </a>
                   )}
                 </HStack>
               );

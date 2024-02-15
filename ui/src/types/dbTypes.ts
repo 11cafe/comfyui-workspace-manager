@@ -15,6 +15,7 @@ export interface Workflow extends SortableItem {
   mediaIDs?: string[];
   coverMediaPath?: string;
   cloudID?: string;
+  cloudURL?: string;
   privacy?: WorkflowPrivacy;
 }
 
@@ -58,7 +59,7 @@ export type WorkflowVersion = {
   workflowID: string;
   json: string;
   createTime: number;
-  cloudVersionID?: string;
+  cloudID?: string;
   nodeDefs?: string; //for cloud workflow version
 };
 
