@@ -16,7 +16,6 @@ import json
 from .version_control import update_version_if_outdated
 from .service.model_manager.model_installer import download_url_with_wget
 from .service.model_manager.model_list import get_model_list
-from .service.share.cloud_service import *
 
 WEB_DIRECTORY = "entry"
 DEFAULT_USER = "guest"
