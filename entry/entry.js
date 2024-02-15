@@ -24,3 +24,13 @@ const observer = new MutationObserver(callback);
 
 // Start observing the target node for configured mutations
 observer.observe(targetNode, config);
+
+import { app } from "/scripts/app.js";
+const ext = {
+  // Unique name for the extension
+  name: "WorkspaceManager",
+  async addCustomNodeDefs(defs) {
+    console.log("addCustomNodeDefs", defs);
+  },
+};
+app.registerExtension(ext);
