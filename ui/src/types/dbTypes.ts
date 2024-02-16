@@ -16,7 +16,6 @@ export interface Workflow extends SortableItem {
   coverMediaPath?: string;
   cloudID?: string;
   cloudURL?: string;
-  privacy?: WorkflowPrivacy;
 }
 
 export interface TableBaseModel {
@@ -121,6 +120,6 @@ export enum EFlowOperationType {
   DELETE = "delete",
 }
 
-type WorkflowPrivacy = "PUBLIC" | "PRIVATE" | "UNLISTED";
+export type WorkflowPrivacy = "PUBLIC" | "PRIVATE" | "UNLISTED";
 
 export const WORKSPACE_INDEXDB_NAME = "comfyui_workspace_db";
