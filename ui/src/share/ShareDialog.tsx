@@ -13,19 +13,10 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react";
-import { Workflow, WorkflowVersion } from "../types/dbTypes";
+import { Workflow, WorkflowPrivacy, WorkflowVersion } from "../types/dbTypes";
 import { useEffect, useRef, useState } from "react";
-import CustomDropdown, {
-  CustomSelectorOption,
-} from "../components/CustomSelector";
-import {
-  IconCloud,
-  IconCopy,
-  IconExternalLink,
-  IconLink,
-  IconLock,
-  IconWorld,
-} from "@tabler/icons-react";
+import CustomSelector from "../components/CustomSelector";
+import { IconCloud, IconCopy, IconExternalLink } from "@tabler/icons-react";
 import {
   userSettingsTable,
   workflowVersionsTable,
@@ -35,36 +26,12 @@ import {
 import { api } from "/scripts/api.js";
 // @ts-ignore
 import { app } from "/scripts/app.js";
+import { generateRandomKey, getNodeDefs, privacyOptions } from "./shareUtils";
 
 interface Props {
   onClose: () => void;
 }
-type CreatedCloudflowVersionEvent = {
-  createdVer: WorkflowVersion;
-  localWorkflowID: string;
-  localVersionID: string;
-};
 
-function generateRandomKey(length: number) {
-  // Generate a random array of bytes
-  const array = new Uint8Array(length);
-  window.crypto.getRandomValues(array);
-
-  // Convert the bytes to a hex string
-  return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join(
-    "",
-  );
-}
-
-const privacyOptions: CustomSelectorOption[] = [
-  { label: "Private", value: "PRIVATE", icon: <IconLock /> },
-  {
-    label: "Anyone with the link can access",
-    value: "UNLISTED",
-    icon: <IconLink />,
-  },
-  { label: "Public", value: "PUBLIC", icon: <IconWorld /> },
-];
 export default function ShareDialog({ onClose }: Props) {
   const [versionName, setVersionName] = useState(
     "version " + getCurDateString(),
@@ -72,6 +39,7 @@ export default function ShareDialog({ onClose }: Props) {
   const [localVersions, setLocalVersions] = useState<WorkflowVersion[]>([]);
   const [loading, setLoading] = useState(false);
   const [cloudHost, setCloudHost] = useState("");
+  const [privacy, setPrivacy] = useState<WorkflowPrivacy>("PRIVATE");
   const cloudHostRef = useRef("");
   const [workflow, setWorkflow] = useState<Workflow>();
   const toast = useToast();
@@ -81,11 +49,9 @@ export default function ShareDialog({ onClose }: Props) {
       event.origin !== cloudHostRef.current ||
       detail.type !== "share_workflow_success"
     ) {
-      console.log("event.origin !== cloudHost", event.origin !== cloudHost);
       return;
     }
 
-    console.log("share_workflow_success", detail);
     const localID = detail.localWorkflowID;
     const localVerID = detail.localVersionID;
     const cloudVersionID = detail.version.id;
@@ -111,18 +77,7 @@ export default function ShareDialog({ onClose }: Props) {
       window.removeEventListener("message", handleShareWorkflowSuccess);
     };
   }, []);
-  const getNodeDefs = () => {
-    const allNodes = app.graph._nodes;
-    const nodeDefs = {};
-    for (let n of allNodes) {
-      // @ts-ignore
-      if (n.type in LiteGraph.registered_node_types) {
-        // @ts-ignore
-        nodeDefs[n.type] = LiteGraph.registered_node_types[n.type].nodeData;
-      }
-    }
-    return nodeDefs;
-  };
+
   const loadData = async () => {
     const host =
       import.meta.env.MODE === "production"
@@ -165,7 +120,7 @@ export default function ShareDialog({ onClose }: Props) {
       workflowID: workflow!.id,
       name: versionName,
       createTime: Date.now(),
-      json: workflow!.json,
+      json: JSON.stringify(app.graph.serialize()),
     });
     if (!newVer) {
       alert("Failed to create new version, please try again.");
@@ -186,17 +141,14 @@ export default function ShareDialog({ onClose }: Props) {
     const handleChildReady = (event: MessageEvent) => {
       if (event.origin === host && event.data === "child_ready") {
         const curWorkflow = workflowsTable?.curWorkflow;
-        console.log("Child window is ready.inputdata", {
-          workflow: curWorkflow,
-          version: newVer,
-          nodeDefs: nodeDefs,
-        });
         // Send data to the new window after it loads
+        console.log("sending privacy", privacy);
         sharePopup!.postMessage(
           {
             workflow: curWorkflow,
             version: newVer,
             nodeDefs: nodeDefs,
+            privacy: privacy,
           },
           host,
         );
@@ -214,7 +166,13 @@ export default function ShareDialog({ onClose }: Props) {
         <ModalHeader>Share "{workflow?.name}"</ModalHeader>
         <ModalBody pb={10}>
           <Stack gap={6}>
-            <CustomDropdown options={privacyOptions} />
+            <CustomSelector<WorkflowPrivacy>
+              options={privacyOptions}
+              value={privacy}
+              onChange={(val) => {
+                setPrivacy(val);
+              }}
+            />
 
             {cloudWorkflowID && (
               <HStack spacing={2} color="teal.400">

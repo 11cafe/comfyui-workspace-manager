@@ -1,5 +1,6 @@
 import {
   ChangeEvent,
+  lazy,
   useCallback,
   useContext,
   useEffect,
@@ -37,9 +38,9 @@ import { workflowsTable, userSettingsTable } from "../db-tables/WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { VersionHistoryDrawer } from "./VersionHistoryDrawer";
 import { Workflow } from "../types/dbTypes";
-import ShareDialog from "../share/ShareDialog";
 import CustomMenu from "./CustomMenu";
 import CreateVersionDialog from "./CreateVersionDialog";
+const ShareDialog = lazy(() => import("../share/ShareDialog"));
 
 export default function DropdownTitle() {
   const {

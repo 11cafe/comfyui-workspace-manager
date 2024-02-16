@@ -2,21 +2,25 @@ import React, { useState, useRef, useEffect } from "react";
 import { Box, Button, Card } from "@chakra-ui/react";
 import { IconChevronDown } from "@tabler/icons-react";
 
-export interface CustomSelectorOption {
+export interface CustomSelectorOption<T> {
   label: string;
-  value: string;
+  value: T;
   icon?: React.ReactElement;
 }
 
-type Props = {
-  options: CustomSelectorOption[];
+type Props<T> = {
+  options: CustomSelectorOption<T>[];
+  value: T;
+  onChange: (value: T) => void;
 };
-export default function CustomSelector({ options }: Props) {
+export default function CustomSelector<T>({
+  options,
+  value,
+  onChange,
+}: Props<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const [selectedOption, setSelectedOption] = useState<
-    CustomSelectorOption | undefined
-  >(options[0]);
+  const selectedOption = options.find((option) => option.value === value);
 
   useEffect(() => {
     const handleClickOutside = (event: any) => {
@@ -41,6 +45,25 @@ export default function CustomSelector({ options }: Props) {
       >
         {selectedOption?.label}
       </Button>
+      {/* {isOpen && (
+        <Menu isOpen={true}>
+          <MenuList
+            minWidth={150}
+            zIndex={1000}
+            onMouseEnter={onOpen}
+            onMouseLeave={delayedClose}
+          >
+            <MenuItem
+              onClick={saveCurWorkflow}
+              icon={<IconDeviceFloppy size={20} />}
+              iconSpacing={1}
+              command={saveShortcut}
+            >
+              Save
+            </MenuItem>
+          </MenuList>
+        </Menu>
+      )} */}
       {isOpen && (
         <Card
           gap={4}
@@ -50,13 +73,14 @@ export default function CustomSelector({ options }: Props) {
           borderWidth="1px"
           p="2"
           position="absolute"
+          zIndex={100}
         >
           {options.map((option) => (
             <Button
-              key={option.value}
+              key={option.label}
               onClick={() => {
-                setSelectedOption(option);
                 setIsOpen(false);
+                onChange(option.value);
               }}
               leftIcon={option.icon}
               justifyContent="flex-start"
