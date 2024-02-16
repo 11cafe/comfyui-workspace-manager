@@ -198,23 +198,18 @@ export default function DropdownTitle() {
               >
                 Versions History
               </MenuItem>
-              {/* <MenuItem
+              <MenuItem
                 onClick={() => setIsShareOpen(true)}
                 icon={<IconShare2 size={20} />}
                 iconSpacing={1}
               >
                 Share
-              </MenuItem> */}
+              </MenuItem>
             </MenuList>
           </Menu>
         }
       />
-      {isShareOpen && workflowsTable?.curWorkflow && (
-        <ShareDialog
-          workflow={workflowsTable?.curWorkflow}
-          onClose={() => setIsShareOpen(false)}
-        />
-      )}
+      {isShareOpen && <ShareDialog onClose={() => setIsShareOpen(false)} />}
       {isVersionHistoryOpen && (
         <VersionHistoryDrawer onClose={() => setIsVersionHistoryOpen(false)} />
       )}

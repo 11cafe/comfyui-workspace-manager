@@ -48,6 +48,12 @@ export class TableBase<T extends TableBaseModel> {
     await this.saveDiskDB();
     return newItem;
   }
+  public async update(id: string, changes: Partial<T>): Promise<T | null> {
+    await indexdb[this.tableName].update(id, changes);
+    await this.saveDiskDB();
+    return (await this.get(id)) ?? null;
+  }
+
   public async listAll(): Promise<T[]> {
     const list = await indexdb[this.tableName].toArray();
     return list as any[];
