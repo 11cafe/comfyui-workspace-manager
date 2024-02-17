@@ -226,55 +226,60 @@ export default function ShareDialog({ onClose }: Props) {
             )}
             <Text>Choose a version to share:</Text>
             <RadioGroup
-              defaultValue={selectedVersion}
               gap={4}
               onChange={(val) => {
                 setSelectedVersion(val);
               }}
+              value={selectedVersion}
             >
-              <Radio key={"new_version"} value="new_version" mb={5}>
-                <HStack>
+              <Stack>
+                <HStack mb={5} alignItems={"center"}>
+                  <Radio key={"new_version"} value="new_version" />
                   <Input
                     value={versionName}
-                    width={220}
-                    flex={1}
+                    width={"60%"}
+                    onFocus={() => {
+                      setSelectedVersion("new_version");
+                    }}
                     onChange={(e) => {
                       setVersionName(e.target.value);
                     }}
                   />
-
-                  <Flex width={"auto"} color="green">
+                  <Flex color="green">
                     <Text>New version</Text>
                   </Flex>
                 </HStack>
-              </Radio>
-              {localVersions.slice(0, 4).map((ver) => {
-                return (
-                  <Radio key={ver.id} value={ver.id} mb={5}>
-                    <HStack spacing={4} alignItems={"center"}>
-                      <Text>{ver.name}</Text>
-                      <Text>{formatTimestamp(ver.createTime)}</Text>
-                      {ver.cloudID && (
-                        <a
-                          href={cloudHost + "/workflow_ver/" + ver.cloudID}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ textDecoration: "none" }}
-                        >
-                          <Button
-                            size={"xs"}
-                            colorScheme="teal"
-                            leftIcon={<IconCloud />}
-                            rightIcon={<IconExternalLink size={18} />}
+
+                {localVersions.slice(0, 4).map((ver) => {
+                  return (
+                    <Radio key={ver.id} value={ver.id} mb={5}>
+                      <HStack spacing={4} alignItems={"center"}>
+                        <Text>{ver.name}</Text>
+                        <Text color={"GrayText"}>
+                          {formatTimestamp(ver.createTime, false)}
+                        </Text>
+                        {ver.cloudID && (
+                          <a
+                            href={cloudHost + "/workflow_ver/" + ver.cloudID}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ textDecoration: "none" }}
                           >
-                            Shared
-                          </Button>
-                        </a>
-                      )}
-                    </HStack>
-                  </Radio>
-                );
-              })}
+                            <Button
+                              size={"xs"}
+                              colorScheme="teal"
+                              leftIcon={<IconCloud />}
+                              rightIcon={<IconExternalLink size={18} />}
+                            >
+                              Shared
+                            </Button>
+                          </a>
+                        )}
+                      </HStack>
+                    </Radio>
+                  );
+                })}
+              </Stack>
             </RadioGroup>
           </Stack>
           <HStack justifyContent={"flex-end"} mt={16}>
