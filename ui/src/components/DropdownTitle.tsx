@@ -135,7 +135,8 @@ export default function DropdownTitle() {
               height={"29px"}
               aria-label="menu"
               size={"sm"}
-              colorScheme="teal"
+              colorScheme="gray"
+              backgroundColor={"gray.700"}
               onClick={onOpen}
               onMouseEnter={onOpen}
               onMouseLeave={delayedClose}

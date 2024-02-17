@@ -1,11 +1,4 @@
-import {
-  Button,
-  Text,
-  Stack,
-  Link,
-  HStack,
-  IconButton,
-} from "@chakra-ui/react";
+import { Button, Link, HStack, IconButton } from "@chakra-ui/react";
 import { IconCloud, IconCopy } from "@tabler/icons-react";
 import { workflowsTable } from "../db-tables/WorkspaceDB";
 import { useContext, useEffect, useState } from "react";
