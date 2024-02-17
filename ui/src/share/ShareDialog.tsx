@@ -85,7 +85,7 @@ export default function ShareDialog({ onClose }: Props) {
         cloudID: cloudVersionID,
       }));
     loadData();
-    window.open(cloudHost + "/workflow/" + cloudID, "_blank");
+    window.open(cloudHostRef.current + "/workflow/" + cloudID, "_blank");
     setLoading(false);
   };
   useEffect(() => {
