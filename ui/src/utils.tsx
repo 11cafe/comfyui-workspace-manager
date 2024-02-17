@@ -106,6 +106,7 @@ function isValidFileName(fileName: string) {
 
 export function formatTimestamp(
   unixTimestamp: number,
+  showHourMinue: boolean = true,
   showSec: boolean = false,
 ) {
   // Create a new Date object from the UNIX timestamp
@@ -119,7 +120,10 @@ export function formatTimestamp(
   const minutes = String(date.getMinutes()).padStart(2, "0");
   const seconds = String(date.getSeconds()).padStart(2, "0");
   // Format the date and time string
-  const res = `${month}-${day}-${year} ${hours}:${minutes}`;
+  const res = `${month}-${day}-${year}`;
+  if (showHourMinue) {
+    return res + ` ${hours}:${minutes}`;
+  }
   if (showSec) {
     return res + `:${seconds}`;
   }
