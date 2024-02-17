@@ -1,14 +1,20 @@
 import {
+  Box,
   Button,
   Flex,
   HStack,
   Input,
+  InputGroup,
+  InputLeftAddon,
+  InputRightAddon,
   Link,
   Modal,
   ModalBody,
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  Radio,
+  RadioGroup,
   Stack,
   Text,
   useToast,
@@ -16,7 +22,13 @@ import {
 import { Workflow, WorkflowPrivacy, WorkflowVersion } from "../types/dbTypes";
 import { useEffect, useRef, useState } from "react";
 import CustomSelector from "../components/CustomSelector";
-import { IconCloud, IconCopy, IconExternalLink } from "@tabler/icons-react";
+import {
+  IconCheck,
+  IconCloud,
+  IconCopy,
+  IconExternalLink,
+  IconPlus,
+} from "@tabler/icons-react";
 import {
   userSettingsTable,
   workflowVersionsTable,
@@ -27,6 +39,7 @@ import { api } from "/scripts/api.js";
 // @ts-ignore
 import { app } from "/scripts/app.js";
 import { generateRandomKey, getNodeDefs, privacyOptions } from "./shareUtils";
+import { formatTimestamp } from "../utils";
 
 interface Props {
   onClose: () => void;
@@ -40,6 +53,9 @@ export default function ShareDialog({ onClose }: Props) {
   const [loading, setLoading] = useState(false);
   const [cloudHost, setCloudHost] = useState("");
   const [privacy, setPrivacy] = useState<WorkflowPrivacy>("PRIVATE");
+  const [selectedVersion, setSelectedVersion] = useState<
+    string | "new_version"
+  >("new_version");
   const cloudHostRef = useRef("");
   const [workflow, setWorkflow] = useState<Workflow>();
   const toast = useToast();
@@ -69,6 +85,8 @@ export default function ShareDialog({ onClose }: Props) {
         cloudID: cloudVersionID,
       }));
     loadData();
+    window.open(cloudHost + "/workflow/" + cloudID, "_blank");
+    setLoading(false);
   };
   useEffect(() => {
     loadData();
@@ -116,14 +134,19 @@ export default function ShareDialog({ onClose }: Props) {
         ? ((await userSettingsTable?.getSetting("cloudHost")) as string)
         : "http://localhost:3000";
     const nodeDefs = getNodeDefs();
-    const newVer = await workflowVersionsTable?.add({
-      workflowID: workflow!.id,
-      name: versionName,
-      createTime: Date.now(),
-      json: JSON.stringify(app.graph.serialize()),
-    });
-    if (!newVer) {
-      alert("Failed to create new version, please try again.");
+    let version: WorkflowVersion | undefined;
+    if (selectedVersion === "new_version") {
+      version = await workflowVersionsTable?.add({
+        workflowID: workflow!.id,
+        name: versionName,
+        createTime: Date.now(),
+        json: JSON.stringify(app.graph.serialize()),
+      });
+    } else {
+      version = await workflowVersionsTable?.get(selectedVersion);
+    }
+    if (!version) {
+      alert(`Failed to find version: ${selectedVersion}, please try again.`);
       setLoading(false);
       return;
     }
@@ -137,16 +160,14 @@ export default function ShareDialog({ onClose }: Props) {
       "Share Workflow",
       "width=800,height=800",
     );
-    setLoading(false);
     const handleChildReady = (event: MessageEvent) => {
       if (event.origin === host && event.data === "child_ready") {
         const curWorkflow = workflowsTable?.curWorkflow;
         // Send data to the new window after it loads
-        console.log("sending privacy", privacy);
         sharePopup!.postMessage(
           {
             workflow: curWorkflow,
-            version: newVer,
+            version: version,
             nodeDefs: nodeDefs,
             privacy: privacy,
           },
@@ -203,40 +224,58 @@ export default function ShareDialog({ onClose }: Props) {
                 </Button>
               </HStack>
             )}
-            <HStack>
-              <Text>New Version</Text>
-              <Input
-                value={versionName}
-                maxWidth={440}
-                onChange={(e) => {
-                  setVersionName(e.target.value);
-                }}
-              />
-            </HStack>
-            {localVersions.slice(0, 4).map((ver) => {
-              return (
-                <HStack key={ver.id} spacing={4} alignItems={"center"} mb={3}>
-                  <Text>{ver.name}</Text>
-                  {ver.cloudID && (
-                    <a
-                      href={cloudHost + "/workflow_ver/" + ver.cloudID}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ textDecoration: "none" }}
-                    >
-                      <Button
-                        size={"xs"}
-                        colorScheme="teal"
-                        leftIcon={<IconCloud />}
-                        rightIcon={<IconExternalLink size={18} />}
-                      >
-                        Shared
-                      </Button>
-                    </a>
-                  )}
+            <Text>Choose a version to share:</Text>
+            <RadioGroup
+              defaultValue={selectedVersion}
+              gap={4}
+              onChange={(val) => {
+                setSelectedVersion(val);
+              }}
+            >
+              <Radio key={"new_version"} value="new_version" mb={5}>
+                <HStack>
+                  <Input
+                    value={versionName}
+                    width={220}
+                    flex={1}
+                    onChange={(e) => {
+                      setVersionName(e.target.value);
+                    }}
+                  />
+
+                  <Flex width={"auto"} color="green">
+                    <Text>New version</Text>
+                  </Flex>
                 </HStack>
-              );
-            })}
+              </Radio>
+              {localVersions.slice(0, 4).map((ver) => {
+                return (
+                  <Radio key={ver.id} value={ver.id} mb={5}>
+                    <HStack spacing={4} alignItems={"center"}>
+                      <Text>{ver.name}</Text>
+                      <Text>{formatTimestamp(ver.createTime)}</Text>
+                      {ver.cloudID && (
+                        <a
+                          href={cloudHost + "/workflow_ver/" + ver.cloudID}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ textDecoration: "none" }}
+                        >
+                          <Button
+                            size={"xs"}
+                            colorScheme="teal"
+                            leftIcon={<IconCloud />}
+                            rightIcon={<IconExternalLink size={18} />}
+                          >
+                            Shared
+                          </Button>
+                        </a>
+                      )}
+                    </HStack>
+                  </Radio>
+                );
+              })}
+            </RadioGroup>
           </Stack>
           <HStack justifyContent={"flex-end"} mt={16}>
             <Button colorScheme="teal" onClick={onShare} isDisabled={loading}>
