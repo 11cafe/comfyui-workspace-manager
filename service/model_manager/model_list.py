@@ -9,6 +9,7 @@ import threading
 import os
 import urllib.request
 import json
+from .model_preview import preview_file 
 
 # The path to the file where file_hash_dict will be saved
 FILE_HASH_DICT_FOLDER_PATH = os.path.join(os.path.dirname(__file__),"../../hash")
@@ -46,7 +47,7 @@ def process_file(folder, file):
     else:
         file_hash = None  # placeholder for hash
     [model_name, model_extension] = os.path.splitext(file)
-    return {"model_name": model_name, "model_type": folder, "model_extension": model_extension, "file_hash": file_hash}
+    return {"model_name": model_name, "model_type": folder, "model_extension": model_extension, "file_hash": file_hash, "preview": preview_file(file_path)}
 
 def populate_file_hash_dict():
     global populate_done, file_list

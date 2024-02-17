@@ -132,4 +132,5 @@ export interface ModelsListRespItem {
   model_extension: string;
   model_type: string;
   file_hash?: string;
+  preview?: string;
 }
