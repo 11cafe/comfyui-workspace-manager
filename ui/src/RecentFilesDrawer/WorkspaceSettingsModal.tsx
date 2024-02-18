@@ -26,9 +26,9 @@ import { getSystemDir } from "../Api";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { ShortcutSettings } from "../settings/ShortcutSettings";
 import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
-import AutoSaveSettings from "../settings/AutoSaveSettings";
 import FolderOnTopSettings from "../settings/FolderOnTopSettings";
 import TwoWaySyncSettings from "../settings/TwoWaySyncSettings";
+import CommonCheckboxSettings from "../settings/CommonCheckboxSettings";
 
 export default function WorkspaceSettingsModal({
   onClose,
@@ -288,9 +288,16 @@ export default function WorkspaceSettingsModal({
                   )}
                 </Box>
                 <ShortcutSettings />
-                <AutoSaveSettings />
+                <CommonCheckboxSettings
+                  settingKey="autoSave"
+                  text="Enable auto save workflow"
+                />
                 <TwoWaySyncSettings />
                 <FolderOnTopSettings />
+                <CommonCheckboxSettings
+                  settingKey="createNewFlowWhenDraggingFileToCanvas"
+                  text="Overwrite current workflow when drag and drop workflow file to canvas"
+                />
               </VStack>
             </HStack>
           </ModalBody>
