@@ -38,6 +38,7 @@ export class UserSettingsTable extends TableBase<UserSettings> {
       twoWaySync: false,
       foldersOnTop: false,
       cloudHost: "https://www.comfyspace.art",
+      createNewFlowWhenDraggingFileToCanvas: false,
     };
   }
 
