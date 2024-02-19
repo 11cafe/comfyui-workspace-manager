@@ -295,7 +295,7 @@ export default function WorkspaceSettingsModal({
                 <TwoWaySyncSettings />
                 <FolderOnTopSettings />
                 <CommonCheckboxSettings
-                  settingKey="createNewFlowWhenDraggingFileToCanvas"
+                  settingKey="overwriteCurWorkflowWhenDroppingFileToCanvas"
                   text="Overwrite current workflow when drag and drop workflow file to canvas"
                 />
               </VStack>

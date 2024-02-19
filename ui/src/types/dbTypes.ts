@@ -76,7 +76,7 @@ export type UserSettings = {
   foldersOnTop?: boolean;
   showNsfwModelThumbnail?: boolean;
   cloudHost: string;
-  createNewFlowWhenDraggingFileToCanvas: boolean;
+  overwriteCurWorkflowWhenDroppingFileToCanvas: boolean;
 };
 
 export interface PanelPosition {
