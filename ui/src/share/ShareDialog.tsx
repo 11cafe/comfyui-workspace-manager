@@ -1,31 +1,28 @@
 import {
+  Box,
   Button,
   Flex,
   HStack,
   Input,
+  InputGroup,
+  InputLeftAddon,
+  InputRightAddon,
   Link,
   Modal,
   ModalBody,
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  Radio,
+  RadioGroup,
   Stack,
   Text,
   useToast,
 } from "@chakra-ui/react";
-import { Workflow, WorkflowVersion } from "../types/dbTypes";
+import { Workflow, WorkflowPrivacy, WorkflowVersion } from "../types/dbTypes";
 import { useEffect, useRef, useState } from "react";
-import CustomDropdown, {
-  CustomSelectorOption,
-} from "../components/CustomSelector";
-import {
-  IconCloud,
-  IconCopy,
-  IconExternalLink,
-  IconLink,
-  IconLock,
-  IconWorld,
-} from "@tabler/icons-react";
+import CustomSelector from "../components/CustomSelector";
+import { IconCloud, IconCopy, IconExternalLink } from "@tabler/icons-react";
 import {
   userSettingsTable,
   workflowVersionsTable,
@@ -35,36 +32,14 @@ import {
 import { api } from "/scripts/api.js";
 // @ts-ignore
 import { app } from "/scripts/app.js";
+import { generateRandomKey, getNodeDefs, privacyOptions } from "./shareUtils";
+import { formatTimestamp } from "../utils";
+import ShareDialogWorkflowVersionRadio from "./ShareDialogWorkflowVersionRadio";
 
 interface Props {
   onClose: () => void;
 }
-type CreatedCloudflowVersionEvent = {
-  createdVer: WorkflowVersion;
-  localWorkflowID: string;
-  localVersionID: string;
-};
 
-function generateRandomKey(length: number) {
-  // Generate a random array of bytes
-  const array = new Uint8Array(length);
-  window.crypto.getRandomValues(array);
-
-  // Convert the bytes to a hex string
-  return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join(
-    "",
-  );
-}
-
-const privacyOptions: CustomSelectorOption[] = [
-  { label: "Private", value: "PRIVATE", icon: <IconLock /> },
-  {
-    label: "Anyone with the link can access",
-    value: "UNLISTED",
-    icon: <IconLink />,
-  },
-  { label: "Public", value: "PUBLIC", icon: <IconWorld /> },
-];
 export default function ShareDialog({ onClose }: Props) {
   const [versionName, setVersionName] = useState(
     "version " + getCurDateString(),
@@ -72,6 +47,10 @@ export default function ShareDialog({ onClose }: Props) {
   const [localVersions, setLocalVersions] = useState<WorkflowVersion[]>([]);
   const [loading, setLoading] = useState(false);
   const [cloudHost, setCloudHost] = useState("");
+  const [privacy, setPrivacy] = useState<WorkflowPrivacy>("PRIVATE");
+  const [selectedVersion, setSelectedVersion] = useState<
+    string | "new_version"
+  >("new_version");
   const cloudHostRef = useRef("");
   const [workflow, setWorkflow] = useState<Workflow>();
   const toast = useToast();
@@ -81,11 +60,9 @@ export default function ShareDialog({ onClose }: Props) {
       event.origin !== cloudHostRef.current ||
       detail.type !== "share_workflow_success"
     ) {
-      console.log("event.origin !== cloudHost", event.origin !== cloudHost);
       return;
     }
 
-    console.log("share_workflow_success", detail);
     const localID = detail.localWorkflowID;
     const localVerID = detail.localVersionID;
     const cloudVersionID = detail.version.id;
@@ -95,14 +72,20 @@ export default function ShareDialog({ onClose }: Props) {
       localID &&
       (await workflowsTable?.updateFlow(localID, {
         cloudID: cloudID,
-        cloudURL: cloudHost + "/workflow/" + cloudID,
+        cloudURL: cloudHostRef.current + "/workflow/" + cloudID,
       }));
     localVerID &&
       cloudVersionID &&
       (await workflowVersionsTable?.update(localVerID, {
         cloudID: cloudVersionID,
+        cloudURL: cloudHostRef.current + "/workflow_ver/" + cloudVersionID,
       }));
     loadData();
+    window.open(
+      cloudHostRef.current + "/workflow_ver/" + cloudVersionID,
+      "_blank",
+    );
+    setLoading(false);
   };
   useEffect(() => {
     loadData();
@@ -111,18 +94,7 @@ export default function ShareDialog({ onClose }: Props) {
       window.removeEventListener("message", handleShareWorkflowSuccess);
     };
   }, []);
-  const getNodeDefs = () => {
-    const allNodes = app.graph._nodes;
-    const nodeDefs = {};
-    for (let n of allNodes) {
-      // @ts-ignore
-      if (n.type in LiteGraph.registered_node_types) {
-        // @ts-ignore
-        nodeDefs[n.type] = LiteGraph.registered_node_types[n.type].nodeData;
-      }
-    }
-    return nodeDefs;
-  };
+
   const loadData = async () => {
     const host =
       import.meta.env.MODE === "production"
@@ -161,14 +133,19 @@ export default function ShareDialog({ onClose }: Props) {
         ? ((await userSettingsTable?.getSetting("cloudHost")) as string)
         : "http://localhost:3000";
     const nodeDefs = getNodeDefs();
-    const newVer = await workflowVersionsTable?.add({
-      workflowID: workflow!.id,
-      name: versionName,
-      createTime: Date.now(),
-      json: workflow!.json,
-    });
-    if (!newVer) {
-      alert("Failed to create new version, please try again.");
+    let version: WorkflowVersion | undefined;
+    if (selectedVersion === "new_version") {
+      version = await workflowVersionsTable?.add({
+        workflowID: workflow!.id,
+        name: versionName,
+        createTime: Date.now(),
+        json: JSON.stringify(app.graph.serialize()),
+      });
+    } else {
+      version = await workflowVersionsTable?.get(selectedVersion);
+    }
+    if (!version) {
+      alert(`Failed to find version: ${selectedVersion}, please try again.`);
       setLoading(false);
       return;
     }
@@ -182,21 +159,16 @@ export default function ShareDialog({ onClose }: Props) {
       "Share Workflow",
       "width=800,height=800",
     );
-    setLoading(false);
     const handleChildReady = (event: MessageEvent) => {
       if (event.origin === host && event.data === "child_ready") {
         const curWorkflow = workflowsTable?.curWorkflow;
-        console.log("Child window is ready.inputdata", {
-          workflow: curWorkflow,
-          version: newVer,
-          nodeDefs: nodeDefs,
-        });
         // Send data to the new window after it loads
         sharePopup!.postMessage(
           {
             workflow: curWorkflow,
-            version: newVer,
+            version: version,
             nodeDefs: nodeDefs,
+            privacy: privacy,
           },
           host,
         );
@@ -214,7 +186,13 @@ export default function ShareDialog({ onClose }: Props) {
         <ModalHeader>Share "{workflow?.name}"</ModalHeader>
         <ModalBody pb={10}>
           <Stack gap={6}>
-            <CustomDropdown options={privacyOptions} />
+            <CustomSelector<WorkflowPrivacy>
+              options={privacyOptions}
+              value={privacy}
+              onChange={(val) => {
+                setPrivacy(val);
+              }}
+            />
 
             {cloudWorkflowID && (
               <HStack spacing={2} color="teal.400">
@@ -245,40 +223,43 @@ export default function ShareDialog({ onClose }: Props) {
                 </Button>
               </HStack>
             )}
-            <HStack>
-              <Text>New Version</Text>
-              <Input
-                value={versionName}
-                maxWidth={440}
-                onChange={(e) => {
-                  setVersionName(e.target.value);
-                }}
-              />
-            </HStack>
-            {localVersions.slice(0, 4).map((ver) => {
-              return (
-                <HStack key={ver.id} spacing={4} alignItems={"center"} mb={3}>
-                  <Text>{ver.name}</Text>
-                  {ver.cloudID && (
-                    <a
-                      href={cloudHost + "/workflow_ver/" + ver.cloudID}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ textDecoration: "none" }}
-                    >
-                      <Button
-                        size={"xs"}
-                        colorScheme="teal"
-                        leftIcon={<IconCloud />}
-                        rightIcon={<IconExternalLink size={18} />}
-                      >
-                        Shared
-                      </Button>
-                    </a>
-                  )}
+            <Text>Choose a version to share:</Text>
+            <RadioGroup
+              gap={4}
+              onChange={(val) => {
+                setSelectedVersion(val);
+              }}
+              value={selectedVersion}
+            >
+              <Stack>
+                <HStack mb={5} alignItems={"center"}>
+                  <Radio key={"new_version"} value="new_version" />
+                  <Input
+                    value={versionName}
+                    width={"60%"}
+                    onFocus={() => {
+                      setSelectedVersion("new_version");
+                    }}
+                    onChange={(e) => {
+                      setVersionName(e.target.value);
+                    }}
+                  />
+                  <Flex color="green">
+                    <Text>New version</Text>
+                  </Flex>
                 </HStack>
-              );
-            })}
+
+                {localVersions.slice(0, 4).map((ver) => {
+                  return (
+                    <ShareDialogWorkflowVersionRadio
+                      key={ver.id}
+                      version={ver}
+                      cloudHost={cloudHost}
+                    />
+                  );
+                })}
+              </Stack>
+            </RadioGroup>
           </Stack>
           <HStack justifyContent={"flex-end"} mt={16}>
             <Button colorScheme="teal" onClick={onShare} isDisabled={loading}>
