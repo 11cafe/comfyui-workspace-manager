@@ -211,6 +211,10 @@ async def api_view_file(request):
     filename = request.query.get("filename", None)
     if not filename:
         return web.Response(status=404)
+    
+    # validation for security: prevent accessing arbitrary path
+    if filename[0] == '/' or '..' in filename:
+        return web.Response(status=400)
 
     output_path = folder_paths.get_output_directory()
     file_path = os.path.join(output_path, filename)

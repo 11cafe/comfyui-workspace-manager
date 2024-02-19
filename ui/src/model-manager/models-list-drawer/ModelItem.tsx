@@ -84,6 +84,7 @@ export function ModelItem({ data }: Props) {
         });
       } catch (e) {}
     }
+    if (data.preview) setUrl(data.preview);
   };
 
   const handleDragStart = (e: DragEvent<HTMLDivElement>) => {
