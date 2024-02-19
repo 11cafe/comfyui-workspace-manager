@@ -38,8 +38,8 @@ import { workflowsTable, userSettingsTable } from "../db-tables/WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { VersionHistoryDrawer } from "./VersionHistoryDrawer";
 import { Workflow } from "../types/dbTypes";
-import CustomMenu from "./CustomMenu";
 import CreateVersionDialog from "./CreateVersionDialog";
+import HoverMenu from "./HoverMenu";
 const ShareDialog = lazy(() => import("../share/ShareDialog"));
 
 export default function DropdownTitle() {
@@ -56,7 +56,6 @@ export default function DropdownTitle() {
   const [newFlowName, setNewFlowName] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [workflow, setWorkflow] = useState<Workflow>();
-  const [isOpen, setIsOpen] = useState(false);
   const [saveShortcut, setSaveShortcut] = useState("");
   const [isShareOpen, setIsShareOpen] = useState(false);
 
@@ -67,6 +66,9 @@ export default function DropdownTitle() {
         setWorkflow(workflow);
       });
     }
+    userSettingsTable?.getSetting("shortcuts").then((res) => {
+      setSaveShortcut(res?.save);
+    });
   }, [curFlowID]);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -108,26 +110,9 @@ export default function DropdownTitle() {
     URL.revokeObjectURL(url);
   }, [curFlowID]);
 
-  const [closeTimeoutId, setCloseTimeoutId] = useState<number>();
-
-  const delayedClose = () => {
-    setCloseTimeoutId(setTimeout(() => setIsOpen(false), 400)); // delay of 300ms
-  };
-
-  const onOpen = () => {
-    setIsOpen(true);
-    clearTimeout(closeTimeoutId);
-    setCloseTimeoutId(undefined);
-    userSettingsTable?.getSetting("shortcuts").then((res) => {
-      setSaveShortcut(res?.save);
-    });
-  };
-
   return (
     <>
-      <CustomMenu
-        isOpen={isOpen}
-        onClose={delayedClose}
+      <HoverMenu
         menuButton={
           <DarkMode>
             <Button
@@ -137,23 +122,15 @@ export default function DropdownTitle() {
               size={"sm"}
               colorScheme="gray"
               backgroundColor={"gray.700"}
-              onClick={onOpen}
-              onMouseEnter={onOpen}
-              onMouseLeave={delayedClose}
             >
               File
               <IconChevronDown size={20} />
             </Button>
           </DarkMode>
         }
-        options={
+        menuContent={
           <Menu isOpen={true}>
-            <MenuList
-              minWidth={150}
-              zIndex={1000}
-              onMouseEnter={onOpen}
-              onMouseLeave={delayedClose}
-            >
+            <MenuList minWidth={150} zIndex={1000}>
               <MenuItem
                 onClick={saveCurWorkflow}
                 icon={<IconDeviceFloppy size={20} />}
