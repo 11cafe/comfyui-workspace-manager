@@ -53,10 +53,9 @@ export function ModelItem({ data }: Props) {
     const model = await indexdb.models.get(
       data.model_name + "@" + data.model_type,
     );
-    if (data.preview) setUrl(data.preview);
     if (model != null) {
       setModel(model);
-      !data.preview && model.imageUrl?.length && setUrl(model.imageUrl);
+      model.imageUrl?.length && setUrl(model.imageUrl);
     } else if (data.file_hash != null) {
       try {
         const url = `https://civitai.com/api/v1/model-versions/by-hash/${data.file_hash}`;
@@ -72,7 +71,7 @@ export function ModelItem({ data }: Props) {
           const sfwImage = json.images.find((i) => i.nsfw === "None");
           image_url = sfwImage?.url;
         }
-        !data.preview && image_url && setUrl(image_url);
+        image_url && setUrl(image_url);
 
         indexdb.models.add({
           id: data.model_name + "@" + data.model_type,
@@ -85,6 +84,7 @@ export function ModelItem({ data }: Props) {
         });
       } catch (e) {}
     }
+    if (data.preview) setUrl(data.preview);
   };
 
   const handleDragStart = (e: DragEvent<HTMLDivElement>) => {
