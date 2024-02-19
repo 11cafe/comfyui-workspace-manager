@@ -59,6 +59,7 @@ export type WorkflowVersion = {
   json: string;
   createTime: number;
   cloudID?: string;
+  cloudURL?: string;
   nodeDefs?: string; //for cloud workflow version
 };
 
