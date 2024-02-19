@@ -101,10 +101,9 @@ def start_populate_file_hash_dict():
     populate_thread.daemon = True
     populate_thread.start()
 
-start_populate_file_hash_dict()
-
 @server.PromptServer.instance.routes.get("/model_manager/get_model_list")
 def get_model_list(request):
+    start_populate_file_hash_dict()
     with file_list_lock:
         return web.json_response(file_list, content_type='application/json')
     
