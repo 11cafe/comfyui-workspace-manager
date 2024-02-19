@@ -16,6 +16,7 @@ import json
 from .version_control import update_version_if_outdated
 from .service.model_manager.model_installer import download_url_with_wget
 from .service.model_manager.model_list import get_model_list
+from .service.model_manager.model_preview import get_thumbnail_for_image_file
 
 WEB_DIRECTORY = "entry"
 DEFAULT_USER = "guest"
@@ -221,14 +222,19 @@ async def api_view_file(request):
 
     if not os.path.exists(file_path):
         return web.Response(status=404)
+    
+    file_extension = os.path.splitext(filename)[1].lower()
+    if file_extension in image_extensions:
+        return web.json_response(
+            body=get_thumbnail_for_image_file(file_path),
+            content_type='image/jpeg',
+            headers={"Content-Disposition": f"filename=\"{filename}.jpg\""}
+        )
 
     with open(file_path, 'rb') as f:
         media_file = f.read()
 
     content_type = 'application/json'
-    file_extension = os.path.splitext(filename)[1].lower()
-    if file_extension in image_extensions:
-        content_type = f'image/{file_extension[1:]}'
     if file_extension in video_extensions:
         content_type = f'video/{file_extension[1:]}'
 
