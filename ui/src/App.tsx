@@ -504,7 +504,7 @@ export default function App() {
     const handleDrop = async (event: DragEvent) => {
       const fileName = event.dataTransfer?.files[0]?.name;
       const needCreateFlow = await userSettingsTable?.getSetting(
-        "createNewFlowWhenDraggingFileToCanvas",
+        "overwriteCurWorkflowWhenDroppingFileToCanvas",
       );
       if (needCreateFlow && fileName) {
         const flow = await workflowsTable?.createFlow({
