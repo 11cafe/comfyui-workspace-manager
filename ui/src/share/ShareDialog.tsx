@@ -22,13 +22,7 @@ import {
 import { Workflow, WorkflowPrivacy, WorkflowVersion } from "../types/dbTypes";
 import { useEffect, useRef, useState } from "react";
 import CustomSelector from "../components/CustomSelector";
-import {
-  IconCheck,
-  IconCloud,
-  IconCopy,
-  IconExternalLink,
-  IconPlus,
-} from "@tabler/icons-react";
+import { IconCloud, IconCopy, IconExternalLink } from "@tabler/icons-react";
 import {
   userSettingsTable,
   workflowVersionsTable,
@@ -40,6 +34,7 @@ import { api } from "/scripts/api.js";
 import { app } from "/scripts/app.js";
 import { generateRandomKey, getNodeDefs, privacyOptions } from "./shareUtils";
 import { formatTimestamp } from "../utils";
+import ShareDialogWorkflowVersionRadio from "./ShareDialogWorkflowVersionRadio";
 
 interface Props {
   onClose: () => void;
@@ -77,15 +72,19 @@ export default function ShareDialog({ onClose }: Props) {
       localID &&
       (await workflowsTable?.updateFlow(localID, {
         cloudID: cloudID,
-        cloudURL: cloudHost + "/workflow/" + cloudID,
+        cloudURL: cloudHostRef.current + "/workflow/" + cloudID,
       }));
     localVerID &&
       cloudVersionID &&
       (await workflowVersionsTable?.update(localVerID, {
         cloudID: cloudVersionID,
+        cloudURL: cloudHostRef.current + "/workflow_ver/" + cloudVersionID,
       }));
     loadData();
-    window.open(cloudHostRef.current + "/workflow/" + cloudID, "_blank");
+    window.open(
+      cloudHostRef.current + "/workflow_ver/" + cloudVersionID,
+      "_blank",
+    );
     setLoading(false);
   };
   useEffect(() => {
@@ -252,31 +251,11 @@ export default function ShareDialog({ onClose }: Props) {
 
                 {localVersions.slice(0, 4).map((ver) => {
                   return (
-                    <Radio key={ver.id} value={ver.id} mb={5}>
-                      <HStack spacing={4} alignItems={"center"}>
-                        <Text>{ver.name}</Text>
-                        <Text color={"GrayText"}>
-                          {formatTimestamp(ver.createTime, false)}
-                        </Text>
-                        {ver.cloudID && (
-                          <a
-                            href={cloudHost + "/workflow_ver/" + ver.cloudID}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ textDecoration: "none" }}
-                          >
-                            <Button
-                              size={"xs"}
-                              colorScheme="teal"
-                              leftIcon={<IconCloud />}
-                              rightIcon={<IconExternalLink size={18} />}
-                            >
-                              Shared
-                            </Button>
-                          </a>
-                        )}
-                      </HStack>
-                    </Radio>
+                    <ShareDialogWorkflowVersionRadio
+                      key={ver.id}
+                      version={ver}
+                      cloudHost={cloudHost}
+                    />
                   );
                 })}
               </Stack>

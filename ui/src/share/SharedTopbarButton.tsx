@@ -14,6 +14,8 @@ export function SharedTopbarButton({}) {
       workflowsTable?.get(curFlowID).then((flow) => {
         if (flow?.cloudID) {
           setCloudURL(flow.cloudURL);
+        } else {
+          setCloudURL(undefined);
         }
       });
     }
