@@ -45,25 +45,6 @@ export default function CustomSelector<T>({
       >
         {selectedOption?.label}
       </Button>
-      {/* {isOpen && (
-        <Menu isOpen={true}>
-          <MenuList
-            minWidth={150}
-            zIndex={1000}
-            onMouseEnter={onOpen}
-            onMouseLeave={delayedClose}
-          >
-            <MenuItem
-              onClick={saveCurWorkflow}
-              icon={<IconDeviceFloppy size={20} />}
-              iconSpacing={1}
-              command={saveShortcut}
-            >
-              Save
-            </MenuItem>
-          </MenuList>
-        </Menu>
-      )} */}
       {isOpen && (
         <Card
           gap={4}
