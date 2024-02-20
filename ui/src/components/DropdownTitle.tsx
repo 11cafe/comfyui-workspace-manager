@@ -41,14 +41,12 @@ import { Workflow } from "../types/dbTypes";
 import CreateVersionDialog from "./CreateVersionDialog";
 import HoverMenu from "./HoverMenu";
 const ShareDialog = lazy(() => import("../share/ShareDialog"));
+// @ts-ignore
+import { app } from "/scripts/app.js";
 
 export default function DropdownTitle() {
-  const {
-    curFlowID,
-    onDuplicateWorkflow,
-    discardUnsavedChanges,
-    saveCurWorkflow,
-  } = useContext(WorkspaceContext);
+  const { curFlowID, loadWorkflowID, discardUnsavedChanges, saveCurWorkflow } =
+    useContext(WorkspaceContext);
 
   const [isOpenNewVersion, setIsOpenNewVersion] = useState(false);
   const [isOpenNewName, setIsOpenNewName] = useState(false);
@@ -76,13 +74,21 @@ export default function DropdownTitle() {
     submitError && setSubmitError("");
   };
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     if (!curFlowID) {
       alert("Flow ID is required");
       return;
     }
 
-    onDuplicateWorkflow?.(curFlowID, newFlowName);
+    const graph = JSON.stringify(app.graph.serialize());
+    const flow = await workflowsTable?.createFlow({
+      json: graph,
+      lastSavedJson: graph,
+      name: newFlowName,
+      parentFolderID: workflow?.parentFolderID,
+    });
+
+    flow && (await loadWorkflowID(flow.id, true));
     handleOnCloseModal();
   };
 

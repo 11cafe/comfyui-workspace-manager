@@ -234,7 +234,10 @@ export default function App() {
     setRoute("root");
   };
 
-  const loadWorkflowID = async (id: string | null) => {
+  const loadWorkflowID = async (
+    id: string | null,
+    forceLoad: boolean = false,
+  ) => {
     // No current workflow, id is null when you deleted current workflow
     if (id === null) {
       setCurFlowIDAndName(null, "");
@@ -244,7 +247,7 @@ export default function App() {
     // auto save enabled
     const autoSaveEnabled =
       (await userSettingsTable?.getSetting("autoSave")) ?? true;
-    if (autoSaveEnabled || !isDirty) {
+    if (autoSaveEnabled || !isDirty || forceLoad) {
       loadWorkflowIDImpl(id);
       return;
     }

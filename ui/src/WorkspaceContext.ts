@@ -5,9 +5,9 @@ import { Folder, Workflow } from "./types/dbTypes";
 export const WorkspaceContext = createContext<{
   curFlowID: string | null;
   onDuplicateWorkflow?: (flowID: string, newFlowName?: string) => void;
-  loadWorkflowID: (id: string | null) => void;
+  loadWorkflowID: (id: string | null, forceLoad?: boolean) => void;
   saveCurWorkflow: () => void;
-  discardUnsavedChanges: () => void;
+  discardUnsavedChanges: () => Promise<void>;
   isDirty: boolean;
   loadNewWorkflow: (input?: { json: string; name?: string }) => void;
   loadFilePath: (path: string, overwriteCurrent?: boolean) => void;
@@ -16,7 +16,7 @@ export const WorkspaceContext = createContext<{
   curFlowID: null,
   loadWorkflowID: () => {},
   saveCurWorkflow: () => {},
-  discardUnsavedChanges: () => {},
+  discardUnsavedChanges: async () => {},
   isDirty: false,
   loadNewWorkflow: () => {},
   loadFilePath: () => {},
