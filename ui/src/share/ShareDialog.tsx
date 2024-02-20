@@ -1,12 +1,8 @@
 import {
-  Box,
   Button,
   Flex,
   HStack,
   Input,
-  InputGroup,
-  InputLeftAddon,
-  InputRightAddon,
   Link,
   Modal,
   ModalBody,
@@ -16,6 +12,7 @@ import {
   Radio,
   RadioGroup,
   Stack,
+  Tag,
   Text,
   useToast,
 } from "@chakra-ui/react";
@@ -32,8 +29,14 @@ import {
 import { api } from "/scripts/api.js";
 // @ts-ignore
 import { app } from "/scripts/app.js";
-import { generateRandomKey, getNodeDefs, privacyOptions } from "./shareUtils";
-import { formatTimestamp } from "../utils";
+import {
+  PrivacyLabel,
+  fetchCloudWorkflowPrivacy,
+  generateRandomKey,
+  getNodeDefs,
+  privacyOptions,
+} from "./shareUtils";
+
 import ShareDialogWorkflowVersionRadio from "./ShareDialogWorkflowVersionRadio";
 
 interface Props {
@@ -106,6 +109,11 @@ export default function ShareDialog({ onClose }: Props) {
     }
     const workflow = workflowsTable?.curWorkflow ?? undefined;
     setWorkflow(workflow);
+    if (workflow?.cloudID && workflow.cloudURL) {
+      fetchCloudWorkflowPrivacy(workflow).then((privacy) => {
+        setPrivacy(privacy);
+      });
+    }
     workflowVersionsTable?.listByWorkflowID(workflow!.id).then((vers) => {
       setLocalVersions(vers);
     });
@@ -132,21 +140,29 @@ export default function ShareDialog({ onClose }: Props) {
       import.meta.env.MODE === "production"
         ? ((await userSettingsTable?.getSetting("cloudHost")) as string)
         : "http://localhost:3000";
-    const nodeDefs = getNodeDefs();
+    let nodeDefs: Object;
     let version: WorkflowVersion | undefined;
-    if (selectedVersion === "new_version") {
-      version = await workflowVersionsTable?.add({
-        workflowID: workflow!.id,
-        name: versionName,
-        createTime: Date.now(),
-        json: JSON.stringify(app.graph.serialize()),
-      });
-    } else {
-      version = await workflowVersionsTable?.get(selectedVersion);
-    }
-    if (!version) {
-      alert(`Failed to find version: ${selectedVersion}, please try again.`);
+    try {
+      nodeDefs = getNodeDefs();
+      if (selectedVersion === "new_version") {
+        version = await workflowVersionsTable?.add({
+          workflowID: workflow!.id,
+          name: versionName,
+          createTime: Date.now(),
+          json: JSON.stringify(app.graph.serialize()),
+        });
+      } else {
+        version = await workflowVersionsTable?.get(selectedVersion);
+      }
+      if (!version) {
+        alert(`Failed to find version: ${selectedVersion}, please try again.`);
+        setLoading(false);
+        return;
+      }
+    } catch (e) {
+      console.error(e);
       setLoading(false);
+      alert("Failed to share workflow, please try again.");
       return;
     }
     const protocol = window.location.protocol;
@@ -185,15 +201,24 @@ export default function ShareDialog({ onClose }: Props) {
       <ModalContent width={["98%", "90%", "50%"]} maxWidth={"600px"}>
         <ModalHeader>Share "{workflow?.name}"</ModalHeader>
         <ModalBody pb={10}>
-          <Stack gap={6}>
-            <CustomSelector<WorkflowPrivacy>
-              options={privacyOptions}
-              value={privacy}
-              onChange={(val) => {
-                setPrivacy(val);
-              }}
-            />
-
+          <Stack gap={5}>
+            {cloudWorkflowID == null ? (
+              <CustomSelector<WorkflowPrivacy>
+                options={privacyOptions}
+                value={privacy}
+                onChange={(val) => {
+                  setPrivacy(val);
+                }}
+              />
+            ) : (
+              <Tag
+                variant={"outline"}
+                borderRadius={"full"}
+                width={"fit-content"}
+              >
+                <PrivacyLabel privacy={privacy} showEmoji />
+              </Tag>
+            )}
             {cloudWorkflowID && (
               <HStack spacing={2} color="teal.400">
                 <Link
