@@ -195,6 +195,10 @@ export default function ShareDialog({ onClose }: Props) {
   };
 
   const cloudWorkflowID = workflowsTable?.curWorkflow?.cloudID;
+  const selectedVersionName =
+    selectedVersion === "new_version"
+      ? versionName
+      : localVersions.find((v) => v.id === selectedVersion)?.name ?? "";
   return (
     <Modal isOpen={true} onClose={onClose} size={"lg"}>
       <ModalOverlay />
@@ -288,7 +292,7 @@ export default function ShareDialog({ onClose }: Props) {
           </Stack>
           <HStack justifyContent={"flex-end"} mt={16}>
             <Button colorScheme="teal" onClick={onShare} isDisabled={loading}>
-              {loading ? "Sharing" : "Share"}
+              {loading ? "Sharing" : `Share  "${selectedVersionName}"`}
             </Button>
           </HStack>
         </ModalBody>
