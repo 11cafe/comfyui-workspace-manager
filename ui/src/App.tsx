@@ -32,7 +32,6 @@ import {
   openWorkflowInNewTab,
 } from "./utils";
 import { Topbar } from "./topbar/Topbar";
-// import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
 import { PanelPosition, Workflow } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
 import React from "react";
@@ -452,10 +451,8 @@ export default function App() {
         setIsDirty(res);
       });
     }, 1000);
-    // pullAuthTokenCloseIfExist();
 
     window.addEventListener("keydown", shortcutListener);
-    // window.addEventListener("message", authTokenListener);
 
     const fileInput = document.getElementById(
       "comfy-file-input",

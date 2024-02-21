@@ -33,6 +33,8 @@ export function SharedTopbarButton({}) {
       <HoverMenu
         menuButton={
           <Button
+            variant={"outline"}
+            colorScheme="white"
             onClick={() => {
               window.open(workflowsTable?.curWorkflow?.cloudURL);
             }}
@@ -40,7 +42,7 @@ export function SharedTopbarButton({}) {
             size={"xs"}
             iconSpacing={"2px"}
             leftIcon={<IconCloud />}
-            height={"26px"}
+            height={"27px"}
             px={1}
           >
             {privacy ? <PrivacyLabel privacy={privacy} /> : "Shared"}
