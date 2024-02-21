@@ -3,7 +3,6 @@ import { CustomSelectorOption } from "../components/CustomSelector";
 import { Workflow, WorkflowPrivacy } from "../types/dbTypes";
 // @ts-expect-error
 import { app } from "/scripts/app.js";
-import { userSettingsTable } from "../db-tables/WorkspaceDB";
 
 export function generateRandomKey(length: number) {
   // Generate a random array of bytes
@@ -19,7 +18,7 @@ export function generateRandomKey(length: number) {
 export const privacyOptions: CustomSelectorOption<WorkflowPrivacy>[] = [
   { label: "Private", value: "PRIVATE", icon: <IconLock /> },
   {
-    label: "Anyone with the link can access",
+    label: "Unlisted, anyone with the link can view",
     value: "UNLISTED",
     icon: <IconLink />,
   },
