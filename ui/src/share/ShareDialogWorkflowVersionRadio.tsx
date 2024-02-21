@@ -25,6 +25,7 @@ export default function ShareDialogWorkflowVersionRadio({
           <Button
             size={"xs"}
             colorScheme="teal"
+            variant={"outline"}
             leftIcon={<IconCloud />}
             rightIcon={<IconExternalLink size={18} />}
           >
