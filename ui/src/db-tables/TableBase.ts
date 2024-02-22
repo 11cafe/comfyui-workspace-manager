@@ -92,4 +92,11 @@ export class TableBase<T extends TableBaseModel> {
     await indexdb[this.tableName].delete(id);
     await this.saveDiskDB();
   }
+  public async listByIndex(index: keyof T, value: string): Promise<T[]> {
+    const list = await indexdb[this.tableName]
+      .where(index as string)
+      .equals(value)
+      .toArray();
+    return list as any[];
+  }
 }

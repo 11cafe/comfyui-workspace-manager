@@ -32,7 +32,6 @@ import {
   openWorkflowInNewTab,
 } from "./utils";
 import { Topbar } from "./topbar/Topbar";
-// import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
 import { PanelPosition, Workflow } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
 import React from "react";
@@ -43,6 +42,7 @@ const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
 import { scanLocalNewFiles } from "./Api";
 import { IconExternalLink } from "@tabler/icons-react";
 import { DRAWER_Z_INDEX } from "./const";
+import ServerEventListener from "./model-manager/hooks/ServerEventListener";
 
 const ModelManagerTopbar = React.lazy(
   () => import("./model-manager/topbar/ModelManagerTopbar"),
@@ -452,10 +452,8 @@ export default function App() {
         setIsDirty(res);
       });
     }, 1000);
-    // pullAuthTokenCloseIfExist();
 
     window.addEventListener("keydown", shortcutListener);
-    // window.addEventListener("message", authTokenListener);
 
     const fileInput = document.getElementById(
       "comfy-file-input",
@@ -588,6 +586,7 @@ export default function App() {
               <GalleryModal onclose={() => setRoute("root")} />
             )}
           </Box>
+          <ServerEventListener />
         </Portal>
       </div>
     </WorkspaceContext.Provider>
