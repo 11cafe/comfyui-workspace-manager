@@ -77,6 +77,7 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
             mediaLocalPath={workflow.coverMediaPath}
             size={60}
             hideBrokenImage
+            isPreview
           />
         )}
 
