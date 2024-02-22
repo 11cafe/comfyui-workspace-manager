@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { useDialog } from "../../components/AlertDialogProvider";
 import {
   workflowVersionsTable,
@@ -20,18 +20,19 @@ export default function ServerEventListener() {
         await workflowVersionsTable?.listByIndex("cloudID", version.id)
       )?.at(0);
       if (existingVersion) {
+        // existing workflow and version
         await loadWorkflowID(existingWorkflow.id);
-        console.log("existingVersion", existingVersion);
       } else {
+        // existing workflow but new version
         await workflowVersionsTable?.add({
           cloudID: version.id,
           workflowID: existingWorkflow.id,
           name: version.name,
           json: version.json,
         });
-        console.log("newVersion", version);
       }
     } else {
+      // new workflow new version
       const newWorkflow = await workflowsTable?.add({
         cloudID: workflow.id,
         name: workflow.name,
@@ -49,15 +50,10 @@ export default function ServerEventListener() {
         json: version.json,
       });
       await loadWorkflowID(newWorkflow.id);
-      console.log("newWorkflow", workflow);
     }
   };
   const cloudEventListener = async (event: MessageEvent) => {
     const evt: CloudMessageEvent = event.data;
-    if (isCheckConnectionEvent(evt)) {
-      // TODO...
-      return;
-    }
     if (isOpenWorkflowEvent(evt)) {
       const origin = event.origin;
       showDialog(
@@ -74,8 +70,12 @@ export default function ServerEventListener() {
       );
     }
   };
-
-  window.addEventListener("message", cloudEventListener);
+  useEffect(() => {
+    if (window.opener) {
+      window.opener.postMessage("comfyui_workspace_manager_connected", "*");
+    }
+    window.addEventListener("message", cloudEventListener);
+  }, []);
   return null;
 }
 
@@ -97,20 +97,6 @@ interface OpenWorkflowEvent extends CloudMessageEvent {
       json: string;
     };
   };
-}
-
-interface CheckConnectionEvent extends CloudMessageEvent {
-  type: "workspace_check_connection";
-  detail: {
-    workflowID: string;
-    versionID: string;
-  };
-}
-
-function isCheckConnectionEvent(
-  n: CloudMessageEvent,
-): n is CheckConnectionEvent {
-  return n.type === "workspace_check_connection";
 }
 
 function isOpenWorkflowEvent(n: CloudMessageEvent): n is OpenWorkflowEvent {
