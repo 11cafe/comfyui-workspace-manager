@@ -124,30 +124,32 @@ export async function openWorkflowsFolder() {
 
 export type ScanLocalFile = {
   name: string;
+  id: string;
   json: string;
 };
 export type ScanLocalFolder = {
+  type: "folder";
   name: string;
-  list: ScanLocalResult[];
 };
-export type ScanLocalResult = ScanLocalFile | ScanLocalFolder;
-
-export async function scanLocalNewFiles(path: string, existFlowIds: string[]) {
+export async function scanLocalFiles(
+  path: string,
+): Promise<Array<ScanLocalFile | ScanLocalFolder>> {
   try {
-    const response = await fetch("/workspace/scan_local_new_files", {
+    const response = await fetch("/workspace/scan_files", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         path,
-        existFlowIds,
       }),
     });
-    const result: ScanLocalResult[] = await response.json();
+    const result = await response.json();
+    console.log("scanLocalNewFiles", result);
     return result;
   } catch (error) {
     console.error("Error scan local new files:", error);
+    return [];
   }
 }
 

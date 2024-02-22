@@ -48,10 +48,14 @@ export class TableBase<T extends TableBaseModel> {
     await this.saveDiskDB();
     return newItem;
   }
-  public async update(id: string, changes: Partial<T>): Promise<T | null> {
-    await indexdb[this.tableName].update(id, changes);
+  public async update(
+    input: {
+      id: string;
+    } & Partial<T>,
+  ): Promise<T | null> {
+    await indexdb[this.tableName].update(input.id, input);
     await this.saveDiskDB();
-    return (await this.get(id)) ?? null;
+    return (await this.get(input.id)) ?? null;
   }
 
   public async listAll(): Promise<T[]> {

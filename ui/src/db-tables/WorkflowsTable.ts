@@ -1,5 +1,5 @@
-import { foldersTable } from "./WorkspaceDB";
-import { Workflow } from "../types/dbTypes";
+import { foldersTable, userSettingsTable } from "./WorkspaceDB";
+import { Folder, Workflow } from "../types/dbTypes";
 import { sortFileItem } from "../utils";
 import { v4 as uuidv4 } from "uuid";
 import { TableBase } from "./TableBase";
@@ -10,6 +10,7 @@ import {
 } from "./DiskFileUtils";
 import { ESortTypes, ImportWorkflow } from "../RecentFilesDrawer/types";
 import { defaultGraph } from "../defaultGraph";
+import { scanMyWorkflowsDir } from "../utils/twowaySyncUtils";
 
 export class WorkflowsTable extends TableBase<Workflow> {
   static readonly TABLE_NAME = "workflows";
@@ -218,7 +219,11 @@ export class WorkflowsTable extends TableBase<Workflow> {
   public async listFolderContent(
     folderID?: string, // undefined if root folder
     sortBy?: ESortTypes,
-  ) {
+  ): Promise<(Workflow | Folder)[]> {
+    const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
+    // if (twoWaySyncEnabled) {
+    //   return await scanMyWorkflowsDir(folderID);
+    // }
     const workflows =
       (await this.listAll().then((list) =>
         list.filter((w) => w.parentFolderID == folderID),

@@ -22,7 +22,6 @@ import { defaultGraph } from "./defaultGraph";
 import { WorkspaceContext } from "./WorkspaceContext";
 import {
   Route,
-  syncNewFlowOfLocalDisk,
   getFileUrl,
   matchSaveWorkflowShortcut,
   validateOrSaveAllJsonFileMyWorkflows,
@@ -39,7 +38,7 @@ const RecentFilesDrawer = React.lazy(
   () => import("./RecentFilesDrawer/RecentFilesDrawer"),
 );
 const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
-import { scanLocalNewFiles } from "./Api";
+import { scanLocalFiles } from "./Api";
 import { IconExternalLink } from "@tabler/icons-react";
 import { DRAWER_Z_INDEX } from "./const";
 import ServerEventListener from "./model-manager/hooks/ServerEventListener";
@@ -158,14 +157,10 @@ export default function App() {
       latestWfID = localStorage.getItem("curFlowID");
     }
     if (latestWfID) {
-      // since we changed to lazy load our component, app.configureGraph will come before our app loading,
-      // localStorage.setItem("workflow") will not take effect anymore and will result different workflow appearing bug when refreshing
       loadWorkflowIDImpl(latestWfID);
     }
 
-    /**
-     * For two-way sync, one-time rewrite all /my_workflows files to the database
-     */
+    //For two-way sync, one-time rewrite all /my_workflows files to the database
     if (localStorage.getItem("REWRITTEN_ALL_LOCAL_DISK_FILE") === "true") {
       await validateOrSaveAllJsonFileMyWorkflows();
     } else {

@@ -6,7 +6,7 @@ export interface SortableItem {
 export interface Workflow extends SortableItem {
   id: string;
   json: string;
-  lastSavedJson?: string;
+  lastSavedJson?: string; // will be deprecated
   name: string;
   createTime: number;
   filePath?: string;

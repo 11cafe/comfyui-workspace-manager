@@ -47,7 +47,7 @@ export class FoldersTable extends TableBase<Folder> {
   ) {
     const folder = await this.get(input.id);
     if (folder == null) {
-      return;
+      return null;
     }
     const nameChanged = "name" in input && input.name != folder.name;
     const parentFolderChanged =
@@ -73,6 +73,7 @@ export class FoldersTable extends TableBase<Folder> {
     if (nameChanged || parentFolderChanged) {
       validateOrSaveAllJsonFileMyWorkflows(true);
     }
+    return newRecord;
   }
   public async deleteFolder(
     id: string,
