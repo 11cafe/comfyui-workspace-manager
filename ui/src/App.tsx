@@ -1,4 +1,11 @@
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  DragEvent,
+} from "react";
 // @ts-ignore
 import { app } from "/scripts/app.js";
 // @ts-ignore
@@ -227,7 +234,10 @@ export default function App() {
     setRoute("root");
   };
 
-  const loadWorkflowID = async (id: string | null) => {
+  const loadWorkflowID = async (
+    id: string | null,
+    forceLoad: boolean = false,
+  ) => {
     // No current workflow, id is null when you deleted current workflow
     if (id === null) {
       setCurFlowIDAndName(null, "");
@@ -237,7 +247,7 @@ export default function App() {
     // auto save enabled
     const autoSaveEnabled =
       (await userSettingsTable?.getSetting("autoSave")) ?? true;
-    if (autoSaveEnabled || !isDirty) {
+    if (autoSaveEnabled || !isDirty || forceLoad) {
       loadWorkflowIDImpl(id);
       return;
     }
@@ -474,7 +484,6 @@ export default function App() {
         showSaveOrDiscardCurWorkflowDialog();
       }
     };
-
     window.addEventListener("beforeunload", handleBeforeUnload);
 
     const handleExecuted = (e: any) => {
@@ -493,14 +502,32 @@ export default function App() {
         },
       );
     };
-
     api.addEventListener("executed", handleExecuted);
+
+    const handleDrop = async (event: DragEvent) => {
+      const fileName = event.dataTransfer?.files[0]?.name;
+      const overwriteFlow =
+        (await userSettingsTable?.getSetting(
+          "overwriteCurWorkflowWhenDroppingFileToCanvas",
+        )) ?? false;
+      if (!overwriteFlow && fileName) {
+        const flow = await workflowsTable?.createFlow({
+          name: fileName,
+        });
+
+        flow && setCurFlowIDAndName(flow.id, flow.name);
+      }
+    };
+    app.canvasEl.addEventListener("drop", handleDrop);
+
     return () => {
       // window.removeEventListener("message", authTokenListener);
       window.removeEventListener("keydown", shortcutListener);
       window.removeEventListener("change", fileInputListener);
       window.removeEventListener("beforeunload", handleBeforeUnload);
       window.removeEventListener("executed", handleExecuted);
+      app.canvasEl.removeEventListener("drop", handleDrop);
+
       clearInterval(autoSaveTimer.current);
     };
   }, []);

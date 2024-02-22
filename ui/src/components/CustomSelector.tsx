@@ -1,26 +1,38 @@
-import React, { useState, useRef } from "react";
-import { Box, Button, Card, useOutsideClick } from "@chakra-ui/react";
+import React, { useState, useRef, useEffect } from "react";
+import { Box, Button, Card } from "@chakra-ui/react";
 import { IconChevronDown } from "@tabler/icons-react";
 
-export interface CustomSelectorOption {
+export interface CustomSelectorOption<T> {
   label: string;
-  value: string;
+  value: T;
   icon?: React.ReactElement;
 }
 
-type Props = {
-  options: CustomSelectorOption[];
+type Props<T> = {
+  options: CustomSelectorOption<T>[];
+  value: T;
+  onChange: (value: T) => void;
 };
-export default function CustomSelector({ options }: Props) {
+export default function CustomSelector<T>({
+  options,
+  value,
+  onChange,
+}: Props<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const [selectedOption, setSelectedOption] = useState<
-    CustomSelectorOption | undefined
-  >(options[0]);
-  useOutsideClick({
-    ref: ref,
-    handler: () => setIsOpen(false),
-  });
+  const selectedOption = options.find((option) => option.value === value);
+
+  useEffect(() => {
+    const handleClickOutside = (event: any) => {
+      if (ref.current && !ref.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [ref]);
 
   const toggleDropdown = () => setIsOpen(!isOpen);
 
@@ -42,14 +54,14 @@ export default function CustomSelector({ options }: Props) {
           borderWidth="1px"
           p="2"
           position="absolute"
-          zIndex="dropdown"
+          zIndex={100}
         >
           {options.map((option) => (
             <Button
-              key={option.value}
+              key={option.label}
               onClick={() => {
-                setSelectedOption(option);
                 setIsOpen(false);
+                onChange(option.value);
               }}
               leftIcon={option.icon}
               justifyContent="flex-start"

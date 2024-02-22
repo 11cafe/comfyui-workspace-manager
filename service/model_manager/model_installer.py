@@ -90,14 +90,14 @@ async def install_model(request):
 
     json_data = await request.json()
     url = json_data['url']
-    save_path = get_model_path(json_data)
+    save_path = get_model_dir(json_data)
     file_hash = json_data['file_hash']
     if file_hash is not None:
         save_file_hash(save_path, file_hash)
 
     with download_tasks_lock:
         # Add the task to the list
-        download_tasks.append({ 'url': url, 'save_path': save_path })
+        download_tasks.append({ 'url': url, 'save_path': save_path, 'filename': json_data['filename'] })
 
     # If the previous thread is not active, start a new one
     if download_thread is None or not download_thread.is_alive():
@@ -141,12 +141,10 @@ async def install_model_stream(request):
 def download_url_with_agent(url, save_path, progress_callback=None):
     print('download_url_with_agent', url, save_path)
 
-    temp_save_path = save_path + ".temp"  # Temporary file
-
     try:
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
-        print(f"Downloading {url} to {temp_save_path} ...")
+        print(f"Downloading {url} to {save_path} ...")
 
         req = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(req) as response:
@@ -155,6 +153,9 @@ def download_url_with_agent(url, save_path, progress_callback=None):
   
             file_size = int(response.headers.get('content-length', 0))
             print(f"File size: {file_size} bytes")
+            file_name = response.headers.get('Content-Disposition').split('filename=')[1].strip('"')
+            file_path = os.path.join(save_path, file_name)
+            temp_file_path = file_path + ".temp"  # Temporary file
             chunk_size = 1024  # 1KB per chunk
             downloaded = 0
 
@@ -166,10 +167,10 @@ def download_url_with_agent(url, save_path, progress_callback=None):
               else:
                 raise Exception(f"Download failed. {title}")
 
-            if not os.path.exists(os.path.dirname(temp_save_path)):
-                os.makedirs(os.path.dirname(temp_save_path))
+            if not os.path.exists(os.path.dirname(temp_file_path)):
+                os.makedirs(os.path.dirname(temp_file_path))
 
-            with open(temp_save_path, 'wb') as f:
+            with open(temp_file_path, 'wb') as f:
                 while True:
                     chunk = response.read(chunk_size)
                     if not chunk:
@@ -178,19 +179,19 @@ def download_url_with_agent(url, save_path, progress_callback=None):
                     downloaded += len(chunk)
                     progress = (downloaded / file_size) * 100
                     print(f'\rProgress: {progress:.2f}%', end='')
-                    send_download_status({'save_path': save_path, 'progress': progress})
+                    send_download_status({'save_path': file_path, 'progress': progress})
 
                     # if progress_callback:
                     #     progress_callback(progress)
 
         # Rename temp file to final filename after successful download
-        os.rename(temp_save_path, save_path)
+        os.rename(temp_file_path, file_path)
 
     except Exception as e:
         print(f"\nDownload error: {url} / {e}", file=sys.stderr)
         send_ws('download_error', f"{url} / {e}")
-        if os.path.exists(temp_save_path):
-            os.remove(temp_save_path)  # Clean up the temporary file in case of failure
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)  # Clean up the temporary file in case of failure
         return False
 
     print("\nDownload complete. File saved as:", save_path)
@@ -251,7 +252,7 @@ def send_download_status(data):
     with download_tasks_lock:
         progress_list = [data]
         for task in download_tasks:
-            progress_list.append({'save_path': task['save_path'], 'progress': 0})
+            progress_list.append({'save_path': task['filename'], 'progress': 0})
         send_ws('download_progress', progress_list)
 
 loop = asyncio.get_event_loop()

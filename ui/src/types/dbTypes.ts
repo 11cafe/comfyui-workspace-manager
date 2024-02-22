@@ -14,6 +14,8 @@ export interface Workflow extends SortableItem {
   parentFolderID?: string;
   mediaIDs?: string[];
   coverMediaPath?: string;
+  cloudID?: string;
+  cloudURL?: string;
 }
 
 export interface TableBaseModel {
@@ -56,8 +58,9 @@ export type WorkflowVersion = {
   workflowID: string;
   json: string;
   createTime: number;
-  privacy?: "public" | "private";
-  remoteUrl?: string;
+  cloudID?: string;
+  cloudURL?: string;
+  nodeDefs?: string; //for cloud workflow version
 };
 
 export type UserSettings = {
@@ -72,6 +75,8 @@ export type UserSettings = {
   twoWaySync?: boolean;
   foldersOnTop?: boolean;
   showNsfwModelThumbnail?: boolean;
+  cloudHost: string;
+  overwriteCurWorkflowWhenDroppingFileToCanvas: boolean;
 };
 
 export interface PanelPosition {
@@ -116,5 +121,7 @@ export enum EFlowOperationType {
    */
   DELETE = "delete",
 }
+
+export type WorkflowPrivacy = "PUBLIC" | "PRIVATE" | "UNLISTED";
 
 export const WORKSPACE_INDEXDB_NAME = "comfyui_workspace_db";

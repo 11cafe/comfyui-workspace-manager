@@ -9,6 +9,7 @@ import threading
 import os
 import urllib.request
 import json
+from .model_preview import preview_file 
 
 # The path to the file where file_hash_dict will be saved
 FILE_HASH_DICT_FOLDER_PATH = os.path.join(os.path.dirname(__file__),"../../hash")
@@ -22,8 +23,7 @@ file_list = []
 file_list_lock = threading.Lock()
 
 # Add a global variable to track if populate_file_hash_dict is done
-populate_started = False
-populate_done = False
+is_populating = False
 
 def save_file_hash(file_path, file_hash):
     global file_hash_dict
@@ -46,10 +46,10 @@ def process_file(folder, file):
     else:
         file_hash = None  # placeholder for hash
     [model_name, model_extension] = os.path.splitext(file)
-    return {"model_name": model_name, "model_type": folder, "model_extension": model_extension, "file_hash": file_hash}
+    return {"model_name": model_name, "model_type": folder, "model_extension": model_extension, "file_hash": file_hash, "preview": preview_file(file_path)}
 
 def populate_file_hash_dict():
-    global populate_done, file_list
+    global is_populating, file_list
     local_file_list = []
     folder_list = dict(folder_paths.folder_names_and_paths)
     for folder in folder_list:
@@ -71,7 +71,7 @@ def populate_file_hash_dict():
                 file["file_hash"] = file_hash
                 send_ws('model_list', file_list)  # update the list with the new hash
     # Set populate_done to True when done
-    populate_done = True
+    is_populating = False
 
 def civit_get_model_by_hash(file_hash: str):
     if (file_hash is None):
@@ -91,19 +91,17 @@ def civit_get_model_by_hash(file_hash: str):
         return None
 
 def start_populate_file_hash_dict():
-    global populate_thread, populate_started, populate_done
-    populate_running = populate_started == True and populate_done == False
-    if (populate_running):
+    global populate_thread, is_populating
+    if (is_populating):
         return
-    populate_started = True
+    is_populating = True
     populate_thread = threading.Thread(target=populate_file_hash_dict)
     populate_thread.daemon = True
     populate_thread.start()
 
-start_populate_file_hash_dict()
-
 @server.PromptServer.instance.routes.get("/model_manager/get_model_list")
 def get_model_list(request):
+    start_populate_file_hash_dict()
     with file_list_lock:
         return web.json_response(file_list, content_type='application/json')
     

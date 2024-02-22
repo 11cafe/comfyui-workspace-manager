@@ -1,5 +1,6 @@
 import {
   ChangeEvent,
+  lazy,
   useCallback,
   useContext,
   useEffect,
@@ -37,17 +38,15 @@ import { workflowsTable, userSettingsTable } from "../db-tables/WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { VersionHistoryDrawer } from "./VersionHistoryDrawer";
 import { Workflow } from "../types/dbTypes";
-import ShareDialog from "../share/ShareDialog";
-import CustomMenu from "./CustomMenu";
 import CreateVersionDialog from "./CreateVersionDialog";
+import HoverMenu from "./HoverMenu";
+const ShareDialog = lazy(() => import("../share/ShareDialog"));
+// @ts-ignore
+import { app } from "/scripts/app.js";
 
 export default function DropdownTitle() {
-  const {
-    curFlowID,
-    onDuplicateWorkflow,
-    discardUnsavedChanges,
-    saveCurWorkflow,
-  } = useContext(WorkspaceContext);
+  const { curFlowID, loadWorkflowID, discardUnsavedChanges, saveCurWorkflow } =
+    useContext(WorkspaceContext);
 
   const [isOpenNewVersion, setIsOpenNewVersion] = useState(false);
   const [isOpenNewName, setIsOpenNewName] = useState(false);
@@ -55,7 +54,6 @@ export default function DropdownTitle() {
   const [newFlowName, setNewFlowName] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [workflow, setWorkflow] = useState<Workflow>();
-  const [isOpen, setIsOpen] = useState(false);
   const [saveShortcut, setSaveShortcut] = useState("");
   const [isShareOpen, setIsShareOpen] = useState(false);
 
@@ -66,6 +64,9 @@ export default function DropdownTitle() {
         setWorkflow(workflow);
       });
     }
+    userSettingsTable?.getSetting("shortcuts").then((res) => {
+      setSaveShortcut(res?.save);
+    });
   }, [curFlowID]);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -73,13 +74,21 @@ export default function DropdownTitle() {
     submitError && setSubmitError("");
   };
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     if (!curFlowID) {
       alert("Flow ID is required");
       return;
     }
 
-    onDuplicateWorkflow?.(curFlowID, newFlowName);
+    const graph = JSON.stringify(app.graph.serialize());
+    const flow = await workflowsTable?.createFlow({
+      json: graph,
+      lastSavedJson: graph,
+      name: newFlowName,
+      parentFolderID: workflow?.parentFolderID,
+    });
+
+    flow && (await loadWorkflowID(flow.id, true));
     handleOnCloseModal();
   };
 
@@ -107,26 +116,9 @@ export default function DropdownTitle() {
     URL.revokeObjectURL(url);
   }, [curFlowID]);
 
-  const [closeTimeoutId, setCloseTimeoutId] = useState<number>();
-
-  const delayedClose = () => {
-    setCloseTimeoutId(setTimeout(() => setIsOpen(false), 400)); // delay of 300ms
-  };
-
-  const onOpen = () => {
-    setIsOpen(true);
-    clearTimeout(closeTimeoutId);
-    setCloseTimeoutId(undefined);
-    userSettingsTable?.getSetting("shortcuts").then((res) => {
-      setSaveShortcut(res?.save);
-    });
-  };
-
   return (
     <>
-      <CustomMenu
-        isOpen={isOpen}
-        onClose={delayedClose}
+      <HoverMenu
         menuButton={
           <DarkMode>
             <Button
@@ -134,24 +126,17 @@ export default function DropdownTitle() {
               height={"29px"}
               aria-label="menu"
               size={"sm"}
-              colorScheme="teal"
-              onClick={onOpen}
-              onMouseEnter={onOpen}
-              onMouseLeave={delayedClose}
+              colorScheme="gray"
+              backgroundColor={"gray.700"}
             >
               File
               <IconChevronDown size={20} />
             </Button>
           </DarkMode>
         }
-        options={
+        menuContent={
           <Menu isOpen={true}>
-            <MenuList
-              minWidth={150}
-              zIndex={1000}
-              onMouseEnter={onOpen}
-              onMouseLeave={delayedClose}
-            >
+            <MenuList minWidth={150} zIndex={1000}>
               <MenuItem
                 onClick={saveCurWorkflow}
                 icon={<IconDeviceFloppy size={20} />}
@@ -209,12 +194,7 @@ export default function DropdownTitle() {
           </Menu>
         }
       />
-      {isShareOpen && workflowsTable?.curWorkflow && (
-        <ShareDialog
-          workflow={workflowsTable?.curWorkflow}
-          onClose={() => setIsShareOpen(false)}
-        />
-      )}
+      {isShareOpen && <ShareDialog onClose={() => setIsShareOpen(false)} />}
       {isVersionHistoryOpen && (
         <VersionHistoryDrawer onClose={() => setIsVersionHistoryOpen(false)} />
       )}

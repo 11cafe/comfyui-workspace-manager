@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import {
   Link,
   Checkbox,
@@ -22,7 +22,7 @@ import { WorkspaceContext } from "../../WorkspaceContext";
 import { useDialog } from "../../components/AlertDialogProvider";
 import MediaPreview from "../../components/MediaPreview";
 
-interface MediaPreviewProps {
+interface GalleryMediaItemProps {
   media: Media;
   isSelecting: boolean;
   selectedID: string[];
@@ -32,7 +32,7 @@ interface MediaPreviewProps {
   setCoverPath: (path: string) => void;
 }
 
-const GalleryMediaItem: React.FC<MediaPreviewProps> = ({
+const GalleryMediaItem: React.FC<GalleryMediaItemProps> = ({
   media,
   isSelecting,
   selectedID,
@@ -68,6 +68,7 @@ const GalleryMediaItem: React.FC<MediaPreviewProps> = ({
           // setIsVisible(false);
         }}
         autoPlay={true}
+        isPreview
       />
     </Link>
   );
