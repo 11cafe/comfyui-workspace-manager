@@ -16,7 +16,7 @@ import json
 from .version_control import update_version_if_outdated
 from .service.model_manager.model_installer import download_url_with_wget
 from .service.model_manager.model_list import get_model_list
-from .service.model_manager.model_preview import get_thumbnail_for_image_file
+from .service.media_service import *
 
 WEB_DIRECTORY = "entry"
 DEFAULT_USER = "guest"
@@ -204,46 +204,6 @@ async def rename_file(request):
         return web.Response(text="File renamed successfully")
     else:
         return web.Response(text="File not found", status=404)
-
-image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
-video_extensions = ['.mp4', '.mov', '.avi', '.webm', '.mkv']
-@server.PromptServer.instance.routes.get("/workspace/view_media")
-async def api_view_file(request):
-    filename = request.query.get("filename", None)
-    if not filename:
-        return web.Response(status=404)
-    
-    # validation for security: prevent accessing arbitrary path
-    if filename[0] == '/' or '..' in filename:
-        return web.Response(status=400)
-
-    output_path = folder_paths.get_output_directory()
-    file_path = os.path.join(output_path, filename)
-
-    if not os.path.exists(file_path):
-        return web.Response(status=404)
-    
-    file_extension = os.path.splitext(filename)[1].lower()
-    if file_extension in image_extensions:
-        return web.json_response(
-            body=get_thumbnail_for_image_file(file_path),
-            content_type='image/jpeg',
-            headers={"Content-Disposition": f"filename=\"{filename}.jpg\""}
-        )
-
-    with open(file_path, 'rb') as f:
-        media_file = f.read()
-
-    content_type = 'application/json'
-    if file_extension in video_extensions:
-        content_type = f'video/{file_extension[1:]}'
-
-    return web.Response(
-        body=media_file,
-        content_type=content_type,
-        headers={"Content-Disposition": f"filename=\"{filename}\""}
-    )
-
 
 @server.PromptServer.instance.routes.post("/workspace/open_workflow_file_browser")
 async def open_workflow_file_browser(request):

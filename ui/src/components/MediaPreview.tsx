@@ -8,10 +8,12 @@ type Props = {
   autoPlay?: boolean;
   onBrokenLink?: () => void;
   hideBrokenImage?: boolean;
+  isPreview?: boolean;
 };
 export default function MediaPreview({
   mediaLocalPath,
   size,
+  isPreview,
   autoPlay,
   hideBrokenImage,
   onBrokenLink,
@@ -22,7 +24,9 @@ export default function MediaPreview({
     const checkMediaExists = async () => {
       try {
         const response = await fetch(
-          `/workspace/view_media?filename=${mediaLocalPath}`,
+          isPreview
+            ? `/workspace/preview_media?filename=${mediaLocalPath}`
+            : `/workspace/view_media?filename=${mediaLocalPath}`,
         );
         if (!response.ok) throw new Error("Media not found");
         setIsVisible(true);
