@@ -40,12 +40,8 @@ export class FoldersTable extends TableBase<Folder> {
     return folder;
   }
 
-  public async update(
-    input: {
-      id: string;
-    } & Partial<Folder>,
-  ) {
-    const folder = await this.get(input.id);
+  public async update(id: string, input: Partial<Folder>) {
+    const folder = await this.get(id);
     if (folder == null) {
       return null;
     }
@@ -66,7 +62,7 @@ export class FoldersTable extends TableBase<Folder> {
         newRecord.parentFolderID ?? undefined,
       );
     }
-    await indexdb.folders.update(input.id, input);
+    await indexdb.folders.update(id, input);
     this.saveDiskDB();
 
     // folder moved or renamed - move all workflows to the right directory(not required when folded state changes)
@@ -141,5 +137,65 @@ export class FoldersTable extends TableBase<Folder> {
       }
     }
     return newFlowName;
+  }
+  public async genRelativePath(id: string): Promise<string | null> {
+    let currentFolderId: string | null | undefined = id;
+    const pathSegments: string[] = [];
+
+    while (currentFolderId != null) {
+      const folder = await this.get(currentFolderId);
+      if (!folder) {
+        console.error(`Folder with ID ${currentFolderId} not found`);
+        return null;
+      }
+      // Prepend the current folder name to the path segments
+      pathSegments.unshift(folder.name);
+
+      // Move up to the parent folder for the next iteration
+      currentFolderId = folder.parentFolderID;
+    }
+
+    return pathSegments.join("/");
+  }
+
+  // given a relative path, create the folder structure if not exist, and return the folder
+  public async putWithRelativePath(
+    relativePath: string,
+  ): Promise<Folder | null> {
+    if (relativePath === "") {
+      // root folder
+      return null;
+    }
+    const pathSegments = relativePath.split("/");
+    let parentFolderID: string | null = null;
+    let existingFolder: Folder | null = null;
+    for (const name of pathSegments) {
+      if (name === "") {
+        console.warn('Invalid folder name "" in path', relativePath);
+        continue;
+      }
+      existingFolder =
+        (await indexdb.folders
+          .where({ name })
+          .filter((f) => {
+            return f.parentFolderID == parentFolderID;
+          })
+          .first()) ?? null;
+      if (existingFolder == null) {
+        const newFolder = await this.add({
+          name,
+          parentFolderID,
+          updateTime: Date.now(),
+          type: "folder",
+        });
+        existingFolder = (await this.get(newFolder.id)) ?? null;
+      }
+      if (existingFolder == null) {
+        console.error("Failed to create folder", name);
+        throw new Error("Failed to create folder");
+      }
+      parentFolderID = existingFolder.id;
+    }
+    return existingFolder;
   }
 }

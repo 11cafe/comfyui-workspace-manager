@@ -87,7 +87,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
     const { id, json, name } = input;
     const newFlowName = await this.generateUniqueName(
       name,
-      input.parentFolderID,
+      input.parentFolderID ?? undefined,
     );
     const uuid = id ?? uuidv4(); // ⇨ '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
     const time = Date.now();
@@ -105,6 +105,21 @@ export class WorkflowsTable extends TableBase<Workflow> {
     this.saveDiskDB();
     // add to my_workflows/
     saveJsonFileMyWorkflows(newWorkflow);
+    return newWorkflow;
+  }
+
+  public async update(
+    id: string,
+    change: Partial<Workflow>,
+  ): Promise<Workflow | null> {
+    //update indexdb
+    await indexdb.workflows.update(id, change);
+    const newWorkflow = (await this.get(id)) ?? null;
+    //update curWorkflow RAM
+    if (this._curWorkflow && this._curWorkflow.id === id) {
+      this._curWorkflow = newWorkflow;
+    }
+    await this.saveDiskDB();
     return newWorkflow;
   }
 
@@ -134,8 +149,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
       newWorkflow.updateTime = Date.now();
       // update parent folder updateTime
       if (newWorkflow.parentFolderID != null) {
-        await foldersTable?.update({
-          id: newWorkflow.parentFolderID,
+        await foldersTable?.update(newWorkflow.parentFolderID, {
           updateTime: Date.now(),
         });
       }
@@ -221,9 +235,9 @@ export class WorkflowsTable extends TableBase<Workflow> {
     sortBy?: ESortTypes,
   ): Promise<(Workflow | Folder)[]> {
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
-    // if (twoWaySyncEnabled) {
-    //   return await scanMyWorkflowsDir(folderID);
-    // }
+    if (twoWaySyncEnabled) {
+      return await scanMyWorkflowsDir(folderID);
+    }
     const workflows =
       (await this.listAll().then((list) =>
         list.filter((w) => w.parentFolderID == folderID),

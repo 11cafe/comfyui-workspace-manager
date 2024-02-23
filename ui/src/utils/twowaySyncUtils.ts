@@ -1,64 +1,76 @@
+import { ScanLocalFile, ScanLocalFolder, scanLocalFiles } from "../Api";
 import {
-  ScanLocalFile,
-  ScanLocalFolder,
-  ScanLocalResult,
-  scanLocalFiles,
-} from "../Api";
-import { userSettingsTable } from "../db-tables/WorkspaceDB";
+  foldersTable,
+  userSettingsTable,
+  workflowsTable,
+} from "../db-tables/WorkspaceDB";
 import { Folder, Workflow } from "../types/dbTypes";
 
+function osPathJoin(...args: string[]) {
+  return args.filter((segment) => segment !== "").join("/");
+}
 export async function scanMyWorkflowsDir(
   parentFolderID: string | undefined,
 ): Promise<(Workflow | Folder)[]> {
   const myWorkflowsDir = await userSettingsTable?.getSetting("myWorkflowsDir");
-  const scanDir = myWorkflowsDir + (parentFolder ? `/${parentFolder}` : "");
+  if (myWorkflowsDir == null) {
+    alert("Please set up the folder for syncing in Settings");
+    return [];
+  }
+  const scanFolderRelativePath = parentFolderID
+    ? await foldersTable?.genRelativePath(parentFolderID)
+    : "";
+  console.log(
+    "scanMyWorkflowsDir",
+    parentFolderID,
+    "scanFolderRelativePath",
+    scanFolderRelativePath,
+  );
+  if (scanFolderRelativePath == null) {
+    alert("Unable to find folder for syncing");
+    return [];
+  }
+  const scanDir = osPathJoin(myWorkflowsDir, scanFolderRelativePath);
   const fileList = await scanLocalFiles(scanDir);
+  const result: (Workflow | Folder)[] = [];
   for (const file of fileList) {
+    const fileName = file.name;
+    const absPath = [scanDir, fileName].join("/");
+    const relPath = [scanFolderRelativePath, fileName].join("/");
     if (scanFileIsFolder(file)) {
+      // is folder
+      const folder = await foldersTable?.putWithRelativePath(relPath);
+      folder && result.push(folder);
     } else {
       // is workflow
-      const path = file.name;
+      console.log("scanMyWorkflowsDir workflow absPath", absPath, relPath);
+      const folder = await foldersTable?.putWithRelativePath(relPath);
+      const existingWorkflow = await workflowsTable?.get(file.id);
+      if (existingWorkflow) {
+        const newWorkflow: Workflow = {
+          ...existingWorkflow,
+          filePath: absPath,
+          name: fileName.replace(".json", ""),
+          parentFolderID: folder?.id ?? null,
+        };
+        workflowsTable?.put(newWorkflow);
+        result.push(newWorkflow);
+      } else {
+        const flow = await workflowsTable?.add({
+          filePath: absPath,
+          name: fileName.replace(".json", ""),
+          parentFolderID: folder?.id ?? null,
+          updateTime: Date.now(),
+          json: file.json ?? "{}",
+        });
+        flow && result.push(flow);
+      }
     }
   }
-  await syncNewFlowOfLocalDisk(fileList);
+  return result;
 }
 function scanFileIsFolder(
   scanFile: ScanLocalFile | ScanLocalFolder,
 ): scanFile is ScanLocalFolder {
   return "type" in scanFile && scanFile.type === "folder";
-}
-
-export async function syncNewFlowOfLocalDisk(
-  scanList: ScanLocalResult,
-  parentFolderID?: string,
-) {
-  const fileList = scanList.filter((s): s is ScanLocalFile => "json" in s);
-  if (fileList.length) {
-    await workflowsTable?.batchCreateFlows(fileList, true, parentFolderID);
-  }
-
-  const folderList = scanList.filter((s): s is ScanLocalFolder => "list" in s);
-  if (folderList.length) {
-    const currentFolderList = await foldersTable?.listAll();
-
-    for (const folder of folderList) {
-      const existFolder = currentFolderList?.find(
-        (f) => f.name === folder.name,
-      );
-
-      let folderId;
-
-      if (existFolder) {
-        folderId = existFolder.id;
-      } else {
-        const newFolder = await foldersTable?.create({
-          name: folder.name,
-          parentFolderID,
-        });
-        folderId = newFolder?.id;
-      }
-
-      await syncNewFlowOfLocalDisk(folder.list, folderId);
-    }
-  }
 }

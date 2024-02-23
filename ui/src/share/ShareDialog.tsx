@@ -79,8 +79,7 @@ export default function ShareDialog({ onClose }: Props) {
       }));
     localVerID &&
       cloudVersionID &&
-      (await workflowVersionsTable?.update({
-        id: localVerID,
+      (await workflowVersionsTable?.update(localVerID, {
         cloudID: cloudVersionID,
         cloudURL: cloudHostRef.current + "/workflow_ver/" + cloudVersionID,
       }));

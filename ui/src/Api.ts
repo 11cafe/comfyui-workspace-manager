@@ -123,6 +123,7 @@ export async function openWorkflowsFolder() {
 }
 
 export type ScanLocalFile = {
+  type: "workflow";
   name: string;
   id: string;
   json: string;
@@ -134,8 +135,9 @@ export type ScanLocalFolder = {
 export async function scanLocalFiles(
   path: string,
 ): Promise<Array<ScanLocalFile | ScanLocalFolder>> {
+  console.log("scanLocalFiles api", path);
   try {
-    const response = await fetch("/workspace/scan_files", {
+    const response = await fetch("/workspace/scan_my_workflows_files", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

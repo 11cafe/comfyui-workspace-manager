@@ -44,8 +44,7 @@ export default function EditFolderNameModal({ folder, onclose }: Props) {
         "The name is duplicated, please modify it and submit again.",
       );
     } else {
-      await foldersTable?.update({
-        id: folder.id,
+      await foldersTable?.update(folder.id, {
         name: trimEditName,
       });
       onRefreshFilesList && onRefreshFilesList();

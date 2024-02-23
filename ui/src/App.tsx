@@ -38,7 +38,6 @@ const RecentFilesDrawer = React.lazy(
   () => import("./RecentFilesDrawer/RecentFilesDrawer"),
 );
 const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
-import { scanLocalFiles } from "./Api";
 import { IconExternalLink } from "@tabler/icons-react";
 import { DRAWER_Z_INDEX } from "./const";
 import ServerEventListener from "./model-manager/hooks/ServerEventListener";
@@ -162,7 +161,7 @@ export default function App() {
 
     //For two-way sync, one-time rewrite all /my_workflows files to the database
     if (localStorage.getItem("REWRITTEN_ALL_LOCAL_DISK_FILE") === "true") {
-      await validateOrSaveAllJsonFileMyWorkflows();
+      // await validateOrSaveAllJsonFileMyWorkflows();
     } else {
       await rewriteAllLocalFiles();
       localStorage.setItem("REWRITTEN_ALL_LOCAL_DISK_FILE", "true");
