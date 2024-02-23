@@ -12,9 +12,9 @@ export interface Workflow extends SortableItem {
   filePath?: string;
   tags?: string[];
   parentFolderID?: string | null; //TODO remove undefined, use null only
-  mediaIDs?: string[];
+  mediaIDs?: string[]; // TODO will be deprecated
   coverMediaPath?: string;
-  cloudID?: string;
+  cloudID?: string; // TODO will be deprecated
   cloudURL?: string;
 }
 
