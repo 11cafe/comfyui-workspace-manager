@@ -51,13 +51,13 @@ export default function InatallModelsModal({
   const [fileState, setFile, file] = useStateRef<FileEssential>();
   const loadData = useCallback(async () => {
     setLoading(true);
-    if (!searchQuery) {
-      const models = await getModelFromCivitAPi(modelType);
-      setModels(models);
-    } else {
-      const models = await getModelFromSearch(searchQuery, modelType);
-      setModels(models);
-    }
+    // if (!searchQuery) {
+    //   const models = await getModelFromCivitAPi(modelType);
+    //   setModels(models);
+    // } else {
+    const models = await getModelFromSearch(searchQuery, modelType);
+    setModels(models);
+
     setLoading(false);
   }, [searchQuery, modelType]);
 
@@ -70,7 +70,6 @@ export default function InatallModelsModal({
       downloadUrl ??
       `https://civitai.com/api/download/models/${file.current?.id}`;
     let version = file.current?.name;
-
     if (!version) {
       version = url.split("/").pop();
       if (!version) {

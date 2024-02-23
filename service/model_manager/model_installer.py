@@ -91,7 +91,7 @@ async def install_model(request):
     json_data = await request.json()
     url = json_data['url']
     save_path = get_model_dir(json_data)
-    file_hash = json_data['file_hash']
+    file_hash = json_data.get('file_hash')
     if file_hash is not None:
         save_file_hash(save_path, file_hash)
 

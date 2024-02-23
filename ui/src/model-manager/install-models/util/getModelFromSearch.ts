@@ -1,25 +1,35 @@
-import { userSettingsTable } from "../../../db-tables/WorkspaceDB";
-import {
-  SearchHit,
-  SearchRequestBody,
-  SearchResponse,
-} from "../../civitSearchTypes";
+import { SearchHit, SearchResponse } from "../../civitSearchTypes";
 import { MODEL_TYPE } from "./modelTypes";
 
 export async function getModelFromSearch(
   q: string,
   type?: MODEL_TYPE,
 ): Promise<SearchHit[]> {
-  const showNsfwThumbnail = await userSettingsTable?.getSetting(
-    "showNsfwModelThumbnail",
-  );
-  const params: SearchRequestBody = {
-    limit: 30,
-    filter: `nsfw = ${showNsfwThumbnail ?? false} AND type != Workflows`,
-    q,
+  const params: any = {
+    queries: [
+      {
+        q: q,
+        indexUid: "models_v5",
+        facets: [
+          "category.name",
+          "checkpointType",
+          "fileFormats",
+          "lastVersionAtUnix",
+          "tags.name",
+          "type",
+          "user.username",
+          "version.baseModel",
+        ],
+        attributesToHighlight: ["*"],
+        highlightPreTag: "__ais-highlight__",
+        highlightPostTag: "__/ais-highlight__",
+        limit: 80,
+        offset: 0,
+      },
+    ],
   };
   if (type) {
-    params.filter += `AND type = ${type}`;
+    params.queries[0].filter = [[`"type"="${type}"`]];
   }
   const data = await fetch(import.meta.env.VITE_CMODEL_SEARCH_URL as string, {
     headers: {
@@ -29,6 +39,7 @@ export async function getModelFromSearch(
     method: "POST",
     body: JSON.stringify(params),
   });
-  const json: SearchResponse = await data.json();
-  return json?.hits ?? [];
+  const json: SearchResponse = (await data.json())?.results?.at(0);
+  const hits = json.hits ?? [];
+  return hits;
 }

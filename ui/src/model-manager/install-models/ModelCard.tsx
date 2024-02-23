@@ -59,7 +59,7 @@ export default function ModelCard({
       console.error("no file is find by name", selectedFile);
       return;
     }
-    onClickInstallModel(getFileEssential(curFile), model);
+    onClickInstallModel(getFileEssential(curFile, model.name), model);
   }, [selectedFile]);
   const sizeKB = getFileEssential(curFile)?.sizeKB;
   return (
