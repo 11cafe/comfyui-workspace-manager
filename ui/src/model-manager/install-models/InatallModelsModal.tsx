@@ -70,7 +70,6 @@ export default function InatallModelsModal({
       downloadUrl ??
       `https://civitai.com/api/download/models/${file.current?.id}`;
     let version = file.current?.name;
-    console.log("downloadModels", file.current, downloadUrl, url, version);
     if (!version) {
       version = url.split("/").pop();
       if (!version) {
