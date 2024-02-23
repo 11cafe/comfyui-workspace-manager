@@ -47,30 +47,22 @@ export async function scanMyWorkflowsDir(
       // is workflow
       console.log("scanMyWorkflowsDir workflow absPath", absPath, relPath);
       const folder = await foldersTable?.putWithRelativePath(relPath);
-      const existingWorkflow = await workflowsTable?.get(file.id);
-      if (existingWorkflow) {
-        const newWorkflow: Workflow = {
-          ...existingWorkflow,
-          filePath: absPath,
-          name: fileName.replace(".json", ""),
-          parentFolderID: folder?.id ?? null,
-        };
-        // workflowsTable?.put(newWorkflow);
-        // result.push(newWorkflow);
-        return newWorkflow;
-      } else {
-        const newFlow = {
-          id: file.id,
-          filePath: absPath,
-          name: fileName.replace(".json", ""),
-          parentFolderID: folder?.id ?? null,
-          updateTime: Date.now(),
-          json: file.json ?? "{}",
-        };
-        const flow = indexdb.workflows.put(newFlow);
-        // flow && result.push(flow);
-        return newFlow;
-      }
+      const existingWorkflow = (await workflowsTable?.get(file.id)) ?? {
+        createTime: Date.now(),
+        updateTime: Date.now(),
+      };
+
+      const newWorkflow: Workflow = {
+        ...existingWorkflow,
+        id: file.id,
+        filePath: absPath,
+        json: file.json ?? "{}",
+        name: fileName.replace(".json", ""),
+        parentFolderID: folder?.id ?? null,
+      };
+      // workflowsTable?.put(newWorkflow);
+      indexdb.workflows.put(newWorkflow);
+      return newWorkflow;
     }
   });
   result = await Promise.all(allFilesPromises);
