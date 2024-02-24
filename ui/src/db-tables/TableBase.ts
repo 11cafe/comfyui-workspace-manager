@@ -48,6 +48,10 @@ export class TableBase<T extends TableBaseModel> {
     await this.saveDiskDB();
     return newItem;
   }
+  public async bulkPut(newItems: T[]): Promise<void> {
+    await indexdb[this.tableName].bulkPut(newItems as any);
+    this.saveDiskDB();
+  }
   public async update(id: string, changes: Partial<T>): Promise<T | null> {
     await indexdb[this.tableName].update(id, changes);
     await this.saveDiskDB();

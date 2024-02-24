@@ -1,6 +1,7 @@
 import { ScanLocalFile, ScanLocalFolder, scanLocalFiles } from "../Api";
 import {
   foldersTable,
+  isFolder,
   userSettingsTable,
   workflowsTable,
 } from "../db-tables/WorkspaceDB";
@@ -33,7 +34,7 @@ export async function scanMyWorkflowsDir(
   }
   const scanDir = osPathJoin(myWorkflowsDir, scanFolderRelativePath);
   const fileList = await scanLocalFiles(scanDir);
-  let result: (Workflow | Folder)[] = [];
+  const newWorkflows: Workflow[] = [];
   const allFilesPromises = fileList.map(async (file) => {
     const fileName = file.name;
     const absPath = [scanDir, fileName].join("/");
@@ -41,7 +42,6 @@ export async function scanMyWorkflowsDir(
     if (scanFileIsFolder(file)) {
       // is folder
       const folder = await foldersTable?.putWithRelativePath(relPath);
-      //   folder && result.push(folder);
       return folder;
     } else {
       // is workflow
@@ -60,13 +60,15 @@ export async function scanMyWorkflowsDir(
         name: fileName.replace(".json", ""),
         parentFolderID: folder?.id ?? null,
       };
-      // workflowsTable?.put(newWorkflow);
-      indexdb.workflows.put(newWorkflow);
       return newWorkflow;
     }
   });
-  result = await Promise.all(allFilesPromises);
-  return result;
+
+  const result = await Promise.all(allFilesPromises);
+  workflowsTable?.bulkPut(
+    result.filter((item) => item != null && !isFolder(item)) as Workflow[],
+  );
+  return result.filter((item) => item != null) as (Workflow | Folder)[];
 }
 function scanFileIsFolder(
   scanFile: ScanLocalFile | ScanLocalFolder,
