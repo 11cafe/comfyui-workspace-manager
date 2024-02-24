@@ -6,11 +6,13 @@ import { TableBase } from "./TableBase";
 import { indexdb } from "./indexdb";
 import {
   deleteJsonFileMyWorkflows,
+  generateFilePathAbsolute,
   saveJsonFileMyWorkflows,
 } from "./DiskFileUtils";
 import { ESortTypes, ImportWorkflow } from "../RecentFilesDrawer/types";
 import { defaultGraph } from "../defaultGraph";
 import { scanMyWorkflowsDir } from "../utils/twowaySyncUtils";
+import { osPathJoin } from "../utils/FilesysUtils";
 
 export class WorkflowsTable extends TableBase<Workflow> {
   static readonly TABLE_NAME = "workflows";
@@ -36,7 +38,77 @@ export class WorkflowsTable extends TableBase<Workflow> {
       this._curWorkflow = w ?? null;
     });
   }
+  public async genAbsPath(id: string): Promise<string | null> {
+    const workflow = await this.get(id);
+    if (workflow == null) {
+      alert(
+        `Workflow not found <${id}> when gen abs path, Please refresh and try again`,
+      );
+      return null;
+    }
 
+    let filePath = workflow.name + ".json";
+    let curFolderID = workflow?.parentFolderID;
+    while (curFolderID != null) {
+      const folder = await foldersTable?.get(curFolderID);
+      if (folder == null) {
+        console.error(
+          "Folder not found <" + curFolderID + "> Please refresh and try again",
+        );
+        throw new Error("Folder not found <" + curFolderID + ">");
+      }
+      const folderName = folder.name;
+      filePath = `${folderName}/${filePath}`;
+      curFolderID = folder.parentFolderID ?? undefined;
+    }
+    let myWorkflowsDir = await userSettingsTable?.getSetting("myWorkflowsDir");
+    return myWorkflowsDir! + "/" + filePath;
+  }
+  // public async get(id: string): Promise<Workflow | undefined> {
+  //   const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
+
+  //   const wf = await indexdb.workflows.get(id);
+  //   if (wf == null) {
+  //     return undefined;
+  //   }
+  //   if (twoWaySyncEnabled) {
+  //     const data = await this.getWorkflowFromMyWorkflowsDir(id);
+  //     if (data.error || data.json == null) {
+  //       alert(data.error);
+  //       return wf;
+  //     }
+  //     return {
+  //       ...wf,
+  //       json: JSON.stringify(data.json),
+  //     };
+  //   }
+  //   return wf;
+  // }
+  public async getWorkflowFromMyWorkflowsDir(
+    id: string,
+  ): Promise<{ json?: Object; error?: string }> {
+    const workflowAbsPath = await this.genAbsPath(id);
+    console.log("getWorkflowFromMyWorkflowsDir", id, workflowAbsPath);
+    const data = await fetch("/workspace/get_workflow_file", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        path: workflowAbsPath,
+        id: id,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("get_workflow_file", data);
+        return data;
+      })
+      .catch((error) => {
+        console.error("Error getting workflow file:", error);
+      });
+    return data;
+  }
   /**
    * Check whether the currently opened workflow is the latest version and is consistent with the DB.
    * Through updateTime comparison, if it is inconsistent, it means that a newer version already exists in the DB.

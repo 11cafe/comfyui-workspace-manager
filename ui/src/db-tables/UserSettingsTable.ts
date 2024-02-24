@@ -48,7 +48,13 @@ export class UserSettingsTable extends TableBase<UserSettings> {
     const currentUserSettings: UserSettings | undefined = await this.get(
       this.DEFAULT_USER,
     );
-    return currentUserSettings?.[key] ?? this.defaultSettings[key];
+
+    const val = currentUserSettings?.[key] ?? this.defaultSettings[key];
+    if (key === "myWorkflowsDir" && (val as string).endsWith("/")) {
+      // remove tail '/' if exists, otherwise it may cause path.join to fail
+      return (val as string).slice(0, -1) as UserSettings[K];
+    }
+    return val;
   }
 
   public async upsert(newPairs: Partial<UserSettings>) {

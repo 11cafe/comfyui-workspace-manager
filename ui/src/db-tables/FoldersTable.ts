@@ -162,6 +162,7 @@ export class FoldersTable extends TableBase<Folder> {
   public async putWithRelativePath(
     relativePath: string,
   ): Promise<Folder | null> {
+    console.log("putWithRelativePath", relativePath);
     if (relativePath === "") {
       // root folder
       return null;

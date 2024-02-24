@@ -1,7 +1,7 @@
 import { getDB, saveDB } from "../Api";
 import { getWorkspaceIndexDB } from "./IndexDBUtils";
 import { TableBaseModel } from "../types/dbTypes";
-import { Table } from "./WorkspaceDB";
+import { Table, userSettingsTable } from "./WorkspaceDB";
 import { indexdb } from "./indexdb";
 import { v4 } from "uuid";
 
@@ -49,6 +49,7 @@ export class TableBase<T extends TableBaseModel> {
     return newItem;
   }
   public async bulkPut(newItems: T[]): Promise<void> {
+    // @ts-ignore
     await indexdb[this.tableName].bulkPut(newItems as any);
     this.saveDiskDB();
   }

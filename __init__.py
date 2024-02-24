@@ -145,10 +145,12 @@ async def update_file(request):
     data = await request.json()
     file_path = data['file_path']
     json_str = data['json_str']
+    print(f"😂Updating file: {file_path}")
 
     def write_json_to_file(json_str):
         my_workflows_dir = get_my_workflows_dir()
         full_path = os.path.join(my_workflows_dir, file_path)
+        print(f"Writing to file: {full_path}")
         # Create the directory if it doesn't exist
         os.makedirs(os.path.dirname(full_path), exist_ok=True)
         with open(full_path, 'w', encoding='utf-8') as file:

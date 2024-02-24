@@ -7,10 +7,8 @@ import {
 } from "../db-tables/WorkspaceDB";
 import { indexdb } from "../db-tables/indexdb";
 import { Folder, Workflow } from "../types/dbTypes";
+import { osPathJoin } from "./FilesysUtils";
 
-function osPathJoin(...args: string[]) {
-  return args.filter((segment) => segment !== "").join("/");
-}
 export async function scanMyWorkflowsDir(
   parentFolderID: string | undefined,
 ): Promise<(Workflow | Folder)[]> {
@@ -34,19 +32,22 @@ export async function scanMyWorkflowsDir(
   }
   const scanDir = osPathJoin(myWorkflowsDir, scanFolderRelativePath);
   const fileList = await scanLocalFiles(scanDir);
-  const newWorkflows: Workflow[] = [];
+
   const allFilesPromises = fileList.map(async (file) => {
     const fileName = file.name;
     const absPath = [scanDir, fileName].join("/");
     const relPath = [scanFolderRelativePath, fileName].join("/");
+    const scanfolder = await foldersTable?.putWithRelativePath(
+      scanFolderRelativePath,
+    );
     if (scanFileIsFolder(file)) {
+      console.log("scanMyWorkflowsDir folder ", file);
       // is folder
       const folder = await foldersTable?.putWithRelativePath(relPath);
       return folder;
     } else {
       // is workflow
       console.log("scanMyWorkflowsDir workflow absPath", absPath, relPath);
-      const folder = await foldersTable?.putWithRelativePath(relPath);
       const existingWorkflow = (await workflowsTable?.get(file.id)) ?? {
         createTime: Date.now(),
         updateTime: Date.now(),
@@ -58,7 +59,7 @@ export async function scanMyWorkflowsDir(
         filePath: absPath,
         json: file.json ?? "{}",
         name: fileName.replace(".json", ""),
-        parentFolderID: folder?.id ?? null,
+        parentFolderID: scanfolder?.id ?? null,
       };
       return newWorkflow;
     }
