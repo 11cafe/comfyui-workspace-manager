@@ -172,18 +172,6 @@ export default function App() {
       await rewriteAllLocalFiles();
       localStorage.setItem("REWRITTEN_ALL_LOCAL_DISK_FILE", "true");
     }
-
-    const towWaySyncSwitch = await userSettingsTable?.getSetting("twoWaySync");
-    if (towWaySyncSwitch) {
-      // Scan all files and subfolders in the local storage directory, compare and find the data that needs to be added in the DB, and perform the new operation
-      const myWorkflowsDir =
-        await userSettingsTable?.getSetting("myWorkflowsDir");
-      const allFlows = await workflowsTable?.listAll();
-      const existFlowIds = (allFlows && allFlows.map((flow) => flow.id)) || [];
-      const fileList = await scanLocalNewFiles(myWorkflowsDir!, existFlowIds);
-      if (!fileList || fileList.length === 0) return;
-      await syncNewFlowOfLocalDisk(fileList);
-    }
   };
 
   const subsribeToWsToStopWarning = () => {
@@ -504,6 +492,10 @@ export default function App() {
 
     const handleDrop = async (event: DragEvent) => {
       const fileName = event.dataTransfer?.files[0]?.name;
+      const n = app.dragOverNode;
+      if (n && n.onDragDrop) {
+        return;
+      }
       const overwriteFlow =
         (await userSettingsTable?.getSetting(
           "overwriteCurWorkflowWhenDroppingFileToCanvas",
