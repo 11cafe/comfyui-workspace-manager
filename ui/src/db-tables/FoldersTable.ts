@@ -145,7 +145,7 @@ export class FoldersTable extends TableBase<Folder> {
     while (currentFolderId != null) {
       const folder = await this.get(currentFolderId);
       if (!folder) {
-        console.error(`Folder with ID ${currentFolderId} not found`);
+        console.error(`Folder with ID <${currentFolderId}> not found`);
         return null;
       }
       // Prepend the current folder name to the path segments
@@ -169,34 +169,34 @@ export class FoldersTable extends TableBase<Folder> {
     }
     const pathSegments = relativePath.split("/");
     let parentFolderID: string | null = null;
-    let existingFolder: Folder | null = null;
+    let folder: Folder | null = null;
     for (const name of pathSegments) {
       if (name === "") {
         console.warn('Invalid folder name "" in path', relativePath);
         continue;
       }
-      existingFolder =
+      folder =
         (await indexdb.folders
           .where({ name })
           .filter((f) => {
             return f.parentFolderID == parentFolderID;
           })
           .first()) ?? null;
-      if (existingFolder == null) {
+      if (folder == null) {
         const newFolder = await this.add({
           name,
           parentFolderID,
           updateTime: Date.now(),
           type: "folder",
         });
-        existingFolder = (await this.get(newFolder.id)) ?? null;
+        folder = (await this.get(newFolder.id)) ?? null;
       }
-      if (existingFolder == null) {
+      if (folder == null) {
         console.error("Failed to create folder", name);
         throw new Error("Failed to create folder");
       }
-      parentFolderID = existingFolder.id;
+      parentFolderID = folder.id;
     }
-    return existingFolder;
+    return folder;
   }
 }

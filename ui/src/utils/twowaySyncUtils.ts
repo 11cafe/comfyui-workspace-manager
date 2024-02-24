@@ -10,45 +10,38 @@ import { Folder, Workflow } from "../types/dbTypes";
 import { osPathJoin } from "./FilesysUtils";
 
 export async function scanMyWorkflowsDir(
-  parentFolderID: string | undefined,
+  parentFolderID: string | null,
 ): Promise<(Workflow | Folder)[]> {
   const myWorkflowsDir = await userSettingsTable?.getSetting("myWorkflowsDir");
   if (myWorkflowsDir == null) {
     alert("Please set up the folder for syncing in Settings");
     return [];
   }
-  const scanFolderRelativePath = parentFolderID
-    ? await foldersTable?.genRelativePath(parentFolderID)
-    : "";
-  console.log(
-    "scanMyWorkflowsDir",
-    parentFolderID,
-    "scanFolderRelativePath",
-    scanFolderRelativePath,
-  );
-  if (scanFolderRelativePath == null) {
-    alert("Unable to find folder for syncing");
-    return [];
-  }
-  const scanDir = osPathJoin(myWorkflowsDir, scanFolderRelativePath);
+  const parentRelPath = parentFolderID ?? "";
+  // folderID is the relative path of the folder in two way sync mode
+  const scanDir = `${myWorkflowsDir}/${parentRelPath}`;
   const fileList = await scanLocalFiles(scanDir);
 
   const allFilesPromises = fileList.map(async (file) => {
     const fileName = file.name;
     const absPath = [scanDir, fileName].join("/");
-    const relPath = [scanFolderRelativePath, fileName].join("/");
-    const scanfolder = await foldersTable?.putWithRelativePath(
-      scanFolderRelativePath,
-    );
+    const relPath = [parentRelPath, fileName].join("/");
+    console.log("scanMyWorkflowsDir rel", relPath);
+
     if (scanFileIsFolder(file)) {
-      console.log("scanMyWorkflowsDir folder ", file);
       // is folder
-      const folder = await foldersTable?.putWithRelativePath(relPath);
+      const folder: Folder = {
+        id: file.name,
+        name: file.name,
+        parentFolderID: relPath,
+        type: "folder",
+        createTime: Date.now(),
+        updateTime: Date.now(),
+      };
       return folder;
     } else {
       // is workflow
-      console.log("scanMyWorkflowsDir workflow absPath", absPath, relPath);
-      const existingWorkflow = (await workflowsTable?.get(file.id)) ?? {
+      const existingWorkflow = (await indexdb.workflows?.get(file.id)) ?? {
         createTime: Date.now(),
         updateTime: Date.now(),
       };
@@ -59,16 +52,14 @@ export async function scanMyWorkflowsDir(
         filePath: absPath,
         json: file.json ?? "{}",
         name: fileName.replace(".json", ""),
-        parentFolderID: scanfolder?.id ?? null,
+        parentFolderID: parentRelPath,
       };
       return newWorkflow;
     }
   });
 
   const result = await Promise.all(allFilesPromises);
-  workflowsTable?.bulkPut(
-    result.filter((item) => item != null && !isFolder(item)) as Workflow[],
-  );
+
   return result.filter((item) => item != null) as (Workflow | Folder)[];
 }
 function scanFileIsFolder(
