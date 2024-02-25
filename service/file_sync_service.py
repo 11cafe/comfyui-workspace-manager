@@ -6,23 +6,19 @@ from aiohttp import web
 import json
 import uuid
 
-async def read_workflow_file(path, id):
+def read_workflow_file(path, id):
     if not os.path.exists(path):
         return {"error": f"No file found in {path}"}
+    print("Read workflow file:", path, id)
     
-    try:
-        with open(path, 'r', encoding='utf-8') as f:
-            json_data = json.load(f)
-            if 'extra' in json_data and 'workspace_info' in json_data['extra'] and 'id' in json_data['extra']['workspace_info']:
-                workflow_id = json_data['extra']['workspace_info']['id']
-                if workflow_id == id:
-                    return {"json": json.dumps(json_data)}
-    except json.JSONDecodeError:
-        return {"error": "Invalid JSON format in file"}
-    except Exception as e:
-        return {"error": str(e)}
-    
-    return {"error": "Workflow ID doesn't match"}
+    with open(os.path.abspath(path), 'r', encoding='utf-8') as f:
+        json_data = json.load(f)
+        if 'extra' in json_data and 'workspace_info' in json_data['extra'] and 'id' in json_data['extra']['workspace_info']:
+            workflow_id = json_data['extra']['workspace_info']['id']
+            if workflow_id == id:
+                return {"json": json_data}
+            return {"error": "Workflow ID doesn't match"}
+    return {"error": "No workspace_info.id found in the file"}
 
 @server.PromptServer.instance.routes.post('/workspace/get_workflow_file')
 async def get_workflow_file(request):
@@ -32,11 +28,10 @@ async def get_workflow_file(request):
     print("Get workflow file:", path, id)
     
     data = await asyncio.to_thread(read_workflow_file, path, id)
-    if "json" in data:
-        return web.Response(text=data["json"], content_type='application/json')
-    else:
-        return web.Response(text=json.dumps(data), status=404, content_type='application/json')
-
+    print("Data:", data)
+    
+    return web.json_response(data, content_type='application/json')
+    
 # For two way sync
 # Scan .json and folders, extract extra.workspace_info.id in the .json files 
 @server.PromptServer.instance.routes.post("/workspace/scan_my_workflows_files")

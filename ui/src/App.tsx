@@ -391,6 +391,7 @@ export default function App() {
     graphAppSetup();
     setLoadChild(true);
     autoSaveTimer.current = setInterval(async () => {
+      return;
       const autoSaveEnabled =
         (await userSettingsTable?.getSetting("autoSave")) ?? true;
 
@@ -424,7 +425,7 @@ export default function App() {
           // autosave workflow if enabled
           const graphJson = JSON.stringify(app.graph.serialize());
           graphJson != null &&
-            (await workflowsTable?.updateFlow(curFlowID.current, {
+            (await workflowsTable?.updateFlow(curFlowID.current!, {
               json: graphJson,
             }));
         }

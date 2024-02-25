@@ -1,20 +1,15 @@
 import { ScanLocalFile, ScanLocalFolder, scanLocalFiles } from "../Api";
-import {
-  foldersTable,
-  isFolder,
-  userSettingsTable,
-  workflowsTable,
-} from "../db-tables/WorkspaceDB";
+import { isFolder, userSettingsTable } from "../db-tables/WorkspaceDB";
 import { indexdb } from "../db-tables/indexdb";
 import { Folder, Workflow } from "../types/dbTypes";
-import { osPathJoin } from "./FilesysUtils";
+import { osPathJoin, osPathSanitize } from "./OsPathUtils";
 
 export async function scanMyWorkflowsDir(
   parentFolderID: string | null,
 ): Promise<(Workflow | Folder)[]> {
   const myWorkflowsDir = await userSettingsTable?.getSetting("myWorkflowsDir");
-  if (myWorkflowsDir == null) {
-    alert("Please set up the folder for syncing in Settings");
+  if (myWorkflowsDir == null || myWorkflowsDir === "") {
+    alert("No Workspace saving directory found, please go to Settings.");
     return [];
   }
   const parentRelPath = parentFolderID ?? "";
@@ -24,9 +19,11 @@ export async function scanMyWorkflowsDir(
 
   const allFilesPromises = fileList.map(async (file) => {
     const fileName = file.name;
-    const absPath = [scanDir, fileName].join("/");
+    const absPath = osPathSanitize([scanDir, fileName].join("/"));
+    // const absPath = osPathJoin(scanDir, fileName);
     const relPath = [parentRelPath, fileName].join("/");
     console.log("scanMyWorkflowsDir rel", relPath);
+    console.log("scanMyWorkflowsDir abs", absPath);
 
     if (scanFileIsFolder(file)) {
       // is folder
@@ -50,7 +47,7 @@ export async function scanMyWorkflowsDir(
         ...existingWorkflow,
         id: file.id,
         filePath: absPath,
-        json: file.json ?? "{}",
+        json: "{}", //we don't need to load json data for file list display
         name: fileName.replace(".json", ""),
         parentFolderID: parentRelPath,
       };
@@ -59,7 +56,9 @@ export async function scanMyWorkflowsDir(
   });
 
   const result = await Promise.all(allFilesPromises);
-
+  indexdb.workflows.bulkPut(
+    result.filter((item) => !isFolder(item)) as Workflow[],
+  );
   return result.filter((item) => item != null) as (Workflow | Folder)[];
 }
 function scanFileIsFolder(

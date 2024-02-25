@@ -1,0 +1,39 @@
+/* Styles for the modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Styles for the dialog */
+.dialog {
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 80%;
+  background-color: #fff;
+  border-color: #000; /* Default, will be changed */
+  color: #000; /* Default, will be changed */
+}
+
+/* Specific styles for different alert levels */
+.dialog.error {
+  border-color: #ff3860;
+  color: #ff3860;
+}
+
+.dialog.info {
+  border-color: #209cee;
+  color: #209cee;
+}
+
+.dialog.success {
+  border-color: #23d160;
+  color: #23d160;
+}
