@@ -48,7 +48,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
    */
   public async latestVersionCheck() {
     if (this._curWorkflow) {
-      const curFlowInDB = await this.get(this._curWorkflow.id);
+      const curFlowInDB = await indexdb.workflows.get(this._curWorkflow.id);
       if (curFlowInDB) {
         return curFlowInDB?.updateTime === this._curWorkflow.updateTime;
       }
@@ -263,10 +263,13 @@ export class WorkflowsTable extends TableBase<Workflow> {
     return sortFileItem(all, sortBy ?? ESortTypes.RECENTLY_MODIFIED);
   }
 
-  public async get(id: string): Promise<Workflow | undefined> {
+  public async get(
+    id: string,
+    needJsonContent = true, //if false, only get the meta info from indexdb
+  ): Promise<Workflow | undefined> {
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
     const wf = await indexdb.workflows.get(id);
-    if (!twoWaySyncEnabled) {
+    if (!twoWaySyncEnabled || !needJsonContent) {
       return wf;
     }
     // two way sync mode

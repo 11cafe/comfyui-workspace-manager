@@ -176,7 +176,7 @@ export default function App() {
 
   const checkIsDirty = async () => {
     if (curFlowID.current != null) {
-      const curWorkflow = await workflowsTable?.get(curFlowID.current);
+      const curWorkflow = await workflowsTable?.get(curFlowID.current, false);
       return !!curWorkflow && checkIsDirtyImpl(curWorkflow);
     }
     return false;
@@ -391,7 +391,6 @@ export default function App() {
     graphAppSetup();
     setLoadChild(true);
     autoSaveTimer.current = setInterval(async () => {
-      return;
       const autoSaveEnabled =
         (await userSettingsTable?.getSetting("autoSave")) ?? true;
 
