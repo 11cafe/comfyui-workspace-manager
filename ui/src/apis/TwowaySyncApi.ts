@@ -60,15 +60,23 @@ export namespace TwowaySyncAPI {
     }
   }
   export async function getFile({
-    absPath,
+    parentFolderID,
+    name,
     id,
   }: {
-    absPath: string;
+    parentFolderID: string | null;
     id: string;
+    name: string;
   }): Promise<{
     json?: Object;
     error?: string;
   }> {
+    const myWorkflowsDir =
+      await userSettingsTable?.getSetting("myWorkflowsDir");
+    const absPath = sanitizeAbsPath(
+      `${myWorkflowsDir}/${parentFolderID ?? ""}/${name}.json`,
+    );
+    console.log("get abs path 🔥 workfoow", absPath);
     try {
       const response = await fetch("/workspace/get_workflow_file", {
         method: "POST",

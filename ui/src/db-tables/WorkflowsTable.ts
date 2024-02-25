@@ -270,17 +270,12 @@ export class WorkflowsTable extends TableBase<Workflow> {
       return wf;
     }
     // two way sync mode
-    const myWorkflowsDir =
-      await userSettingsTable?.getSetting("myWorkflowsDir");
     if (wf == null) {
       return undefined;
     }
-    const absPath = sanitizeAbsPath(
-      `${myWorkflowsDir}/${wf.parentFolderID ?? ""}/${wf.name}.json`,
-    );
-    console.log("get abs path 🔥 workfoow", absPath);
     const data = await TwowaySyncAPI.getFile({
-      absPath: absPath,
+      parentFolderID: wf.parentFolderID ?? null,
+      name: wf.name,
       id: wf.id,
     });
 
