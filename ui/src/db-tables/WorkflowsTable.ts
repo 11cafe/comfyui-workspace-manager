@@ -13,7 +13,7 @@ import { ESortTypes, ImportWorkflow } from "../RecentFilesDrawer/types";
 import { defaultGraph } from "../defaultGraph";
 import { scanMyWorkflowsDir } from "../utils/twowaySyncUtils";
 import { osPathJoin } from "../utils/OsPathUtils";
-import { getFile } from "../Api";
+import { TwowaySyncAPI } from "../Api";
 
 export class WorkflowsTable extends TableBase<Workflow> {
   static readonly TABLE_NAME = "workflows";
@@ -258,23 +258,26 @@ export class WorkflowsTable extends TableBase<Workflow> {
 
   public async get(id: string): Promise<Workflow | undefined> {
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
+    const wf = await indexdb.workflows.get(id);
+    if (!twoWaySyncEnabled) {
+      return wf;
+    }
     const myWorkflowsDir =
       await userSettingsTable?.getSetting("myWorkflowsDir");
-    const wf = await indexdb.workflows.get(id);
     if (wf == null) {
       return undefined;
     }
-    if (twoWaySyncEnabled && wf.filePath) {
-      const data = await getFile({
-        absPath: `${myWorkflowsDir}/${wf.parentFolderID}/${wf.name}.json`,
-        id: wf.id,
-      });
-      console.log("get file data", data);
-      return {
-        ...wf,
-        json: JSON.stringify(data.json),
-      };
+    const data = await TwowaySyncAPI.getFile({
+      absPath: `${myWorkflowsDir}/${wf.parentFolderID}/${wf.name}.json`,
+      id: wf.id,
+    });
+    console.log("get file data", data);
+    if (!data.json) {
+      return undefined;
     }
-    return wf;
+    return {
+      ...wf,
+      json: JSON.stringify(data.json),
+    };
   }
 }

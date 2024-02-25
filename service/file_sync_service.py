@@ -25,10 +25,8 @@ async def get_workflow_file(request):
     reqJson = await request.json()
     path = reqJson.get('path')
     id = reqJson.get('id')
-    print("Get workflow file:", path, id)
     
     data = await asyncio.to_thread(read_workflow_file, path, id)
-    print("Data:", data)
     
     return web.json_response(data, content_type='application/json')
     
