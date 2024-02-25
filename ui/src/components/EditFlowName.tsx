@@ -47,6 +47,7 @@ export default function EditFlowName({
   };
 
   const onSubmit = async () => {
+    console.log("onSubmit", editName);
     if (curFlowID) {
       const trimEditName = editName.trim();
       setEditName(trimEditName);

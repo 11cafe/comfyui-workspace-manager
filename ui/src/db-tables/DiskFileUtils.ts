@@ -13,7 +13,7 @@ export async function saveJsonFileMyWorkflows(workflow: Workflow) {
     return;
   }
   const fullPath = await generateFilePathAbsolute(workflow);
-  await workflowsTable?.updateFlow(workflow.id, {
+  await workflowsTable?.updateMetaInfo(workflow.id, {
     filePath: fullPath ?? undefined,
   });
   const json = workflow.json;

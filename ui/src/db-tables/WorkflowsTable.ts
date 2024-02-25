@@ -118,13 +118,20 @@ export class WorkflowsTable extends TableBase<Workflow> {
     return newWorkflow;
   }
 
-  public async update(
+  // disallow TableBase.update()
+  protected async update(
+    _id: string,
+    _change: Partial<Workflow>,
+  ): Promise<Workflow | null> {
+    return null;
+  }
+  public async updateMetaInfo(
     id: string,
-    change: Partial<Workflow>,
+    change: Omit<Partial<Workflow>, "id" | "name" | "parentFolderID" | "json">,
   ): Promise<Workflow | null> {
     //update indexdb
     await indexdb.workflows.update(id, change);
-    const newWorkflow = (await this.get(id)) ?? null;
+    const newWorkflow = (await this.get(id, false)) ?? null;
     //update curWorkflow RAM
     if (this._curWorkflow && this._curWorkflow.id === id) {
       this._curWorkflow = newWorkflow;
@@ -134,6 +141,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
   }
 
   public async updateFlow(id: string, input: Partial<Workflow>) {
+    console.log("updateFlow", id, input);
     const before = await this.get(id);
     if (before == null) {
       return;
