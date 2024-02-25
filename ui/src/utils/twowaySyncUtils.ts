@@ -1,4 +1,8 @@
-import { ScanLocalFile, ScanLocalFolder, scanLocalFiles } from "../Api";
+import {
+  ScanLocalFile,
+  ScanLocalFolder,
+  scanLocalFiles,
+} from "../apis/TwowaySyncApi";
 import { isFolder, userSettingsTable } from "../db-tables/WorkspaceDB";
 import { indexdb } from "../db-tables/indexdb";
 import { Folder, Workflow } from "../types/dbTypes";

@@ -87,10 +87,12 @@ export class WorkflowsTable extends TableBase<Workflow> {
 
   public async createFlow(input: Partial<Workflow>): Promise<Workflow> {
     const { id, json, name } = input;
+    console.log("createFlow", input);
     const newFlowName = await this.generateUniqueName(
       name,
       input.parentFolderID ?? undefined,
     );
+    console.log("newFlowName", newFlowName);
     const uuid = id ?? uuidv4(); // ⇨ '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
     const time = Date.now();
     const newWorkflow: Workflow = {
@@ -100,16 +102,16 @@ export class WorkflowsTable extends TableBase<Workflow> {
       name: newFlowName,
       updateTime: time,
       createTime: time,
-      parentFolderID: input.parentFolderID ?? "",
     };
     //add to IndexDB
     await indexdb.workflows.add(newWorkflow);
     // add to disk file db
     this.saveDiskDB();
     // add to my_workflows/
+    console.log("createFlow", newWorkflow);
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
     if (twoWaySyncEnabled) {
-      saveJsonFileMyWorkflows(newWorkflow);
+      TwowaySyncAPI.creatWorkflow(newWorkflow);
     } else {
       saveJsonFileMyWorkflows(newWorkflow);
     }
@@ -281,7 +283,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
       absPath: absPath,
       id: wf.id,
     });
-    console.log("get file data", data);
+
     if (!data.json) {
       return undefined;
     }

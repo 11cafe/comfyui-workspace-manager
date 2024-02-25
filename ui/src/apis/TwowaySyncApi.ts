@@ -1,30 +1,57 @@
+import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
+import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { Workflow } from "../types/dbTypes";
+import { sanitizeAbsPath } from "../utils/OsPathUtils";
 import { showAlert } from "../utils/showAlert";
 
 export namespace TwowaySyncAPI {
-  //   export async function creatWorkflow(workflow: Workflow) {
-  //     try {
-  //       const response = await fetch("/workspace/update_file", {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify({
-  //           path: absPath,
-  //           id: id,
-  //         }),
-  //       });
-  //       const result: boolean = await response.json();
-  //       return result;
-  //     } catch (error) {
-  //       console.error(`Error creating file <${id}> at "${absPath}"`, error);
-  //       showAlert({
-  //         message: `Error creating file <${id}> at "${absPath}"`,
-  //         level: "error",
-  //       });
-  //       return {};
-  //     }
-  //   }
+  export async function creatWorkflow({
+    parentFolderID,
+    name,
+    json,
+    id,
+  }: Workflow) {
+    const myWorkflowsDir =
+      await userSettingsTable?.getSetting("myWorkflowsDir");
+    const absPath = sanitizeAbsPath(
+      `${myWorkflowsDir}/${parentFolderID ?? ""}`,
+    );
+    let jsonObj: any = JSON.parse(json);
+
+    jsonObj = {
+      ...jsonObj,
+      extra: {
+        [COMFYSPACE_TRACKING_FIELD_NAME]: {
+          id: id,
+        },
+      },
+    };
+    const input: { parentFolderPath: string; name: string; json: string } = {
+      parentFolderPath: absPath,
+      name: name,
+      json: JSON.stringify(jsonObj),
+    };
+    console.log("createWorkflowFile input", input);
+    try {
+      const response = await fetch("/workspace/create_workflow_file", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(input),
+      });
+      const result: boolean = await response.json();
+      console.log("createWorkflowFile results", result);
+      return result;
+    } catch (error) {
+      console.error(`Error creating file <${id}> at "${absPath}"`, error);
+      showAlert({
+        message: `Error creating file <${id}> at "${absPath}"`,
+        level: "error",
+      });
+      return {};
+    }
+  }
   export async function getFile({
     absPath,
     id,
@@ -48,7 +75,16 @@ export namespace TwowaySyncAPI {
         }),
       });
       const result = await response.json();
-
+      if (result.error) {
+        console.error(
+          `Error getting file <${id}> at "${absPath}"`,
+          result.error,
+        );
+        showAlert({
+          message: `Error getting file <${id}> at "${absPath}"`,
+          level: "error",
+        });
+      }
       return result;
     } catch (error) {
       // alert(
@@ -61,5 +97,38 @@ export namespace TwowaySyncAPI {
       });
       return {};
     }
+  }
+}
+
+export type ScanLocalFile = {
+  type: "workflow";
+  name: string;
+  id: string;
+  json: string;
+};
+export type ScanLocalFolder = {
+  type: "folder";
+  name: string;
+};
+export async function scanLocalFiles(
+  path: string,
+): Promise<Array<ScanLocalFile | ScanLocalFolder>> {
+  console.log("scanLocalFiles api", path);
+  try {
+    const response = await fetch("/workspace/scan_my_workflows_files", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        path,
+      }),
+    });
+    const result = await response.json();
+    console.log("scanLocalNewFiles", result);
+    return result;
+  } catch (error) {
+    console.error("Error scan local new files:", error);
+    return [];
   }
 }

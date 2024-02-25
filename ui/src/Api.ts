@@ -123,39 +123,6 @@ export async function openWorkflowsFolder() {
   }
 }
 
-export type ScanLocalFile = {
-  type: "workflow";
-  name: string;
-  id: string;
-  json: string;
-};
-export type ScanLocalFolder = {
-  type: "folder";
-  name: string;
-};
-export async function scanLocalFiles(
-  path: string,
-): Promise<Array<ScanLocalFile | ScanLocalFolder>> {
-  console.log("scanLocalFiles api", path);
-  try {
-    const response = await fetch("/workspace/scan_my_workflows_files", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        path,
-      }),
-    });
-    const result = await response.json();
-    console.log("scanLocalNewFiles", result);
-    return result;
-  } catch (error) {
-    console.error("Error scan local new files:", error);
-    return [];
-  }
-}
-
 export async function getAllModelsList() {
   try {
     const response = await fetch("/model_manager/get_model_list", {

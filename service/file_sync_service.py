@@ -7,12 +7,51 @@ import json
 import uuid
 from pathlib import Path
 
+@server.PromptServer.instance.routes.post('/workspace/create_workflow_file')
+async def create_workflow_file(request):
+    reqJson = await request.json()
+    data = await asyncio.to_thread(create_workflow_file, reqJson)
+    return web.json_response(data, content_type='application/json')
+def create_workflow_file(reqJson):
+    print("🍻Create workflow file:", reqJson)
+    try:
+        parentFolderPath = reqJson.get('parentFolderPath')
+        name = reqJson.get('name')
+        workflow_json = reqJson.get('json')
+        
+        if not parentFolderPath or not name or workflow_json is None:
+            return {}  # Missing necessary data
+
+        abs_path = Path(parentFolderPath)
+        # Create the directory if it does not exist
+        abs_path.mkdir(parents=True, exist_ok=True)
+        
+        # Ensuring the file name is unique
+        base_name, extension = os.path.splitext(name)
+        if extension != '.json':  # Ensure the extension is .json
+            extension = '.json'
+        new_file_name = base_name + extension
+        counter = 1
+        while (abs_path / new_file_name).exists():
+            new_file_name = f"{base_name}_{counter}{extension}"
+            counter += 1
+        
+        new_file_path = abs_path / new_file_name
+
+        # Writing JSON data to the file
+        with open(new_file_path, 'w', encoding='utf-8') as file:
+            file.write(workflow_json)
+        
+        return {"name": new_file_name}
+    except Exception as e:
+        print(f"Failed to create workflow file: {e}")
+        return {}  # In case of any error
+
 def read_workflow_file(path, id):
     print("🍻Read workflow file:", path, id)
+    abs_path = Path(path)
     # if not os.path.exists(os.path.abspath(path)):
     #     return {"error": f"No file found in {path}"}
-    abs_path = Path(path)
-    
 
     with open(abs_path, 'r', encoding='utf-8') as f:
         json_data = json.load(f)
@@ -47,16 +86,19 @@ async def scan_local_new_files(request):
 def folder_handle(path):
     fileList = []
     for item in os.listdir(path):
-        item_path = os.path.join(path, item)
-        if os.path.isfile(item_path) and item_path.endswith('.json'):
-            with open(item_path, 'r', encoding='utf-8') as f:
-                file_handle(item, f, fileList, item_path)
+        try:
+            item_path = os.path.join(path, item)
+            if os.path.isfile(item_path) and item_path.endswith('.json'):
+                with open(item_path, 'r', encoding='utf-8') as f:
+                    file_handle(item, f, fileList, item_path)
 
-        elif os.path.isdir(item_path):
-            fileList.append({
-                'name': item,
-                'type': 'folder',
-            })
+            elif os.path.isdir(item_path):
+                fileList.append({
+                    'name': item,
+                    'type': 'folder',
+                })
+        except Exception as e:
+            print(f"Error scanning file {item}: {e}")
     return fileList
 
 def file_handle(name, file, fileList, file_path):
