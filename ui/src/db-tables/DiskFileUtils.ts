@@ -8,6 +8,7 @@ import { toFileNameFriendly } from "../utils";
 import { Workflow } from "../types/dbTypes";
 
 export async function saveJsonFileMyWorkflows(workflow: Workflow) {
+  console.log("saveJsonFileMyWorkflows", workflow);
   const file_path = await generateFilePath(workflow);
   if (file_path == null) {
     return;

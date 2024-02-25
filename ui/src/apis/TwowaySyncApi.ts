@@ -1,4 +1,8 @@
-import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
+import { updateFile } from "../Api";
+import {
+  COMFYSPACE_TRACKING_FIELD_NAME,
+  LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
+} from "../const";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { indexdb } from "../db-tables/indexdb";
 import { Workflow } from "../types/dbTypes";
@@ -6,6 +10,47 @@ import { sanitizeAbsPath } from "../utils/OsPathUtils";
 import { showAlert } from "../utils/showAlert";
 
 export namespace TwowaySyncAPI {
+  async function genWorkflowAbsPath({
+    parentFolderID,
+    name,
+  }: Workflow): Promise<string> {
+    const myWorkflowsDir =
+      await userSettingsTable?.getSetting("myWorkflowsDir");
+    const absPath = sanitizeAbsPath(
+      `${myWorkflowsDir}/${parentFolderID ?? ""}/${name}.json`,
+    );
+    return absPath;
+  }
+  export async function saveWorkflow(workflow: Workflow) {
+    console.log("🥳saveWorkflow", workflow);
+    const file_path = await genWorkflowAbsPath(workflow);
+    const json = workflow.json;
+    const flow = JSON.parse(json);
+    flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {
+      id: workflow.id,
+    };
+
+    await updateFile(file_path, JSON.stringify(flow));
+  }
+  export async function deleteWorkflow(workflow: Workflow) {
+    const absPath = await genWorkflowAbsPath(workflow);
+    try {
+      const response = await fetch("/workspace/delete_file", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          file_path: absPath,
+          deleteEmptyFolder: false,
+        }),
+      });
+      const result = await response.text();
+      return result;
+    } catch (error) {
+      console.error("Error deleting file:", error);
+    }
+  }
   export async function creatWorkflow({
     parentFolderID,
     name,

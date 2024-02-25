@@ -26,8 +26,6 @@ export async function scanMyWorkflowsDir(
     const absPath = sanitizeAbsPath([scanDir, fileName].join("/"));
     // const absPath = osPathJoin(scanDir, fileName);
     const relPath = [parentRelPath, fileName].join("/");
-    console.log("scanMyWorkflowsDir rel", relPath);
-    console.log("scanMyWorkflowsDir abs", absPath);
 
     if (scanFileIsFolder(file)) {
       // is folder

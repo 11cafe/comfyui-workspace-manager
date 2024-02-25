@@ -119,11 +119,11 @@ export class WorkflowsTable extends TableBase<Workflow> {
   }
 
   // disallow TableBase.update()
-  protected async update(
+  async update(
     _id: string,
     _change: Partial<Workflow>,
   ): Promise<Workflow | null> {
-    return null;
+    throw new Error("Method not allowed.");
   }
   public async updateMetaInfo(
     id: string,
@@ -181,9 +181,15 @@ export class WorkflowsTable extends TableBase<Workflow> {
     await this.saveDiskDB();
     // save to my_workflows/
     if ("name" in input || "parentFolderID" in input) {
+      const twoWaySyncEnabled =
+        await userSettingsTable?.getSetting("twoWaySync");
       // renamed file or moved file folder
       await deleteJsonFileMyWorkflows(before);
-      await saveJsonFileMyWorkflows(after);
+      if (twoWaySyncEnabled) {
+        await TwowaySyncAPI.saveWorkflow(after);
+      } else {
+        await saveJsonFileMyWorkflows(after);
+      }
       return;
     }
     if (input.json != null) {
@@ -273,11 +279,11 @@ export class WorkflowsTable extends TableBase<Workflow> {
 
   public async get(
     id: string,
-    needJsonContent = true, //if false, only get the meta info from indexdb
+    fetchJsonContentOnDisk = true, //if false, only get the meta info from indexdb
   ): Promise<Workflow | undefined> {
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
     const wf = await indexdb.workflows.get(id);
-    if (!twoWaySyncEnabled || !needJsonContent) {
+    if (!twoWaySyncEnabled || !fetchJsonContentOnDisk) {
       return wf;
     }
     // two way sync mode
