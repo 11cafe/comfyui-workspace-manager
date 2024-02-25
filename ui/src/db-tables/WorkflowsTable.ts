@@ -111,7 +111,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
     console.log("createFlow", newWorkflow);
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
     if (twoWaySyncEnabled) {
-      TwowaySyncAPI.creatWorkflow(newWorkflow);
+      await TwowaySyncAPI.creatWorkflow(newWorkflow);
     } else {
       saveJsonFileMyWorkflows(newWorkflow);
     }

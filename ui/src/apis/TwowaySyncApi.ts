@@ -1,5 +1,6 @@
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
+import { indexdb } from "../db-tables/indexdb";
 import { Workflow } from "../types/dbTypes";
 import { sanitizeAbsPath } from "../utils/OsPathUtils";
 import { showAlert } from "../utils/showAlert";
@@ -40,7 +41,13 @@ export namespace TwowaySyncAPI {
         },
         body: JSON.stringify(input),
       });
-      const result: boolean = await response.json();
+      const result: { name?: string } = await response.json();
+
+      result.name &&
+        (await indexdb.workflows?.update(id, {
+          filePath: `${absPath}/${name}.json`,
+          name: result.name,
+        }));
       console.log("createWorkflowFile results", result);
       return result;
     } catch (error) {

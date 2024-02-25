@@ -13,7 +13,7 @@ async def create_workflow_file(request):
     data = await asyncio.to_thread(create_workflow_file, reqJson)
     return web.json_response(data, content_type='application/json')
 def create_workflow_file(reqJson):
-    print("🍻Create workflow file:", reqJson)
+    print("🍻Create workflow file:", reqJson['name'])
     try:
         parentFolderPath = reqJson.get('parentFolderPath')
         name = reqJson.get('name')
@@ -41,8 +41,9 @@ def create_workflow_file(reqJson):
         # Writing JSON data to the file
         with open(new_file_path, 'w', encoding='utf-8') as file:
             file.write(workflow_json)
-        
-        return {"name": new_file_name}
+        print("✅Created workflow file:", new_file_path)
+        new_base_name,ext = os.path.splitext(new_file_name)
+        return {"name": new_base_name}
     except Exception as e:
         print(f"Failed to create workflow file: {e}")
         return {}  # In case of any error
@@ -50,8 +51,6 @@ def create_workflow_file(reqJson):
 def read_workflow_file(path, id):
     print("🍻Read workflow file:", path, id)
     abs_path = Path(path)
-    # if not os.path.exists(os.path.abspath(path)):
-    #     return {"error": f"No file found in {path}"}
 
     with open(abs_path, 'r', encoding='utf-8') as f:
         json_data = json.load(f)
@@ -72,8 +71,7 @@ async def get_workflow_file(request):
     
     return web.json_response(data, content_type='application/json')
     
-# For two way sync
-# Scan .json and folders, extract extra.workspace_info.id in the .json files 
+# Scan .json and folders in the given path
 @server.PromptServer.instance.routes.post("/workspace/scan_my_workflows_files")
 async def scan_local_new_files(request):
     reqJson = await request.json()
