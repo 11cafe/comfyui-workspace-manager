@@ -6,14 +6,13 @@ import { TableBase } from "./TableBase";
 import { indexdb } from "./indexdb";
 import {
   deleteJsonFileMyWorkflows,
-  generateFilePathAbsolute,
   saveJsonFileMyWorkflows,
 } from "./DiskFileUtils";
 import { ESortTypes, ImportWorkflow } from "../RecentFilesDrawer/types";
 import { defaultGraph } from "../defaultGraph";
 import { scanMyWorkflowsDir } from "../utils/twowaySyncUtils";
-import { osPathJoin } from "../utils/OsPathUtils";
-import { TwowaySyncAPI } from "../Api";
+import { TwowaySyncAPI } from "../apis/TwowaySyncApi";
+import { sanitizeAbsPath } from "../utils/OsPathUtils";
 
 export class WorkflowsTable extends TableBase<Workflow> {
   static readonly TABLE_NAME = "workflows";
@@ -101,13 +100,19 @@ export class WorkflowsTable extends TableBase<Workflow> {
       name: newFlowName,
       updateTime: time,
       createTime: time,
+      parentFolderID: input.parentFolderID ?? "",
     };
     //add to IndexDB
     await indexdb.workflows.add(newWorkflow);
     // add to disk file db
     this.saveDiskDB();
     // add to my_workflows/
-    saveJsonFileMyWorkflows(newWorkflow);
+    const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
+    if (twoWaySyncEnabled) {
+      saveJsonFileMyWorkflows(newWorkflow);
+    } else {
+      saveJsonFileMyWorkflows(newWorkflow);
+    }
     return newWorkflow;
   }
 
@@ -262,13 +267,18 @@ export class WorkflowsTable extends TableBase<Workflow> {
     if (!twoWaySyncEnabled) {
       return wf;
     }
+    // two way sync mode
     const myWorkflowsDir =
       await userSettingsTable?.getSetting("myWorkflowsDir");
     if (wf == null) {
       return undefined;
     }
+    const absPath = sanitizeAbsPath(
+      `${myWorkflowsDir}/${wf.parentFolderID ?? ""}/${wf.name}.json`,
+    );
+    console.log("get abs path 🔥 workfoow", absPath);
     const data = await TwowaySyncAPI.getFile({
-      absPath: `${myWorkflowsDir}/${wf.parentFolderID}/${wf.name}.json`,
+      absPath: absPath,
       id: wf.id,
     });
     console.log("get file data", data);

@@ -1,6 +1,5 @@
 import { Table } from "./db-tables/WorkspaceDB";
 import type { ModelsListRespItem } from "./model-manager/types";
-import { showAlert } from "./utils/showAlert";
 
 export async function getDB(table: Table): Promise<string | undefined> {
   console.warn("[workspace deprecated] getDB is deprecated", table);
@@ -46,6 +45,7 @@ export async function updateFile(file_path: string, jsonData: string) {
       }),
     });
     const result = await response.text();
+    console.log("updateFile res", result);
     return result;
   } catch (error) {
     alert("Error saving workflow .json file: " + error);
@@ -69,46 +69,6 @@ export async function deleteFile(file_path: string, deleteEmptyFolder = false) {
     return result;
   } catch (error) {
     console.error("Error deleting file:", error);
-  }
-}
-
-export namespace TwowaySyncAPI {
-  export async function getFile({
-    absPath,
-    id,
-  }: {
-    absPath: string;
-    id: string;
-  }): Promise<{
-    json?: Object;
-    error?: string;
-  }> {
-    try {
-      const response = await fetch("/workspace/get_workflow_file", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-
-        body: JSON.stringify({
-          path: absPath,
-          id: id,
-        }),
-      });
-      const result = await response.json();
-
-      return result;
-    } catch (error) {
-      // alert(
-      //   `Error finding workflow <${id}> at "${absPath}". If you moved the file to another location, please refresh browser.`,
-      // );
-      console.error(`Erro finding file <${id}> at "${absPath}"`, error);
-      // showAlert({
-      //   message: `Error finding file <${id}> at "${absPath}". If you moved the file to another location, please refresh browser.`,
-      //   level: "error",
-      // });
-      return {};
-    }
   }
 }
 

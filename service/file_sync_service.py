@@ -5,13 +5,16 @@ import os
 from aiohttp import web
 import json
 import uuid
+from pathlib import Path
 
 def read_workflow_file(path, id):
-    if not os.path.exists(path):
-        return {"error": f"No file found in {path}"}
-    print("Read workflow file:", path, id)
+    print("🍻Read workflow file:", path, id)
+    # if not os.path.exists(os.path.abspath(path)):
+    #     return {"error": f"No file found in {path}"}
+    abs_path = Path(path)
     
-    with open(os.path.abspath(path), 'r', encoding='utf-8') as f:
+
+    with open(abs_path, 'r', encoding='utf-8') as f:
         json_data = json.load(f)
         if 'extra' in json_data and 'workspace_info' in json_data['extra'] and 'id' in json_data['extra']['workspace_info']:
             workflow_id = json_data['extra']['workspace_info']['id']

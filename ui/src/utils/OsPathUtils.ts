@@ -3,9 +3,14 @@ export function osPathJoin(...args: string[]) {
   if (joined.endsWith("/")) {
     return joined.slice(0, -1);
   }
-  return osPathSanitize(joined);
+  return sanitizeRelPath(joined);
 }
-export function osPathSanitize(path: string) {
+
+export function sanitizeAbsPath(path: string) {
+  const segments = path.split("/").filter((segment) => segment !== "");
+  return "/" + segments.join("/");
+}
+export function sanitizeRelPath(path: string) {
   const segments = path.split("/").filter((segment) => segment !== "");
   return segments.join("/");
 }

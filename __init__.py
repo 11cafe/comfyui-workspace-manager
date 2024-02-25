@@ -145,7 +145,6 @@ async def update_file(request):
     data = await request.json()
     file_path = data['file_path']
     json_str = data['json_str']
-    print(f"😂Updating file: {file_path}")
 
     def write_json_to_file(json_str):
         my_workflows_dir = get_my_workflows_dir()

@@ -2,7 +2,7 @@ import { ScanLocalFile, ScanLocalFolder, scanLocalFiles } from "../Api";
 import { isFolder, userSettingsTable } from "../db-tables/WorkspaceDB";
 import { indexdb } from "../db-tables/indexdb";
 import { Folder, Workflow } from "../types/dbTypes";
-import { osPathJoin, osPathSanitize } from "./OsPathUtils";
+import { sanitizeAbsPath } from "./OsPathUtils";
 
 export async function scanMyWorkflowsDir(
   parentFolderID: string | null,
@@ -19,7 +19,7 @@ export async function scanMyWorkflowsDir(
 
   const allFilesPromises = fileList.map(async (file) => {
     const fileName = file.name;
-    const absPath = osPathSanitize([scanDir, fileName].join("/"));
+    const absPath = sanitizeAbsPath([scanDir, fileName].join("/"));
     // const absPath = osPathJoin(scanDir, fileName);
     const relPath = [parentRelPath, fileName].join("/");
     console.log("scanMyWorkflowsDir rel", relPath);
