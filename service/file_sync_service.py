@@ -6,6 +6,7 @@ from aiohttp import web
 import json
 import uuid
 from pathlib import Path
+from .twoway_sync_folder_service import *
 
 @server.PromptServer.instance.routes.post('/workspace/create_workflow_file')
 async def create_workflow_file(request):

@@ -1,8 +1,5 @@
 import { updateFile } from "../Api";
-import {
-  COMFYSPACE_TRACKING_FIELD_NAME,
-  LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
-} from "../const";
+import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { indexdb } from "../db-tables/indexdb";
 import { Workflow } from "../types/dbTypes";
@@ -181,11 +178,10 @@ export async function scanLocalFiles(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        path,
+        path: sanitizeAbsPath(path),
       }),
     });
     const result = await response.json();
-    console.log("scanLocalNewFiles", result);
     return result;
   } catch (error) {
     console.error("Error scan local new files:", error);

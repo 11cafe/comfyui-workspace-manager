@@ -33,6 +33,7 @@ export async function deleteJsonFileMyWorkflows(workflow: Workflow) {
     return;
   }
   const file_path = await generateFilePath(workflow);
+  console.log("deleteJsonFileMyWorkflows", file_path);
   file_path != null && deleteFile(file_path);
 }
 

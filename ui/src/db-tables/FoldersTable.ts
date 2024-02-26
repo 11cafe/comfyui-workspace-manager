@@ -1,11 +1,12 @@
 import { deleteLocalDiskFolder } from "../Api";
-import { workflowsTable } from "./WorkspaceDB";
+import { userSettingsTable, workflowsTable } from "./WorkspaceDB";
 import { EFlowOperationType, Folder } from "../types/dbTypes";
 import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
 import { v4 as uuidv4 } from "uuid";
 import { TableBase } from "./TableBase";
 import { indexdb } from "./indexdb";
 import { generateFolderPath } from "./DiskFileUtils";
+import { TwowayFolderSyncAPI } from "../apis/TwowaySyncFolderApi";
 
 export class FoldersTable extends TableBase<Folder> {
   static readonly TABLE_NAME = "folders";
@@ -37,10 +38,23 @@ export class FoldersTable extends TableBase<Folder> {
     };
     await indexdb.folders.add(folder);
     this.saveDiskDB();
+    if (await userSettingsTable?.getSetting("twoWaySync")) {
+      await TwowayFolderSyncAPI.createFolder(folder);
+    }
     return folder;
   }
 
   public async update(id: string, input: Partial<Folder>) {
+    const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
+    if (twoWaySyncEnabled) {
+      if ("parentFolderID" in input) {
+        await TwowayFolderSyncAPI.moveFolder(id, input["parentFolderID"] ?? "");
+      }
+      if ("name" in input) {
+        await TwowayFolderSyncAPI.renameFolder(id, input["name"] ?? "");
+      }
+      return null;
+    }
     const folder = await this.get(id);
     if (folder == null) {
       return null;
@@ -75,8 +89,7 @@ export class FoldersTable extends TableBase<Folder> {
     id: string,
     flowOperationType: EFlowOperationType = EFlowOperationType.DELETE,
   ) {
-    const folderPath = await generateFolderPath(id);
-
+    const folder = await indexdb.folders.get(id);
     /**
      * When deleting a folder, if there are files in the folder
      * Breadth traverse all nested folders, find all files, move to root directory or delete as needed.
@@ -115,7 +128,7 @@ export class FoldersTable extends TableBase<Folder> {
       }
     }
 
-    folderPath && (await deleteLocalDiskFolder(folderPath));
+    folder && (await TwowayFolderSyncAPI.deleteFolder(folder));
     this.saveDiskDB();
   }
 
@@ -137,66 +150,5 @@ export class FoldersTable extends TableBase<Folder> {
       }
     }
     return newFlowName;
-  }
-  public async genRelativePath(id: string): Promise<string | null> {
-    let currentFolderId: string | null | undefined = id;
-    const pathSegments: string[] = [];
-
-    while (currentFolderId != null) {
-      const folder = await this.get(currentFolderId);
-      if (!folder) {
-        console.error(`Folder with ID <${currentFolderId}> not found`);
-        return null;
-      }
-      // Prepend the current folder name to the path segments
-      pathSegments.unshift(folder.name);
-
-      // Move up to the parent folder for the next iteration
-      currentFolderId = folder.parentFolderID;
-    }
-
-    return pathSegments.join("/");
-  }
-
-  // given a relative path, create the folder structure if not exist, and return the folder
-  public async putWithRelativePath(
-    relativePath: string,
-  ): Promise<Folder | null> {
-    console.log("putWithRelativePath", relativePath);
-    if (relativePath === "") {
-      // root folder
-      return null;
-    }
-    const pathSegments = relativePath.split("/");
-    let parentFolderID: string | null = null;
-    let folder: Folder | null = null;
-    for (const name of pathSegments) {
-      if (name === "") {
-        console.warn('Invalid folder name "" in path', relativePath);
-        continue;
-      }
-      folder =
-        (await indexdb.folders
-          .where({ name })
-          .filter((f) => {
-            return f.parentFolderID == parentFolderID;
-          })
-          .first()) ?? null;
-      if (folder == null) {
-        const newFolder = await this.add({
-          name,
-          parentFolderID,
-          updateTime: Date.now(),
-          type: "folder",
-        });
-        folder = (await this.get(newFolder.id)) ?? null;
-      }
-      if (folder == null) {
-        console.error("Failed to create folder", name);
-        throw new Error("Failed to create folder");
-      }
-      parentFolderID = folder.id;
-    }
-    return folder;
   }
 }

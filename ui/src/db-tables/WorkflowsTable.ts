@@ -184,11 +184,12 @@ export class WorkflowsTable extends TableBase<Workflow> {
       const twoWaySyncEnabled =
         await userSettingsTable?.getSetting("twoWaySync");
       // renamed file or moved file folder
-      await deleteJsonFileMyWorkflows(before);
       if (twoWaySyncEnabled) {
         await TwowaySyncAPI.saveWorkflow(after);
+        await TwowaySyncAPI.deleteWorkflow(before);
       } else {
         await saveJsonFileMyWorkflows(after);
+        await deleteJsonFileMyWorkflows(before);
       }
       return;
     }
@@ -237,8 +238,15 @@ export class WorkflowsTable extends TableBase<Workflow> {
 
   public async deleteFlow(id: string) {
     const workflow = await this.get(id);
+
     if (workflow) {
-      deleteJsonFileMyWorkflows({ ...workflow });
+      const twoWaySyncEnabled =
+        await userSettingsTable?.getSetting("twoWaySync");
+      if (twoWaySyncEnabled) {
+        await TwowaySyncAPI.deleteWorkflow(workflow);
+      } else {
+        deleteJsonFileMyWorkflows({ ...workflow });
+      }
     }
     //add to IndexDB
     await indexdb.workflows.delete(id);
@@ -248,7 +256,14 @@ export class WorkflowsTable extends TableBase<Workflow> {
   public async batchDeleteFlow(ids: string[]) {
     const workflowList = (await indexdb.workflows.bulkGet(ids)) as Workflow[];
     for (const flow of workflowList) {
-      flow && (await deleteJsonFileMyWorkflows(flow));
+      if (!flow) return;
+      const twoWaySyncEnabled =
+        await userSettingsTable?.getSetting("twoWaySync");
+      if (twoWaySyncEnabled) {
+        await TwowaySyncAPI.deleteWorkflow(flow);
+      } else {
+        deleteJsonFileMyWorkflows({ ...flow });
+      }
     }
     await indexdb.workflows.bulkDelete(ids);
     this.saveDiskDB();

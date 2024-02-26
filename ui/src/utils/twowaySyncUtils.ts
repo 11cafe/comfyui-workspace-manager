@@ -1,3 +1,4 @@
+import { ESortTypes } from "../RecentFilesDrawer/types";
 import {
   ScanLocalFile,
   ScanLocalFolder,
@@ -6,10 +7,12 @@ import {
 import { isFolder, userSettingsTable } from "../db-tables/WorkspaceDB";
 import { indexdb } from "../db-tables/indexdb";
 import { Folder, Workflow } from "../types/dbTypes";
+import { sortFileItem } from "../utils";
 import { sanitizeAbsPath } from "./OsPathUtils";
 
 export async function scanMyWorkflowsDir(
   parentFolderID: string | null,
+  sortBy?: ESortTypes,
 ): Promise<(Workflow | Folder)[]> {
   const myWorkflowsDir = await userSettingsTable?.getSetting("myWorkflowsDir");
   if (myWorkflowsDir == null || myWorkflowsDir === "") {
@@ -30,9 +33,9 @@ export async function scanMyWorkflowsDir(
     if (scanFileIsFolder(file)) {
       // is folder
       const folder: Folder = {
-        id: file.name,
+        id: relPath,
         name: file.name,
-        parentFolderID: relPath,
+        parentFolderID: parentRelPath,
         type: "folder",
         createTime: Date.now(),
         updateTime: Date.now(),
@@ -49,7 +52,8 @@ export async function scanMyWorkflowsDir(
         ...existingWorkflow,
         id: file.id,
         filePath: absPath,
-        json: "{}", //we don't need to load json data for file list display
+        lastSavedJson: file.json ?? "{}",
+        json: file.json ?? "{}",
         name: fileName.replace(".json", ""),
         parentFolderID: parentRelPath,
       };
@@ -61,7 +65,8 @@ export async function scanMyWorkflowsDir(
   indexdb.workflows.bulkPut(
     result.filter((item) => !isFolder(item)) as Workflow[],
   );
-  return result.filter((item) => item != null) as (Workflow | Folder)[];
+  const all = result.filter((item) => item != null) as (Workflow | Folder)[];
+  return sortFileItem(all, sortBy ?? ESortTypes.RECENTLY_MODIFIED);
 }
 function scanFileIsFolder(
   scanFile: ScanLocalFile | ScanLocalFolder,

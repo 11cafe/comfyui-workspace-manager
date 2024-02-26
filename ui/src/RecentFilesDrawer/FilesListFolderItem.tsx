@@ -75,6 +75,10 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
     setIsActive(false);
   };
   useEffect(() => {
+    if (!isCollapsed) {
+      console.log("folder.unisCollapse", folder);
+    }
+
     if (!!folder.isCollapse === isCollapsed) return;
     foldersTable?.update(folder.id, {
       isCollapse: isCollapsed,
