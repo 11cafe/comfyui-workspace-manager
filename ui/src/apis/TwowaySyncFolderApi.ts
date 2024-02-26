@@ -63,8 +63,8 @@ export namespace TwowayFolderSyncAPI {
     }
     return;
   }
-  export async function deleteFolder(folder: Folder) {
-    const absPath = await genFolderAbsPath(folder);
+  export async function deleteFolder(relPath: string) {
+    const absPath = await genAbsPathByRelPath(relPath);
     try {
       const response = await fetch("/workspace/folder/delete", {
         method: "POST",
@@ -81,6 +81,32 @@ export namespace TwowayFolderSyncAPI {
       console.error("Error deleting file:", error);
     }
   }
+
+  export async function genFilesCountInFolder(
+    folderRelPath: string,
+  ): Promise<number | null> {
+    const absPath = await genAbsPathByRelPath(folderRelPath);
+    try {
+      const response = await fetch("/workspace/file/count_files", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          path: absPath,
+        }),
+      });
+      const result = await response.json();
+      if (result.error) {
+        console.error("Error counting files:", result.error);
+      }
+      return result.count;
+    } catch (error) {
+      console.error("Error renaming file:", error);
+    }
+    return null;
+  }
+
   export async function renameFolder(
     folderRelPath: string,
     newName: string,

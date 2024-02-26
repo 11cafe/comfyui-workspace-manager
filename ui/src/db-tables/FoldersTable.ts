@@ -89,7 +89,10 @@ export class FoldersTable extends TableBase<Folder> {
     id: string,
     flowOperationType: EFlowOperationType = EFlowOperationType.DELETE,
   ) {
-    const folder = await indexdb.folders.get(id);
+    const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
+    if (twoWaySyncEnabled) {
+      await TwowayFolderSyncAPI.deleteFolder(id);
+    }
     /**
      * When deleting a folder, if there are files in the folder
      * Breadth traverse all nested folders, find all files, move to root directory or delete as needed.
@@ -128,7 +131,6 @@ export class FoldersTable extends TableBase<Folder> {
       }
     }
 
-    folder && (await TwowayFolderSyncAPI.deleteFolder(folder));
     this.saveDiskDB();
   }
 

@@ -6,6 +6,7 @@ import {
 } from "../const";
 import { toFileNameFriendly } from "../utils";
 import { Workflow } from "../types/dbTypes";
+import { TwowayFolderSyncAPI } from "../apis/TwowaySyncFolderApi";
 
 export async function saveJsonFileMyWorkflows(workflow: Workflow) {
   console.log("saveJsonFileMyWorkflows", workflow);
@@ -97,6 +98,10 @@ export async function generateFolderPath(id: string): Promise<string | null> {
 }
 
 export async function getFileCountInFolder(folderId: string): Promise<number> {
+  const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
+  if (twoWaySyncEnabled) {
+    return (await TwowayFolderSyncAPI.genFilesCountInFolder(folderId)) ?? 0;
+  }
   const allFlows = (await workflowsTable?.listAll()) ?? [];
   const allFolders = (await foldersTable?.listAll()) ?? [];
   const nestedFolderIdStack = [folderId];

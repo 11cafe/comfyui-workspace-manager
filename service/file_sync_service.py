@@ -188,3 +188,23 @@ def generate_unique_file_name_sync(reqJson):
         counter += 1
 
     return {"success": True, "uniqueName": new_name}
+
+@server.PromptServer.instance.routes.post('/workspace/file/count_files')
+async def count_files(request):
+    reqJson = await request.json()
+    data = await asyncio.to_thread(count_files_sync, reqJson)
+    return web.json_response(data, content_type='application/json')
+
+def count_files_sync(reqJson):
+    directory_path = reqJson.get('path')
+    if not directory_path:
+        return {"success": False, "error": "Directory path is required"}
+
+    path = Path(directory_path)
+    if not path.is_dir():
+        return {"success": False, "error": "Provided path is not a directory"}
+
+    file_count = sum(1 for _ in path.rglob('*') if _.is_file())
+
+    return {"success": True, "count": file_count}
+

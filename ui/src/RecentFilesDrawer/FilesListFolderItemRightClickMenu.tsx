@@ -51,29 +51,25 @@ export default function FilesListFolderItemRightClickMenu({
   const openDeleteConfirm = async (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     const fileCount = await getFileCountInFolder(folder.id);
-    if (fileCount > 0) {
-      showDialog(
-        `Do you want to delete the ${fileCount} files inside the folder too?`,
-        [
-          {
-            label: "Keep and move to root directory",
-            colorScheme: "teal",
-            onClick: () => {
-              onDelete(EFlowOperationType.MOVE_TO_ROOT_FOLDER);
-            },
+    showDialog(
+      `Do you want to delete the ${fileCount} files inside the folder too?`,
+      [
+        // {
+        //   label: "Keep and move to root directory",
+        //   colorScheme: "teal",
+        //   onClick: () => {
+        //     onDelete(EFlowOperationType.MOVE_TO_ROOT_FOLDER);
+        //   },
+        // },
+        {
+          label: "Delete all files",
+          colorScheme: "red",
+          onClick: () => {
+            onDelete(EFlowOperationType.DELETE);
           },
-          {
-            label: "Delete all files",
-            colorScheme: "red",
-            onClick: () => {
-              onDelete(EFlowOperationType.DELETE);
-            },
-          },
-        ],
-      );
-    } else {
-      onDelete(EFlowOperationType.DELETE);
-    }
+        },
+      ],
+    );
   };
 
   const onDelete = async (operationType: EFlowOperationType) => {
