@@ -3,7 +3,7 @@ import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { indexdb } from "../db-tables/indexdb";
 import { Workflow } from "../types/dbTypes";
-import { sanitizeAbsPath } from "../utils/OsPathUtils";
+import { genAbsPathByRelPath, sanitizeAbsPath } from "../utils/OsPathUtils";
 import { showAlert } from "../utils/showAlert";
 
 export namespace TwowaySyncAPI {
@@ -18,6 +18,87 @@ export namespace TwowaySyncAPI {
     );
     return absPath;
   }
+  export async function moveWorkflow(
+    workflow: Workflow,
+    newParentFolderRelPath: string,
+  ) {
+    const absPath = await genWorkflowAbsPath(workflow);
+    const newParentFolderAbs = await genAbsPathByRelPath(
+      newParentFolderRelPath,
+    );
+    console.log("🥳moveWorkflow", absPath, newParentFolderAbs);
+    try {
+      const response = await fetch("/workspace/file/move", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          path: absPath,
+          newParentPath: newParentFolderAbs,
+        }),
+      });
+      const result = await response.json();
+      if (result.error) {
+        alert("Error moving file: " + result.error);
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error("Error deleting file:", error);
+    }
+  }
+
+  export async function genFileUniqueName(
+    fileName: string,
+    parentFolderID: string | null,
+  ) {
+    const absPath = await genAbsPathByRelPath(`${parentFolderID}/${fileName}`);
+    try {
+      const response = await fetch("/workspace/file/gen_unique_name", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          path: absPath,
+        }),
+      });
+      const result = await response.json();
+      if (result.error) {
+        alert("Error moving file: " + result.error);
+        return false;
+      }
+      return result.uniqueName;
+    } catch (error) {
+      console.error("Error deleting file:", error);
+    }
+  }
+
+  export async function renameWorkflow(workflow: Workflow, newName: string) {
+    const absPath = await genWorkflowAbsPath(workflow);
+    try {
+      const response = await fetch("/workspace/file/rename", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          path: absPath,
+          newName: newName,
+        }),
+      });
+      const result = await response.json();
+      if (result.error) {
+        alert("Error moving file: " + result.error);
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error("Error deleting file:", error);
+    }
+  }
+
   export async function saveWorkflow(workflow: Workflow) {
     console.log("🥳saveWorkflow", workflow);
     const file_path = await genWorkflowAbsPath(workflow);
@@ -45,6 +126,7 @@ export namespace TwowaySyncAPI {
       const result = await response.text();
       return result;
     } catch (error) {
+      alert("Error deleting workflow .json file: " + error);
       console.error("Error deleting file:", error);
     }
   }

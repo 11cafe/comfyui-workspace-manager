@@ -1,6 +1,10 @@
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { Folder } from "../types/dbTypes";
-import { sanitizeAbsPath, sanitizeRelPath } from "../utils/OsPathUtils";
+import {
+  genAbsPathByRelPath,
+  sanitizeAbsPath,
+  sanitizeRelPath,
+} from "../utils/OsPathUtils";
 
 export namespace TwowayFolderSyncAPI {
   export async function genFolderRelPath({
@@ -21,12 +25,6 @@ export namespace TwowayFolderSyncAPI {
     const absPath = sanitizeAbsPath(
       `${myWorkflowsDir}/${parentFolderID ?? ""}/${name}`,
     );
-    return absPath;
-  }
-  export async function genAbsPathByRelPath(relPath: string): Promise<string> {
-    const myWorkflowsDir =
-      await userSettingsTable?.getSetting("myWorkflowsDir");
-    const absPath = sanitizeAbsPath(`${myWorkflowsDir}/${relPath}`);
     return absPath;
   }
   export async function createFolder(folder: Folder) {

@@ -7,6 +7,43 @@ import json
 import uuid
 from pathlib import Path
 from .twoway_sync_folder_service import *
+import shutil
+
+@server.PromptServer.instance.routes.post('/workspace/file/rename')
+async def rename_file(request):
+    reqJson = await request.json()
+    data = await asyncio.to_thread(rename_file_sync, reqJson)
+    return web.json_response(data, content_type='application/json')
+
+def rename_file_sync(reqJson):
+    current_path = reqJson.get('path')
+    new_name = reqJson.get('newName')
+    try:
+        new_path = Path(current_path).parent / new_name
+        # if new_path.suffix != ".json":
+        #     raise ValueError("New file name must have a .json extension")
+        Path(current_path).rename(new_path)
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@server.PromptServer.instance.routes.post('/workspace/file/move')
+async def move_file(request):
+    reqJson = await request.json()
+    data = await asyncio.to_thread(move_file_sync, reqJson)
+    return web.json_response(data, content_type='application/json')
+
+def move_file_sync(reqJson):
+    current_path = reqJson.get('path')
+    new_path = reqJson.get('newParentPath')
+    try:
+        target_path = Path(new_path) / Path(current_path).name
+        # if target_path.suffix != ".json":
+        #     raise ValueError("Target file must be a .json file")
+        shutil.move(current_path, new_path)
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 @server.PromptServer.instance.routes.post('/workspace/create_workflow_file')
 async def create_workflow_file(request):
@@ -42,7 +79,6 @@ def create_workflow_file(reqJson):
         # Writing JSON data to the file
         with open(new_file_path, 'w', encoding='utf-8') as file:
             file.write(workflow_json)
-        print("✅Created workflow file:", new_file_path)
         new_base_name,ext = os.path.splitext(new_file_name)
         return {"name": new_base_name}
     except Exception as e:
@@ -125,3 +161,30 @@ def atomic_json_update(filepath, data):
         temp_name = tmp_file.name
     # Replace the old file with the new file atomically
     os.replace(temp_name, filepath)
+
+@server.PromptServer.instance.routes.post('/workspace/file/gen_unique_name')
+async def generate_unique_file_name(request):
+    reqJson = await request.json()
+    data = await asyncio.to_thread(generate_unique_file_name_sync, reqJson)
+    return web.json_response(data, content_type='application/json')
+
+def generate_unique_file_name_sync(reqJson):
+    file_path = reqJson.get('path')
+    if not file_path:
+        return {"success": False, "error": "File path is required"}
+
+    path = Path(file_path)
+    if not path.parent.is_dir():
+        return {"success": False, "error": "Directory of the provided path does not exist"}
+
+    original_name = path.stem
+    extension = path.suffix
+    directory = path.parent
+    counter = 1
+    new_name = f"{original_name}{extension}"
+
+    while (directory / new_name).exists():
+        new_name = f"{original_name}{counter}{extension}"
+        counter += 1
+
+    return {"success": True, "uniqueName": new_name}

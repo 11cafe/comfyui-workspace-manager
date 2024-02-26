@@ -185,8 +185,11 @@ export class WorkflowsTable extends TableBase<Workflow> {
         await userSettingsTable?.getSetting("twoWaySync");
       // renamed file or moved file folder
       if (twoWaySyncEnabled) {
-        await TwowaySyncAPI.saveWorkflow(after);
-        await TwowaySyncAPI.deleteWorkflow(before);
+        if ("name" in input) {
+          await TwowaySyncAPI.renameWorkflow(before, input["name"]! + ".json");
+        } else if ("parentFolderID" in input) {
+          await TwowaySyncAPI.moveWorkflow(before, input["parentFolderID"]!);
+        }
       } else {
         await saveJsonFileMyWorkflows(after);
         await deleteJsonFileMyWorkflows(before);
