@@ -56,7 +56,6 @@ export default function EditFlowName({
         trimEditName,
         workflowsTable.curWorkflow?.parentFolderID ?? "",
       );
-      console.log("uniqueName", uniqueName);
       if (uniqueName !== trimEditName) {
         setSubmitError(
           "The name is duplicated, please modify it and submit again.",

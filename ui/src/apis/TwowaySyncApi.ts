@@ -4,7 +4,6 @@ import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { indexdb } from "../db-tables/indexdb";
 import { Workflow } from "../types/dbTypes";
 import { genAbsPathByRelPath, sanitizeAbsPath } from "../utils/OsPathUtils";
-import { showAlert } from "../utils/showAlert";
 
 export namespace TwowaySyncAPI {
   async function genWorkflowAbsPath({
@@ -177,10 +176,7 @@ export namespace TwowaySyncAPI {
       return result;
     } catch (error) {
       console.error(`Error creating file <${id}> at "${absPath}"`, error);
-      showAlert({
-        message: `Error creating file <${id}> at "${absPath}"`,
-        level: "error",
-      });
+      alert(`Error creating file <${id}> at "${absPath}"`);
       return {};
     }
   }
@@ -220,21 +216,14 @@ export namespace TwowaySyncAPI {
           `Error getting file <${id}> at "${absPath}"`,
           result.error,
         );
-        showAlert({
+        alert({
           message: `Error getting file <${id}> at "${absPath}"`,
           level: "error",
         });
       }
       return result;
     } catch (error) {
-      // alert(
-      //   `Error finding workflow <${id}> at "${absPath}". If you moved the file to another location, please refresh browser.`,
-      // );
       console.error(`Erro finding file <${id}> at "${absPath}"`, error);
-      showAlert({
-        message: `Error finding file <${id}> at "${absPath}". If you moved the file to another location, please refresh browser.`,
-        level: "error",
-      });
       return {};
     }
   }
