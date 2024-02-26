@@ -52,7 +52,7 @@ export namespace TwowaySyncAPI {
   export async function genFileUniqueName(
     fileName: string,
     parentFolderID: string | null,
-  ) {
+  ): Promise<string | null> {
     const absPath = await genAbsPathByRelPath(`${parentFolderID}/${fileName}`);
     try {
       const response = await fetch("/workspace/file/gen_unique_name", {
@@ -66,13 +66,14 @@ export namespace TwowaySyncAPI {
       });
       const result = await response.json();
       if (result.error) {
-        alert("Error moving file: " + result.error);
-        return false;
+        console.error("Error getting unique name:", result.error);
+        return null;
       }
       return result.uniqueName;
     } catch (error) {
       console.error("Error deleting file:", error);
     }
+    return null;
   }
 
   export async function renameWorkflow(workflow: Workflow, newName: string) {

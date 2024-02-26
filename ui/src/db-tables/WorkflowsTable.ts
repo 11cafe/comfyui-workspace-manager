@@ -58,6 +58,14 @@ export class WorkflowsTable extends TableBase<Workflow> {
   }
 
   async generateUniqueName(name?: string, parentFolderID?: string) {
+    const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
+    if (twoWaySyncEnabled) {
+      const fileName = await TwowaySyncAPI.genFileUniqueName(
+        (name ?? "Untitled Flow") + ".json",
+        parentFolderID ?? "",
+      );
+      return fileName?.replace(/\.json$/, "") ?? "Untitled Flow";
+    }
     /**
      * Generate a unique name
      * For imported scenes, the default name is the file name.
@@ -87,12 +95,10 @@ export class WorkflowsTable extends TableBase<Workflow> {
 
   public async createFlow(input: Partial<Workflow>): Promise<Workflow> {
     const { id, json, name } = input;
-    console.log("createFlow", input);
     const newFlowName = await this.generateUniqueName(
       name,
       input.parentFolderID ?? undefined,
     );
-    console.log("newFlowName", newFlowName);
     const uuid = id ?? uuidv4(); // ⇨ '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
     const time = Date.now();
     const newWorkflow: Workflow = {
@@ -141,7 +147,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
   }
 
   public async updateFlow(id: string, input: Partial<Workflow>) {
-    console.log("updateFlow", id, input);
+    // console.log("updateFlow", id, input);
     const before = await this.get(id);
     if (before == null) {
       return;
