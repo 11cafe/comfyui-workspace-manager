@@ -29,7 +29,7 @@ export async function scanMyWorkflowsDir(
     const absPath = sanitizeAbsPath([scanDir, fileName].join("/"));
     // const absPath = osPathJoin(scanDir, fileName);
     const relPath = [parentRelPath, fileName].join("/");
-
+    console.log("🚀 ~ file", file, new Date(file.createTime).toISOString());
     if (scanFileIsFolder(file)) {
       // is folder
       const folder: Folder = {
@@ -56,6 +56,8 @@ export async function scanMyWorkflowsDir(
         json: file.json ?? "{}",
         name: fileName.replace(".json", ""),
         parentFolderID: parentRelPath,
+        createTime: file.createTime,
+        updateTime: file.updateTime,
       };
       return newWorkflow;
     }

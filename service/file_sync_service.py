@@ -1,4 +1,7 @@
 import asyncio
+from datetime import datetime
+
+import platform
 import tempfile
 import server
 import os
@@ -34,10 +37,8 @@ def save_file_sync(reqJson):
         if current_id is not None and current_id != expected_id:
             return {"error": "Mismatching workspace_info.id."}
     except json.JSONDecodeError:
-        # If there's a JSON decode error, it means the file is not a valid JSON
         return { "error": "Existing file is not a valid JSON."}
     except FileNotFoundError:
-        # This block is optional since os.path.exists already checks for the file's existence
         return {"error": f"File not found in path {current_path}"}
     
     # If checks pass, write the new JSON data to the file
@@ -146,7 +147,19 @@ async def get_workflow_file(request):
     data = await asyncio.to_thread(read_workflow_file, path, id)
     
     return web.json_response(data, content_type='application/json')
+
+def getFileCreateTime(path):
+    # Cross-platform compatibility for creation time
+    file_stats = os.stat(path)
+    if platform.system() == 'Windows':
+        createTime = int(file_stats.st_ctime * 1000)
+    else:  # macOS and potentially others
+        createTime = int(getattr(file_stats, 'st_birthtime', file_stats.st_ctime) * 1000)
     
+    updateTime = int(file_stats.st_mtime * 1000)
+    print("File create time:",path,  datetime.fromtimestamp(createTime/1000).isoformat(), "update time:",  datetime.fromtimestamp(updateTime/1000).isoformat())
+    return createTime, updateTime
+
 # Scan .json and folders in the given path
 @server.PromptServer.instance.routes.post("/workspace/scan_my_workflows_files")
 async def scan_local_new_files(request):
@@ -167,9 +180,12 @@ def folder_handle(path):
                     file_handle(item, f, fileList, item_path)
 
             elif os.path.isdir(item_path):
+                createTime, updateTime = getFileCreateTime(item_path)
                 fileList.append({
                     'name': item,
                     'type': 'folder',
+                    'createTime': createTime,
+                    'updateTime': updateTime
                 })
         except Exception as e:
             print(f"Error scanning file {item}: {e}")
@@ -177,18 +193,23 @@ def folder_handle(path):
 
 def file_handle(name, file, fileList, file_path):
     json_data = json.load(file)
+    createTime, updateTime = getFileCreateTime(file_path)
     if 'extra' in json_data and 'workspace_info' in json_data['extra'] and 'id' in json_data['extra']['workspace_info']:
         workflow_id = json_data['extra']['workspace_info']['id']
     else:
         # If ID does not exist, generate a new UUID and add it to the JSON data
         new_id = str(uuid.uuid4())
         json_data.setdefault('extra', {}).setdefault('workspace_info', {})['id'] = new_id
-        atomic_json_update(file_path, json_data)
+        with open(file_path, 'w', encoding='utf-8') as file:
+            json.dump(json_data, file, ensure_ascii=False, indent=4)
+    
     fileInfo = {
             'json': json.dumps(json_data),
             'name': name,
             'type': "workflow",
-            'id': json_data['extra']['workspace_info']['id']
+            'id': json_data['extra']['workspace_info']['id'],
+            'createTime': createTime,
+            'updateTime': updateTime
         }
     fileList.append(fileInfo) 
 

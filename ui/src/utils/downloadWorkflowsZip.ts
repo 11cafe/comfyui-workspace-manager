@@ -3,17 +3,23 @@ import { formatTimestamp } from "../utils";
 import JSZip from "JSZip";
 import { genFolderRelPath } from "../db-tables/DiskFileUtils";
 import { sanitizeRelPath } from "../utils/OsPathUtils";
+import { userSettingsTable } from "../db-tables/WorkspaceDB";
 
 export const downloadWorkflowsZip = async (selectedList: Array<Workflow>) => {
   const exportName = `ComfyUI workspace workflows ${formatTimestamp(Date.now())}`;
   const zip = new JSZip();
-
+  const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
   for (const workflow of selectedList) {
-    const folderPath = await genFolderRelPath(
-      workflow.parentFolderID ?? null,
-    ).then(async (path) => {
-      return sanitizeRelPath(path ?? "");
-    });
+    let folderPath;
+    if (twoWaySyncEnabled) {
+      folderPath = workflow.parentFolderID ?? "";
+    } else {
+      folderPath = await genFolderRelPath(workflow.parentFolderID ?? null).then(
+        async (path) => {
+          return sanitizeRelPath(path ?? "");
+        },
+      );
+    }
     // Ensure the folder path exists in the zip
     const folder = zip.folder(folderPath);
     // Adding the JSON file to the corresponding folder
