@@ -174,6 +174,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
       before &&
         (await TwowaySyncAPI.renameWorkflow(before, change.name + ".json"));
     }
+    return await this.updateMetaInfo(id, change as any);
   }
   public async updateFlow(id: string, input: Pick<Workflow, "json">) {
     const before = await this.get(id);

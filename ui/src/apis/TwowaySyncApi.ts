@@ -77,6 +77,7 @@ export namespace TwowaySyncAPI {
   }
 
   export async function renameWorkflow(workflow: Workflow, newName: string) {
+    console.log("🥳renameWorkflow", workflow, newName);
     const absPath = await genWorkflowAbsPath(workflow);
     try {
       const response = await fetch("/workspace/file/rename", {
