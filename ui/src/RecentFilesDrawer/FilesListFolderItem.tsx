@@ -67,7 +67,7 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
         parentFolderID: folder.id,
       });
     } else if (!isFolder(draggingFile)) {
-      await workflowsTable?.updateFlow(draggingFile.id, {
+      await workflowsTable?.updateFolder(draggingFile.id, {
         parentFolderID: folder.id,
       });
     }

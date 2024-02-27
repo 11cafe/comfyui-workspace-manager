@@ -91,7 +91,7 @@ const GalleryMediaItem: React.FC<GalleryMediaItemProps> = ({
             icon={isCover ? <IconPinFilled size={19} /> : <IconPin size={19} />}
             aria-label="set as cover"
             onClick={() => {
-              workflowsTable?.updateFlow(curFlowID, {
+              workflowsTable?.updateMetaInfo(curFlowID, {
                 coverMediaPath: media.localPath,
               });
               setCoverPath(media.localPath);
@@ -147,7 +147,7 @@ const GalleryMediaItem: React.FC<GalleryMediaItemProps> = ({
               if (!res) return;
               await mediaTable?.delete(media.id);
               if (isCover) {
-                await workflowsTable?.updateFlow(curFlowID, {
+                await workflowsTable?.updateMetaInfo(curFlowID, {
                   coverMediaPath: undefined,
                 });
                 setCoverPath("");

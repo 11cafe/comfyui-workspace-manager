@@ -61,7 +61,7 @@ export default function EditFlowName({
           "The name is duplicated, please modify it and submit again.",
         );
       } else {
-        await workflowsTable?.updateFlow(curFlowID, {
+        await workflowsTable?.updateName(curFlowID, {
           name: trimEditName,
         });
         updateFlowName(trimEditName);

@@ -4,6 +4,7 @@ import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { indexdb } from "../db-tables/indexdb";
 import { Workflow } from "../types/dbTypes";
 import { genAbsPathByRelPath, sanitizeAbsPath } from "../utils/OsPathUtils";
+import { TwowayFolderSyncAPI } from "./TwowaySyncFolderApi";
 
 export namespace TwowaySyncAPI {
   async function genWorkflowAbsPath({
@@ -99,16 +100,57 @@ export namespace TwowaySyncAPI {
     }
   }
 
+  interface DuplicatesResponse {
+    duplicates: {
+      [id: string]: Array<{
+        path: string;
+        createTime: number;
+      }>;
+    };
+  }
+  export async function scanMyWorkflowsDupId() {
+    const myWorkflowsDir =
+      await userSettingsTable?.getSetting("myWorkflowsDir");
+    const absPath = sanitizeAbsPath(myWorkflowsDir!);
+    try {
+      const response = await fetch("/workspace/file/scan_dup_id", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          path: absPath,
+        }),
+      });
+      const result = (await response.json()) as DuplicatesResponse;
+      console.log("scanMyWorkflowsDupId", result);
+      return true;
+    } catch (error) {
+      console.error("Error deleting file:", error);
+    }
+  }
+
   export async function saveWorkflow(workflow: Workflow) {
     console.log("🥳saveWorkflow", workflow);
-    const file_path = await genWorkflowAbsPath(workflow);
+    const absPath = await genWorkflowAbsPath(workflow);
     const json = workflow.json;
     const flow = JSON.parse(json);
     flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {
       id: workflow.id,
     };
 
-    await updateFile(file_path, JSON.stringify(flow));
+    const response = await fetch("/workspace/file/save", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        path: absPath,
+        json: json,
+      }),
+    });
+    const result = await response.text();
+    return result;
   }
   export async function deleteWorkflow(workflow: Workflow) {
     const absPath = await genWorkflowAbsPath(workflow);
@@ -234,6 +276,8 @@ export type ScanLocalFile = {
   name: string;
   id: string;
   json: string;
+  createTime: number;
+  updateTime: number;
 };
 export type ScanLocalFolder = {
   type: "folder";

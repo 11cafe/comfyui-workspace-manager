@@ -112,7 +112,7 @@ export class FoldersTable extends TableBase<Folder> {
                 await workflowsTable?.deleteFlow(flow.id);
                 break;
               case EFlowOperationType.MOVE_TO_ROOT_FOLDER:
-                await workflowsTable?.updateFlow(flow.id, {
+                await workflowsTable?.updateFolder(flow.id, {
                   parentFolderID: undefined,
                 });
                 break;

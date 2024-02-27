@@ -9,6 +9,45 @@ from pathlib import Path
 from .twoway_sync_folder_service import *
 import shutil
 
+@server.PromptServer.instance.routes.post('/workspace/file/save')
+async def save_file(request):
+    reqJson = await request.json()
+    data = await asyncio.to_thread(save_file_sync, reqJson)
+    return web.json_response(data, content_type='application/json')
+
+def save_file_sync(reqJson):
+    current_path = reqJson.get('path')
+    new_json_data_str = reqJson.get('json')
+    try:
+        new_json_data = json.loads(new_json_data_str)
+    except json.JSONDecodeError:
+        return { "error": "New JSON data is not valid JSON."}
+    expected_id = new_json_data.get('extra', {}).get('workspace_info', {}).get('id', None)
+    
+    try:
+        with open(current_path, 'r', encoding='utf-8') as file:
+            current_json_data = json.load(file)
+        # Extract the id from the current file's content
+        current_id = current_json_data.get('extra', {}).get('workspace_info', {}).get('id', None)
+
+        # Compare the current id with the expected id
+        if current_id is not None and current_id != expected_id:
+            return {"error": "Mismatching workspace_info.id."}
+    except json.JSONDecodeError:
+        # If there's a JSON decode error, it means the file is not a valid JSON
+        return { "error": "Existing file is not a valid JSON."}
+    except FileNotFoundError:
+        # This block is optional since os.path.exists already checks for the file's existence
+        return {"error": "File not found."}
+    
+    # If checks pass, write the new JSON data to the file
+    try:
+        with open(current_path, 'w', encoding='utf-8') as file:
+            file.write(new_json_data_str)
+        return {"success": True}
+    except Exception as e:
+        return { "error": str(e)}
+
 @server.PromptServer.instance.routes.post('/workspace/file/rename')
 async def rename_file(request):
     reqJson = await request.json()

@@ -73,7 +73,7 @@ export default function ShareDialog({ onClose }: Props) {
 
     cloudID &&
       localID &&
-      (await workflowsTable?.updateFlow(localID, {
+      (await workflowsTable?.updateMetaInfo(localID, {
         cloudID: cloudID,
         cloudURL: cloudHostRef.current + "/workflow/" + cloudID,
       }));

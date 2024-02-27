@@ -73,7 +73,6 @@ export default function App() {
       const graphJson = JSON.stringify(app.graph.serialize());
       await Promise.all([
         workflowsTable?.updateFlow(curFlowID.current, {
-          lastSavedJson: graphJson,
           json: graphJson,
         }),
         changelogsTable?.create({
@@ -176,7 +175,7 @@ export default function App() {
 
   const checkIsDirty = async () => {
     if (curFlowID.current != null) {
-      const curWorkflow = await workflowsTable?.get(curFlowID.current, false);
+      const curWorkflow = await workflowsTable?.get(curFlowID.current);
       return !!curWorkflow && checkIsDirtyImpl(curWorkflow);
     }
     return false;

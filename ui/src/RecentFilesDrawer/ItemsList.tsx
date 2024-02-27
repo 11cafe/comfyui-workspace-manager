@@ -35,7 +35,7 @@ export default function ItemsList({
         parentFolderID: parentFolderID,
       });
     } else {
-      await workflowsTable?.updateFlow(draggingFile.id, {
+      await workflowsTable?.updateFolder(draggingFile.id, {
         parentFolderID: parentFolderID,
       });
     }
