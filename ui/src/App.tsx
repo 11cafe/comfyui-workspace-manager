@@ -104,10 +104,9 @@ export default function App() {
       // User clicked OK
       if (curFlowID.current) {
         const flow = await workflowsTable?.get(curFlowID.current);
-        if (flow) {
-          if (flow.lastSavedJson) {
-            await app.loadGraphData(JSON.parse(flow.lastSavedJson));
-          }
+        if (flow && flow.json) {
+          await app.loadGraphData(JSON.parse(flow.json));
+          console.log("discardUnsavedChanges", JSON.parse(flow.json));
         }
       }
     }

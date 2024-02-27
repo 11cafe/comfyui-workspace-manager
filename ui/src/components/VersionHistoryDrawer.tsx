@@ -43,7 +43,7 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
     const changelogs = await changelogsTable?.listByWorkflowID(flowId);
     setChangelogs(changelogs ?? []);
     const selectedChangelog = changelogs?.filter(
-      (c) => c.json === workflow?.lastSavedJson,
+      (c) => c.json === workflow?.json,
     );
     const selectedChangelogID = selectedChangelog?.[0]?.id;
     selectedChangelogID && setSelectedVersion(selectedChangelogID);

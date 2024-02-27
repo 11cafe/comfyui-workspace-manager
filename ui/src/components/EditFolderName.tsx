@@ -36,10 +36,13 @@ export default function EditFolderNameModal({ folder, onclose }: Props) {
     const trimEditName = editName.trim();
     setEditName(trimEditName);
     if (trimEditName === folder.name) return onclose();
-    const folderNameList =
-      (await foldersTable?.listAll().then((list) => list.map((f) => f.name))) ??
-      [];
-    if (folderNameList.includes(trimEditName)) {
+    const uniqName = await foldersTable?.generateUniqueName(
+      trimEditName,
+      folder.parentFolderID ?? "",
+    );
+    console.log("uniqName", uniqName);
+    console.log("trimEditName", trimEditName);
+    if (uniqName !== trimEditName) {
       setSubmitError(
         "The name is duplicated, please modify it and submit again.",
       );

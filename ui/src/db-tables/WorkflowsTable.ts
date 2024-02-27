@@ -1,4 +1,8 @@
-import { foldersTable, userSettingsTable } from "./WorkspaceDB";
+import {
+  changelogsTable,
+  foldersTable,
+  userSettingsTable,
+} from "./WorkspaceDB";
 import { Folder, Workflow } from "../types/dbTypes";
 import { sortFileItem } from "../utils";
 import { v4 as uuidv4 } from "uuid";
@@ -166,6 +170,10 @@ export class WorkflowsTable extends TableBase<Workflow> {
         });
       }
     }
+  }
+  public async genLastManualSavedJson(id: string) {
+    const changelog = await changelogsTable?.getLastestByWorkflowID(id);
+    return changelog?.json;
   }
   public async updateName(id: string, change: Pick<Workflow, "name">) {
     const before = await this.get(id);

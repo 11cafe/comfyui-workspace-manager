@@ -19,7 +19,7 @@ export namespace TwowayFolderSyncAPI {
   export async function genFolderAbsPath({
     parentFolderID,
     name,
-  }: Folder): Promise<string> {
+  }: Pick<Folder, "name" | "parentFolderID">): Promise<string> {
     const myWorkflowsDir =
       await userSettingsTable?.getSetting("myWorkflowsDir");
     const absPath = sanitizeAbsPath(
@@ -28,7 +28,7 @@ export namespace TwowayFolderSyncAPI {
     return absPath;
   }
   export async function createFolder(folder: Folder) {
-    console.log("🥳savecreateFolder", folder);
+    console.log("🥳createFolder", folder);
     const abs = await genFolderAbsPath(folder);
     await fetch("/workspace/folder/create", {
       method: "POST",

@@ -7,6 +7,7 @@ import { TableBase } from "./TableBase";
 import { indexdb } from "./indexdb";
 import { generateFolderPath } from "./DiskFileUtils";
 import { TwowayFolderSyncAPI } from "../apis/TwowaySyncFolderApi";
+import { TwowaySyncAPI } from "../apis/TwowaySyncApi";
 
 export class FoldersTable extends TableBase<Folder> {
   static readonly TABLE_NAME = "folders";
@@ -28,8 +29,13 @@ export class FoldersTable extends TableBase<Folder> {
       input.name,
       input.parentFolderID,
     );
+    const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
+    const rel = await TwowayFolderSyncAPI.genFolderRelPath({
+      name: uniqueName,
+      parentFolderID: input.parentFolderID ?? "",
+    });
     const folder: Folder = {
-      id: uuidv4(),
+      id: twoWaySyncEnabled ? rel : uuidv4(),
       name: uniqueName,
       parentFolderID: input.parentFolderID ?? null,
       updateTime: Date.now(),
@@ -38,7 +44,7 @@ export class FoldersTable extends TableBase<Folder> {
     };
     await indexdb.folders.add(folder);
     this.saveDiskDB();
-    if (await userSettingsTable?.getSetting("twoWaySync")) {
+    if (twoWaySyncEnabled) {
       await TwowayFolderSyncAPI.createFolder(folder);
     }
     return folder;
@@ -135,6 +141,20 @@ export class FoldersTable extends TableBase<Folder> {
   }
 
   public async generateUniqueName(name?: string, parentFolderID?: string) {
+    console.log(
+      "🚀 ~ file: FoldersTable.ts ~ line 104 ~ FoldersTable ~ generateUniqueName ~ name",
+      name,
+      parentFolderID,
+    );
+    const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
+    if (twoWaySyncEnabled) {
+      const fileName = await TwowaySyncAPI.genFileUniqueName(
+        name ?? "New folder",
+        parentFolderID ?? "",
+      );
+      console.log("uniquename", fileName);
+      return fileName ?? "New folder";
+    }
     let newFlowName = name ?? "New folder";
     const folderNameList = await this.listAll().then((list) =>
       list.filter((f) => f.parentFolderID == parentFolderID).map((f) => f.name),
