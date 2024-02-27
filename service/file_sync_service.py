@@ -38,7 +38,7 @@ def save_file_sync(reqJson):
         return { "error": "Existing file is not a valid JSON."}
     except FileNotFoundError:
         # This block is optional since os.path.exists already checks for the file's existence
-        return {"error": "File not found."}
+        return {"error": f"File not found in path {current_path}"}
     
     # If checks pass, write the new JSON data to the file
     try:

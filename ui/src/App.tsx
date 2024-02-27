@@ -181,13 +181,11 @@ export default function App() {
     return false;
   };
   const checkIsDirtyImpl = (curflow: Workflow) => {
-    if (curflow.lastSavedJson == null) return true;
+    if (curflow.json == null) return true;
     const graphJson = app.graph.serialize() ?? {};
     let lastSaved = {};
     try {
-      lastSaved = curflow?.lastSavedJson
-        ? JSON.parse(curflow?.lastSavedJson)
-        : {};
+      lastSaved = curflow?.json ? JSON.parse(curflow?.json) : {};
     } catch (e) {
       console.error("error parsing json", e);
     }

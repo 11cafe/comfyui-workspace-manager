@@ -149,7 +149,14 @@ export namespace TwowaySyncAPI {
         json: json,
       }),
     });
-    const result = await response.text();
+    const result = await response.json();
+    if (result.error) {
+      console.error("Error saving file:", result.error);
+      alert(`"Error saving file: ${result.error}
+      
+      👉Please try "Save as" from "Files" dropdown menu
+      `);
+    }
     return result;
   }
   export async function deleteWorkflow(workflow: Workflow) {
