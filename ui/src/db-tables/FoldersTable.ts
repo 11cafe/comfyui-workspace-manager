@@ -141,11 +141,6 @@ export class FoldersTable extends TableBase<Folder> {
   }
 
   public async generateUniqueName(name?: string, parentFolderID?: string) {
-    console.log(
-      "🚀 ~ file: FoldersTable.ts ~ line 104 ~ FoldersTable ~ generateUniqueName ~ name",
-      name,
-      parentFolderID,
-    );
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
     if (twoWaySyncEnabled) {
       const fileName = await TwowaySyncAPI.genFileUniqueName(

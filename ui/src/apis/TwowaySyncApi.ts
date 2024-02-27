@@ -1,10 +1,8 @@
-import { updateFile } from "../Api";
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { indexdb } from "../db-tables/indexdb";
 import { Workflow } from "../types/dbTypes";
 import { genAbsPathByRelPath, sanitizeAbsPath } from "../utils/OsPathUtils";
-import { TwowayFolderSyncAPI } from "./TwowaySyncFolderApi";
 
 export namespace TwowaySyncAPI {
   async function genWorkflowAbsPath({

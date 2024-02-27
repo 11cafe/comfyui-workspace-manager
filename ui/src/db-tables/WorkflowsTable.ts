@@ -185,7 +185,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
     return await this.updateMetaInfo(id, change as any);
   }
   public async updateFlow(id: string, input: Pick<Workflow, "json">) {
-    const before = await this.get(id);
+    const before = await this.get(id, false);
     if (before == null) {
       return;
     }
