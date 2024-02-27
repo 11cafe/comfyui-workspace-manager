@@ -74,9 +74,16 @@ export namespace TwowaySyncAPI {
     return null;
   }
 
-  export async function renameWorkflow(workflow: Workflow, newName: string) {
-    console.log("🥳renameWorkflow", workflow, newName);
-    const absPath = await genWorkflowAbsPath(workflow);
+  export async function renameWorkflow(
+    { parentFolderID, name }: Pick<Workflow, "name" | "parentFolderID">,
+    newName: string,
+  ) {
+    console.log("🥳renameWorkflow", parentFolderID, name, newName);
+    const myWorkflowsDir =
+      await userSettingsTable?.getSetting("myWorkflowsDir");
+    const absPath = sanitizeAbsPath(
+      `${myWorkflowsDir}/${parentFolderID ?? ""}/${name}.json`,
+    );
     try {
       const response = await fetch("/workspace/file/rename", {
         method: "POST",

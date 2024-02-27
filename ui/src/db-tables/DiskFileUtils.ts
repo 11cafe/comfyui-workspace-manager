@@ -5,7 +5,7 @@ import {
   LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
 } from "../const";
 import { toFileNameFriendly } from "../utils";
-import { Workflow } from "../types/dbTypes";
+import { Folder, Workflow } from "../types/dbTypes";
 import { TwowayFolderSyncAPI } from "../apis/TwowaySyncFolderApi";
 
 export async function saveJsonFileMyWorkflows(workflow: Workflow) {
@@ -56,6 +56,23 @@ export async function generateFilePath(
   return filePath ?? null;
 }
 
+export async function genFolderRelPath(
+  folderId: string | null,
+): Promise<string> {
+  let filePath = "";
+  let curFolderID = folderId;
+  while (curFolderID != null) {
+    const folder = await foldersTable?.get(curFolderID);
+    if (folder == null) {
+      break;
+    }
+    const folderName = folder.name;
+    filePath = `${folderName}/${filePath}`;
+    curFolderID = folder.parentFolderID ?? null;
+  }
+
+  return filePath;
+}
 export async function generateFilePathAbsolute(
   workflow: Workflow,
 ): Promise<string | null> {

@@ -42,10 +42,12 @@ export class FoldersTable extends TableBase<Folder> {
       createTime: Date.now(),
       type: "folder",
     };
-    await indexdb.folders.add(folder);
-    this.saveDiskDB();
+
     if (twoWaySyncEnabled) {
       await TwowayFolderSyncAPI.createFolder(folder);
+    } else {
+      await indexdb.folders.add(folder);
+      this.saveDiskDB();
     }
     return folder;
   }
