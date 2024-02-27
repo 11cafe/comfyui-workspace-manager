@@ -1,6 +1,7 @@
 import { UserSettings } from "../types/dbTypes";
 import { TableBase } from "./TableBase";
 import { getSystemDir } from "../Api";
+import { MODEL_TYPE_TO_FOLDER_MAPPING } from "../model-manager/install-models/util/modelTypes";
 
 export class UserSettingsTable extends TableBase<UserSettings> {
   public defaultSettings: UserSettings;
@@ -34,6 +35,7 @@ export class UserSettingsTable extends TableBase<UserSettings> {
       shortcuts: {
         save: "Shift+S",
       },
+      defaultFolders: MODEL_TYPE_TO_FOLDER_MAPPING,
       autoSave: true,
       twoWaySync: false,
       foldersOnTop: false,

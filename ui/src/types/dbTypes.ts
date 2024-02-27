@@ -1,3 +1,5 @@
+import type { MODEL_TYPE } from "../model-manager/install-models/util/modelTypes";
+
 export interface SortableItem {
   name: string;
   updateTime: number;
@@ -77,6 +79,7 @@ export type UserSettings = {
   showNsfwModelThumbnail?: boolean;
   cloudHost: string;
   overwriteCurWorkflowWhenDroppingFileToCanvas: boolean;
+  defaultFolders: Record<MODEL_TYPE, string>;
 };
 
 export interface PanelPosition {
