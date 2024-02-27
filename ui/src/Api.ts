@@ -175,7 +175,7 @@ export async function getAllFoldersList() {
       },
     });
     const result = await response.json();
-    return result as string[];
+    return result as Record<string, string[]>;
   } catch (error) {
     console.error("Error get all models list:", error);
   }

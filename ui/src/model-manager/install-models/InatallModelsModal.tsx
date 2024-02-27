@@ -9,8 +9,10 @@ import {
   ModalCloseButton,
   Heading,
   Spinner,
+  Text,
   useToast,
   useDisclosure,
+  Select,
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useState } from "react";
 import { installModelsApi } from "../api/modelsApi";
@@ -30,6 +32,8 @@ import {
 } from "./util/modelTypes";
 import { getModelFromCivitAPi } from "./util/getModelFromCivitAPI";
 import { getModelFromSearch } from "./util/getModelFromSearch";
+import { userSettingsTable } from "../../db-tables/WorkspaceDB";
+import { getAllFoldersList } from "../../Api";
 
 interface Props {
   onclose: () => void;
@@ -49,6 +53,10 @@ export default function InatallModelsModal({
   const [searchQuery, setSearchQuery] = useState(searchQueryProp);
   const { isOpen, onOpen, onClose: onCloseChooseFolderModal } = useDisclosure();
   const [fileState, setFile, file] = useStateRef<FileEssential>();
+  const [foldersList, setFoldersList] = useState<Record<string, string[]>>({});
+  const [defaultFolders, setDefaultFolders] = useState<
+    Record<MODEL_TYPE, string>
+  >({});
   const loadData = useCallback(async () => {
     setLoading(true);
     // if (!searchQuery) {
@@ -57,6 +65,11 @@ export default function InatallModelsModal({
     // } else {
     const models = await getModelFromSearch(searchQuery, modelType);
     setModels(models);
+    const folders_list = await getAllFoldersList();
+    folders_list && setFoldersList(folders_list);
+    const defaultFolders =
+      await userSettingsTable?.getSetting("defaultFolders");
+    defaultFolders && setDefaultFolders(defaultFolders);
 
     setLoading(false);
   }, [searchQuery, modelType]);
@@ -98,14 +111,27 @@ export default function InatallModelsModal({
     setFile(undefined);
     onCloseChooseFolderModal();
   };
-  const onClickInstallModel = (_file: FileEssential, model: apiResponse) => {
-    const folderPath = MODEL_TYPE_TO_FOLDER_MAPPING[model.type as MODEL_TYPE];
+  const onClickInstallModel = async (
+    _file: FileEssential,
+    model: apiResponse,
+  ) => {
+    const folderPath = defaultFolders[model.type as MODEL_TYPE];
     setFile(_file);
     if (folderPath == null) {
       onOpen();
     } else {
       downloadModels(folderPath);
     }
+  };
+
+  const updateDefaultFolders = async (
+    modelType: MODEL_TYPE,
+    newFolder: string,
+  ) => {
+    const newFolders = { ...defaultFolders, [modelType]: newFolder };
+    console.log(newFolders);
+    await userSettingsTable?.upsert({ defaultFolders: newFolders });
+    setDefaultFolders(newFolders);
   };
 
   useEffect(() => {
@@ -161,6 +187,24 @@ export default function InatallModelsModal({
                   </Button>
                 );
               })}
+              {modelType &&
+                foldersList[MODEL_TYPE_TO_FOLDER_MAPPING[modelType]] && (
+                  <HStack ml="auto">
+                    <Text whiteSpace="nowrap">Default Download Folder:</Text>
+                    <Select
+                      value={defaultFolders[modelType]}
+                      onChange={(e) =>
+                        updateDefaultFolders(modelType, e.target.value)
+                      }
+                    >
+                      {foldersList[MODEL_TYPE_TO_FOLDER_MAPPING[modelType]].map(
+                        (path) => (
+                          <option value={path}>{path}</option>
+                        ),
+                      )}
+                    </Select>
+                  </HStack>
+                )}
             </HStack>
             {loading && (
               <Spinner

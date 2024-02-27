@@ -75,7 +75,7 @@ def download_worker():
 
         if task is not None:
             # Execute the download task and update the download progress
-            download_url_with_agent(task['url'], task['save_path'])
+            download_url_with_agent(url= task['url'], save_path= task['save_path'], file_name= task['filename'], file_hash= task['file_hash'])
             # calculate newly downloaded models' hash
             start_populate_file_hash_dict()
                 
@@ -89,15 +89,9 @@ async def install_model(request):
     global download_thread
 
     json_data = await request.json()
-    url = json_data['url']
-    save_path = get_model_dir(json_data)
-    file_hash = json_data.get('file_hash')
-    if file_hash is not None:
-        save_file_hash(save_path, file_hash)
-
     with download_tasks_lock:
         # Add the task to the list
-        download_tasks.append({ 'url': url, 'save_path': save_path, 'filename': json_data['filename'] })
+        download_tasks.append(json_data)
 
     # If the previous thread is not active, start a new one
     if download_thread is None or not download_thread.is_alive():
@@ -105,40 +99,9 @@ async def install_model(request):
         download_thread.daemon = True
         download_thread.start()
 
-    return web.Response(text=f"Downloading {url} to {save_path} ...")
+    return web.Response(text=f"Downloading {json_data['url']} to {json_data['save_path']} ...")
 
-@server.PromptServer.instance.routes.post("/model_manager/install_model_stream")
-async def install_model_stream(request):
-    json_data = await request.json()
-    model_path = get_model_path(json_data)
-
-    response = web.StreamResponse()
-    response.headers['Content-Type'] = 'text/plain'
-    await response.prepare(request)
-    print(f"🖌️Model Manager: Installing model '{json_data['name']}' into '{model_path}' ...")
-    async def progress_callback(progress):
-        progress_message = f"Installing {json_data['name']}: {progress:.2f}%\n"
-        await response.write(progress_message.encode('utf-8'))
-
-    try:
-        if model_path is not None:
-            result = await download_url_with_agent(json_data['url'], model_path, progress_callback)
-            if result:
-                await response.write(b"Installation complete.\n")
-            else:
-                await response.write(b"Installation failed.\n")
-        else:
-            print(f"Model installation error: invalid model type - {json_data['type']}")
-            await response.write(b"Installation failed: Invalid model type.\n")
-
-    except Exception as e:
-        print(f"[ERROR] {e}", file=sys.stderr)
-        await response.write(f"Installation failed: {e}\n".encode('utf-8'))
-
-    await response.write_eof()
-    return response
-
-def download_url_with_agent(url, save_path, progress_callback=None):
+def download_url_with_agent(url, save_path, file_name, file_hash):
     print('download_url_with_agent', url, save_path)
 
     try:
@@ -153,8 +116,13 @@ def download_url_with_agent(url, save_path, progress_callback=None):
   
             file_size = int(response.headers.get('content-length', 0))
             print(f"File size: {file_size} bytes")
-            file_name = response.headers.get('Content-Disposition').split('filename=')[1].strip('"')
-            file_path = os.path.join(save_path, file_name)
+            content_disposition = response.headers.get('Content-Disposition')
+            if content_disposition:
+                file_name = content_disposition.split('filename=')[1].strip('"')
+            file_path = os.path.join(get_model_dir(save_path), file_name)
+            if file_hash is not None:
+                save_file_hash(file_path, file_hash)
+
             temp_file_path = file_path + ".temp"  # Temporary file
             chunk_size = 1024  # 1KB per chunk
             downloaded = 0
@@ -181,9 +149,6 @@ def download_url_with_agent(url, save_path, progress_callback=None):
                     print(f'\rProgress: {progress:.2f}%', end='')
                     send_download_status({'save_path': file_path, 'progress': progress})
 
-                    # if progress_callback:
-                    #     progress_callback(progress)
-
         # Rename temp file to final filename after successful download
         os.rename(temp_file_path, file_path)
 
@@ -197,49 +162,11 @@ def download_url_with_agent(url, save_path, progress_callback=None):
     print("\nDownload complete. File saved as:", save_path)
     return True
 
-def get_model_dir(data):
-    if data['save_path'] != 'default':
-        if '..' in data['save_path'] or data['save_path'].startswith('/'):
-            print(f"[WARN] '{data['save_path']}' is not allowed path. So it will be saved into 'models/etc'.")
-            base_model = "etc"
-        else:
-            if data['save_path'].startswith("custom_nodes"):
-                base_model = os.path.join(comfy_path, data['save_path'])
-            else:
-                base_model = os.path.join(folder_paths.models_dir, data['save_path'])
+def get_model_dir(save_path):
+    if os.path.isabs(save_path):
+        return save_path
     else:
-        model_type = data['type']
-        if model_type == "checkpoints":
-            base_model = folder_paths.folder_names_and_paths["checkpoints"][0][0]
-        elif model_type == "unclip":
-            base_model = folder_paths.folder_names_and_paths["checkpoints"][0][0]
-        elif model_type == "VAE":
-            base_model = folder_paths.folder_names_and_paths["vae"][0][0]
-        elif model_type == "lora":
-            base_model = folder_paths.folder_names_and_paths["loras"][0][0]
-        elif model_type == "T2I-Adapter":
-            base_model = folder_paths.folder_names_and_paths["controlnet"][0][0]
-        elif model_type == "T2I-Style":
-            base_model = folder_paths.folder_names_and_paths["controlnet"][0][0]
-        elif model_type == "controlnet":
-            base_model = folder_paths.folder_names_and_paths["controlnet"][0][0]
-        elif model_type == "clip_vision":
-            base_model = folder_paths.folder_names_and_paths["clip_vision"][0][0]
-        elif model_type == "gligen":
-            base_model = folder_paths.folder_names_and_paths["gligen"][0][0]
-        elif model_type == "upscale":
-            base_model = folder_paths.folder_names_and_paths["upscale_models"][0][0]
-        elif model_type == "embeddings":
-            base_model = folder_paths.folder_names_and_paths["embeddings"][0][0]
-        else:
-            base_model = "etc"
-
-    return base_model
-
-
-def get_model_path(data):
-    base_model = get_model_dir(data)
-    return os.path.join(base_model, data['filename'])
+        return folder_paths.folder_names_and_paths[save_path][0][0]
 
 
 last_call_time = 0

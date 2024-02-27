@@ -38,12 +38,10 @@ export default function ChooseFolder({
   const initData = async () => {
     const folders_list = await getAllFoldersList();
     if (folders_list) {
-      setFoldersList(
-        folders_list.filter(
-          (folderPath) =>
-            !["custom_nodes", "config", "saved_prompts"].includes(folderPath),
-        ),
-      );
+      ["custom_nodes", "config", "saved_prompts"].forEach((folder) => {
+        delete folders_list[folder];
+      });
+      setFoldersList(Object.values(folders_list).flatMap((folder) => folder));
     }
   };
 
