@@ -43,6 +43,7 @@ import HoverMenu from "./HoverMenu";
 const ShareDialog = lazy(() => import("../share/ShareDialog"));
 // @ts-ignore
 import { app } from "/scripts/app.js";
+import JsonDiffCompareModal from "./JsonDiffCompareModal";
 
 export default function DropdownTitle() {
   const { curFlowID, loadWorkflowID, discardUnsavedChanges, saveCurWorkflow } =
@@ -183,13 +184,13 @@ export default function DropdownTitle() {
               >
                 Versions History
               </MenuItem>
-              {/* <MenuItem
+              <MenuItem
                 onClick={() => setIsShareOpen(true)}
                 icon={<IconShare2 size={20} />}
                 iconSpacing={1}
               >
                 Share
-              </MenuItem> */}
+              </MenuItem>
             </MenuList>
           </Menu>
         }
@@ -198,6 +199,9 @@ export default function DropdownTitle() {
       {isVersionHistoryOpen && (
         <VersionHistoryDrawer onClose={() => setIsVersionHistoryOpen(false)} />
       )}
+
+      <JsonDiffCompareModal />
+
       {isOpenNewName && (
         <Modal isOpen={true} onClose={handleOnCloseModal}>
           <ModalOverlay />

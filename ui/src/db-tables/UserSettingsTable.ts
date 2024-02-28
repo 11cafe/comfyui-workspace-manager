@@ -44,13 +44,12 @@ export class UserSettingsTable extends TableBase<UserSettings> {
     };
   }
 
+  public async getSettings(): Promise<UserSettings | undefined> {
+    return await this.get(this.DEFAULT_USER);
+  }
   public async getSetting<K extends keyof UserSettings>(
     key: K,
   ): Promise<UserSettings[K]> {
-    if (key === "twoWaySync") {
-      // @ts-ignore HACKY FIX BEFORE TWO WAY SYNC IS READY TO USE
-      return false;
-    }
     const currentUserSettings: UserSettings | undefined = await this.get(
       this.DEFAULT_USER,
     );

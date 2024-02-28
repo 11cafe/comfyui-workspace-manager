@@ -51,14 +51,16 @@ export default function EditFlowName({
       const trimEditName = editName.trim();
       setEditName(trimEditName);
       if (displayName === trimEditName) return onCloseModal();
-      const flowList = (await workflowsTable?.listAll()) ?? [];
-      const flowNameList = flowList?.map((flow) => flow.name);
-      if (flowNameList.includes(trimEditName)) {
+      const uniqueName = await workflowsTable?.generateUniqueName(
+        trimEditName,
+        workflowsTable.curWorkflow?.parentFolderID ?? "",
+      );
+      if (uniqueName !== trimEditName) {
         setSubmitError(
           "The name is duplicated, please modify it and submit again.",
         );
       } else {
-        await workflowsTable?.updateFlow(curFlowID, {
+        await workflowsTable?.updateName(curFlowID, {
           name: trimEditName,
         });
         updateFlowName(trimEditName);

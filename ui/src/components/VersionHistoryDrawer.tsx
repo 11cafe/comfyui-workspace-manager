@@ -43,7 +43,7 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
     const changelogs = await changelogsTable?.listByWorkflowID(flowId);
     setChangelogs(changelogs ?? []);
     const selectedChangelog = changelogs?.filter(
-      (c) => c.json === workflow?.lastSavedJson,
+      (c) => c.json === workflow?.json,
     );
     const selectedChangelogID = selectedChangelog?.[0]?.id;
     selectedChangelogID && setSelectedVersion(selectedChangelogID);
@@ -147,7 +147,6 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
                             }
                             app.loadGraphData(JSON.parse(version.json));
                             workflowsTable?.updateFlow(curFlowID!, {
-                              lastSavedJson: version.json,
                               json: version.json,
                             });
                             toast({
@@ -191,7 +190,7 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
                         }
                         app.loadGraphData(JSON.parse(c.json));
                         workflowsTable?.updateFlow(curFlowID!, {
-                          lastSavedJson: c.json,
+                          json: c.json,
                         });
                         onClose();
                       }}

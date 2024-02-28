@@ -84,7 +84,7 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
             value={selectedTags}
             onChange={async (selected) => {
               setSelectedTags(selected);
-              await workflowsTable?.updateFlow(workflow.id, {
+              await workflowsTable?.updateMetaInfo(workflow.id, {
                 tags: selected.map((s) => s.value),
               });
               await onRefreshFilesList?.();

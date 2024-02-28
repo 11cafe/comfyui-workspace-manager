@@ -19,10 +19,9 @@ import {
   mediaTable,
 } from "./db-tables/WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
-import { WorkspaceContext } from "./WorkspaceContext";
+import { JsonDiff, WorkspaceContext } from "./WorkspaceContext";
 import {
   Route,
-  syncNewFlowOfLocalDisk,
   getFileUrl,
   matchSaveWorkflowShortcut,
   validateOrSaveAllJsonFileMyWorkflows,
@@ -39,7 +38,6 @@ const RecentFilesDrawer = React.lazy(
   () => import("./RecentFilesDrawer/RecentFilesDrawer"),
 );
 const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
-import { scanLocalNewFiles } from "./Api";
 import { IconExternalLink } from "@tabler/icons-react";
 import { DRAWER_Z_INDEX } from "./const";
 import ServerEventListener from "./model-manager/hooks/ServerEventListener";
@@ -69,13 +67,13 @@ export default function App() {
   const developmentEnvLoadFirst = useRef(false);
   const autoSaveTimer = useRef(0);
   const workflowOverwriteNoticeStateRef = useRef("hide"); // disabled/hide/show;
-
+  const [jsonDiff, setJsonDiff] = useState<JsonDiff>(null);
   const saveCurWorkflow = useCallback(async () => {
     if (curFlowID.current) {
       const graphJson = JSON.stringify(app.graph.serialize());
+      console.log("App.saveCurWorkflow", graphJson);
       await Promise.all([
         workflowsTable?.updateFlow(curFlowID.current, {
-          lastSavedJson: graphJson,
           json: graphJson,
         }),
         changelogsTable?.create({
@@ -93,7 +91,7 @@ export default function App() {
       if (userInput) {
         // User clicked OK
         await workflowsTable?.delete(curFlowID.current);
-        setCurFlowIDAndName(null, "");
+        setCurFlowIDAndName(null);
       }
     }
   };
@@ -107,21 +105,21 @@ export default function App() {
       // User clicked OK
       if (curFlowID.current) {
         const flow = await workflowsTable?.get(curFlowID.current);
-        if (flow) {
-          if (flow.lastSavedJson) {
-            await app.loadGraphData(JSON.parse(flow.lastSavedJson));
-          }
+        if (flow && flow.json) {
+          await app.loadGraphData(JSON.parse(flow.json));
+          console.log("discardUnsavedChanges", JSON.parse(flow.json));
         }
       }
     }
   };
 
-  const setCurFlowIDAndName = (id: string | null, name: string) => {
+  const setCurFlowIDAndName = (workflow: Workflow | null) => {
     // curID null is when you deleted current workflow
+    const id = workflow?.id ?? null;
+    workflowsTable?.updateCurWorkflow(workflow);
     curFlowID.current = id;
     setFlowID(id);
-    setCurFlowName(name);
-    workflowsTable?.updateCurWorkflowID(id);
+    setCurFlowName(workflow?.name ?? "");
     if (id == null) {
       document.title = "ComfyUI";
       window.location.hash = "";
@@ -158,16 +156,12 @@ export default function App() {
       latestWfID = localStorage.getItem("curFlowID");
     }
     if (latestWfID) {
-      // since we changed to lazy load our component, app.configureGraph will come before our app loading,
-      // localStorage.setItem("workflow") will not take effect anymore and will result different workflow appearing bug when refreshing
       loadWorkflowIDImpl(latestWfID);
     }
 
-    /**
-     * For two-way sync, one-time rewrite all /my_workflows files to the database
-     */
+    //For two-way sync, one-time rewrite all /my_workflows files to the database
     if (localStorage.getItem("REWRITTEN_ALL_LOCAL_DISK_FILE") === "true") {
-      await validateOrSaveAllJsonFileMyWorkflows();
+      // await validateOrSaveAllJsonFileMyWorkflows();
     } else {
       await rewriteAllLocalFiles();
       localStorage.setItem("REWRITTEN_ALL_LOCAL_DISK_FILE", "true");
@@ -182,23 +176,26 @@ export default function App() {
 
   const checkIsDirty = async () => {
     if (curFlowID.current != null) {
-      const curWorkflow = await workflowsTable?.get(curFlowID.current);
+      const curWorkflow = workflowsTable?.curWorkflow;
       return !!curWorkflow && checkIsDirtyImpl(curWorkflow);
     }
     return false;
   };
   const checkIsDirtyImpl = (curflow: Workflow) => {
-    if (curflow.lastSavedJson == null) return true;
+    if (curflow.json == null) return true;
     const graphJson = app.graph.serialize() ?? {};
     let lastSaved = {};
     try {
-      lastSaved = curflow?.lastSavedJson
-        ? JSON.parse(curflow?.lastSavedJson)
-        : {};
+      lastSaved = curflow?.json ? JSON.parse(curflow?.json) : {};
     } catch (e) {
       console.error("error parsing json", e);
     }
     const equal = JSON.stringify(graphJson) === JSON.stringify(lastSaved);
+    // compareJsonDiff({
+    //   old: lastSaved,
+    //   new: graphJson,
+    // });
+    console.log("checkIsDirty", !equal);
     return !equal;
   };
 
@@ -213,13 +210,17 @@ export default function App() {
     // If the currently loaded flow does not exist, you need to clear the URL hash and localStorage to avoid popping up another prompt that the flow does not exist when refreshing the page.
     if (flow == null) {
       alert("Error: Workflow not found! id: " + id);
-      setCurFlowIDAndName(null, "");
+      setCurFlowIDAndName(null);
       return;
     }
-    setCurFlowIDAndName(id, flow.name);
+    setCurFlowIDAndName(flow);
     app.ui.dialog.close();
     app.loadGraphData(JSON.parse(flow.json));
     setRoute("root");
+  };
+
+  const compareJsonDiff = (diff: { old: Object; new: Object } | null) => {
+    setJsonDiff(diff);
   };
 
   const loadWorkflowID = async (
@@ -228,7 +229,7 @@ export default function App() {
   ) => {
     // No current workflow, id is null when you deleted current workflow
     if (id === null) {
-      setCurFlowIDAndName(null, "");
+      setCurFlowIDAndName(null);
       app.graph.clear();
       return;
     }
@@ -430,14 +431,14 @@ export default function App() {
           // autosave workflow if enabled
           const graphJson = JSON.stringify(app.graph.serialize());
           graphJson != null &&
-            (await workflowsTable?.updateFlow(curFlowID.current, {
+            (await workflowsTable?.updateFlow(curFlowID.current!, {
               json: graphJson,
             }));
         }
       }
 
       checkIsDirty().then((res) => {
-        setIsDirty(res);
+        setIsDirty(!!res);
       });
     }, 1000);
 
@@ -452,8 +453,8 @@ export default function App() {
           name: fileInput.files[0].name,
           json: JSON.stringify(defaultGraph),
         });
-
-        flow && setCurFlowIDAndName(flow.id, flow.name ?? "Unknown name");
+        console.log("created flow", flow);
+        flow && setCurFlowIDAndName(flow);
       }
     };
     fileInput?.addEventListener("change", fileInputListener);
@@ -505,7 +506,7 @@ export default function App() {
           name: fileName,
         });
 
-        flow && setCurFlowIDAndName(flow.id, flow.name);
+        flow && setCurFlowIDAndName(flow);
       }
     };
     app.canvasEl.addEventListener("drop", handleDrop);
@@ -538,6 +539,8 @@ export default function App() {
         loadNewWorkflow: loadNewWorkflow,
         loadFilePath: loadFilePath,
         setRoute: setRoute,
+        jsonDiff: jsonDiff,
+        compareJson: compareJsonDiff,
       }}
     >
       <div ref={workspaceContainerRef} className="workspace_manager">
