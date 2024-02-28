@@ -71,6 +71,7 @@ export default function App() {
   const saveCurWorkflow = useCallback(async () => {
     if (curFlowID.current) {
       const graphJson = JSON.stringify(app.graph.serialize());
+      console.log("App.saveCurWorkflow", graphJson);
       await Promise.all([
         workflowsTable?.updateFlow(curFlowID.current, {
           json: graphJson,
@@ -176,7 +177,6 @@ export default function App() {
   const checkIsDirty = async () => {
     if (curFlowID.current != null) {
       const curWorkflow = workflowsTable?.curWorkflow;
-      console.log("curWorkflow", curWorkflow);
       return !!curWorkflow && checkIsDirtyImpl(curWorkflow);
     }
     return false;
@@ -453,7 +453,7 @@ export default function App() {
           name: fileInput.files[0].name,
           json: JSON.stringify(defaultGraph),
         });
-
+        console.log("created flow", flow);
         flow && setCurFlowIDAndName(flow);
       }
     };

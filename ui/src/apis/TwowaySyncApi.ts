@@ -152,7 +152,7 @@ export namespace TwowaySyncAPI {
       },
       body: JSON.stringify({
         path: absPath,
-        json: json,
+        json: JSON.stringify(flow),
       }),
     });
     const result = await response.json();

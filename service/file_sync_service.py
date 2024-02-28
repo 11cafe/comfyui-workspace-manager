@@ -21,13 +21,13 @@ async def save_file(request):
 def save_file_sync(reqJson):
     current_path = reqJson.get('path')
     new_json_data_str = reqJson.get('json')
-    print("🍻Saving file:", current_path)
+    
     try:
         new_json_data = json.loads(new_json_data_str)
     except json.JSONDecodeError:
         return { "error": "New JSON data is not valid JSON."}
     expected_id = new_json_data.get('extra', {}).get('workspace_info', {}).get('id', None)
-    
+    print("💿💿Saving file:", current_path,'id',expected_id)
     try:
         with open(current_path, 'r', encoding='utf-8') as file:
             current_json_data = json.load(file)

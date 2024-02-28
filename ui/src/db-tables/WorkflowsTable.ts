@@ -100,7 +100,9 @@ export class WorkflowsTable extends TableBase<Workflow> {
     return newFlowName;
   }
 
-  public async createFlow(input: Partial<Workflow>): Promise<Workflow> {
+  public async createFlow(
+    input: Partial<Workflow>,
+  ): Promise<Workflow | undefined> {
     const { id, json, name } = input;
     const newFlowName = await this.generateUniqueName(
       name,
@@ -125,6 +127,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
     if (twoWaySyncEnabled) {
       await TwowaySyncAPI.creatWorkflow(newWorkflow);
+      return await this.get(newWorkflow.id);
     } else {
       saveJsonFileMyWorkflows(newWorkflow);
     }
@@ -194,6 +197,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
     return await this.updateMetaInfo(id, change as any);
   }
   public async updateFlow(id: string, input: Pick<Workflow, "json">) {
+    console.log("workflowsTable.updateFlow", id, input);
     const before = await this.get(id, false);
     if (before == null) {
       return;
