@@ -42,6 +42,9 @@ export class WorkflowsTable extends TableBase<Workflow> {
       this._curWorkflow = w ?? null;
     });
   }
+  public updateCurWorkflow(workflow: Workflow | null) {
+    this._curWorkflow = workflow;
+  }
 
   /**
    * Check whether the currently opened workflow is the latest version and is consistent with the DB.
@@ -140,6 +143,12 @@ export class WorkflowsTable extends TableBase<Workflow> {
     id: string,
     change: Omit<Partial<Workflow>, "id" | "name" | "parentFolderID" | "json">,
   ): Promise<Workflow | null> {
+    return this._update(id, change);
+  }
+  private async _update(
+    id: string,
+    change: Partial<Workflow>,
+  ): Promise<Workflow | null> {
     //update indexdb
     await indexdb.workflows.update(id, change);
     const newWorkflow = (await indexdb.workflows.get(id)) ?? null;
@@ -196,7 +205,10 @@ export class WorkflowsTable extends TableBase<Workflow> {
       return;
     }
     console.log("updateFlow", id, input);
-    const after = await this.updateMetaInfo(id, input as any);
+    const after = await this._update(id, {
+      updateTime: Date.now(),
+      json: input.json,
+    });
     // save to my_workflows/
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
     if (twoWaySyncEnabled) {

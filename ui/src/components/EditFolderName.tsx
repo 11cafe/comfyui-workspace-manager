@@ -40,8 +40,6 @@ export default function EditFolderNameModal({ folder, onclose }: Props) {
       trimEditName,
       folder.parentFolderID ?? "",
     );
-    console.log("uniqName", uniqName);
-    console.log("trimEditName", trimEditName);
     if (uniqName !== trimEditName) {
       setSubmitError(
         "The name is duplicated, please modify it and submit again.",

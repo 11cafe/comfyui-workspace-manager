@@ -19,7 +19,7 @@ import {
   mediaTable,
 } from "./db-tables/WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
-import { WorkspaceContext } from "./WorkspaceContext";
+import { JsonDiff, WorkspaceContext } from "./WorkspaceContext";
 import {
   Route,
   getFileUrl,
@@ -67,7 +67,7 @@ export default function App() {
   const developmentEnvLoadFirst = useRef(false);
   const autoSaveTimer = useRef(0);
   const workflowOverwriteNoticeStateRef = useRef("hide"); // disabled/hide/show;
-
+  const [jsonDiff, setJsonDiff] = useState<JsonDiff>(null);
   const saveCurWorkflow = useCallback(async () => {
     if (curFlowID.current) {
       const graphJson = JSON.stringify(app.graph.serialize());
@@ -90,7 +90,7 @@ export default function App() {
       if (userInput) {
         // User clicked OK
         await workflowsTable?.delete(curFlowID.current);
-        setCurFlowIDAndName(null, "");
+        setCurFlowIDAndName(null);
       }
     }
   };
@@ -112,12 +112,13 @@ export default function App() {
     }
   };
 
-  const setCurFlowIDAndName = (id: string | null, name: string) => {
+  const setCurFlowIDAndName = (workflow: Workflow | null) => {
     // curID null is when you deleted current workflow
+    const id = workflow?.id ?? null;
+    workflowsTable?.updateCurWorkflow(workflow);
     curFlowID.current = id;
     setFlowID(id);
-    setCurFlowName(name);
-    workflowsTable?.updateCurWorkflowID(id);
+    setCurFlowName(workflow?.name ?? "");
     if (id == null) {
       document.title = "ComfyUI";
       window.location.hash = "";
@@ -174,7 +175,8 @@ export default function App() {
 
   const checkIsDirty = async () => {
     if (curFlowID.current != null) {
-      const curWorkflow = await workflowsTable?.get(curFlowID.current, false);
+      const curWorkflow = workflowsTable?.curWorkflow;
+      console.log("curWorkflow", curWorkflow);
       return !!curWorkflow && checkIsDirtyImpl(curWorkflow);
     }
     return false;
@@ -189,6 +191,11 @@ export default function App() {
       console.error("error parsing json", e);
     }
     const equal = JSON.stringify(graphJson) === JSON.stringify(lastSaved);
+    // compareJsonDiff({
+    //   old: lastSaved,
+    //   new: graphJson,
+    // });
+    console.log("checkIsDirty", !equal);
     return !equal;
   };
 
@@ -203,13 +210,17 @@ export default function App() {
     // If the currently loaded flow does not exist, you need to clear the URL hash and localStorage to avoid popping up another prompt that the flow does not exist when refreshing the page.
     if (flow == null) {
       alert("Error: Workflow not found! id: " + id);
-      setCurFlowIDAndName(null, "");
+      setCurFlowIDAndName(null);
       return;
     }
-    setCurFlowIDAndName(id, flow.name);
+    setCurFlowIDAndName(flow);
     app.ui.dialog.close();
     app.loadGraphData(JSON.parse(flow.json));
     setRoute("root");
+  };
+
+  const compareJsonDiff = (diff: { old: Object; new: Object } | null) => {
+    setJsonDiff(diff);
   };
 
   const loadWorkflowID = async (
@@ -218,7 +229,7 @@ export default function App() {
   ) => {
     // No current workflow, id is null when you deleted current workflow
     if (id === null) {
-      setCurFlowIDAndName(null, "");
+      setCurFlowIDAndName(null);
       app.graph.clear();
       return;
     }
@@ -427,7 +438,7 @@ export default function App() {
       }
 
       checkIsDirty().then((res) => {
-        setIsDirty(res);
+        setIsDirty(!!res);
       });
     }, 1000);
 
@@ -443,7 +454,7 @@ export default function App() {
           json: JSON.stringify(defaultGraph),
         });
 
-        flow && setCurFlowIDAndName(flow.id, flow.name ?? "Unknown name");
+        flow && setCurFlowIDAndName(flow);
       }
     };
     fileInput?.addEventListener("change", fileInputListener);
@@ -495,7 +506,7 @@ export default function App() {
           name: fileName,
         });
 
-        flow && setCurFlowIDAndName(flow.id, flow.name);
+        flow && setCurFlowIDAndName(flow);
       }
     };
     app.canvasEl.addEventListener("drop", handleDrop);
@@ -528,6 +539,8 @@ export default function App() {
         loadNewWorkflow: loadNewWorkflow,
         loadFilePath: loadFilePath,
         setRoute: setRoute,
+        jsonDiff: jsonDiff,
+        compareJson: compareJsonDiff,
       }}
     >
       <div ref={workspaceContainerRef} className="workspace_manager">

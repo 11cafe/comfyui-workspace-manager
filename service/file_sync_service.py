@@ -21,6 +21,7 @@ async def save_file(request):
 def save_file_sync(reqJson):
     current_path = reqJson.get('path')
     new_json_data_str = reqJson.get('json')
+    print("🍻Saving file:", current_path)
     try:
         new_json_data = json.loads(new_json_data_str)
     except json.JSONDecodeError:
@@ -128,13 +129,13 @@ def create_workflow_file(reqJson):
 def read_workflow_file(path, id):
     print("🍻Read workflow file:", path, id)
     abs_path = Path(path)
-
+    create_time, update_time = getFileCreateTime(abs_path)
     with open(abs_path, 'r', encoding='utf-8') as f:
         json_data = json.load(f)
         if 'extra' in json_data and 'workspace_info' in json_data['extra'] and 'id' in json_data['extra']['workspace_info']:
             workflow_id = json_data['extra']['workspace_info']['id']
             if workflow_id == id:
-                return {"json": json_data}
+                return {"json": json_data, "createTime": create_time, "updateTime": update_time}
             return {"error": "Workflow ID doesn't match"}
     return {"error": "No workspace_info.id found in the file"}
 
@@ -157,7 +158,6 @@ def getFileCreateTime(path):
         createTime = int(getattr(file_stats, 'st_birthtime', file_stats.st_ctime) * 1000)
     
     updateTime = int(file_stats.st_mtime * 1000)
-    print("File create time:",path,  datetime.fromtimestamp(createTime/1000).isoformat(), "update time:",  datetime.fromtimestamp(updateTime/1000).isoformat())
     return createTime, updateTime
 
 # Scan .json and folders in the given path

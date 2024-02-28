@@ -1,11 +1,9 @@
-import { deleteLocalDiskFolder } from "../Api";
 import { userSettingsTable, workflowsTable } from "./WorkspaceDB";
 import { EFlowOperationType, Folder } from "../types/dbTypes";
 import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
 import { v4 as uuidv4 } from "uuid";
 import { TableBase } from "./TableBase";
 import { indexdb } from "./indexdb";
-import { generateFolderPath } from "./DiskFileUtils";
 import { TwowayFolderSyncAPI } from "../apis/TwowaySyncFolderApi";
 import { TwowaySyncAPI } from "../apis/TwowaySyncApi";
 

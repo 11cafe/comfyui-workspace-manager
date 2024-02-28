@@ -6,10 +6,12 @@ import { downloadWorkflowsZip } from "../utils/downloadWorkflowsZip";
 
 export default function TwoWaySyncSettings() {
   const [checked, setChecked] = useState(false);
+  const [savingDir, setSavingDir] = useState("");
   const { showDialog } = useDialog();
   const getTwoWaySync = () => {
-    userSettingsTable?.getSetting("twoWaySync").then((res) => {
-      setChecked(!!res);
+    userSettingsTable?.getSettings().then((res) => {
+      setSavingDir(res?.myWorkflowsDir ?? "undefined");
+      setChecked(!!res?.twoWaySync);
     });
   };
 
@@ -45,10 +47,11 @@ export default function TwoWaySyncSettings() {
 
   return (
     <Stack>
-      <Text color={"GrayText"}>
-        If true this will auto detect when you have new .json files added to
-        your workspace saving directory in your disk and automatically import
-        them into your workspace for you
+      <Text>
+        If enabled, your workflows will be synced to and from <b>{savingDir}</b>
+        <br />
+        You can manually move files into this folder using File Explorer or
+        Finder to import them into your workspace.
       </Text>
       <Checkbox isChecked={checked} onChange={onTwoWaySyncChange}>
         Enable two way sync (DO NOT USE!! EXPERIMENTAL!)
