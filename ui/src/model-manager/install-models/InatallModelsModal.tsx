@@ -56,7 +56,7 @@ export default function InatallModelsModal({
   const [foldersList, setFoldersList] = useState<Record<string, string[]>>({});
   const [defaultFolders, setDefaultFolders] = useState<
     Record<MODEL_TYPE, string>
-  >({});
+  >(MODEL_TYPE_TO_FOLDER_MAPPING);
   const loadData = useCallback(async () => {
     setLoading(true);
     // if (!searchQuery) {
