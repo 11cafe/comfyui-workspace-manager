@@ -151,7 +151,6 @@ export default function DropdownTitle() {
                   onClick={discardUnsavedChanges}
                   icon={<IconArrowBackUpDouble size={20} />}
                   iconSpacing={1}
-                  isDisabled={workflow?.lastSavedJson == null}
                 >
                   Discard unsaved changes
                 </MenuItem>

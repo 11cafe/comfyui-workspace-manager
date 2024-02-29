@@ -20,7 +20,6 @@ export default function TwoWaySyncSettings() {
   }, []);
   const onTwoWaySyncChange = async (e: any) => {
     // setChecked(e.target.checked);
-    console.log("onTwoWaySyncChange", e.target.checked);
     if (!e.target.checked) {
       await userSettingsTable?.upsert({ twoWaySync: e.target.checked });
       getTwoWaySync();
@@ -36,7 +35,6 @@ export default function TwoWaySyncSettings() {
         {
           label: "I have downloaded all my workflows and ready to enable",
           onClick: async () => {
-            console.log("ready", e.target.checked);
             await userSettingsTable?.upsert({ twoWaySync: true });
             getTwoWaySync();
           },

@@ -28,7 +28,6 @@ export namespace TwowayFolderSyncAPI {
     return absPath;
   }
   export async function createFolder(folder: Folder) {
-    console.log("🥳createFolder", folder);
     const abs = await genFolderAbsPath(folder);
     await fetch("/workspace/folder/create", {
       method: "POST",
@@ -44,7 +43,6 @@ export namespace TwowayFolderSyncAPI {
     folderToBeMoved: string,
     newParentPath: string,
   ) {
-    console.log("🥳moveFolder", folderToBeMoved, newParentPath);
     const absPath = await genAbsPathByRelPath(folderToBeMoved);
     const absNewParentPath = await genAbsPathByRelPath(newParentPath);
     const resp = await fetch("/workspace/folder/move", {

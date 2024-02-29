@@ -53,7 +53,6 @@ export async function updateFile(file_path: string, jsonData: string) {
 }
 
 export async function deleteFile(file_path: string, deleteEmptyFolder = false) {
-  console.log("deleteFile", file_path);
   try {
     const response = await fetch("/workspace/delete_file", {
       method: "POST",

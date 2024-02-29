@@ -10,7 +10,7 @@ import {
 import { app } from "/scripts/app.js";
 // @ts-ignore
 import { api } from "/scripts/api.js";
-import { Box, Portal } from "@chakra-ui/react";
+import { Box, Portal, useToast } from "@chakra-ui/react";
 import {
   loadDBs,
   workflowsTable,
@@ -41,6 +41,7 @@ const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
 import { IconExternalLink } from "@tabler/icons-react";
 import { DRAWER_Z_INDEX } from "./const";
 import ServerEventListener from "./model-manager/hooks/ServerEventListener";
+import { v4 } from "uuid";
 
 const ModelManagerTopbar = React.lazy(
   () => import("./model-manager/topbar/ModelManagerTopbar"),
@@ -66,12 +67,12 @@ export default function App() {
   const [loadChild, setLoadChild] = useState(false);
   const developmentEnvLoadFirst = useRef(false);
   const autoSaveTimer = useRef(0);
+  const toast = useToast();
   const workflowOverwriteNoticeStateRef = useRef("hide"); // disabled/hide/show;
   const [jsonDiff, setJsonDiff] = useState<JsonDiff>(null);
   const saveCurWorkflow = useCallback(async () => {
     if (curFlowID.current) {
       const graphJson = JSON.stringify(app.graph.serialize());
-      console.log("App.saveCurWorkflow", graphJson);
       await Promise.all([
         workflowsTable?.updateFlow(curFlowID.current, {
           json: graphJson,
@@ -81,6 +82,13 @@ export default function App() {
           json: graphJson,
         }),
       ]);
+      userSettingsTable?.autoSave &&
+        toast({
+          title: "Saved",
+          status: "success",
+          duration: 1000,
+          isClosable: true,
+        });
     }
   }, []);
   const deleteCurWorkflow = async () => {
@@ -103,12 +111,19 @@ export default function App() {
 
     if (userInput) {
       // User clicked OK
-      if (curFlowID.current) {
-        const flow = await workflowsTable?.get(curFlowID.current);
-        if (flow && flow.json) {
-          await app.loadGraphData(JSON.parse(flow.json));
-          console.log("discardUnsavedChanges", JSON.parse(flow.json));
-        }
+      const curID = workflowsTable?.curWorkflow?.id;
+      if (curID == null) return;
+      let lastSavedJson;
+      if (userSettingsTable?.autoSave) {
+        lastSavedJson = (await changelogsTable?.getLastestByWorkflowID(curID))
+          ?.json;
+      } else {
+        lastSavedJson = (await workflowsTable?.get(curID))?.json;
+      }
+      if (lastSavedJson) {
+        await app.loadGraphData(JSON.parse(lastSavedJson));
+      } else {
+        alert("Error: No last saved version found");
       }
     }
   };
@@ -191,11 +206,6 @@ export default function App() {
       console.error("error parsing json", e);
     }
     const equal = JSON.stringify(graphJson) === JSON.stringify(lastSaved);
-    // compareJsonDiff({
-    //   old: lastSaved,
-    //   new: graphJson,
-    // });
-    console.log("checkIsDirty", !equal);
     return !equal;
   };
 
@@ -398,8 +408,13 @@ export default function App() {
     graphAppSetup();
     setLoadChild(true);
     autoSaveTimer.current = setInterval(async () => {
-      const autoSaveEnabled =
-        (await userSettingsTable?.getSetting("autoSave")) ?? true;
+      const autoSaveEnabled = userSettingsTable?.autoSave;
+      const isDirty = await checkIsDirty();
+
+      setIsDirty(!!isDirty);
+      if (!isDirty) {
+        return;
+      }
 
       if (curFlowID.current != null && autoSaveEnabled) {
         const isLatest = await workflowsTable?.latestVersionCheck();
@@ -436,10 +451,6 @@ export default function App() {
             }));
         }
       }
-
-      checkIsDirty().then((res) => {
-        setIsDirty(!!res);
-      });
     }, 1000);
 
     window.addEventListener("keydown", shortcutListener);
@@ -449,12 +460,15 @@ export default function App() {
     ) as HTMLInputElement;
     const fileInputListener = async () => {
       if (fileInput && fileInput.files && fileInput.files.length > 0) {
-        const flow = await workflowsTable?.createFlow({
+        const newFlow: Workflow = {
+          id: v4(),
           name: fileInput.files[0].name,
           json: JSON.stringify(defaultGraph),
-        });
-        console.log("created flow", flow);
-        flow && setCurFlowIDAndName(flow);
+          updateTime: Date.now(),
+          createTime: Date.now(),
+        };
+        setCurFlowIDAndName(newFlow);
+        await workflowsTable?.createFlow(newFlow);
       }
     };
     fileInput?.addEventListener("change", fileInputListener);
@@ -502,17 +516,20 @@ export default function App() {
           "overwriteCurWorkflowWhenDroppingFileToCanvas",
         )) ?? false;
       if (!overwriteFlow && fileName) {
-        const flow = await workflowsTable?.createFlow({
+        const newFlow: Workflow = {
+          id: v4(),
           name: fileName,
-        });
-
-        flow && setCurFlowIDAndName(flow);
+          json: JSON.stringify(defaultGraph),
+          updateTime: Date.now(),
+          createTime: Date.now(),
+        };
+        setCurFlowIDAndName(newFlow);
+        await workflowsTable?.createFlow(newFlow);
       }
     };
     app.canvasEl.addEventListener("drop", handleDrop);
 
     return () => {
-      // window.removeEventListener("message", authTokenListener);
       window.removeEventListener("keydown", shortcutListener);
       window.removeEventListener("change", fileInputListener);
       window.removeEventListener("beforeunload", handleBeforeUnload);

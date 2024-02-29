@@ -101,6 +101,7 @@ export type Changelog = {
   workflowID: string;
   createTime: number;
   json: string;
+  isAutoSave?: boolean;
 };
 
 export type Media = {

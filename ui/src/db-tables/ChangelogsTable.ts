@@ -3,7 +3,7 @@ import { Table } from "./WorkspaceDB";
 import { Changelog } from "../types/dbTypes";
 import { TableBase } from "./TableBase";
 import { indexdb } from "./indexdb";
-
+const LIMIT = 150;
 export class ChangelogsTable extends TableBase<Changelog> {
   static readonly TABLE_NAME: Table = "changelogs";
   constructor() {
@@ -35,6 +35,7 @@ export class ChangelogsTable extends TableBase<Changelog> {
     if (latest != null && latest.json === input.json) {
       return null;
     }
+
     const change: Changelog = {
       id: uuidv4(),
       json: input.json,
@@ -44,5 +45,27 @@ export class ChangelogsTable extends TableBase<Changelog> {
     await indexdb.changelogs.add(change);
     await this.saveDiskDB();
     return change;
+  }
+  async deleteLogsExceedLimit(workflowID: string, limit: number = LIMIT) {
+    const all = await indexdb.changelogs
+      .where("workflowID")
+      .equals(workflowID)
+      .reverse()
+      .sortBy("createTime");
+    const autoSaved = all.filter((c) => c.isAutoSave === true);
+    const manualSaved = all.filter(
+      (c) => c.isAutoSave == null || c.isAutoSave == false,
+    );
+
+    if (autoSaved.length > limit) {
+      const toDelete = autoSaved.slice(limit);
+      await indexdb.changelogs.bulkDelete(toDelete.map((c) => c.id));
+      await this.saveDiskDB();
+    }
+    if (manualSaved.length > limit) {
+      const toDelete = manualSaved.slice(limit);
+      await indexdb.changelogs.bulkDelete(toDelete.map((c) => c.id));
+      await this.saveDiskDB();
+    }
   }
 }

@@ -80,6 +80,15 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
       isCollapse: isCollapsed,
     });
   }, [isCollapsed]);
+  useEffect(() => {
+    const cur = workflowsTable?.curWorkflow;
+    const curWorkflowPath = cur?.parentFolderID + "/";
+    const folderPath = folder.id + "/";
+    const childreHasCurworkflow = curWorkflowPath.startsWith(folderPath);
+    if (childreHasCurworkflow) {
+      setIsCollapsed(false);
+    }
+  }, []);
   return (
     <Stack>
       <HStack

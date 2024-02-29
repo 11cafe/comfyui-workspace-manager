@@ -54,7 +54,7 @@ export async function scanMyWorkflowsDir(
         filePath: absPath,
         lastSavedJson: file.json ?? "{}",
         json: file.json ?? "{}",
-        name: fileName.replace(".json", ""),
+        name: fileName.replace(/\.json$/, ""),
         parentFolderID: parentRelPath,
         createTime: file.createTime,
         // setting updateTime will result latestVersionChcek() always fail if in
