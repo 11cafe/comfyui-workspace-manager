@@ -129,7 +129,6 @@ export default function InatallModelsModal({
     newFolder: string,
   ) => {
     const newFolders = { ...defaultFolders, [modelType]: newFolder };
-    console.log(newFolders);
     await userSettingsTable?.upsert({ defaultFolders: newFolders });
     setDefaultFolders(newFolders);
   };

@@ -73,7 +73,6 @@ export default function App() {
   const saveCurWorkflow = useCallback(async () => {
     if (curFlowID.current) {
       const graphJson = JSON.stringify(app.graph.serialize());
-      console.log("App.saveCurWorkflow", graphJson);
       await Promise.all([
         workflowsTable?.updateFlow(curFlowID.current, {
           json: graphJson,
@@ -112,12 +111,19 @@ export default function App() {
 
     if (userInput) {
       // User clicked OK
-
       const curID = workflowsTable?.curWorkflow?.id;
       if (curID == null) return;
-      const lastSaved = await changelogsTable?.getLastestByWorkflowID(curID);
-      if (lastSaved?.json) {
-        await app.loadGraphData(JSON.parse(lastSaved.json));
+      let lastSavedJson;
+      if (userSettingsTable?.autoSave) {
+        lastSavedJson = (await changelogsTable?.getLastestByWorkflowID(curID))
+          ?.json;
+      } else {
+        lastSavedJson = (await workflowsTable?.get(curID))?.json;
+      }
+      if (lastSavedJson) {
+        await app.loadGraphData(JSON.parse(lastSavedJson));
+      } else {
+        alert("Error: No last saved version found");
       }
     }
   };
@@ -200,11 +206,6 @@ export default function App() {
       console.error("error parsing json", e);
     }
     const equal = JSON.stringify(graphJson) === JSON.stringify(lastSaved);
-    // compareJsonDiff({
-    //   old: lastSaved,
-    //   new: graphJson,
-    // });
-    console.log("checkIsDirty", !equal);
     return !equal;
   };
 
@@ -529,7 +530,6 @@ export default function App() {
     app.canvasEl.addEventListener("drop", handleDrop);
 
     return () => {
-      // window.removeEventListener("message", authTokenListener);
       window.removeEventListener("keydown", shortcutListener);
       window.removeEventListener("change", fileInputListener);
       window.removeEventListener("beforeunload", handleBeforeUnload);

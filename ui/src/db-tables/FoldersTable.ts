@@ -147,7 +147,6 @@ export class FoldersTable extends TableBase<Folder> {
         name ?? "New folder",
         parentFolderID ?? "",
       );
-      console.log("uniquename", fileName);
       return fileName ?? "New folder";
     }
     let newFlowName = name ?? "New folder";

@@ -123,7 +123,6 @@ export class WorkflowsTable extends TableBase<Workflow> {
     // add to disk file db
     this.saveDiskDB();
     // add to my_workflows/
-    console.log("createFlow", newWorkflow);
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
     if (twoWaySyncEnabled) {
       await TwowaySyncAPI.creatWorkflow(newWorkflow);
@@ -197,7 +196,6 @@ export class WorkflowsTable extends TableBase<Workflow> {
     return await this.updateMetaInfo(id, change as any);
   }
   public async updateFlow(id: string, input: Pick<Workflow, "json">) {
-    console.log("workflowsTable.updateFlow", id, input);
     const before = await this.get(id, false);
     if (before == null) {
       return;
@@ -208,7 +206,6 @@ export class WorkflowsTable extends TableBase<Workflow> {
       // no change detected
       return;
     }
-    console.log("💿updateFlow", id, input);
     const after = await this._update(id, {
       updateTime: Date.now(),
       json: input.json,
