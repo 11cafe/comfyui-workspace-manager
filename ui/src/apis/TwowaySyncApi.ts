@@ -162,6 +162,7 @@ export namespace TwowaySyncAPI {
       
       👉Please try "Save as" from "Files" dropdown menu
       `);
+      throw new Error(result.error);
     }
     return result;
   }

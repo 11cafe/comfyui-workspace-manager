@@ -208,7 +208,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
       // no change detected
       return;
     }
-    console.log("updateFlow", id, input);
+    console.log("💿updateFlow", id, input);
     const after = await this._update(id, {
       updateTime: Date.now(),
       json: input.json,
@@ -216,7 +216,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
     // save to my_workflows/
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
     if (twoWaySyncEnabled) {
-      after && TwowaySyncAPI.saveWorkflow(after);
+      after && (await TwowaySyncAPI.saveWorkflow(after));
     } else {
       after && (await saveJsonFileMyWorkflows(after));
     }
