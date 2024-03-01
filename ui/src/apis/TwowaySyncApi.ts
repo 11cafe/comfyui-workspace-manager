@@ -303,6 +303,8 @@ export async function scanLocalFiles(
       },
       body: JSON.stringify({
         path: sanitizeAbsPath(path),
+        recursive,
+        metaInfoOnly,
       }),
     });
     const result = await response.json();

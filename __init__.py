@@ -124,6 +124,14 @@ async def get_system_dir(request):
         return web.Response(text=json.dumps({"error": str(e)}), status=500)
 
 
+@server.PromptServer.instance.routes.get("/workspace/get_default_my_workflows_dir")
+async def get_default_my_workflows_dir(request):
+    try:
+        dir = os.path.join(comfy_path, 'my_workflows')
+        return web.Response(text=json.dumps({"path": dir}), content_type='application/json')
+    except Exception as e:
+        return web.Response(text=json.dumps({"error": str(e)}), status=500)
+
 def get_my_workflows_dir():
     data = read_table('userSettings')
     if (data):
