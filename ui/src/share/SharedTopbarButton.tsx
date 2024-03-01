@@ -16,7 +16,7 @@ export function SharedTopbarButton({}) {
     if (curFlowID) {
       workflowsTable?.get(curFlowID).then((flow) => {
         if (flow?.cloudID) {
-          setCloudURL(flow.cloudURL);
+          setCloudURL(flow.cloudOrigin + "/workflow/" + flow.cloudID);
           fetchCloudWorkflowPrivacy(flow).then((privacy) => {
             setPrivacy(privacy);
           });
@@ -34,8 +34,9 @@ export function SharedTopbarButton({}) {
         menuButton={
           <Button
             onClick={() => {
-              window.open(workflowsTable?.curWorkflow?.cloudURL);
+              window.open(cloudURL);
             }}
+            variant={"ghost"}
             aria-label={"Shared"}
             size={"xs"}
             iconSpacing={"2px"}
@@ -49,7 +50,7 @@ export function SharedTopbarButton({}) {
         menuContent={
           <HStack width={"200px"} p={1} color={"blue.400"}>
             <Link href={cloudURL} noOfLines={1} isExternal>
-              {cloudURL}
+              {cloudURL.replace("https://www.", "")}
             </Link>
             <IconButton
               size={"xs"}

@@ -1,6 +1,10 @@
 import { createContext } from "react";
 import { Route } from "./utils";
 import { Folder, Workflow } from "./types/dbTypes";
+export type JsonDiff = {
+  old: Object;
+  new: Object;
+} | null;
 
 export const WorkspaceContext = createContext<{
   curFlowID: string | null;
@@ -12,6 +16,8 @@ export const WorkspaceContext = createContext<{
   loadNewWorkflow: (input?: { json: string; name?: string }) => void;
   loadFilePath: (path: string, overwriteCurrent?: boolean) => void;
   setRoute: (route: Route) => void;
+  jsonDiff: JsonDiff;
+  compareJson: (jsonDiff: JsonDiff) => void;
 }>({
   curFlowID: null,
   loadWorkflowID: () => {},
@@ -21,6 +27,8 @@ export const WorkspaceContext = createContext<{
   loadNewWorkflow: () => {},
   loadFilePath: () => {},
   setRoute: () => {},
+  jsonDiff: null,
+  compareJson: () => {},
 });
 
 export const RecentFilesContext = createContext<{

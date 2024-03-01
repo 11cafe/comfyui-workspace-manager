@@ -1,9 +1,9 @@
 import { getDB, saveDB } from "../Api";
 import { getWorkspaceIndexDB } from "./IndexDBUtils";
 import { TableBaseModel } from "../types/dbTypes";
-import { Table } from "./WorkspaceDB";
+import { Table, userSettingsTable } from "./WorkspaceDB";
 import { indexdb } from "./indexdb";
-import { v4 } from "uuid";
+import { nanoid } from "nanoid";
 
 export class TableBase<T extends TableBaseModel> {
   public readonly tableName: Table;
@@ -33,7 +33,7 @@ export class TableBase<T extends TableBaseModel> {
       Partial<Pick<T, "id" | "createTime">>,
   ): Promise<T> {
     if (!newItem.id) {
-      newItem.id = v4();
+      newItem.id = nanoid();
     }
     if (!newItem.createTime) {
       newItem.createTime = Date.now();
@@ -47,6 +47,11 @@ export class TableBase<T extends TableBaseModel> {
     await indexdb[this.tableName].put(newItem as any);
     await this.saveDiskDB();
     return newItem;
+  }
+  public async bulkPut(newItems: T[]): Promise<void> {
+    // @ts-ignore
+    await indexdb[this.tableName].bulkPut(newItems as any);
+    this.saveDiskDB();
   }
   public async update(id: string, changes: Partial<T>): Promise<T | null> {
     await indexdb[this.tableName].update(id, changes);
@@ -91,5 +96,12 @@ export class TableBase<T extends TableBaseModel> {
   public async delete(id: string) {
     await indexdb[this.tableName].delete(id);
     await this.saveDiskDB();
+  }
+  public async listByIndex(index: keyof T, value: string): Promise<T[]> {
+    const list = await indexdb[this.tableName]
+      .where(index as string)
+      .equals(value)
+      .toArray();
+    return list as any[];
   }
 }

@@ -8,7 +8,6 @@ import inspect
 
 async def validate_prompt_input_in_list():
     obj_class = nodes.NODE_CLASS_MAPPINGS[class_type]
-    print('object class',obj_class.__name__)
     class_inputs = obj_class.INPUT_TYPES()
     required_inputs = class_inputs['required']
 
@@ -17,7 +16,6 @@ async def validate_prompt_input_in_list():
 
     validate_function_inputs = []
     if hasattr(obj_class, "VALIDATE_INPUTS"):
-        print('obj_class.VALIDATE_INPUTS',obj_class.VALIDATE_INPUTS)
         validate_function_inputs = inspect.getfullargspec(obj_class.VALIDATE_INPUTS).args
 
     for x in required_inputs:

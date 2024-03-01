@@ -1,6 +1,7 @@
 import { UserSettings } from "../types/dbTypes";
 import { TableBase } from "./TableBase";
 import { getSystemDir } from "../Api";
+import { MODEL_TYPE_TO_FOLDER_MAPPING } from "../model-manager/install-models/util/modelTypes";
 
 export class UserSettingsTable extends TableBase<UserSettings> {
   public defaultSettings: UserSettings;
@@ -16,6 +17,19 @@ export class UserSettingsTable extends TableBase<UserSettings> {
 
   get autoSave() {
     return this._autoSave;
+  }
+  // when drag drop / load a workflow, we need to temporarly disable autoSave to avoid the workflow being saved to the wrong id
+  __TEMP_OVERRIDE_ONLY_disableAutoSave() {
+    if (!this._autoSave) {
+      return;
+    }
+    this._autoSave = false;
+    setTimeout(async () => {
+      this._autoSave =
+        (await this.getSetting("autoSave")) ??
+        this.defaultSettings.autoSave ??
+        true;
+    }, 3000);
   }
 
   constructor() {
@@ -34,6 +48,7 @@ export class UserSettingsTable extends TableBase<UserSettings> {
       shortcuts: {
         save: "Shift+S",
       },
+      defaultFolders: MODEL_TYPE_TO_FOLDER_MAPPING,
       autoSave: true,
       twoWaySync: false,
       foldersOnTop: false,
@@ -42,13 +57,16 @@ export class UserSettingsTable extends TableBase<UserSettings> {
     };
   }
 
+  public async getSettings(): Promise<UserSettings | undefined> {
+    const settings = await this.get(this.DEFAULT_USER);
+    return {
+      ...this.defaultSettings,
+      ...settings,
+    };
+  }
   public async getSetting<K extends keyof UserSettings>(
     key: K,
   ): Promise<UserSettings[K]> {
-    if (key === "twoWaySync") {
-      // @ts-ignore HACKY FIX BEFORE TWO WAY SYNC IS READY TO USE
-      return false;
-    }
     const currentUserSettings: UserSettings | undefined = await this.get(
       this.DEFAULT_USER,
     );

@@ -17,36 +17,3 @@ export function openCognitoPopup() {
 
   popupWindow?.focus();
 }
-
-export function pullAuthTokenCloseIfExist() {
-  if (window.location.href.includes(COMFYSPACE_AUTH_REDIRECT_URL + "#")) {
-    const paramsString = window.location.href.split("#")[1];
-    const params = new URLSearchParams(paramsString);
-
-    const accessToken = params.get("access_token");
-    window.opener.postMessage(
-      { comfyspace_authToken: accessToken },
-      "http://127.0.0.1:8188/",
-    );
-    window.close();
-  }
-}
-
-export function authTokenListener(event: MessageEvent) {
-  const { comfyspace_authToken } = event.data;
-  if (comfyspace_authToken) {
-    fetch(`${COGNITO_DOMAIN}/oauth2/userInfo`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${comfyspace_authToken}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("User Info:", data);
-      })
-      .catch((error) => {
-        console.error("Error fetching user info:", error);
-      });
-  }
-}

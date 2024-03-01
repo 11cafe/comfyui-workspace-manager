@@ -1,3 +1,5 @@
+import type { MODEL_TYPE } from "../model-manager/install-models/util/modelTypes";
+
 export interface SortableItem {
   name: string;
   updateTime: number;
@@ -6,16 +8,16 @@ export interface SortableItem {
 export interface Workflow extends SortableItem {
   id: string;
   json: string;
-  lastSavedJson?: string;
+  lastSavedJson?: string; // TODO will be deprecated
   name: string;
   createTime: number;
   filePath?: string;
   tags?: string[];
-  parentFolderID?: string;
-  mediaIDs?: string[];
+  parentFolderID?: string | null; //TODO remove undefined, use null only
+  mediaIDs?: string[]; // TODO will be deprecated
   coverMediaPath?: string;
-  cloudID?: string;
-  cloudURL?: string;
+  cloudID?: string; // TODO will be deprecated
+  cloudOrigin?: string;
 }
 
 export interface TableBaseModel {
@@ -59,7 +61,8 @@ export type WorkflowVersion = {
   json: string;
   createTime: number;
   cloudID?: string;
-  cloudURL?: string;
+  cloudOrigin?: string;
+  authorID?: string;
   nodeDefs?: string; //for cloud workflow version
 };
 
@@ -77,6 +80,7 @@ export type UserSettings = {
   showNsfwModelThumbnail?: boolean;
   cloudHost: string;
   overwriteCurWorkflowWhenDroppingFileToCanvas: boolean;
+  defaultFolders: Record<MODEL_TYPE, string>;
 };
 
 export interface PanelPosition {
@@ -98,6 +102,7 @@ export type Changelog = {
   workflowID: string;
   createTime: number;
   json: string;
+  isAutoSave?: boolean;
 };
 
 export type Media = {

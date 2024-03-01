@@ -1,4 +1,3 @@
-// db.ts
 import Dexie, { Table } from "dexie";
 import {
   Workflow,
@@ -37,12 +36,10 @@ class ManagerDB extends Dexie {
         models: "&id, fileName, fileHash",
         cache: "&id",
       })
-      .upgrade((trans) => {
-        // Here you can write logic to initialize or migrate data to the new 'media' table, if necessary
-      });
+      .upgrade((trans) => {});
     this.version(2)
       .stores({
-        workflows: "&id, name, parentFolderID", // Primary key and indexed props
+        workflows: "&id, name, parentFolderID,cloudID",
         changelogs: "&id, workflowID",
         media: "&id, workflowID",
         folders: "&id, name, parentFolderID",
@@ -50,11 +47,9 @@ class ManagerDB extends Dexie {
         userSettings: "&id",
         models: "&id, fileName, fileHash",
         cache: "&id",
-        workflowVersions: "&id, name, workflowID",
+        workflowVersions: "&id, name, workflowID,cloudID",
       })
-      .upgrade((trans) => {
-        // Here you can write logic to initialize or migrate data to the new 'media' table, if necessary
-      });
+      .upgrade((trans) => {});
   }
 }
 

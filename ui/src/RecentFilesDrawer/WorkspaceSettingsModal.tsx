@@ -113,7 +113,10 @@ export default function WorkspaceSettingsModal({
     manualEntry && setNoPermission(false);
     onCloseEditDirectory();
     // to update /my_workflows files in disk to new location
-    validateOrSaveAllJsonFileMyWorkflows();
+    const twoWaySync = await userSettingsTable?.getSetting("twoWaySync");
+    if (!twoWaySync) {
+      validateOrSaveAllJsonFileMyWorkflows();
+    }
   };
 
   const onReset = async () => {

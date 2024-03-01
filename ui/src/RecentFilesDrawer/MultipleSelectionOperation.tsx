@@ -3,8 +3,7 @@ import { IconListCheck, IconX, IconDownload } from "@tabler/icons-react";
 import DeleteConfirm from "../components/DeleteConfirm";
 import { ChangeEvent } from "react";
 import { workflowsTable } from "../db-tables/WorkspaceDB";
-import JSZip from "JSZip";
-import { formatTimestamp } from "../utils";
+import { downloadWorkflowsZip } from "../utils/downloadWorkflowsZip";
 
 type Props = {
   multipleState: boolean;
@@ -24,22 +23,8 @@ export default function MultipleSelectionOperation(props: Props) {
   } = props;
 
   const batchExport = async () => {
-    const selectedList = await workflowsTable?.batchQuery(selectedKeys);
-    const exportName = `ComfyUI workflow ${formatTimestamp(Date.now())}`;
-    const zip = new JSZip();
-    const folder = zip.folder(exportName);
-    selectedList &&
-      selectedList.forEach((flow) => {
-        folder && folder.file(`${flow.name}.json`, flow.json);
-      });
-    zip.generateAsync({ type: "blob" }).then(function (content) {
-      const a = document.createElement("a");
-      a.href = window.URL.createObjectURL(content);
-      a.download = `${exportName}.zip`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    });
+    const selectedList = (await workflowsTable?.batchQuery(selectedKeys)) ?? [];
+    downloadWorkflowsZip(selectedList);
   };
 
   const notChecked = selectedKeys.length === 0;

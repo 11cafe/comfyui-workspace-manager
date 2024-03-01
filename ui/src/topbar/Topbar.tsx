@@ -104,7 +104,7 @@ export function Topbar({
             <DropdownTitle />
           </HStack>
         )}
-        {/* <SharedTopbarButton /> */}
+        <SharedTopbarButton />
         {curFlowID && isDirty ? (
           <Tooltip label="Save workflow">
             <IconButton

@@ -1,17 +1,7 @@
 // @ts-ignore
-import {
-  ScanLocalFile,
-  ScanLocalFolder,
-  ScanLocalResult,
-  deleteFile,
-  updateFile,
-} from "./Api";
+import { deleteFile, updateFile } from "./Api";
 import { ESortTypes } from "./RecentFilesDrawer/types";
-import {
-  workflowsTable,
-  foldersTable,
-  userSettingsTable,
-} from "./db-tables/WorkspaceDB";
+import { workflowsTable, userSettingsTable } from "./db-tables/WorkspaceDB";
 import {
   generateFilePathAbsolute,
   saveJsonFileMyWorkflows,
@@ -267,41 +257,6 @@ export function isVideoFormat(fileName: string) {
 
 export function getFileUrl(relativePath: string) {
   return `/workspace/view_media?filename=${relativePath}`;
-}
-
-export async function syncNewFlowOfLocalDisk(
-  scanList: ScanLocalResult[],
-  parentFolderID?: string,
-) {
-  const fileList = scanList.filter((s): s is ScanLocalFile => "json" in s);
-  if (fileList.length) {
-    await workflowsTable?.batchCreateFlows(fileList, true, parentFolderID);
-  }
-
-  const folderList = scanList.filter((s): s is ScanLocalFolder => "list" in s);
-  if (folderList.length) {
-    const currentFolderList = await foldersTable?.listAll();
-
-    for (const folder of folderList) {
-      const existFolder = currentFolderList?.find(
-        (f) => f.name === folder.name,
-      );
-
-      let folderId;
-
-      if (existFolder) {
-        folderId = existFolder.id;
-      } else {
-        const newFolder = await foldersTable?.create({
-          name: folder.name,
-          parentFolderID,
-        });
-        folderId = newFolder?.id;
-      }
-
-      await syncNewFlowOfLocalDisk(folder.list, folderId);
-    }
-  }
 }
 
 export function getWorkflowIdInUrlHash() {

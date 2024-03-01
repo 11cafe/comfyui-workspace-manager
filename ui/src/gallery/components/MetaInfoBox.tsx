@@ -24,7 +24,7 @@ export const MetaInfoBox = ({ media }: { media?: Media }) => {
       );
       setMediaMetaData(res);
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
   };
   useEffect(() => {
