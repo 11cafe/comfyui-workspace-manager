@@ -1,3 +1,4 @@
+import platform
 from aiohttp import web
 import asyncio
 import json
@@ -5,41 +6,77 @@ import os
 import glob
 from threading import Lock
 import server
+import uuid
 
-@server.PromptServer.instance.routes.post('/workspace/file/scan_dup_id')
-async def scan_my_workflows_folder_recursive(request):
+@server.PromptServer.instance.routes.post('/workspace/file/scan_my_workflows_folder')
+async def scan_my_workflows_files(request):
     reqJson = await request.json()
-    path = reqJson.get('path')
-    data = await asyncio.to_thread(scan_folder_sync, path)
-    return web.json_response(data, content_type='application/json')
+    path = reqJson['path']
+    recursive = reqJson.get('recursive', False)
+    metaInfoOnly = reqJson.get('metaInfoOnly', False)
+    
+    fileList = await asyncio.to_thread(folder_handle, path, recursive, metaInfoOnly)
+    return web.Response(text=json.dumps(fileList), content_type='application/json')
 
-def scan_folder_sync(path):
-    id_cache = {}  # Reset cache for each call
-    id_cache_lock = Lock()  # Ensure thread safety
+def folder_handle(path, recursive, metaInfoOnly, fileList=None):
+    if fileList is None:
+        fileList = []
+    for item in os.listdir(path):
+        item_path = os.path.join(path, item)
+        try:
+            if os.path.isfile(item_path) and item_path.endswith('.json'):
+                file_handle(item, fileList, item_path, metaInfoOnly)
 
-    def scan_folder(path):
-        for json_file in glob.glob(os.path.join(path, '**/*.json'), recursive=True):
-            with open(json_file, 'r', encoding='utf-8') as file:
-                try:
-                    data = json.load(file)
-                    if 'extra' in data and 'workspace_info' in data['extra'] and 'id' in data['extra']['workspace_info']:
-                        workspace_id = data['extra']['workspace_info']['id']
-                        file_info = {
-                            'path': json_file,
-                            'createTime': os.path.getctime(json_file)
-                        }
+            elif os.path.isdir(item_path):
+                createTime, updateTime = getFileCreateTime(item_path)
+                fileList.append({
+                    'name': item,
+                    'type': 'folder',
+                    'createTime': createTime,
+                    'updateTime': updateTime
+                })
+                # Recursively scan if recursive is True
+                if recursive:
+                    folder_handle(item_path, recursive, metaInfoOnly, fileList)
+        except Exception as e:
+            print(f"Error scanning item {item}: {e}")
+    return fileList
 
-                        with id_cache_lock:
-                            if workspace_id in id_cache:
-                                id_cache[workspace_id].append(file_info)
-                            else:
-                                id_cache[workspace_id] = [file_info]
-                except json.JSONDecodeError:
-                    print(f"Error decoding JSON from file: {json_file}")
+def file_handle(name, fileList, file_path, metaInfoOnly):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        json_data = json.load(f)
+    
+    createTime, updateTime = getFileCreateTime(file_path)
+    workflow_id = json_data['extra']['workspace_info']['id'] if ('extra' in json_data and 'workspace_info' in json_data['extra'] and 'id' in json_data['extra']['workspace_info']) else str(uuid.uuid4())
+    
+    # Update JSON data with new ID if needed and write back to file
+    if 'id' not in json_data.get('extra', {}).get('workspace_info', {}):
+        json_data['extra']['workspace_info']['id'] = workflow_id
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(json_data, f, ensure_ascii=False, indent=4)
+    
+    fileInfo = {
+            'name': name,
+            'type': "workflow",
+            'id': workflow_id,
+            'createTime': createTime,
+            'updateTime': updateTime
+        }
+    
+    if not metaInfoOnly:
+        fileInfo['json'] = json.dumps(json_data)
+        
+    fileList.append(fileInfo)
 
-    scan_folder(path)
+# Note: Implement getFileCreateTime function as per your existing logic
 
-    duplicates = {workspace_id: infos for workspace_id, infos in id_cache.items() if len(infos) > 1}
-    return {'duplicates': duplicates}
-
-
+def getFileCreateTime(path):
+    # Cross-platform compatibility for creation time
+    file_stats = os.stat(path)
+    if platform.system() == 'Windows':
+        createTime = int(file_stats.st_ctime * 1000)
+    else:  # macOS and potentially others
+        createTime = int(getattr(file_stats, 'st_birthtime', file_stats.st_ctime) * 1000)
+    
+    updateTime = int(file_stats.st_mtime * 1000)
+    return createTime, updateTime

@@ -98,6 +98,8 @@ export class FoldersTable extends TableBase<Folder> {
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
     if (twoWaySyncEnabled) {
       await TwowayFolderSyncAPI.deleteFolder(id);
+
+      return;
     }
     /**
      * When deleting a folder, if there are files in the folder

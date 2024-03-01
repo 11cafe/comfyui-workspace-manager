@@ -292,9 +292,11 @@ export type ScanLocalFolder = {
 };
 export async function scanLocalFiles(
   path: string,
+  recursive = false,
+  metaInfoOnly = false,
 ): Promise<Array<ScanLocalFile | ScanLocalFolder>> {
   try {
-    const response = await fetch("/workspace/scan_my_workflows_files", {
+    const response = await fetch("/workspace/file/scan_my_workflows_folder", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
