@@ -72,10 +72,10 @@ def download_worker():
             # Get a task from the list
             if download_tasks:
                 task = download_tasks.pop(0)
-
+        filehash = task.get('file_hash')
         if task is not None:
             # Execute the download task and update the download progress
-            download_url_with_agent(url= task['url'], save_path= task['save_path'], file_name= task['filename'], file_hash= task['file_hash'])
+            download_url_with_agent(url= task['url'], save_path= task['save_path'], file_name= task['filename'], file_hash= filehash)
             # calculate newly downloaded models' hash
             start_populate_file_hash_dict()
                 
