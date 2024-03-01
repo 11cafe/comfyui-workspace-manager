@@ -17,7 +17,7 @@ export interface Workflow extends SortableItem {
   mediaIDs?: string[]; // TODO will be deprecated
   coverMediaPath?: string;
   cloudID?: string; // TODO will be deprecated
-  cloudURL?: string;
+  cloudOrigin?: string;
 }
 
 export interface TableBaseModel {
@@ -61,7 +61,8 @@ export type WorkflowVersion = {
   json: string;
   createTime: number;
   cloudID?: string;
-  cloudURL?: string;
+  cloudOrigin?: string;
+  authorID?: string;
   nodeDefs?: string; //for cloud workflow version
 };
 

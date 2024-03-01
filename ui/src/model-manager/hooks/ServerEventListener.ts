@@ -9,12 +9,13 @@ import { WorkspaceContext } from "../../WorkspaceContext";
 export default function ServerEventListener() {
   const { showDialog } = useDialog();
   const { loadWorkflowID } = useContext(WorkspaceContext);
-  const openWorkflow = async (evt: OpenWorkflowEvent) => {
+  const openWorkflow = async (evt: OpenWorkflowEvent, origin: string) => {
     const { workflow, version } = evt.detail;
     if (!workflow.id || !version.id) return;
     const existingWorkflow = (
       await workflowsTable?.listByIndex("cloudID", workflow.id)
     )?.at(0);
+    console.log("existingWorkflow", existingWorkflow);
     if (existingWorkflow) {
       const existingVersion = (
         await workflowVersionsTable?.listByIndex("cloudID", version.id)
@@ -25,16 +26,20 @@ export default function ServerEventListener() {
       } else {
         // existing workflow but new version
         await workflowVersionsTable?.add({
+          id: version.id,
           cloudID: version.id,
           workflowID: existingWorkflow.id,
+          cloudOrigin: origin,
           name: version.name,
+          authorID: version.authorID,
           json: version.json,
         });
       }
     } else {
       // new workflow new version
-      const newWorkflow = await workflowsTable?.add({
+      const newWorkflow = await workflowsTable?.createFlow({
         cloudID: workflow.id,
+        cloudOrigin: origin,
         name: workflow.name,
         json: version.json,
         updateTime: Date.now(),
@@ -44,8 +49,10 @@ export default function ServerEventListener() {
         return;
       }
       await workflowVersionsTable?.add({
+        id: version.id,
         cloudID: version.id,
         workflowID: newWorkflow.id,
+        cloudOrigin: origin,
         name: version.name,
         json: version.json,
       });
@@ -63,7 +70,7 @@ export default function ServerEventListener() {
             label: "Open",
             colorScheme: "teal",
             onClick: () => {
-              openWorkflow(evt);
+              openWorkflow(evt, origin);
             },
           },
         ],
@@ -95,6 +102,7 @@ interface OpenWorkflowEvent extends CloudMessageEvent {
       id: string;
       name: string;
       json: string;
+      authorID: string;
     };
   };
 }

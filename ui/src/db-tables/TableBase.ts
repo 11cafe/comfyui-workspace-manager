@@ -3,7 +3,7 @@ import { getWorkspaceIndexDB } from "./IndexDBUtils";
 import { TableBaseModel } from "../types/dbTypes";
 import { Table, userSettingsTable } from "./WorkspaceDB";
 import { indexdb } from "./indexdb";
-import { v4 } from "uuid";
+import { nanoid } from "nanoid";
 
 export class TableBase<T extends TableBaseModel> {
   public readonly tableName: Table;
@@ -33,7 +33,7 @@ export class TableBase<T extends TableBaseModel> {
       Partial<Pick<T, "id" | "createTime">>,
   ): Promise<T> {
     if (!newItem.id) {
-      newItem.id = v4();
+      newItem.id = nanoid();
     }
     if (!newItem.createTime) {
       newItem.createTime = Date.now();

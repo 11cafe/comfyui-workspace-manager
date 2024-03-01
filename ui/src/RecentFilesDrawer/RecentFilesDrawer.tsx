@@ -28,12 +28,11 @@ import {
 } from "@tabler/icons-react";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
-import { sortFileItem } from "../utils";
+import { insertWorkflowToCanvas, sortFileItem } from "../utils";
 import MultipleSelectionOperation from "./MultipleSelectionOperation";
 import { ESortTypes, sortTypeLocalStorageKey } from "./types";
 // @ts-expect-error ComfyUI import
 import { app } from "/scripts/app.js";
-import { insertWorkflowToCanvas3 } from "./InsertWorkflowToCanvas";
 import { useDebounce } from "../customHooks/useDebounce";
 import SearchInput from "../components/SearchInput";
 import { openWorkflowsFolder } from "../Api";
@@ -135,7 +134,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
         const flow = await workflowsTable?.get(draggingWorkflowID.current);
         flow &&
           flow.json &&
-          insertWorkflowToCanvas3(flow.json, [e.canvasX, e.canvasY]);
+          insertWorkflowToCanvas(flow.json, [e.canvasX, e.canvasY]);
       }
     };
 
