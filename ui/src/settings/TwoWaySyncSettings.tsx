@@ -52,7 +52,7 @@ export default function TwoWaySyncSettings() {
         Finder to import them into your workspace.
       </Text>
       <Checkbox isChecked={checked} onChange={onTwoWaySyncChange}>
-        Enable two way sync (DO NOT USE!! EXPERIMENTAL!)
+        Enable two way sync (🧪🧪beta)
       </Checkbox>
     </Stack>
   );

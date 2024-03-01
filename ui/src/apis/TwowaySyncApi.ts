@@ -247,7 +247,6 @@ export namespace TwowaySyncAPI {
     const absPath = sanitizeAbsPath(
       `${myWorkflowsDir}/${parentFolderID ?? ""}/${name}.json`,
     );
-    console.warn("get abs path 🔥 workfoow", absPath);
     try {
       const response = await fetch("/workspace/get_workflow_file", {
         method: "POST",

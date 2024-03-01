@@ -24,6 +24,8 @@ import {
   Input,
   Tooltip,
   DarkMode,
+  Tag,
+  HStack,
 } from "@chakra-ui/react";
 import {
   IconArrowBackUpDouble,
@@ -127,8 +129,8 @@ export default function DropdownTitle() {
               height={"29px"}
               aria-label="menu"
               size={"sm"}
-              colorScheme="gray"
-              backgroundColor={"gray.700"}
+              // backgroundColor={"gray.700"}
+              backgroundColor={"teal.600"}
             >
               File
               <IconChevronDown size={20} />
@@ -187,8 +189,11 @@ export default function DropdownTitle() {
                 onClick={() => setIsShareOpen(true)}
                 icon={<IconShare2 size={20} />}
                 iconSpacing={1}
+                alignItems={"center"}
               >
-                Share
+                <HStack>
+                  <p>Share</p> <Tag size={"sm"}>🧪🧪beta</Tag>
+                </HStack>
               </MenuItem>
             </MenuList>
           </Menu>
