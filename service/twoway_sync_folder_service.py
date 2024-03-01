@@ -56,7 +56,6 @@ async def move_folder(request):
     return web.json_response(data, content_type='application/json')
 
 def move_folder_sync(reqJson):
-    print("🍻Move folder:", reqJson)
     current_path = reqJson.get('folder')
     new_path = reqJson.get('newParentPath')
     try:

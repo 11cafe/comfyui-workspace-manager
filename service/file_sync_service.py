@@ -27,7 +27,6 @@ def save_file_sync(reqJson):
     except json.JSONDecodeError:
         return { "error": "New JSON data is not valid JSON."}
     expected_id = new_json_data.get('extra', {}).get('workspace_info', {}).get('id', None)
-    print("💿💿Saving file:", current_path,'id',expected_id)
     try:
         with open(current_path, 'r', encoding='utf-8') as file:
             current_json_data = json.load(file)
@@ -92,7 +91,6 @@ async def create_workflow_file(request):
     data = await asyncio.to_thread(create_workflow_file, reqJson)
     return web.json_response(data, content_type='application/json')
 def create_workflow_file(reqJson):
-    print("🍻Create workflow file:", reqJson['name'])
     try:
         parentFolderPath = reqJson.get('parentFolderPath')
         name = reqJson.get('name')
@@ -127,7 +125,6 @@ def create_workflow_file(reqJson):
         return {}  # In case of any error
 
 def read_workflow_file(path, id):
-    print("🍻Read workflow file:", path, id)
     abs_path = Path(path)
     create_time, update_time = getFileCreateTime(abs_path)
     with open(abs_path, 'r', encoding='utf-8') as f:
@@ -165,7 +162,6 @@ def getFileCreateTime(path):
 async def scan_local_new_files(request):
     reqJson = await request.json()
     path = reqJson['path']
-    print("Scanning path: ", path)
     
     fileList = await asyncio.to_thread(folder_handle, path)
     return web.Response(text=json.dumps(fileList), content_type='application/json')
