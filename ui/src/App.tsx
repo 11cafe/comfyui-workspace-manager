@@ -24,10 +24,8 @@ import {
   Route,
   getFileUrl,
   matchSaveWorkflowShortcut,
-  validateOrSaveAllJsonFileMyWorkflows,
   getWorkflowIdInUrlHash,
   generateUrlHashWithFlowId,
-  rewriteAllLocalFiles,
   openWorkflowInNewTab,
 } from "./utils";
 import { Topbar } from "./topbar/Topbar";
@@ -172,14 +170,6 @@ export default function App() {
     }
     if (latestWfID) {
       loadWorkflowIDImpl(latestWfID);
-    }
-
-    //For two-way sync, one-time rewrite all /my_workflows files to the database
-    if (localStorage.getItem("REWRITTEN_ALL_LOCAL_DISK_FILE") === "true") {
-      // await validateOrSaveAllJsonFileMyWorkflows();
-    } else {
-      await rewriteAllLocalFiles();
-      localStorage.setItem("REWRITTEN_ALL_LOCAL_DISK_FILE", "true");
     }
   };
 

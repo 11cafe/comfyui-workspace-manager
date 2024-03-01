@@ -11,6 +11,7 @@ import uuid
 from pathlib import Path
 from .twoway_sync_folder_service import *
 import shutil
+from .scan_my_workflows_folder import *
 
 @server.PromptServer.instance.routes.post('/workspace/file/save')
 async def save_file(request):
@@ -146,16 +147,6 @@ async def get_workflow_file(request):
     
     return web.json_response(data, content_type='application/json')
 
-def getFileCreateTime(path):
-    # Cross-platform compatibility for creation time
-    file_stats = os.stat(path)
-    if platform.system() == 'Windows':
-        createTime = int(file_stats.st_ctime * 1000)
-    else:  # macOS and potentially others
-        createTime = int(getattr(file_stats, 'st_birthtime', file_stats.st_ctime) * 1000)
-    
-    updateTime = int(file_stats.st_mtime * 1000)
-    return createTime, updateTime
 
 # Scan .json and folders in the given path
 @server.PromptServer.instance.routes.post("/workspace/scan_my_workflows_files")

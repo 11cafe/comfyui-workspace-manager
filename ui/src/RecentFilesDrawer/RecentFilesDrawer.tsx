@@ -70,11 +70,9 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   );
 
   const loadLatestWorkflows = async () => {
-    const all = (await workflowsTable?.listFolderContent()) ?? [];
-    aloneFlowsAndFoldersRef.current = all;
-    await workflowsTable?.listAll().then((list) => {
-      allFlowsRef.current = list;
-    });
+    aloneFlowsAndFoldersRef.current =
+      (await workflowsTable?.listFolderContent()) ?? [];
+    allFlowsRef.current = (await workflowsTable?.listAll()) ?? [];
     filterFlows();
     setRefreshFolderStamp(Date.now());
   };
