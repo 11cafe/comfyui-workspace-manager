@@ -14,6 +14,7 @@ import EditFlowName from "../components/EditFlowName";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { PanelPosition } from "../types/dbTypes";
 import "./Topbar.css";
+import { SharedTopbarButton } from "../share/SharedTopbarButton";
 
 interface Props {
   positionStyle: PanelPosition;
@@ -103,7 +104,7 @@ export function Topbar({
             <DropdownTitle />
           </HStack>
         )}
-        {/* <SharedTopbarButton /> */}
+        <SharedTopbarButton />
         {curFlowID && isDirty ? (
           <Tooltip label="Save workflow">
             <IconButton
