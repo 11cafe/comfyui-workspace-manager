@@ -1,5 +1,6 @@
 import { Box, Modal, ModalContent } from "@chakra-ui/react";
 import { useContext } from "react";
+// @ts-ignore
 import ReactJsonViewCompare from "react-json-view-compare";
 import { WorkspaceContext } from "../WorkspaceContext";
 

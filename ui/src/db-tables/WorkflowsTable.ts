@@ -5,7 +5,7 @@ import {
 } from "./WorkspaceDB";
 import { Folder, Workflow } from "../types/dbTypes";
 import { sortFileItem } from "../utils";
-import { v4 as uuidv4 } from "uuid";
+import { nanoid } from "nanoid";
 import { TableBase } from "./TableBase";
 import { indexdb } from "./indexdb";
 import {
@@ -16,7 +16,6 @@ import { ESortTypes, ImportWorkflow } from "../RecentFilesDrawer/types";
 import { defaultGraph } from "../defaultGraph";
 import { scanMyWorkflowsDir } from "../utils/twowaySyncUtils";
 import { TwowaySyncAPI } from "../apis/TwowaySyncApi";
-import { sanitizeAbsPath } from "../utils/OsPathUtils";
 
 export class WorkflowsTable extends TableBase<Workflow> {
   static readonly TABLE_NAME = "workflows";
@@ -108,7 +107,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
       name,
       input.parentFolderID ?? undefined,
     );
-    const uuid = id ?? uuidv4(); // ⇨ '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
+    const uuid = id ?? nanoid(); // ⇨ '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
     const time = Date.now();
     const newWorkflow: Workflow = {
       ...input,
@@ -239,7 +238,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
         flow.name && isOverwriteExistingFile
           ? flow.name
           : await this.generateUniqueName(flow.name, parentFolderID);
-      const uuid = uuidv4();
+      const uuid = nanoid();
       const time = Date.now();
       const newWorkflow: Workflow = {
         id: uuid,
