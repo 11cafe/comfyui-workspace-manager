@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { Folder, Workflow } from "./types/dbTypes";
+import { Folder, Workflow, WorkflowVersion } from "./types/dbTypes";
 import { WorkspaceRoute } from "./types/types";
 export type JsonDiff = {
   old: Object;
@@ -9,7 +9,11 @@ export type JsonDiff = {
 export const WorkspaceContext = createContext<{
   curFlowID: string | null;
   onDuplicateWorkflow?: (flowID: string, newFlowName?: string) => void;
-  loadWorkflowID: (id: string | null, forceLoad?: boolean) => void;
+  loadWorkflowID: (
+    id: string | null,
+    versionID?: string | null,
+    forceLoad?: boolean,
+  ) => void;
   saveCurWorkflow: () => void;
   discardUnsavedChanges: () => Promise<void>;
   isDirty: boolean;
@@ -19,6 +23,7 @@ export const WorkspaceContext = createContext<{
   route: WorkspaceRoute;
   jsonDiff: JsonDiff;
   compareJson: (jsonDiff: JsonDiff) => void;
+  curVersion: WorkflowVersion | null;
 }>({
   curFlowID: null,
   loadWorkflowID: () => {},
@@ -31,6 +36,7 @@ export const WorkspaceContext = createContext<{
   route: "root",
   jsonDiff: null,
   compareJson: () => {},
+  curVersion: null,
 });
 
 export const RecentFilesContext = createContext<{

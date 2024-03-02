@@ -10,16 +10,19 @@ export default function VersionNameTopbar(
     //   onClick: () => void;
   },
 ) {
-  const { route, setRoute } = useContext(WorkspaceContext);
+  const { route, setRoute, curVersion } = useContext(WorkspaceContext);
+  if (!curVersion) {
+    return null;
+  }
   return (
     <Flex alignItems="center">
       <ButtonGroup size="sm" isAttached variant="outline">
-        <IconButton aria-label="Add to friends" icon={<IconPlus size={18} />} />
+        {/* <IconButton aria-label="Add to friends" icon={<IconPlus size={18} />} /> */}
         <Button
           rightIcon={<IconTriangleInvertedFilled size={10} />}
           onClick={() => setRoute("versionHistory")}
         >
-          Version20110304
+          {curVersion?.name ?? "latest*"}
         </Button>
       </ButtonGroup>
     </Flex>

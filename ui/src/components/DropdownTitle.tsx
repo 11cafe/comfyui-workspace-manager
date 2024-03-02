@@ -96,7 +96,7 @@ export default function DropdownTitle() {
       parentFolderID: workflow?.parentFolderID,
     });
 
-    flow && (await loadWorkflowID(flow.id, true));
+    flow && (await loadWorkflowID(flow.id, null, true));
     handleOnCloseModal();
   };
 

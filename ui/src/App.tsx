@@ -17,6 +17,7 @@ import {
   userSettingsTable,
   changelogsTable,
   mediaTable,
+  workflowVersionsTable,
 } from "./db-tables/WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
 import { JsonDiff, WorkspaceContext } from "./WorkspaceContext";
@@ -28,7 +29,7 @@ import {
   openWorkflowInNewTab,
 } from "./utils";
 import { Topbar } from "./topbar/Topbar";
-import { PanelPosition, Workflow } from "./types/dbTypes";
+import { PanelPosition, Workflow, WorkflowVersion } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
 import React from "react";
 const RecentFilesDrawer = React.lazy(
@@ -40,6 +41,7 @@ import { DRAWER_Z_INDEX } from "./const";
 import ServerEventListener from "./model-manager/hooks/ServerEventListener";
 import { v4 } from "uuid";
 import { WorkspaceRoute } from "./types/types";
+import { useStateRef } from "./customHooks/useStateRef";
 
 const ModelManagerTopbar = React.lazy(
   () => import("./model-manager/topbar/ModelManagerTopbar"),
@@ -68,6 +70,8 @@ export default function App() {
   const toast = useToast();
   const workflowOverwriteNoticeStateRef = useRef("hide"); // disabled/hide/show;
   const [jsonDiff, setJsonDiff] = useState<JsonDiff>(null);
+  const [curVersion, setCurVersion, curVersionRef] =
+    useStateRef<WorkflowVersion | null>(null);
   const saveCurWorkflow = useCallback(async () => {
     if (curFlowID.current) {
       const graphJson = JSON.stringify(app.graph.serialize());
@@ -119,6 +123,10 @@ export default function App() {
         lastSavedJson = (await workflowsTable?.get(curID))?.json;
       }
       if (lastSavedJson) {
+        workflowsTable?.updateCurWorkflow({
+          ...workflowsTable.curWorkflow!,
+          json: lastSavedJson,
+        });
         await app.loadGraphData(JSON.parse(lastSavedJson));
       } else {
         alert("Error: No last saved version found");
@@ -176,14 +184,10 @@ export default function App() {
     });
   };
 
-  const checkIsDirty = async () => {
-    if (curFlowID.current != null) {
-      const curWorkflow = workflowsTable?.curWorkflow;
-      return !!curWorkflow && checkIsDirtyImpl(curWorkflow);
-    }
-    return false;
-  };
-  const checkIsDirtyImpl = (curflow: Workflow) => {
+  const checkIsDirty = () => {
+    if (curFlowID.current == null) return false;
+    const curflow = workflowsTable?.curWorkflow;
+    if (curflow == null) return false;
     if (curflow.json == null) return true;
     const graphJson = app.graph.serialize() ?? {};
     let lastSaved = {};
@@ -196,23 +200,35 @@ export default function App() {
     return !equal;
   };
 
-  const loadWorkflowIDImpl = async (id: string) => {
+  const loadWorkflowIDImpl = async (id: string, versionID?: string | null) => {
     if (app.graph == null) {
       console.error("app.graph is null cannot load workflow");
       return;
     }
 
     const flow = await workflowsTable?.get(id);
-
     // If the currently loaded flow does not exist, you need to clear the URL hash and localStorage to avoid popping up another prompt that the flow does not exist when refreshing the page.
     if (flow == null) {
       alert("Error: Workflow not found! id: " + id);
       setCurFlowIDAndName(null);
       return;
     }
-    setCurFlowIDAndName(flow);
+    const version = versionID
+      ? await workflowVersionsTable?.get(versionID)
+      : null;
+
     app.ui.dialog.close();
-    app.loadGraphData(JSON.parse(flow.json));
+    if (version) {
+      setCurVersion(version);
+      setCurFlowIDAndName({
+        ...flow,
+        json: version.json,
+      });
+      app.loadGraphData(JSON.parse(version.json));
+    } else {
+      setCurFlowIDAndName(flow);
+      app.loadGraphData(JSON.parse(flow.json));
+    }
     setRoute("root");
   };
 
@@ -222,6 +238,7 @@ export default function App() {
 
   const loadWorkflowID = async (
     id: string | null,
+    versionID?: string | null,
     forceLoad: boolean = false,
   ) => {
     // No current workflow, id is null when you deleted current workflow
@@ -230,11 +247,13 @@ export default function App() {
       app.graph.clear();
       return;
     }
-    // auto save enabled
-    const autoSaveEnabled =
-      (await userSettingsTable?.getSetting("autoSave")) ?? true;
-    if (autoSaveEnabled || !isDirty || forceLoad) {
-      loadWorkflowIDImpl(id);
+
+    if (
+      !isDirty ||
+      forceLoad ||
+      (await userSettingsTable?.getSetting("autoSave"))
+    ) {
+      loadWorkflowIDImpl(id, versionID);
       return;
     }
     // prompt when auto save disabled and dirty
@@ -265,7 +284,6 @@ export default function App() {
         label: "Discard",
         colorScheme: "red",
         onClick: async () => {
-          await discardUnsavedChanges();
           newIDToLoad && loadWorkflowIDImpl(newIDToLoad);
         },
       });
@@ -372,13 +390,17 @@ export default function App() {
     setLoadChild(true);
     autoSaveTimer.current = setInterval(async () => {
       const autoSaveEnabled = userSettingsTable?.autoSave;
-      const isDirty = await checkIsDirty();
-
+      const isDirty = checkIsDirty();
       setIsDirty(!!isDirty);
       if (!isDirty) {
         return;
       }
-
+      if (
+        curVersionRef.current != null &&
+        curVersionRef.current.json !== JSON.stringify(app.graph.serialize())
+      ) {
+        setCurVersion(null);
+      }
       if (curFlowID.current != null && autoSaveEnabled) {
         const isLatest = await workflowsTable?.latestVersionCheck();
         if (
@@ -438,9 +460,7 @@ export default function App() {
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       const autoSaveEnabled = userSettingsTable?.autoSave ?? true;
-      const isDirty =
-        !!workflowsTable?.curWorkflow &&
-        checkIsDirtyImpl(workflowsTable?.curWorkflow);
+      const isDirty = checkIsDirty();
 
       if (!autoSaveEnabled && isDirty) {
         e.preventDefault(); // For modern browsers
@@ -522,6 +542,7 @@ export default function App() {
         route: route,
         jsonDiff: jsonDiff,
         compareJson: compareJsonDiff,
+        curVersion: curVersion,
       }}
     >
       <div ref={workspaceContainerRef} className="workspace_manager">
