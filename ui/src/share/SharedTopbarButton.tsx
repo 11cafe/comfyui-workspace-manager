@@ -1,4 +1,4 @@
-import { Button, DarkMode } from "@chakra-ui/react";
+import { Button, DarkMode, Tag } from "@chakra-ui/react";
 import { IconCloud } from "@tabler/icons-react";
 import { workflowsTable } from "../db-tables/WorkspaceDB";
 import { useContext, useEffect, useState } from "react";
@@ -30,17 +30,9 @@ export function SharedTopbarButton({}) {
   return (
     <a href={cloudURL} style={{ textDecoration: "none" }} target="_blank">
       <DarkMode>
-        <Button
-          variant={"ghost"}
-          aria-label={"Shared"}
-          size={"xs"}
-          iconSpacing={"2px"}
-          leftIcon={<IconCloud />}
-          height={"26px"}
-          px={1}
-        >
-          {privacy ? <PrivacyLabel privacy={privacy} /> : "Shared"}
-        </Button>
+        <Tag>
+          {privacy ? <PrivacyLabel privacy={privacy} showEmoji /> : "Shared"}
+        </Tag>
       </DarkMode>
     </a>
   );
