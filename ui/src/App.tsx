@@ -227,6 +227,7 @@ export default function App() {
       app.loadGraphData(JSON.parse(version.json));
     } else {
       setCurFlowIDAndName(flow);
+      setCurVersion(null);
       app.loadGraphData(JSON.parse(flow.json));
     }
     setRoute("root");

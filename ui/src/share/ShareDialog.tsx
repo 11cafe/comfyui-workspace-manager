@@ -1,4 +1,5 @@
 import {
+  Badge,
   Button,
   Flex,
   HStack,
@@ -270,7 +271,7 @@ export default function ShareDialog({ onClose }: Props) {
                     }}
                   />
                   <Flex color="green">
-                    <Text>New version</Text>
+                    <Badge colorScheme="purple">New version</Badge>
                   </Flex>
                 </HStack>
 
