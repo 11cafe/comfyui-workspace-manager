@@ -63,7 +63,7 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
       onDragStart={() => setDraggingFile?.(workflow)}
       borderRadius={6}
       px={1}
-      py={1}
+      py={"3px"}
       onClick={() => {
         !isMultiSelecting && loadWorkflowID(workflow.id);
       }}
@@ -82,7 +82,9 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
         )}
 
         <Stack textAlign={"left"} gap={0}>
-          <Text fontWeight={"500"}>{workflow.name ?? "untitled"}</Text>
+          <Text fontWeight={"500"} noOfLines={2}>
+            {workflow.name ?? "untitled"}
+          </Text>
           <Text color={"GrayText"} ml={2} fontSize={"sm"}>
             Updated: {formatTimestamp(workflow.updateTime)}
           </Text>
