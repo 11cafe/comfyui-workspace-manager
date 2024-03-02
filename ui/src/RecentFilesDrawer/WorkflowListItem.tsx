@@ -9,6 +9,7 @@ import {
   Stack,
   IconButton,
   Tooltip,
+  Divider,
 } from "@chakra-ui/react";
 import { IconExternalLink } from "@tabler/icons-react";
 import { formatTimestamp, openWorkflowInNewTab, isImageFormat } from "../utils";
@@ -22,8 +23,9 @@ import MediaPreview from "../components/MediaPreview";
 
 type Props = {
   workflow: Workflow;
+  index: number;
 };
-export default memo(function WorkflowListItem({ workflow }: Props) {
+export default memo(function WorkflowListItem({ workflow, index }: Props) {
   const { colorMode } = useColorMode();
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -58,6 +60,7 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
       backgroundColor={
         isSelected ? "teal.200" : isMenuOpen ? hoverBgColor : undefined
       }
+      width={"500px"}
       color={isSelected && !isMultiSelecting ? "#333" : undefined}
       draggable={!isMultiSelecting}
       onDragStart={() => setDraggingFile?.(workflow)}
@@ -71,7 +74,7 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
         bg: hoverBgColor,
       }}
     >
-      <HStack>
+      <HStack flexGrow={1}>
         {workflow.coverMediaPath != null && (
           <MediaPreview
             mediaLocalPath={workflow.coverMediaPath}
@@ -80,13 +83,19 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
             isPreview
           />
         )}
-
-        <Stack textAlign={"left"} gap={0}>
-          <Text fontWeight={"500"}>{workflow.name ?? "untitled"}</Text>
-          <Text color={"GrayText"} ml={2} fontSize={"sm"}>
-            Updated: {formatTimestamp(workflow.updateTime)}
+        <HStack
+          textAlign={"left"}
+          gap={0}
+          justifyContent={"space-between"}
+          flexGrow={1}
+        >
+          <Text fontWeight={"500"} width={"70%"} noOfLines={2}>
+            {workflow.name ?? "untitled"}
           </Text>
-        </Stack>
+          <Text color={"GrayText"} ml={"2px"} fontSize={"sm"}>
+            {formatTimestamp(workflow.updateTime, false, false, "/")}
+          </Text>
+        </HStack>
       </HStack>
     </Box>
   );
@@ -95,6 +104,9 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
     <HStack
       w={"100%"}
       mb={1}
+      // background={index % 2 == 0 ? "rgba(256, 256, 256,0.022)" : undefined}
+      borderBottom={"1px solid"}
+      borderColor={"gray.800"}
       justify={"space-between"}
       onContextMenu={handleContextMenu}
       onMouseEnter={() => {
@@ -119,7 +131,7 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
         <>
           {basicInfoComp}
           <Flex width={"90px"} justifyContent={"flex-end"}>
-            {isHovered && <AddTagToWorkflowPopover workflow={workflow} />}
+            {/* {isHovered && <AddTagToWorkflowPopover workflow={workflow} />} */}
 
             <Tooltip label="Open in new tab">
               <IconButton
