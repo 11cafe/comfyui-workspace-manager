@@ -73,14 +73,18 @@ export default function ItemsList({
         className="droppable"
       >
         {folderOnTop
-          ? workflows.map((workflow) => (
-              <WorkflowListItem key={workflow.id} workflow={workflow} />
+          ? workflows.map((workflow, index) => (
+              <WorkflowListItem
+                key={workflow.id}
+                workflow={workflow}
+                index={index}
+              />
             ))
-          : items.map((n) => {
+          : items.map((n, index) => {
               if (isFolder(n)) {
                 return <FilesListFolderItem folder={n} key={n.id} />;
               }
-              return <WorkflowListItem key={n.id} workflow={n} />;
+              return <WorkflowListItem key={n.id} workflow={n} index={index} />;
             })}
       </Box>
     </>
