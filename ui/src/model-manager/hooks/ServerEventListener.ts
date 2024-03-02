@@ -15,17 +15,16 @@ export default function ServerEventListener() {
     const existingWorkflow = (
       await workflowsTable?.listByIndex("cloudID", workflow.id)
     )?.at(0);
-    console.log("existingWorkflow", existingWorkflow);
     if (existingWorkflow) {
       const existingVersion = (
         await workflowVersionsTable?.listByIndex("cloudID", version.id)
       )?.at(0);
       if (existingVersion) {
         // existing workflow and version
-        await loadWorkflowID(existingWorkflow.id);
+        await loadWorkflowID(existingWorkflow.id, existingVersion.id);
       } else {
         // existing workflow but new version
-        await workflowVersionsTable?.add({
+        const newversion = await workflowVersionsTable?.add({
           id: version.id,
           cloudID: version.id,
           workflowID: existingWorkflow.id,
@@ -34,6 +33,7 @@ export default function ServerEventListener() {
           authorID: version.authorID,
           json: version.json,
         });
+        newversion && loadWorkflowID(existingWorkflow.id, newversion.id);
       }
     } else {
       // new workflow new version
@@ -48,15 +48,17 @@ export default function ServerEventListener() {
         alert("Failed to add workflow to local db");
         return;
       }
-      await workflowVersionsTable?.add({
+      const newverison = await workflowVersionsTable?.put({
         id: version.id,
         cloudID: version.id,
         workflowID: newWorkflow.id,
         cloudOrigin: origin,
         name: version.name,
         json: version.json,
+        authorID: version.authorID,
+        createTime: Date.now(),
       });
-      await loadWorkflowID(newWorkflow.id);
+      await loadWorkflowID(newWorkflow.id, newverison?.id);
     }
   };
   const cloudEventListener = async (event: MessageEvent) => {

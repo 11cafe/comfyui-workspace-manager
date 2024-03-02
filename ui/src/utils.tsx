@@ -14,8 +14,6 @@ import {
   LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
 } from "./const";
 
-export type Route = "root" | "customNodes" | "recentFlows" | "gallery";
-
 // copied from app.js
 function sanitizeNodeName(string: string): string {
   const entityMap: Record<string, string> = {

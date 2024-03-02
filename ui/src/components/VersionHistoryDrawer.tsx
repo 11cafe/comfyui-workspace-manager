@@ -32,7 +32,7 @@ import DeleteConfirm from "./DeleteConfirm";
 
 export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
   const toast = useToast();
-  const { curFlowID, isDirty } = useContext(WorkspaceContext);
+  const { curFlowID, isDirty, loadWorkflowID } = useContext(WorkspaceContext);
   const [active, setActive] = useState(0); // 0: version、1: changelog
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
   const [changelogs, setChangelogs] = useState<Changelog[]>([]);
@@ -107,7 +107,12 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
         </Flex>
       </CardHeader>
       <CardBody overflowY={"auto"} gap={0}>
-        <Tabs isFitted variant="enclosed" onChange={setActive}>
+        <Tabs
+          isFitted
+          variant="enclosed"
+          onChange={setActive}
+          colorScheme="teal"
+        >
           <TabList mb="1em">
             <Tab>Versions</Tab>
             <Tab>Change History</Tab>
@@ -146,15 +151,13 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
                               return;
                             }
                             app.loadGraphData(JSON.parse(version.json));
-                            workflowsTable?.updateFlow(curFlowID!, {
-                              json: version.json,
-                            });
-                            toast({
-                              title: `Switched to version "${version.name}"`,
-                              status: "success",
-                              duration: 3000,
-                              isClosable: true,
-                            });
+                            loadWorkflowID(curFlowID!, version.id);
+                            // toast({
+                            //   title: `Switched to version "${version.name}"`,
+                            //   status: "success",
+                            //   duration: 3000,
+                            //   isClosable: true,
+                            // });
                             onClose();
                           }}
                         >

@@ -63,6 +63,22 @@ export class WorkflowsTable extends TableBase<Workflow> {
     return true;
   }
 
+  public async listByIndex(
+    index: keyof Workflow,
+    value: string,
+  ): Promise<Workflow[]> {
+    const list = await super.listByIndex(index, value);
+    const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
+    if (!twoWaySyncEnabled) {
+      return list;
+    }
+    // for two way sync we need to varify if it really exists in disk
+    const results = await Promise.all(
+      list.map(async (f) => await this.get(f.id)),
+    );
+    return results.filter((f) => f != null) as Workflow[];
+  }
+
   async generateUniqueName(name?: string, parentFolderID?: string) {
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
     if (twoWaySyncEnabled) {
