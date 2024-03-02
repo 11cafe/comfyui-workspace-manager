@@ -21,7 +21,6 @@ import {
 import { defaultGraph } from "./defaultGraph";
 import { JsonDiff, WorkspaceContext } from "./WorkspaceContext";
 import {
-  Route,
   getFileUrl,
   matchSaveWorkflowShortcut,
   getWorkflowIdInUrlHash,
@@ -40,6 +39,7 @@ import { IconExternalLink } from "@tabler/icons-react";
 import { DRAWER_Z_INDEX } from "./const";
 import ServerEventListener from "./model-manager/hooks/ServerEventListener";
 import { v4 } from "uuid";
+import { WorkspaceRoute } from "./types/types";
 
 const ModelManagerTopbar = React.lazy(
   () => import("./model-manager/topbar/ModelManagerTopbar"),
@@ -54,11 +54,11 @@ const usedWsEvents = [
 
 export default function App() {
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
-  const [route, setRoute] = useState<Route>("root");
+  const [route, setRoute] = useState<WorkspaceRoute>("root");
   const [loadingDB, setLoadingDB] = useState(true);
   const [flowID, setFlowID] = useState<string | null>(null);
   const curFlowID = useRef<string | null>(null);
-  const [positionStyle, setPositionStyle] = useState<PanelPosition>();
+
   const [isDirty, setIsDirty] = useState(false);
   const workspaceContainerRef = useRef(null);
   const { showDialog } = useDialog();
@@ -155,9 +155,6 @@ export default function App() {
     localStorage.removeItem("comfyspace");
     try {
       await loadDBs();
-      await userSettingsTable?.getSetting("topBarStyle").then((res) => {
-        updatePanelPosition(res, false);
-      });
     } catch (error) {
       console.error("error loading db", error);
     }
@@ -335,30 +332,6 @@ export default function App() {
     flow && (await loadWorkflowID(flow.id));
   };
 
-  const updatePanelPosition = useCallback(
-    (position?: PanelPosition, needUpdateDB: boolean = false) => {
-      const { top: curTop = 0, left: curLeft = 0 } = positionStyle || {};
-      let { top = 0, left = 0 } = position ?? {};
-      top += curTop;
-      left += curLeft;
-      const clientWidth = document.documentElement.clientWidth;
-      const clientHeight = document.documentElement.clientHeight;
-      const panelElement = document.getElementById("workspaceManagerPanel");
-      const offsetWidth = panelElement?.offsetWidth || 392;
-
-      if (top + 36 > clientHeight) top = clientHeight - 36;
-      if (left + offsetWidth >= clientWidth) left = clientWidth - offsetWidth;
-
-      setPositionStyle({ top: Math.max(0, top), left: Math.max(0, left) });
-
-      needUpdateDB &&
-        userSettingsTable?.upsert({
-          topBarStyle: { top, left },
-        });
-    },
-    [positionStyle],
-  );
-
   const shortcutListener = async (event: KeyboardEvent) => {
     const needSave = await matchSaveWorkflowShortcut(event);
     if (needSave) {
@@ -530,7 +503,7 @@ export default function App() {
     };
   }, []);
 
-  if (loadingDB || !positionStyle) {
+  if (loadingDB) {
     return null;
   }
 
@@ -546,6 +519,7 @@ export default function App() {
         loadNewWorkflow: loadNewWorkflow,
         loadFilePath: loadFilePath,
         setRoute: setRoute,
+        route: route,
         jsonDiff: jsonDiff,
         compareJson: compareJsonDiff,
       }}
@@ -562,12 +536,7 @@ export default function App() {
             zIndex={DRAWER_Z_INDEX}
             draggable={false}
           >
-            <Topbar
-              curFlowName={curFlowName}
-              setCurFlowName={setCurFlowName}
-              updatePanelPosition={updatePanelPosition}
-              positionStyle={positionStyle}
-            />
+            <Topbar curFlowName={curFlowName} setCurFlowName={setCurFlowName} />
             {loadChild && (
               <Suspense>
                 <ModelManagerTopbar />

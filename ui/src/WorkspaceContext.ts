@@ -1,6 +1,6 @@
 import { createContext } from "react";
-import { Route } from "./utils";
 import { Folder, Workflow } from "./types/dbTypes";
+import { WorkspaceRoute } from "./types/types";
 export type JsonDiff = {
   old: Object;
   new: Object;
@@ -15,7 +15,8 @@ export const WorkspaceContext = createContext<{
   isDirty: boolean;
   loadNewWorkflow: (input?: { json: string; name?: string }) => void;
   loadFilePath: (path: string, overwriteCurrent?: boolean) => void;
-  setRoute: (route: Route) => void;
+  setRoute: (route: WorkspaceRoute) => void;
+  route: WorkspaceRoute;
   jsonDiff: JsonDiff;
   compareJson: (jsonDiff: JsonDiff) => void;
 }>({
@@ -27,6 +28,7 @@ export const WorkspaceContext = createContext<{
   loadNewWorkflow: () => {},
   loadFilePath: () => {},
   setRoute: () => {},
+  route: "root",
   jsonDiff: null,
   compareJson: () => {},
 });

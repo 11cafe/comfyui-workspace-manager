@@ -48,12 +48,17 @@ import { app } from "/scripts/app.js";
 import JsonDiffCompareModal from "./JsonDiffCompareModal";
 
 export default function DropdownTitle() {
-  const { curFlowID, loadWorkflowID, discardUnsavedChanges, saveCurWorkflow } =
-    useContext(WorkspaceContext);
+  const {
+    curFlowID,
+    loadWorkflowID,
+    discardUnsavedChanges,
+    saveCurWorkflow,
+    setRoute,
+    route,
+  } = useContext(WorkspaceContext);
 
   const [isOpenNewVersion, setIsOpenNewVersion] = useState(false);
   const [isOpenNewName, setIsOpenNewName] = useState(false);
-  const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [newFlowName, setNewFlowName] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [workflow, setWorkflow] = useState<Workflow>();
@@ -179,7 +184,7 @@ export default function DropdownTitle() {
                 Create Version
               </MenuItem>
               <MenuItem
-                onClick={() => setIsVersionHistoryOpen(true)}
+                onClick={() => setRoute("versionHistory")}
                 icon={<IconHistory size={20} />}
                 iconSpacing={1}
               >
@@ -200,8 +205,8 @@ export default function DropdownTitle() {
         }
       />
       {isShareOpen && <ShareDialog onClose={() => setIsShareOpen(false)} />}
-      {isVersionHistoryOpen && (
-        <VersionHistoryDrawer onClose={() => setIsVersionHistoryOpen(false)} />
+      {route == "versionHistory" && (
+        <VersionHistoryDrawer onClose={() => setRoute("root")} />
       )}
 
       <JsonDiffCompareModal />

@@ -107,7 +107,12 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
         </Flex>
       </CardHeader>
       <CardBody overflowY={"auto"} gap={0}>
-        <Tabs isFitted variant="enclosed" onChange={setActive}>
+        <Tabs
+          isFitted
+          variant="enclosed"
+          onChange={setActive}
+          colorScheme="teal"
+        >
           <TabList mb="1em">
             <Tab>Versions</Tab>
             <Tab>Change History</Tab>
