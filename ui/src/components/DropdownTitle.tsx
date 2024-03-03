@@ -46,6 +46,7 @@ const ShareDialog = lazy(() => import("../share/ShareDialog"));
 // @ts-ignore
 import { app } from "/scripts/app.js";
 import JsonDiffCompareModal from "./JsonDiffCompareModal";
+import useIsFirstRender from "../customHooks/useIsFirstRender";
 
 export default function DropdownTitle() {
   const {
@@ -55,7 +56,9 @@ export default function DropdownTitle() {
     saveCurWorkflow,
     setRoute,
     route,
+    openSaveAsModalStamp,
   } = useContext(WorkspaceContext);
+  const isFirstRender = useIsFirstRender();
 
   const [isOpenNewVersion, setIsOpenNewVersion] = useState(false);
   const [isOpenNewName, setIsOpenNewName] = useState(false);
@@ -64,6 +67,10 @@ export default function DropdownTitle() {
   const [workflow, setWorkflow] = useState<Workflow>();
   const [saveShortcut, setSaveShortcut] = useState("");
   const [isShareOpen, setIsShareOpen] = useState(false);
+
+  useEffect(() => {
+    !isFirstRender && setIsOpenNewName(true);
+  }, [openSaveAsModalStamp]);
 
   useEffect(() => {
     if (curFlowID) {

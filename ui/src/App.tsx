@@ -23,13 +23,13 @@ import { defaultGraph } from "./defaultGraph";
 import { JsonDiff, WorkspaceContext } from "./WorkspaceContext";
 import {
   getFileUrl,
-  matchSaveWorkflowShortcut,
+  matchShortcut,
   getWorkflowIdInUrlHash,
   generateUrlHashWithFlowId,
   openWorkflowInNewTab,
 } from "./utils";
 import { Topbar } from "./topbar/Topbar";
-import { PanelPosition, Workflow, WorkflowVersion } from "./types/dbTypes";
+import { EShortcutKeys, Workflow, WorkflowVersion } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
 import React from "react";
 const RecentFilesDrawer = React.lazy(
@@ -61,6 +61,8 @@ export default function App() {
   const [flowID, setFlowID] = useState<string | null>(null);
   const curFlowID = useRef<string | null>(null);
 
+  const [openSaveAsModalStamp, setOpenSaveAsModalStamp] = useState(0);
+  const visibilityStateRef = useRef(false);
   const [isDirty, setIsDirty] = useState(false);
   const workspaceContainerRef = useRef(null);
   const { showDialog } = useDialog();
@@ -352,9 +354,17 @@ export default function App() {
   };
 
   const shortcutListener = async (event: KeyboardEvent) => {
-    const needSave = await matchSaveWorkflowShortcut(event);
-    if (needSave) {
-      saveCurWorkflow();
+    if (document.visibilityState === "hidden") return;
+
+    const matchResult = await matchShortcut(event);
+
+    switch (matchResult) {
+      case EShortcutKeys.SAVE:
+        saveCurWorkflow();
+        return;
+      case EShortcutKeys.SAVE_AS:
+        setOpenSaveAsModalStamp(Date.now());
+        return;
     }
   };
   const onExecutedCreateMedia = useCallback((image: any) => {
@@ -544,6 +554,7 @@ export default function App() {
         jsonDiff: jsonDiff,
         compareJson: compareJsonDiff,
         curVersion: curVersion,
+        openSaveAsModalStamp: openSaveAsModalStamp,
       }}
     >
       <div ref={workspaceContainerRef} className="workspace_manager">

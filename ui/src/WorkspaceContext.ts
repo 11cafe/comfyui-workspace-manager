@@ -24,6 +24,7 @@ export const WorkspaceContext = createContext<{
   jsonDiff: JsonDiff;
   compareJson: (jsonDiff: JsonDiff) => void;
   curVersion: WorkflowVersion | null;
+  openSaveAsModalStamp: number;
 }>({
   curFlowID: null,
   loadWorkflowID: () => {},
@@ -37,6 +38,7 @@ export const WorkspaceContext = createContext<{
   jsonDiff: null,
   compareJson: () => {},
   curVersion: null,
+  openSaveAsModalStamp: 0,
 });
 
 export const RecentFilesContext = createContext<{
