@@ -9,7 +9,6 @@ import { Folder, Workflow } from "../types/dbTypes";
 import { TwowayFolderSyncAPI } from "../apis/TwowaySyncFolderApi";
 
 export async function saveJsonFileMyWorkflows(workflow: Workflow) {
-  console.warn("saveJsonFileMyWorkflows", workflow);
   const file_path = await generateFilePath(workflow);
   if (file_path == null) {
     return;

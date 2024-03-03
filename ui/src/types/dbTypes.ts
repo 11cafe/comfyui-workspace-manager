@@ -12,6 +12,7 @@ export interface Workflow extends SortableItem {
   name: string;
   createTime: number;
   filePath?: string;
+  privacy?: WorkflowPrivacy;
   tags?: string[];
   parentFolderID?: string | null; //TODO remove undefined, use null only
   mediaIDs?: string[]; // TODO will be deprecated
