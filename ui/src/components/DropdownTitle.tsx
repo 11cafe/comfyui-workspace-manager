@@ -65,7 +65,10 @@ export default function DropdownTitle() {
   const [newFlowName, setNewFlowName] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [workflow, setWorkflow] = useState<Workflow>();
-  const [saveShortcut, setSaveShortcut] = useState("");
+  const [saveShortcut, setSaveShortcut] = useState({
+    save: "",
+    saveAs: "",
+  });
   const [isShareOpen, setIsShareOpen] = useState(false);
 
   useEffect(() => {
@@ -80,7 +83,7 @@ export default function DropdownTitle() {
       });
     }
     userSettingsTable?.getSetting("shortcuts").then((res) => {
-      setSaveShortcut(res?.save);
+      setSaveShortcut(res);
     });
   }, [curFlowID]);
 
@@ -156,7 +159,7 @@ export default function DropdownTitle() {
                 onClick={saveCurWorkflow}
                 icon={<IconDeviceFloppy size={20} />}
                 iconSpacing={1}
-                command={saveShortcut}
+                command={saveShortcut.save}
               >
                 Save
               </MenuItem>
@@ -180,6 +183,7 @@ export default function DropdownTitle() {
                 onClick={() => setIsOpenNewName(true)}
                 icon={<IconDeviceFloppy size={20} />}
                 iconSpacing={1}
+                command={saveShortcut.saveAs}
               >
                 Save As
               </MenuItem>
