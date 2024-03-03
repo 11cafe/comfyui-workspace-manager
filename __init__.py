@@ -26,15 +26,11 @@ workspace_path = os.path.join(os.path.dirname(__file__))
 comfy_path = os.path.dirname(folder_paths.__file__)
 db_dir_path = os.path.join(workspace_path, "db")
 
-
-workspace_app = web.Application()
 dist_path = os.path.join(workspace_path, 'dist/workspace_web')
 if os.path.exists(dist_path):
-    workspace_app.add_routes([
-        web.static("/", dist_path),
+    server.PromptServer.instance.app.add_routes([
+        web.static('/workspace_web/', dist_path),
     ])
-
-server.PromptServer.instance.app.add_subapp("/workspace_web/", workspace_app)
 
 BACKUP_DIR = os.path.join(workspace_path, "backup")
 MAX_BACKUP_FILES = 20
