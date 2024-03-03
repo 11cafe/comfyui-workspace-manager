@@ -182,7 +182,7 @@ export namespace TwowaySyncAPI {
       console.error("Error deleting file:", error);
     }
   }
-  export async function creatWorkflow({
+  export async function createWorkflow({
     parentFolderID,
     name,
     json,

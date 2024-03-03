@@ -77,6 +77,7 @@ export default function ShareDialog({ onClose }: Props) {
       (await workflowsTable?.updateMetaInfo(localID, {
         cloudID: cloudID,
         cloudOrigin: event.origin,
+        privacy: privacy,
       }));
     localVerID &&
       cloudVersionID &&

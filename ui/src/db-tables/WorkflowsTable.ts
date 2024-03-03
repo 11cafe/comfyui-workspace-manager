@@ -16,6 +16,7 @@ import { ESortTypes, ImportWorkflow } from "../RecentFilesDrawer/types";
 import { defaultGraph } from "../defaultGraph";
 import { scanMyWorkflowsDir } from "../utils/twowaySyncUtils";
 import { TwowaySyncAPI } from "../apis/TwowaySyncApi";
+import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
 
 export class WorkflowsTable extends TableBase<Workflow> {
   static readonly TABLE_NAME = "workflows";
@@ -140,7 +141,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
     // add to my_workflows/
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
     if (twoWaySyncEnabled) {
-      await TwowaySyncAPI.creatWorkflow(newWorkflow);
+      await TwowaySyncAPI.createWorkflow(newWorkflow);
       return await this.get(newWorkflow.id);
     } else {
       saveJsonFileMyWorkflows(newWorkflow);
@@ -269,13 +270,30 @@ export class WorkflowsTable extends TableBase<Workflow> {
       const twoWaySyncEnabled =
         await userSettingsTable?.getSetting("twoWaySync");
       if (twoWaySyncEnabled) {
-        TwowaySyncAPI.creatWorkflow(newWorkflow);
+        try {
+          const jsonObj = JSON.parse(flow.json);
+          const existingWorkflowID =
+            jsonObj?.extra?.[COMFYSPACE_TRACKING_FIELD_NAME]?.id;
+          if (existingWorkflowID) {
+            const existingWorkflow = await this.get(existingWorkflowID);
+            if (!existingWorkflow) {
+              newWorkflow.id = existingWorkflowID;
+            }
+          }
+          TwowaySyncAPI.createWorkflow(newWorkflow);
+        } catch (e) {
+          console.error("batchCreateFlows error", e);
+        }
       } else {
         await saveJsonFileMyWorkflows(newWorkflow);
       }
     }
-    await indexdb.workflows.bulkAdd(newWorkflows);
-    this.saveDiskDB();
+    try {
+      await indexdb.workflows.bulkAdd(newWorkflows);
+      this.saveDiskDB();
+    } catch (e) {
+      console.error("batchCreateFlows error", e);
+    }
   }
 
   public async deleteFlow(id: string) {
