@@ -58,8 +58,6 @@ def get_my_workflows_dir():
             curDir = records[DEFAULT_USER]['myWorkflowsDir']  
         elif 'myWorkflowsDir' in records:  
             curDir = records['myWorkflowsDir']
-        
-        if curDir:
+        if os.path.exists(curDir):
             return curDir
-        
     return os.path.join(comfy_path, 'my_workflows')

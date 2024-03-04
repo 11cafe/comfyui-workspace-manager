@@ -152,10 +152,10 @@ export default function App() {
     if (getWorkflowIdInUrlHash()) {
       const newUrlHash = generateUrlHashWithFlowId(id);
       window.location.hash = newUrlHash;
-      document.title = name + " - ComfyUI";
+      document.title = workflow!.name + " - ComfyUI";
     } else {
       localStorage.setItem("curFlowID", id);
-      document.title = "ComfyUI - " + name;
+      document.title = "ComfyUI - " + workflow!.name;
     }
   };
 
