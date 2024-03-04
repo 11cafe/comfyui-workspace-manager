@@ -6,7 +6,9 @@ import {
   Spinner,
   Portal,
   Input,
+  Select,
 } from "@chakra-ui/react";
+import Fuse from "fuse.js/min-basic";
 import { useEffect, useState } from "react";
 import { ModelsTags } from "./ModelsTags";
 import { ModelsList } from "./ModelsList";
@@ -24,7 +26,7 @@ interface Props {
 export default function ModelsListDrawer({ onClose }: Props) {
   const [selectedModel, setSelectedModel] = useState("checkpoints");
   const [searchQuery, setSearchQuery] = useState("");
-
+  const [sortBy, setSortBy] = useState("name");
   const { loading, modelTypeList, modelsList } = useUpdateModels();
 
   // current render models
@@ -32,16 +34,24 @@ export default function ModelsListDrawer({ onClose }: Props) {
 
   // filter by model type
   useEffect(() => {
-    const res = modelsList.filter((item) => {
-      if (searchQuery.length) {
-        return item.model_name
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase());
-      }
-      return item.model_type === selectedModel;
-    });
+    let res: ModelsListRespItem[] = [];
+    if (!searchQuery.length) {
+      res = modelsList
+        .filter((item) => item.model_type === selectedModel)
+        .sort((a, b) => {
+          if (sortBy === "name") {
+            return a.model_name.localeCompare(b.model_name);
+          } else {
+            return b.date.getTime() - a.date.getTime();
+          }
+        });
+    } else {
+      const fuse = new Fuse(modelsList, { keys: ["model_name"] });
+      const results = fuse.search(searchQuery);
+      res = results.map((result) => result.item);
+    }
     setCurModelList(res);
-  }, [selectedModel, modelsList, searchQuery]);
+  }, [selectedModel, modelsList, searchQuery, sortBy]);
 
   useEffect(() => {
     app.canvasEl.addEventListener("click", onClose);
@@ -62,6 +72,17 @@ export default function ModelsListDrawer({ onClose }: Props) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+        </Flex>
+        <Flex gap={4} justifyContent={"center"} alignItems={"center"} mb={1}>
+          Sort By
+          {searchQuery.length ? (
+            " Search"
+          ) : (
+            <Select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+              <option value="name">Name</option>
+              <option value="date">Date</option>
+            </Select>
+          )}
           <ShowNsfwModelThumbnailSettings />
         </Flex>
         {!searchQuery.length && (
@@ -95,6 +116,7 @@ export default function ModelsListDrawer({ onClose }: Props) {
           shadow={"xl"}
           zIndex={DRAWER_Z_INDEX}
           overflowY={"auto"}
+          whiteSpace={"nowrap"}
         >
           <Flex justifyContent={"space-between"} alignContent={"center"} py={3}>
             <Heading size={"md"} mr={2}>

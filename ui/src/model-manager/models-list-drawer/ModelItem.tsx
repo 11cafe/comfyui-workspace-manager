@@ -42,7 +42,7 @@ export function ModelItem({ data }: Props) {
     "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/27fd7433-cb0a-4a87-88c1-21ccb2b1a842/width=450/00060-881622046.jpeg",
   );
   const [hashing, setHashing] = useState(!data.file_hash);
-  const [model, setModel] = useState<Model>(data);
+  const [model, setModel] = useState<Model>();
 
   useEffect(() => {
     setHashing(!data.file_hash);
@@ -61,7 +61,6 @@ export function ModelItem({ data }: Props) {
         const url = `https://civitai.com/api/v1/model-versions/by-hash/${data.file_hash}`;
         const resp = await fetch(url);
         const json: ResponsePartial = await resp.json();
-        console.log(json);
         let image_url: string | undefined;
         const showNsfwThumbnail = await userSettingsTable?.getSetting(
           "showNsfwModelThumbnail",

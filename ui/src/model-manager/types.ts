@@ -133,4 +133,5 @@ export interface ModelsListRespItem {
   model_type: string;
   file_hash?: string;
   preview?: string;
+  date: Date;
 }
