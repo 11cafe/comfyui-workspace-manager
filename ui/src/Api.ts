@@ -122,6 +122,16 @@ export async function openWorkflowsFolder() {
   }
 }
 
+export async function fetchMyWorkflowsDir(){
+  const resp = await fetch("/workspace/get_my_workflows_dir");
+  const res = (await resp.json()) as { path?: string; error?: string; os:string };
+  if (res.error) {
+    alert(`Failed to fetch my workflows path: ${res.error}`)
+
+  }
+  return(res.path)
+}
+
 export async function getAllModelsList() {
   try {
     const response = await fetch("/model_manager/get_model_list", {

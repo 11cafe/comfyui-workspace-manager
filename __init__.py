@@ -84,14 +84,15 @@ async def get_system_dir(request):
 
         return web.Response(text=json.dumps({"dir_path": dir_path, "dir_contents": dir_contents}), content_type='application/json')
     except Exception as e:
+        print('🔴🔴Error',e)
         return web.Response(text=json.dumps({"error": str(e)}), status=500)
 
 
-@server.PromptServer.instance.routes.get("/workspace/get_default_my_workflows_dir")
-async def get_default_my_workflows_dir(request):
+@server.PromptServer.instance.routes.get("/workspace/get_my_workflows_dir")
+async def fetch_my_workflows_dir(request):
     try:
-        dir = os.path.join(comfy_path, 'my_workflows')
-        return web.Response(text=json.dumps({"path": dir}), content_type='application/json')
+        dir = get_my_workflows_dir()
+        return web.Response(text=json.dumps({"path": dir, "os": sys.platform}), content_type='application/json')
     except Exception as e:
         return web.Response(text=json.dumps({"error": str(e)}), status=500)
 
