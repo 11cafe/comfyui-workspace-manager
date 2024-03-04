@@ -49,10 +49,14 @@ def file_handle(name, fileList, file_path, metaInfoOnly):
         json_data = json.load(f)
     
     createTime, updateTime = getFileCreateTime(file_path)
-    workflow_id = json_data['extra']['workspace_info']['id'] if ('extra' in json_data and 'workspace_info' in json_data['extra'] and 'id' in json_data['extra']['workspace_info']) else str(uuid.uuid4())
-    
+    workspace_info = json_data.get('extra', {}).get('workspace_info', {})   
+    workflow_id = workspace_info.get('id', str(uuid.uuid4())) 
     # Update JSON data with new ID if needed and write back to file
-    if 'id' not in json_data.get('extra', {}).get('workspace_info', {}):
+    if 'id' not in workspace_info:
+        if 'extra' not in json_data:
+            json_data['extra'] = {}
+        if 'workspace_info' not in json_data['extra']:
+            json_data['extra']['workspace_info'] = {}
         json_data['extra']['workspace_info']['id'] = workflow_id
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(json_data, f, ensure_ascii=False, indent=4)
