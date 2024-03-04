@@ -1,29 +1,17 @@
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
-import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { indexdb } from "../db-tables/indexdb";
 import { Workflow } from "../types/dbTypes";
-import { genAbsPathByRelPath, sanitizeAbsPath } from "../utils/OsPathUtils";
+import {
+  getWorkflowRelPath,
+  joinRelPath,
+  sanitizeRelPath,
+} from "../utils/OsPathUtils";
 
 export namespace TwowaySyncAPI {
-  async function genWorkflowAbsPath({
-    parentFolderID,
-    name,
-  }: Workflow): Promise<string> {
-    const myWorkflowsDir =
-      await userSettingsTable?.getSetting("myWorkflowsDir");
-    const absPath = sanitizeAbsPath(
-      `${myWorkflowsDir}/${parentFolderID ?? ""}/${name}.json`,
-    );
-    return absPath;
-  }
   export async function moveWorkflow(
     workflow: Workflow,
     newParentFolderRelPath: string,
   ) {
-    const absPath = await genWorkflowAbsPath(workflow);
-    const newParentFolderAbs = await genAbsPathByRelPath(
-      newParentFolderRelPath,
-    );
     try {
       const response = await fetch("/workspace/file/move", {
         method: "POST",
@@ -31,8 +19,8 @@ export namespace TwowaySyncAPI {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          path: absPath,
-          newParentPath: newParentFolderAbs,
+          path: getWorkflowRelPath(workflow),
+          newParentPath: newParentFolderRelPath,
         }),
       });
       const result = await response.json();
@@ -50,7 +38,6 @@ export namespace TwowaySyncAPI {
     fileName: string,
     parentFolderID: string | null,
   ): Promise<string | null> {
-    const absPath = await genAbsPathByRelPath(`${parentFolderID}/${fileName}`);
     try {
       const response = await fetch("/workspace/file/gen_unique_name", {
         method: "POST",
@@ -58,7 +45,7 @@ export namespace TwowaySyncAPI {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          path: absPath,
+          path: joinRelPath(parentFolderID ?? "", fileName),
         }),
       });
       const result = await response.json();
@@ -77,11 +64,6 @@ export namespace TwowaySyncAPI {
     { parentFolderID, name }: Pick<Workflow, "name" | "parentFolderID">,
     newName: string,
   ) {
-    const myWorkflowsDir =
-      await userSettingsTable?.getSetting("myWorkflowsDir");
-    const absPath = sanitizeAbsPath(
-      `${myWorkflowsDir}/${parentFolderID ?? ""}/${name}.json`,
-    );
     try {
       const response = await fetch("/workspace/file/rename", {
         method: "POST",
@@ -89,13 +71,13 @@ export namespace TwowaySyncAPI {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          path: absPath,
+          path: joinRelPath(parentFolderID ?? "", name + ".json"),
           newName: newName,
         }),
       });
       const result = await response.json();
       if (result.error) {
-        alert("Error moving file: " + result.error);
+        alert("Error rename file: " + result.error);
         return false;
       }
       return true;
@@ -112,29 +94,8 @@ export namespace TwowaySyncAPI {
       }>;
     };
   }
-  export async function scanMyWorkflowsDupId() {
-    const myWorkflowsDir =
-      await userSettingsTable?.getSetting("myWorkflowsDir");
-    const absPath = sanitizeAbsPath(myWorkflowsDir!);
-    try {
-      const response = await fetch("/workspace/file/scan_dup_id", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          path: absPath,
-        }),
-      });
-      const result = (await response.json()) as DuplicatesResponse;
-      return true;
-    } catch (error) {
-      console.error("Error deleting file:", error);
-    }
-  }
 
   export async function saveWorkflow(workflow: Workflow) {
-    const absPath = await genWorkflowAbsPath(workflow);
     const json = workflow.json;
     const flow = JSON.parse(json);
     flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {
@@ -147,7 +108,7 @@ export namespace TwowaySyncAPI {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        path: absPath,
+        path: getWorkflowRelPath(workflow),
         json: JSON.stringify(flow),
       }),
     });
@@ -163,7 +124,6 @@ export namespace TwowaySyncAPI {
     return result;
   }
   export async function deleteWorkflow(workflow: Workflow) {
-    const absPath = await genWorkflowAbsPath(workflow);
     try {
       const response = await fetch("/workspace/delete_file", {
         method: "POST",
@@ -171,7 +131,7 @@ export namespace TwowaySyncAPI {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          file_path: absPath,
+          file_path: getWorkflowRelPath(workflow),
           deleteEmptyFolder: false,
         }),
       });
@@ -188,11 +148,6 @@ export namespace TwowaySyncAPI {
     json,
     id,
   }: Workflow) {
-    const myWorkflowsDir =
-      await userSettingsTable?.getSetting("myWorkflowsDir");
-    const absPath = sanitizeAbsPath(
-      `${myWorkflowsDir}/${parentFolderID ?? ""}`,
-    );
     let jsonObj: any = JSON.parse(json);
 
     jsonObj = {
@@ -204,10 +159,11 @@ export namespace TwowaySyncAPI {
       },
     };
     const input: { parentFolderPath: string; name: string; json: string } = {
-      parentFolderPath: absPath,
+      parentFolderPath: sanitizeRelPath(parentFolderID ?? ""),
       name: name,
       json: JSON.stringify(jsonObj),
     };
+    console.log("createWorkflow", input);
     try {
       const response = await fetch("/workspace/create_workflow_file", {
         method: "POST",
@@ -220,13 +176,15 @@ export namespace TwowaySyncAPI {
 
       result.name &&
         (await indexdb.workflows?.update(id, {
-          filePath: `${absPath}/${name}.json`,
           name: result.name,
         }));
       return result;
     } catch (error) {
-      console.error(`Error creating file <${id}> at "${absPath}"`, error);
-      alert(`Error creating file <${id}> at "${absPath}"`);
+      console.error(
+        `Error creating file <${id}> at "${parentFolderID}"`,
+        error,
+      );
+      alert(`Error creating file <${id}> at "${parentFolderID}"`);
       return {};
     }
   }
@@ -242,11 +200,7 @@ export namespace TwowaySyncAPI {
     json?: Object;
     error?: string;
   }> {
-    const myWorkflowsDir =
-      await userSettingsTable?.getSetting("myWorkflowsDir");
-    const absPath = sanitizeAbsPath(
-      `${myWorkflowsDir}/${parentFolderID ?? ""}/${name}.json`,
-    );
+    const relPath = joinRelPath(parentFolderID ?? "", name + ".json");
     try {
       const response = await fetch("/workspace/get_workflow_file", {
         method: "POST",
@@ -255,24 +209,24 @@ export namespace TwowaySyncAPI {
         },
 
         body: JSON.stringify({
-          path: absPath,
+          path: relPath,
           id: id,
         }),
       });
       const result = await response.json();
       if (result.error) {
         console.error(
-          `Error getting file <${id}> at "${absPath}"`,
+          `Error getting file <${id}> at "${relPath}"`,
           result.error,
         );
         alert({
-          message: `Error getting file <${id}> at "${absPath}"`,
+          message: `Error getting file <${id}> at "${relPath}"`,
           level: "error",
         });
       }
       return result;
     } catch (error) {
-      console.error(`Erro finding file <${id}> at "${absPath}"`, error);
+      console.error(`Erro finding file <${id}> at "${relPath}"`, error);
       return {};
     }
   }
@@ -287,8 +241,10 @@ export type ScanLocalFile = {
   updateTime: number;
 };
 export type ScanLocalFolder = {
+  id: string;
   type: "folder";
   name: string;
+  parentFolderID: string;
 };
 export async function scanLocalFiles(
   path: string,
@@ -302,7 +258,7 @@ export async function scanLocalFiles(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        path: sanitizeAbsPath(path),
+        path: sanitizeRelPath(path),
         recursive,
         metaInfoOnly,
       }),

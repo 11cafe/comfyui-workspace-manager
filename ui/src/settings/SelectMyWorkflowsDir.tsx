@@ -20,8 +20,9 @@ import {
 } from "@chakra-ui/react";
 import { IconEdit } from "@tabler/icons-react";
 import { useRef, useState, useEffect } from "react";
-import { getSystemDir } from "../Api";
+import { fetchMyWorkflowsDir, getSystemDir } from "../Api";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
+import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
 
 export default function SelectMyWorkflowsDir() {
   const [isManualEntry, setIsManualEntry] = useState(false);
@@ -35,9 +36,7 @@ export default function SelectMyWorkflowsDir() {
   const toast = useToast();
 
   useEffect(() => {
-    userSettingsTable?.getSetting("myWorkflowsDir").then((res) => {
-      setCurrentDirectory(res);
-    });
+    fetchMyWorkflowsDir().then((dir) => setCurrentDirectory(dir ?? ""));
     userSettingsTable?.getSetting("twoWaySync").then((res) => {
       setTwoWaySync(res ?? false);
     });
@@ -69,7 +68,8 @@ export default function SelectMyWorkflowsDir() {
       setSubdirectoryList(dirList);
       setIsEditDirectory(true);
       setDirPathList(
-        (currentDirectory && currentDirectory.split("/").filter((p) => !!p)) ||
+        (currentDirectory &&
+          currentDirectory.split(/[\\|\/]/).filter((p) => !!p)) ||
           [],
       );
     }
@@ -106,7 +106,7 @@ export default function SelectMyWorkflowsDir() {
     manualEntry && setNoPermission(false);
     onCloseEditDirectory();
     // to update /my_workflows files in disk to new location
-    await userSettingsTable?.getSetting("twoWaySync");
+    validateOrSaveAllJsonFileMyWorkflows();
   };
 
   const onReset = async () => {

@@ -1,6 +1,5 @@
 import asyncio
 from datetime import datetime
-
 import platform
 import tempfile
 import server
@@ -22,7 +21,7 @@ async def save_file(request):
 def save_file_sync(reqJson):
     current_path = reqJson.get('path')
     new_json_data_str = reqJson.get('json')
-    
+    current_path = os.path.join(get_my_workflows_dir(), current_path)
     try:
         new_json_data = json.loads(new_json_data_str)
     except json.JSONDecodeError:
@@ -57,12 +56,10 @@ async def rename_file(request):
     return web.json_response(data, content_type='application/json')
 
 def rename_file_sync(reqJson):
-    current_path = reqJson.get('path')
+    current_path = Path(get_my_workflows_dir()) / reqJson['path']
     new_name = reqJson.get('newName')
     try:
-        new_path = Path(current_path).parent / new_name
-        # if new_path.suffix != ".json":
-        #     raise ValueError("New file name must have a .json extension")
+        new_path = current_path.parent / new_name
         Path(current_path).rename(new_path)
         return {"success": True}
     except Exception as e:
@@ -77,10 +74,9 @@ async def move_file(request):
 def move_file_sync(reqJson):
     current_path = reqJson.get('path')
     new_path = reqJson.get('newParentPath')
+    current_path = os.path.join(get_my_workflows_dir(), current_path)
+    new_path = os.path.join(get_my_workflows_dir(), new_path)
     try:
-        target_path = Path(new_path) / Path(current_path).name
-        # if target_path.suffix != ".json":
-        #     raise ValueError("Target file must be a .json file")
         shutil.move(current_path, new_path)
         return {"success": True}
     except Exception as e:
@@ -97,10 +93,10 @@ def create_workflow_file(reqJson):
         name = reqJson.get('name')
         workflow_json = reqJson.get('json')
         
-        if not parentFolderPath or not name or workflow_json is None:
+        if not name or workflow_json is None:
+            print('🔴Create workflow missing necessary data')
             return {}  # Missing necessary data
-
-        abs_path = Path(parentFolderPath)
+        abs_path = Path(get_my_workflows_dir()) / parentFolderPath
         # Create the directory if it does not exist
         abs_path.mkdir(parents=True, exist_ok=True)
         
@@ -115,7 +111,6 @@ def create_workflow_file(reqJson):
             counter += 1
         
         new_file_path = abs_path / new_file_name
-
         # Writing JSON data to the file
         with open(new_file_path, 'w', encoding='utf-8') as file:
             file.write(workflow_json)
@@ -126,7 +121,7 @@ def create_workflow_file(reqJson):
         return {}  # In case of any error
 
 def read_workflow_file(path, id):
-    abs_path = Path(path)
+    abs_path = os.path.join(get_my_workflows_dir(), path)
     create_time, update_time = getFileCreateTime(abs_path)
     with open(abs_path, 'r', encoding='utf-8') as f:
         json_data = json.load(f)
@@ -200,15 +195,6 @@ def file_handle(name, file, fileList, file_path):
         }
     fileList.append(fileInfo) 
 
-def atomic_json_update(filepath, data):
-    # Generate a temporary file
-    dir_name, file_name = os.path.split(filepath)
-    with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=dir_name, delete=False) as tmp_file:
-        json.dump(data, tmp_file, indent=4)
-        temp_name = tmp_file.name
-    # Replace the old file with the new file atomically
-    os.replace(temp_name, filepath)
-
 @server.PromptServer.instance.routes.post('/workspace/file/gen_unique_name')
 async def generate_unique_file_name(request):
     reqJson = await request.json()
@@ -220,7 +206,7 @@ def generate_unique_file_name_sync(reqJson):
     if not file_path:
         return {"success": False, "error": "File path is required"}
 
-    path = Path(file_path)
+    path = Path(get_my_workflows_dir()) / file_path
     if not path.parent.is_dir():
         return {"success": False, "error": "Directory of the provided path does not exist"}
 
