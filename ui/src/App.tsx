@@ -23,7 +23,7 @@ import { defaultGraph } from "./defaultGraph";
 import { JsonDiff, WorkspaceContext } from "./WorkspaceContext";
 import {
   getFileUrl,
-  matchSaveWorkflowShortcut,
+  matchShortcut,
   getWorkflowIdInUrlHash,
   generateUrlHashWithFlowId,
   openWorkflowInNewTab,
@@ -31,7 +31,7 @@ import {
   rewriteAllLocalFiles,
 } from "./utils";
 import { Topbar } from "./topbar/Topbar";
-import { Workflow, WorkflowVersion } from "./types/dbTypes";
+import { EShortcutKeys, Workflow, WorkflowVersion } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
 import React from "react";
 const RecentFilesDrawer = React.lazy(
@@ -392,9 +392,17 @@ export default function App() {
   };
 
   const shortcutListener = async (event: KeyboardEvent) => {
-    const needSave = await matchSaveWorkflowShortcut(event);
-    if (needSave) {
-      saveCurWorkflow();
+    if (document.visibilityState === "hidden") return;
+
+    const matchResult = await matchShortcut(event);
+
+    switch (matchResult) {
+      case EShortcutKeys.SAVE:
+        saveCurWorkflow();
+        return;
+      case EShortcutKeys.SAVE_AS:
+        setRoute("saveAsModal");
+        return;
     }
   };
   const onExecutedCreateMedia = useCallback((image: any) => {

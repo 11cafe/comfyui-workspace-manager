@@ -6,7 +6,7 @@ import {
   generateFilePathAbsolute,
   saveJsonFileMyWorkflows,
 } from "./db-tables/DiskFileUtils";
-import { Folder, Workflow } from "./types/dbTypes";
+import { Folder, Workflow, EShortcutKeys } from "./types/dbTypes";
 // @ts-ignore
 import { app } from "/scripts/app.js";
 import {
@@ -220,28 +220,35 @@ export function insertWorkflowToCanvas(json: string, insertPos?: number[]) {
   canvas = null;
 }
 
-export const matchSaveWorkflowShortcut = async (event: KeyboardEvent) => {
-  const short = await userSettingsTable?.getSetting("shortcuts").then((res) => {
-    return res?.save;
-  });
-  if (!short) return false;
-  return matchShortcut(event, short);
-};
+export const matchShortcut = async (event: KeyboardEvent) => {
+  const shortcuts =
+    (await userSettingsTable?.getSetting("shortcuts")) ??
+    userSettingsTable?.defaultSettings.shortcuts;
 
-export const matchShortcut = (
-  event: KeyboardEvent,
-  shortcutString: string,
-): boolean => {
-  const keys = shortcutString.split("+");
-  const keyEvent: Record<string, boolean> = {
-    Control: event.ctrlKey,
-    Shift: event.shiftKey,
-    Alt: event.altKey,
-    Command: event.metaKey,
-    [event.key.toUpperCase()]: true,
-  };
+  if (!shortcuts) return false;
 
-  return keys.every((key) => keyEvent[key]);
+  for (const shortcutType in shortcuts) {
+    const shortcutString = shortcuts[shortcutType as EShortcutKeys];
+    const keys = shortcutString.split("+");
+    const pressedKeys: Record<string, boolean> = {
+      Control: event.ctrlKey,
+      Shift: event.shiftKey,
+      Alt: event.altKey,
+      Command: event.metaKey,
+      [event.key.toUpperCase()]: true,
+    };
+    for (const key in pressedKeys) {
+      if (!pressedKeys[key]) {
+        delete pressedKeys[key];
+      }
+    }
+    if (
+      keys.length === Object.keys(pressedKeys).length &&
+      keys.every((key) => pressedKeys[key])
+    ) {
+      return shortcutType;
+    }
+  }
 };
 
 export function isImageFormat(fileName: string) {

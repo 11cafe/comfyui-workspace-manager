@@ -47,6 +47,7 @@ export class UserSettingsTable extends TableBase<UserSettings> {
       myWorkflowsDir: "",
       shortcuts: {
         save: "Shift+S",
+        saveAs: "Control+Alt+S",
       },
       defaultFolders: MODEL_TYPE_TO_FOLDER_MAPPING,
       autoSave: true,

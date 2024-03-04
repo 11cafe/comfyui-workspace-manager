@@ -67,14 +67,17 @@ export type WorkflowVersion = {
   nodeDefs?: string; //for cloud workflow version
 };
 
+export enum EShortcutKeys {
+  SAVE = "save",
+  SAVE_AS = "saveAs",
+}
+
 export type UserSettings = {
   id: string;
   myWorkflowsDir: string;
   topBarStyle: PanelPosition;
   modelManagerTopBarStyle: ModelManagerPosition;
-  shortcuts: {
-    save: string;
-  };
+  shortcuts: Record<EShortcutKeys, string>;
   autoSave?: boolean;
   twoWaySync?: boolean;
   foldersOnTop?: boolean;

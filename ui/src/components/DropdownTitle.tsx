@@ -58,11 +58,13 @@ export default function DropdownTitle() {
   } = useContext(WorkspaceContext);
 
   const [isOpenNewVersion, setIsOpenNewVersion] = useState(false);
-  const [isOpenNewName, setIsOpenNewName] = useState(false);
   const [newFlowName, setNewFlowName] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [workflow, setWorkflow] = useState<Workflow>();
-  const [saveShortcut, setSaveShortcut] = useState("");
+  const [saveShortcut, setSaveShortcut] = useState({
+    save: "",
+    saveAs: "",
+  });
   const [isShareOpen, setIsShareOpen] = useState(false);
 
   useEffect(() => {
@@ -73,7 +75,7 @@ export default function DropdownTitle() {
       });
     }
     userSettingsTable?.getSetting("shortcuts").then((res) => {
-      setSaveShortcut(res?.save);
+      setSaveShortcut(res);
     });
   }, [curFlowID]);
 
@@ -101,7 +103,7 @@ export default function DropdownTitle() {
   };
 
   const handleOnCloseModal = () => {
-    setIsOpenNewName(false);
+    setRoute("root");
   };
 
   const handleDownload = useCallback(async () => {
@@ -149,7 +151,7 @@ export default function DropdownTitle() {
                 onClick={saveCurWorkflow}
                 icon={<IconDeviceFloppy size={20} />}
                 iconSpacing={1}
-                command={saveShortcut}
+                command={saveShortcut.save}
               >
                 Save
               </MenuItem>
@@ -170,9 +172,10 @@ export default function DropdownTitle() {
                 Download
               </MenuItem>
               <MenuItem
-                onClick={() => setIsOpenNewName(true)}
+                onClick={() => setRoute("saveAsModal")}
                 icon={<IconDeviceFloppy size={20} />}
                 iconSpacing={1}
+                command={saveShortcut.saveAs}
               >
                 Save As
               </MenuItem>
@@ -211,7 +214,7 @@ export default function DropdownTitle() {
 
       <JsonDiffCompareModal />
 
-      {isOpenNewName && (
+      {route === "saveAsModal" && (
         <Modal isOpen={true} onClose={handleOnCloseModal}>
           <ModalOverlay />
           <ModalContent>

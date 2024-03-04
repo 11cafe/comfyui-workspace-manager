@@ -3,4 +3,5 @@ export type WorkspaceRoute =
   | "customNodes"
   | "recentFlows"
   | "gallery"
-  | "versionHistory";
+  | "versionHistory"
+  | "saveAsModal";
