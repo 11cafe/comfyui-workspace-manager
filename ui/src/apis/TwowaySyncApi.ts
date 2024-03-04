@@ -77,7 +77,7 @@ export namespace TwowaySyncAPI {
       });
       const result = await response.json();
       if (result.error) {
-        alert("Error moving file: " + result.error);
+        alert("Error rename file: " + result.error);
         return false;
       }
       return true;

@@ -87,7 +87,6 @@ export class WorkflowsTable extends TableBase<Workflow> {
         (name ?? "Untitled Flow") + ".json",
         parentFolderID ?? "",
       );
-      console.log("generateUniqueName", fileName);
       return fileName?.replace(/\.json$/, "") ?? "Untitled Flow";
     }
     /**

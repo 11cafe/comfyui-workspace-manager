@@ -14,7 +14,7 @@ async def create_folder(request):
 
 def create_folder_sync(reqJson):
     folder_path = reqJson.get('path')
-    folder_path = os.join(get_my_workflows_dir(), folder_path)
+    folder_path = os.path.join(get_my_workflows_dir(), folder_path)
     try:
         Path(folder_path).mkdir(parents=True, exist_ok=True)
         return {"success": True}
@@ -29,7 +29,7 @@ async def delete_folder(request):
 
 def delete_folder_sync(reqJson):
     folder_path = reqJson.get('path')
-    folder_path = os.join(get_my_workflows_dir(), folder_path)
+    folder_path = os.path.join(get_my_workflows_dir(), folder_path)
     try:
         shutil.rmtree(folder_path)
         return {"success": True}
@@ -44,7 +44,7 @@ async def rename_folder(request):
 
 def rename_folder_sync(reqJson):
     current_path = reqJson.get('absPath')
-    current_path = os.join(get_my_workflows_dir(), current_path)
+    current_path = os.path.join(get_my_workflows_dir(), current_path)
     new_name = reqJson.get('newName')
     try:
         new_path = Path(current_path).parent / new_name
@@ -61,8 +61,8 @@ async def move_folder(request):
 
 def move_folder_sync(reqJson):
     current_path = reqJson.get('folder')
-    current_path = os.join(get_my_workflows_dir(), current_path)
-    new_path = reqJson.get('newParentPath')
+    current_path = os.path.join(get_my_workflows_dir(), current_path)
+    new_path =  os.path.join(get_my_workflows_dir(), reqJson.get('newParentPath',"")) 
     try:
         shutil.move(current_path, new_path)
         return {"success": True}

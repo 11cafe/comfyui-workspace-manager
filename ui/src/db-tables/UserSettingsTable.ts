@@ -91,10 +91,10 @@ export class UserSettingsTable extends TableBase<UserSettings> {
 
   static async load(): Promise<UserSettingsTable> {
     const instance = new UserSettingsTable();
-    const myWorkflowsDir=await fetchMyWorkflowsDir();
-    
-    instance.defaultSettings.myWorkflowsDir = myWorkflowsDir!
-    
+    const myWorkflowsDir = await fetchMyWorkflowsDir();
+
+    instance.defaultSettings.myWorkflowsDir = myWorkflowsDir!;
+
     await instance.getSetting("autoSave").then((res) => {
       instance._autoSave = res ?? true;
     });

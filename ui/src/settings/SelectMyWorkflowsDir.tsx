@@ -36,8 +36,7 @@ export default function SelectMyWorkflowsDir() {
   const toast = useToast();
 
   useEffect(() => {
-    fetchMyWorkflowsDir().then((dir)=>
-    setCurrentDirectory(dir??""))
+    fetchMyWorkflowsDir().then((dir) => setCurrentDirectory(dir ?? ""));
     userSettingsTable?.getSetting("twoWaySync").then((res) => {
       setTwoWaySync(res ?? false);
     });
@@ -69,7 +68,8 @@ export default function SelectMyWorkflowsDir() {
       setSubdirectoryList(dirList);
       setIsEditDirectory(true);
       setDirPathList(
-        (currentDirectory && currentDirectory.split(/[\\|\/]/).filter((p) => !!p)) ||
+        (currentDirectory &&
+          currentDirectory.split(/[\\|\/]/).filter((p) => !!p)) ||
           [],
       );
     }
