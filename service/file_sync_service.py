@@ -233,11 +233,12 @@ def count_files_sync(reqJson):
     if not directory_path:
         return {"success": False, "error": "Directory path is required"}
 
-    path = Path(directory_path)
+    path = Path(get_my_workflows_dir()) / directory_path
     if not path.is_dir():
         return {"success": False, "error": "Provided path is not a directory"}
-
-    file_count = sum(1 for _ in path.rglob('*') if _.is_file())
-
+    file_count = 0
+    for file in path.rglob('*.json'):  # Only consider .json files
+        if file.is_file():
+            file_count += 1
     return {"success": True, "count": file_count}
 
