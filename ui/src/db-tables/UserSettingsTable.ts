@@ -1,6 +1,7 @@
 import { UserSettings } from "../types/dbTypes";
 import { TableBase } from "./TableBase";
 import { MODEL_TYPE_TO_FOLDER_MAPPING } from "../model-manager/install-models/util/modelTypes";
+import { fetchMyWorkflowsDir } from "../Api";
 
 export class UserSettingsTable extends TableBase<UserSettings> {
   public defaultSettings: UserSettings;
@@ -91,13 +92,9 @@ export class UserSettingsTable extends TableBase<UserSettings> {
 
   static async load(): Promise<UserSettingsTable> {
     const instance = new UserSettingsTable();
-    const resp = await fetch("/workspace/get_default_my_workflows_dir");
-    const res = (await resp.json()) as { path?: string; error?: string };
-    if (res.error) {
-      console.error("Failed to get myWorkflowsDir");
-    } else if (res.path) {
-      instance.defaultSettings.myWorkflowsDir = res.path;
-    }
+    const myWorkflowsDir = await fetchMyWorkflowsDir();
+
+    instance.defaultSettings.myWorkflowsDir = myWorkflowsDir!;
 
     await instance.getSetting("autoSave").then((res) => {
       instance._autoSave = res ?? true;
