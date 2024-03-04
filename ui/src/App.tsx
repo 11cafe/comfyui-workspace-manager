@@ -62,7 +62,6 @@ export default function App() {
   const curFlowID = useRef<string | null>(null);
 
   const [openSaveAsModalStamp, setOpenSaveAsModalStamp] = useState(0);
-  const visibilityStateRef = useRef(false);
   const [isDirty, setIsDirty] = useState(false);
   const workspaceContainerRef = useRef(null);
   const { showDialog } = useDialog();
