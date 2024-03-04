@@ -14,13 +14,7 @@ export async function scanMyWorkflowsDir(
   parentFolderID: string | null,
   sortBy?: ESortTypes,
 ): Promise<(Workflow | Folder)[]> {
-  const myWorkflowsDir = await userSettingsTable?.getSetting("myWorkflowsDir");
-  if (myWorkflowsDir == null || myWorkflowsDir === "") {
-    alert("No Workspace saving directory found, please go to Settings.");
-    return [];
-  }
   const parentRelPath = sanitizeRelPath(parentFolderID ?? "");
-  console.log("scanMyWorkflowsDir", parentRelPath);
   // folderID is the relative path of the folder in two way sync mode
   const fileList = await scanLocalFiles(parentRelPath);
 
