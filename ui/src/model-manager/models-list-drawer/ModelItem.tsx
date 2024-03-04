@@ -53,10 +53,11 @@ export function ModelItem({ data }: Props) {
     const model = await indexdb.models.get(
       data.model_name + "@" + data.model_type,
     );
-    if (model != null && model.modelName != null) {
+    if (model != null) {
       setModel(model);
       model.imageUrl?.length && setUrl(model.imageUrl);
-    } else if (data.file_hash != null) {
+    }
+    if (data.file_hash != null) {
       try {
         const url = `https://civitai.com/api/v1/model-versions/by-hash/${data.file_hash}`;
         const resp = await fetch(url);
@@ -83,8 +84,11 @@ export function ModelItem({ data }: Props) {
           civitModelVersionID: String(json.id),
           imageUrl: image_url ?? null,
         };
-
-        indexdb.models.add(newModel);
+        if (model != null) {
+          indexdb.models.update(model.id, newModel);
+        } else {
+          indexdb.models.add(newModel);
+        }
         setModel(newModel);
       } catch (e) {}
     }

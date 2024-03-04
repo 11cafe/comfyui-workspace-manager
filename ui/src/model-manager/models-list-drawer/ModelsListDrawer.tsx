@@ -15,10 +15,12 @@ import { ModelsList } from "./ModelsList";
 // @ts-expect-error ComfyUI imports
 import { app } from "/scripts/app.js";
 import InstallModelsButton from "../install-models/InstallModelsButton";
-import { ModelsListRespItem } from "../types";
+import { type ModelsListRespItem } from "../types";
 import { useUpdateModels } from "../hooks/useUpdateModels";
 import { DRAWER_Z_INDEX } from "../../const";
 import ShowNsfwModelThumbnailSettings from "../../settings/ShowNsfwModelThumbnailSettings";
+import { indexdb } from "../../db-tables/indexdb";
+import { type Model } from "../../types/dbTypes";
 interface Props {
   onClose: () => void;
 }
@@ -28,9 +30,26 @@ export default function ModelsListDrawer({ onClose }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const { loading, modelTypeList, modelsList } = useUpdateModels();
+  const [modelsListWithDBData, setModelsListWithDBData] = useState<
+    Array<{ db?: Model } & ModelsListRespItem>
+  >([]);
 
   // current render models
   const [curModelList, setCurModelList] = useState<ModelsListRespItem[]>([]);
+  useEffect(() => {
+    getDbModels();
+    async function getDbModels() {
+      const models = await indexdb.models.toArray();
+      setModelsListWithDBData(
+        modelsList.map((item) => ({
+          ...item,
+          db: models.find(
+            (model) => model.id === item.model_name + "@" + item.model_type,
+          ),
+        })),
+      );
+    }
+  }, [modelsList]);
 
   // filter by model type
   useEffect(() => {
@@ -46,19 +65,22 @@ export default function ModelsListDrawer({ onClose }: Props) {
           }
         });
     } else {
-      const fuse = new Fuse(modelsList, { keys: ["model_name"] });
+      const fuse = new Fuse(modelsListWithDBData, {
+        // getDbModels() will get the models from the indexdb
+        keys: ["model_name", "db.modelName"],
+      });
       const results = fuse.search(searchQuery);
       res = results.map((result) => result.item);
     }
     setCurModelList(res);
-  }, [selectedModel, modelsList, searchQuery, sortBy]);
+  }, [selectedModel, modelsList, searchQuery, sortBy, modelsListWithDBData]);
 
   useEffect(() => {
     app.canvasEl.addEventListener("click", onClose);
     return () => {
       app.canvasEl.removeEventListener("click", onClose);
     };
-  }, []);
+  }, [onClose]);
 
   const DRAWER_WIDTH = 440;
 
