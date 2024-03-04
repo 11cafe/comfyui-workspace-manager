@@ -61,8 +61,6 @@ export default function App() {
   const [flowID, setFlowID] = useState<string | null>(null);
   const curFlowID = useRef<string | null>(null);
 
-  const [openSaveAsModalStamp, setOpenSaveAsModalStamp] = useState(0);
-  const visibilityStateRef = useRef(false);
   const [isDirty, setIsDirty] = useState(false);
   const workspaceContainerRef = useRef(null);
   const { showDialog } = useDialog();
@@ -363,7 +361,7 @@ export default function App() {
         saveCurWorkflow();
         return;
       case EShortcutKeys.SAVE_AS:
-        setOpenSaveAsModalStamp(Date.now());
+        setRoute("saveAsModal");
         return;
     }
   };
@@ -554,7 +552,6 @@ export default function App() {
         jsonDiff: jsonDiff,
         compareJson: compareJsonDiff,
         curVersion: curVersion,
-        openSaveAsModalStamp: openSaveAsModalStamp,
       }}
     >
       <div ref={workspaceContainerRef} className="workspace_manager">

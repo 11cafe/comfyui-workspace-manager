@@ -46,7 +46,6 @@ const ShareDialog = lazy(() => import("../share/ShareDialog"));
 // @ts-ignore
 import { app } from "/scripts/app.js";
 import JsonDiffCompareModal from "./JsonDiffCompareModal";
-import useIsFirstRender from "../customHooks/useIsFirstRender";
 
 export default function DropdownTitle() {
   const {
@@ -56,12 +55,9 @@ export default function DropdownTitle() {
     saveCurWorkflow,
     setRoute,
     route,
-    openSaveAsModalStamp,
   } = useContext(WorkspaceContext);
-  const isFirstRender = useIsFirstRender();
 
   const [isOpenNewVersion, setIsOpenNewVersion] = useState(false);
-  const [isOpenNewName, setIsOpenNewName] = useState(false);
   const [newFlowName, setNewFlowName] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [workflow, setWorkflow] = useState<Workflow>();
@@ -70,10 +66,6 @@ export default function DropdownTitle() {
     saveAs: "",
   });
   const [isShareOpen, setIsShareOpen] = useState(false);
-
-  useEffect(() => {
-    !isFirstRender && setIsOpenNewName(true);
-  }, [openSaveAsModalStamp]);
 
   useEffect(() => {
     if (curFlowID) {
@@ -111,7 +103,7 @@ export default function DropdownTitle() {
   };
 
   const handleOnCloseModal = () => {
-    setIsOpenNewName(false);
+    setRoute("root");
   };
 
   const handleDownload = useCallback(async () => {
@@ -180,7 +172,7 @@ export default function DropdownTitle() {
                 Download
               </MenuItem>
               <MenuItem
-                onClick={() => setIsOpenNewName(true)}
+                onClick={() => setRoute("saveAsModal")}
                 icon={<IconDeviceFloppy size={20} />}
                 iconSpacing={1}
                 command={saveShortcut.saveAs}
@@ -222,7 +214,7 @@ export default function DropdownTitle() {
 
       <JsonDiffCompareModal />
 
-      {isOpenNewName && (
+      {route === "saveAsModal" && (
         <Modal isOpen={true} onClose={handleOnCloseModal}>
           <ModalOverlay />
           <ModalContent>
