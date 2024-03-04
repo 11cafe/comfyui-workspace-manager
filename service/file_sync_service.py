@@ -21,7 +21,7 @@ async def save_file(request):
 def save_file_sync(reqJson):
     current_path = reqJson.get('path')
     new_json_data_str = reqJson.get('json')
-    
+    current_path = os.path.join(get_my_workflows_dir(), current_path)
     try:
         new_json_data = json.loads(new_json_data_str)
     except json.JSONDecodeError:
@@ -95,13 +95,12 @@ def create_workflow_file(reqJson):
         name = reqJson.get('name')
         workflow_json = reqJson.get('json')
         
-        if not parentFolderPath or not name or workflow_json is None:
+        if not name or workflow_json is None:
+            print('🔴Create workflow missing necessary data')
             return {}  # Missing necessary data
-
-        abs_path = Path(get_my_workflows_dir() / parentFolderPath)
+        abs_path = Path(get_my_workflows_dir()) / parentFolderPath
         # Create the directory if it does not exist
         abs_path.mkdir(parents=True, exist_ok=True)
-        print(f"🌐Creating workflow file at {abs_path}")
         
         # Ensuring the file name is unique
         base_name, extension = os.path.splitext(name)
@@ -114,7 +113,6 @@ def create_workflow_file(reqJson):
             counter += 1
         
         new_file_path = abs_path / new_file_name
-        print(f"🌐Creating workflow file at name {new_file_path}")
         # Writing JSON data to the file
         with open(new_file_path, 'w', encoding='utf-8') as file:
             file.write(workflow_json)
