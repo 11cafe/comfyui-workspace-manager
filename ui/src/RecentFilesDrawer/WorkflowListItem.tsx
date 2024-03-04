@@ -19,6 +19,7 @@ import DeleteConfirm from "../components/DeleteConfirm";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 import { Workflow } from "../types/dbTypes";
 import MediaPreview from "../components/MediaPreview";
+import MoreActionMenu from "./MoreActionMenu";
 
 type Props = {
   workflow: Workflow;
@@ -121,8 +122,6 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
         <>
           {basicInfoComp}
           <Flex width={"90px"} justifyContent={"flex-end"}>
-            {isHovered && <AddTagToWorkflowPopover workflow={workflow} />}
-
             <Tooltip label="Open in new tab">
               <IconButton
                 aria-label="Open in new tab"
@@ -139,6 +138,7 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
                 onDeleteFlow && onDeleteFlow(workflow.id);
               }}
             />
+            <MoreActionMenu workflow={workflow} />
           </Flex>
         </>
       )}
