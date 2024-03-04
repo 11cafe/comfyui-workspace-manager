@@ -159,7 +159,7 @@ export default function SelectMyWorkflowsDir() {
     <>
       <Box mb={4}>
         <Text mb={2} fontWeight={500}>
-          Workspace Save Directory
+          My Workflows Save Directory
         </Text>
         {!isEditDirectory ? (
           <Flex>

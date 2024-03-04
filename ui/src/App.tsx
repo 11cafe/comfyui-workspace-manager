@@ -39,11 +39,13 @@ const RecentFilesDrawer = React.lazy(
 );
 const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
 import { IconExternalLink } from "@tabler/icons-react";
-import { DRAWER_Z_INDEX } from "./const";
+import { DRAWER_Z_INDEX, UPGRADE_TO_2WAY_SYNC_KEY } from "./const";
 import ServerEventListener from "./model-manager/hooks/ServerEventListener";
 import { v4 } from "uuid";
 import { WorkspaceRoute } from "./types/types";
 import { useStateRef } from "./customHooks/useStateRef";
+import { indexdb } from "./db-tables/indexdb";
+import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
 
 const ModelManagerTopbar = React.lazy(
   () => import("./model-manager/topbar/ModelManagerTopbar"),
@@ -187,6 +189,33 @@ export default function App() {
       await rewriteAllLocalFiles();
       localStorage.setItem("REWRITTEN_ALL_LOCAL_DISK_FILE", "true");
     }
+    indexdb.cache.get(UPGRADE_TO_2WAY_SYNC_KEY).then(async (value) => {
+      if (value?.value !== "true") {
+        const myWorkflowsDir =
+          await userSettingsTable?.getSetting("myWorkflowsDir");
+        showDialog(
+          <EnableTwowaySyncConfirm
+            myWorkflowsDir={myWorkflowsDir ?? "undefined"}
+          />,
+          [
+            {
+              label: "I have downloaded all my workflows and ready to enable",
+              onClick: async () => {
+                await userSettingsTable?.upsert({ twoWaySync: true });
+                if (await userSettingsTable?.getSetting("twoWaySync")) {
+                  indexdb.cache.put({
+                    id: UPGRADE_TO_2WAY_SYNC_KEY,
+                    value: "true",
+                  });
+                  location.reload();
+                }
+              },
+              colorScheme: "red",
+            },
+          ],
+        );
+      }
+    });
   };
 
   const subsribeToWsToStopWarning = () => {

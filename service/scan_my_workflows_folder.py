@@ -7,13 +7,13 @@ import glob
 from threading import Lock
 import server
 import uuid
-from .twoway_sync_folder_service import get_my_workflows_abs_path
+from .db_service import get_my_workflows_dir
 
 @server.PromptServer.instance.routes.post('/workspace/file/scan_my_workflows_folder')
 async def scan_my_workflows_files(request):
     reqJson = await request.json()
     path = reqJson['path']
-    path = get_my_workflows_abs_path(path)
+    path = os.path.join(get_my_workflows_dir(), path)
     recursive = reqJson.get('recursive', False)
     metaInfoOnly = reqJson.get('metaInfoOnly', False)
     

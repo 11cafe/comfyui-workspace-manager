@@ -57,13 +57,6 @@ export class UserSettingsTable extends TableBase<UserSettings> {
     };
   }
 
-  public async getSettings(): Promise<UserSettings | undefined> {
-    const settings = await this.get(this.DEFAULT_USER);
-    return {
-      ...this.defaultSettings,
-      ...settings,
-    };
-  }
   public async getSetting<K extends keyof UserSettings>(
     key: K,
   ): Promise<UserSettings[K]> {
