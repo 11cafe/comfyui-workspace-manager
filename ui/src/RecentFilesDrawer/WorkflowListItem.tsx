@@ -5,14 +5,12 @@ import {
   Text,
   Checkbox,
   Flex,
-  Image,
   Stack,
   IconButton,
   Tooltip,
 } from "@chakra-ui/react";
 import { IconExternalLink } from "@tabler/icons-react";
-import { formatTimestamp, openWorkflowInNewTab, isImageFormat } from "../utils";
-import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
+import { formatTimestamp, openWorkflowInNewTab } from "../utils";
 import { MouseEvent, useState, memo, ChangeEvent, useContext } from "react";
 import WorkflowListItemRightClickMenu from "./WorkflowListItemRightClickMenu";
 import DeleteConfirm from "../components/DeleteConfirm";
@@ -46,7 +44,6 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
     setMenuPosition({ x: event.clientX, y: event.clientY });
     setIsMenuOpen(true);
   };
-  const [isHovered, setIsHovered] = useState(false);
   const handleClose = () => {
     setIsMenuOpen(false);
   };
@@ -100,12 +97,6 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
       mb={1}
       justify={"space-between"}
       onContextMenu={handleContextMenu}
-      onMouseEnter={() => {
-        setIsHovered(true);
-      }}
-      onMouseLeave={() => {
-        setIsHovered(false);
-      }}
     >
       {isMultiSelecting ? (
         <Checkbox

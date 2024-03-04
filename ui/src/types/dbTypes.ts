@@ -19,6 +19,7 @@ export interface Workflow extends SortableItem {
   coverMediaPath?: string;
   cloudID?: string; // TODO will be deprecated
   cloudOrigin?: string;
+  saveLock?: boolean;
 }
 
 export interface TableBaseModel {
