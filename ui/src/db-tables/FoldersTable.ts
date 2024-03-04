@@ -6,7 +6,6 @@ import { TableBase } from "./TableBase";
 import { indexdb } from "./indexdb";
 import { TwowayFolderSyncAPI } from "../apis/TwowaySyncFolderApi";
 import { TwowaySyncAPI, scanLocalFiles } from "../apis/TwowaySyncApi";
-import { genAbsPathByRelPath } from "../utils/OsPathUtils";
 
 export class FoldersTable extends TableBase<Folder> {
   static readonly TABLE_NAME = "folders";
@@ -98,9 +97,7 @@ export class FoldersTable extends TableBase<Folder> {
   ) {
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
     if (twoWaySyncEnabled) {
-      const absPath = await genAbsPathByRelPath(id);
-      // delete from indexdb
-      await scanLocalFiles(absPath, true, true).then((files) => {
+      await scanLocalFiles(id, true, true).then((files) => {
         files.forEach((file) => {
           if (file.type === "workflow") {
             console.log("delete workflow", file);

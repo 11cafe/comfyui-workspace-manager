@@ -1,10 +1,5 @@
-import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { Folder } from "../types/dbTypes";
-import {
-  genAbsPathByRelPath,
-  sanitizeAbsPath,
-  sanitizeRelPath,
-} from "../utils/OsPathUtils";
+import { sanitizeRelPath } from "../utils/OsPathUtils";
 
 export namespace TwowayFolderSyncAPI {
   export async function genFolderRelPath({
@@ -16,26 +11,15 @@ export namespace TwowayFolderSyncAPI {
   }): Promise<string> {
     return sanitizeRelPath(`${parentFolderID ?? ""}/${name}`);
   }
-  export async function genFolderAbsPath({
-    parentFolderID,
-    name,
-  }: Pick<Folder, "name" | "parentFolderID">): Promise<string> {
-    const myWorkflowsDir =
-      await userSettingsTable?.getSetting("myWorkflowsDir");
-    const absPath = sanitizeAbsPath(
-      `${myWorkflowsDir}/${parentFolderID ?? ""}/${name}`,
-    );
-    return absPath;
-  }
+
   export async function createFolder(folder: Folder) {
-    const abs = await genFolderAbsPath(folder);
     await fetch("/workspace/folder/create", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        path: abs,
+        path: sanitizeRelPath(folder.id),
       }),
     });
   }
@@ -43,16 +27,14 @@ export namespace TwowayFolderSyncAPI {
     folderToBeMoved: string,
     newParentPath: string,
   ) {
-    const absPath = await genAbsPathByRelPath(folderToBeMoved);
-    const absNewParentPath = await genAbsPathByRelPath(newParentPath);
     const resp = await fetch("/workspace/folder/move", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        folder: absPath,
-        newParentPath: absNewParentPath,
+        folder: folderToBeMoved,
+        newParentPath: newParentPath,
       }),
     });
     const result = await resp.json();
@@ -62,7 +44,6 @@ export namespace TwowayFolderSyncAPI {
     return;
   }
   export async function deleteFolder(relPath: string) {
-    const absPath = await genAbsPathByRelPath(relPath);
     try {
       const response = await fetch("/workspace/folder/delete", {
         method: "POST",
@@ -70,7 +51,7 @@ export namespace TwowayFolderSyncAPI {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          path: absPath,
+          path: relPath,
         }),
       });
       const result = await response.text();
@@ -83,7 +64,6 @@ export namespace TwowayFolderSyncAPI {
   export async function genFilesCountInFolder(
     folderRelPath: string,
   ): Promise<number | null> {
-    const absPath = await genAbsPathByRelPath(folderRelPath);
     try {
       const response = await fetch("/workspace/file/count_files", {
         method: "POST",
@@ -91,7 +71,7 @@ export namespace TwowayFolderSyncAPI {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          path: absPath,
+          path: folderRelPath,
         }),
       });
       const result = await response.json();
@@ -109,7 +89,6 @@ export namespace TwowayFolderSyncAPI {
     folderRelPath: string,
     newName: string,
   ): Promise<void> {
-    const oldAbsPath = await genAbsPathByRelPath(folderRelPath);
     try {
       const response = await fetch("/workspace/folder/rename", {
         method: "POST",
@@ -117,7 +96,7 @@ export namespace TwowayFolderSyncAPI {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          absPath: oldAbsPath,
+          absPath: folderRelPath,
           newName: newName,
         }),
       });

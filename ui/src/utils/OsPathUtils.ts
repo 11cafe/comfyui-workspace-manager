@@ -1,24 +1,27 @@
-import { userSettingsTable } from "../db-tables/WorkspaceDB";
+import type { Workflow } from "../types/dbTypes";
 
-export function osPathJoin(...args: string[]) {
-  const joined = args.filter((segment) => segment !== "").join("/");
-  if (joined.endsWith("/")) {
-    return joined.slice(0, -1);
-  }
-  return sanitizeRelPath(joined);
+export function joinRelPath(...segments: string[]) {
+  const rel = segments.filter((segment) => segment !== "").join("/");
+  return sanitizeRelPath(rel);
 }
 
-export function sanitizeAbsPath(path: string) {
-  const segments = path.split("/").filter((segment) => segment !== "");
-  return "/" + segments.join("/");
-}
 export function sanitizeRelPath(path: string) {
-  const segments = path.split("/").filter((segment) => segment !== "");
-  return segments.join("/");
+  const segments = path
+    .split("/")
+    .filter((segment) => segment !== "")
+    .join("/");
+  // Replace backslashes with forward slashes to handle Windows paths
+  let sanitizedPath = segments.replace(/\\/g, "/");
+  // Remove leading slashes to ensure the path is treated as relative
+  sanitizedPath = sanitizedPath.replace(/^\/+/, "");
+
+  return sanitizedPath;
 }
 
-export async function genAbsPathByRelPath(relPath: string): Promise<string> {
-  const myWorkflowsDir = await userSettingsTable?.getSetting("myWorkflowsDir");
-  const absPath = sanitizeAbsPath(`${myWorkflowsDir}/${relPath}`);
-  return absPath;
+export function getWorkflowRelPath(workflow: Workflow) {
+  return joinRelPath(workflow.parentFolderID ?? "", workflow.name + ".json");
+}
+
+export function getFolderRelPath(folder: { id: string }) {
+  return folder.id;
 }

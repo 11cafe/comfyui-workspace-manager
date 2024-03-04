@@ -6,24 +6,9 @@ import {
   ModalHeader,
   ModalBody,
   ModalCloseButton,
-  Text,
   StackDivider,
   VStack,
-  Box,
-  Tag,
-  IconButton,
-  Button,
-  Flex,
-  Input,
-  Stack,
-  useToast,
-  SimpleGrid,
-  Tooltip,
 } from "@chakra-ui/react";
-import { IconEdit } from "@tabler/icons-react";
-import { useRef, useState, useEffect } from "react";
-import { getSystemDir } from "../Api";
-import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { ShortcutSettings } from "../settings/ShortcutSettings";
 import FolderOnTopSettings from "../settings/FolderOnTopSettings";
 import TwoWaySyncSettings from "../settings/TwoWaySyncSettings";

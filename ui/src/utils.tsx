@@ -151,6 +151,8 @@ export function sortFlows(
 export async function validateOrSaveAllJsonFileMyWorkflows(
   deleteEmptyFolder = false,
 ) {
+  const twoWaySync = await userSettingsTable?.getSetting("twoWaySync");
+  if (twoWaySync) return; // disable this function in two way sync mode
   const flowList = (await workflowsTable?.listAll()) ?? [];
   for (const workflow of flowList) {
     const fullPath = await generateFilePathAbsolute(workflow);
