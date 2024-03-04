@@ -44,6 +44,7 @@ export type LocalCache = {
 export type Model = {
   id: string;
   fileName: string;
+  modelName: string;
   fileFolder: string;
   fileHash: string;
   civitModelID: string;
