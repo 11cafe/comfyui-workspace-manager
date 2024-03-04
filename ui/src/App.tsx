@@ -27,9 +27,11 @@ import {
   getWorkflowIdInUrlHash,
   generateUrlHashWithFlowId,
   openWorkflowInNewTab,
+  validateOrSaveAllJsonFileMyWorkflows,
+  rewriteAllLocalFiles,
 } from "./utils";
 import { Topbar } from "./topbar/Topbar";
-import { PanelPosition, Workflow, WorkflowVersion } from "./types/dbTypes";
+import { Workflow, WorkflowVersion } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
 import React from "react";
 const RecentFilesDrawer = React.lazy(
@@ -175,6 +177,15 @@ export default function App() {
     }
     if (latestWfID) {
       loadWorkflowIDImpl(latestWfID);
+    }
+    /**
+     * For two-way sync, one-time rewrite all /my_workflows files to the database
+     */
+    if (localStorage.getItem("REWRITTEN_ALL_LOCAL_DISK_FILE") === "true") {
+      await validateOrSaveAllJsonFileMyWorkflows();
+    } else {
+      await rewriteAllLocalFiles();
+      localStorage.setItem("REWRITTEN_ALL_LOCAL_DISK_FILE", "true");
     }
   };
 

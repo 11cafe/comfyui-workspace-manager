@@ -14,9 +14,9 @@ from .service.model_manager.model_installer import download_url_with_wget
 from .service.model_manager.model_list import get_model_list
 from .service.media_service import *
 from .service.file_sync_service import *
+from .service.db_service import get_my_workflows_dir
 
 WEB_DIRECTORY = "entry"
-DEFAULT_USER = "guest"
 NODE_CLASS_MAPPINGS = {}
 __all__ = ['NODE_CLASS_MAPPINGS']
 version = "V1.0.0"
@@ -35,43 +35,6 @@ if os.path.exists(dist_path):
     ])
 
 server.PromptServer.instance.app.add_subapp("/workspace_web/", workspace_app)
-
-@server.PromptServer.instance.routes.post("/workspace/save_db")
-async def save_db(request):
-    # Extract parameters from the request
-    data = await request.json()
-    table = data['table']
-    json_data = data['json']
-
-    file_name = f'{db_dir_path}/{table}.json'
-    # Offload file writing to a separate thread
-    def write_json_string_to_db(file_name, json_data):
-        if not os.path.exists(db_dir_path):
-            os.makedirs(db_dir_path)
-        # Write the JSON data to the specified file
-        with open(file_name, 'w') as file:
-            file.write(json.dumps(json_data, indent=4))
-    await asyncio.to_thread(write_json_string_to_db, file_name, json_data)
-    return web.Response(text=f"JSON saved to {file_name}")
-
-def read_table(table):
-    if not table:
-        return None
-    file_name = f'{db_dir_path}/{table}.json'
-    if not os.path.exists(file_name):
-        return None
-
-    with open(file_name, 'r') as file:
-        data = json.load(file)
-    return data
-
-
-@server.PromptServer.instance.routes.get("/workspace/get_db")
-async def get_workspace(request):
-    # Extract the table parameter from the query string
-    table = request.query.get('table')
-    data = await asyncio.to_thread(read_table, table)
-    return web.json_response(data)
 
 BACKUP_DIR = os.path.join(workspace_path, "backup")
 MAX_BACKUP_FILES = 20
@@ -131,22 +94,6 @@ async def get_default_my_workflows_dir(request):
         return web.Response(text=json.dumps({"path": dir}), content_type='application/json')
     except Exception as e:
         return web.Response(text=json.dumps({"error": str(e)}), status=500)
-
-def get_my_workflows_dir():
-    data = read_table('userSettings')
-    if (data):
-        records = json.loads(data)
-
-        if DEFAULT_USER in records and 'myWorkflowsDir' in records[DEFAULT_USER]:  
-            curDir = records[DEFAULT_USER]['myWorkflowsDir']  
-        elif 'myWorkflowsDir' in records:  
-            curDir = records['myWorkflowsDir']
-        
-        if curDir:
-            return curDir
-        
-    return os.path.join(comfy_path, 'my_workflows')
-
 
 @server.PromptServer.instance.routes.post("/workspace/update_file")
 async def update_file(request):

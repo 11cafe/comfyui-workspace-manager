@@ -8,7 +8,7 @@ import { isFolder, userSettingsTable } from "../db-tables/WorkspaceDB";
 import { indexdb } from "../db-tables/indexdb";
 import { Folder, Workflow } from "../types/dbTypes";
 import { sortFileItem } from "../utils";
-import { sanitizeAbsPath } from "./OsPathUtils";
+import { sanitizeRelPath } from "./OsPathUtils";
 
 export async function scanMyWorkflowsDir(
   parentFolderID: string | null,
@@ -19,21 +19,18 @@ export async function scanMyWorkflowsDir(
     alert("No Workspace saving directory found, please go to Settings.");
     return [];
   }
-  const parentRelPath = parentFolderID ?? "";
+  const parentRelPath = sanitizeRelPath(parentFolderID ?? "");
+  console.log("scanMyWorkflowsDir", parentRelPath);
   // folderID is the relative path of the folder in two way sync mode
-  const scanDir = `${myWorkflowsDir}/${parentRelPath}`;
-  const fileList = await scanLocalFiles(scanDir);
+  const fileList = await scanLocalFiles(parentRelPath);
 
   const allFilesPromises = fileList.map(async (file) => {
     const fileName = file.name;
-    const absPath = sanitizeAbsPath([scanDir, fileName].join("/"));
-    // const absPath = osPathJoin(scanDir, fileName);
     const relPath = [parentRelPath, fileName].join("/");
-
     if (scanFileIsFolder(file)) {
       // is folder
       const folder: Folder = {
-        id: relPath,
+        id: sanitizeRelPath(relPath),
         name: file.name,
         parentFolderID: parentRelPath,
         type: "folder",
@@ -51,7 +48,6 @@ export async function scanMyWorkflowsDir(
       const newWorkflow: Workflow = {
         ...existingWorkflow,
         id: file.id,
-        filePath: absPath,
         lastSavedJson: file.json ?? "{}",
         json: file.json ?? "{}",
         name: fileName.replace(/\.json$/, ""),

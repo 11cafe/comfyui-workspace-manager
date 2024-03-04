@@ -7,11 +7,13 @@ import glob
 from threading import Lock
 import server
 import uuid
+from .twoway_sync_folder_service import get_my_workflows_abs_path
 
 @server.PromptServer.instance.routes.post('/workspace/file/scan_my_workflows_folder')
 async def scan_my_workflows_files(request):
     reqJson = await request.json()
     path = reqJson['path']
+    path = get_my_workflows_abs_path(path)
     recursive = reqJson.get('recursive', False)
     metaInfoOnly = reqJson.get('metaInfoOnly', False)
     
@@ -67,8 +69,6 @@ def file_handle(name, fileList, file_path, metaInfoOnly):
         fileInfo['json'] = json.dumps(json_data)
         
     fileList.append(fileInfo)
-
-# Note: Implement getFileCreateTime function as per your existing logic
 
 def getFileCreateTime(path):
     # Cross-platform compatibility for creation time

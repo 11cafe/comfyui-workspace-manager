@@ -1,6 +1,5 @@
 import asyncio
 from datetime import datetime
-
 import platform
 import tempfile
 import server
@@ -77,10 +76,9 @@ async def move_file(request):
 def move_file_sync(reqJson):
     current_path = reqJson.get('path')
     new_path = reqJson.get('newParentPath')
+    current_path = os.path.join(get_my_workflows_dir(), current_path)
+    new_path = os.path.join(get_my_workflows_dir(), new_path)
     try:
-        target_path = Path(new_path) / Path(current_path).name
-        # if target_path.suffix != ".json":
-        #     raise ValueError("Target file must be a .json file")
         shutil.move(current_path, new_path)
         return {"success": True}
     except Exception as e:
@@ -100,9 +98,10 @@ def create_workflow_file(reqJson):
         if not parentFolderPath or not name or workflow_json is None:
             return {}  # Missing necessary data
 
-        abs_path = Path(parentFolderPath)
+        abs_path = Path(get_my_workflows_dir() / parentFolderPath)
         # Create the directory if it does not exist
         abs_path.mkdir(parents=True, exist_ok=True)
+        print(f"🌐Creating workflow file at {abs_path}")
         
         # Ensuring the file name is unique
         base_name, extension = os.path.splitext(name)
@@ -115,7 +114,7 @@ def create_workflow_file(reqJson):
             counter += 1
         
         new_file_path = abs_path / new_file_name
-
+        print(f"🌐Creating workflow file at name {new_file_path}")
         # Writing JSON data to the file
         with open(new_file_path, 'w', encoding='utf-8') as file:
             file.write(workflow_json)
@@ -126,7 +125,7 @@ def create_workflow_file(reqJson):
         return {}  # In case of any error
 
 def read_workflow_file(path, id):
-    abs_path = Path(path)
+    abs_path = os.path.join(get_my_workflows_dir(), path)
     create_time, update_time = getFileCreateTime(abs_path)
     with open(abs_path, 'r', encoding='utf-8') as f:
         json_data = json.load(f)

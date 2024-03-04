@@ -22,6 +22,7 @@ import { IconEdit } from "@tabler/icons-react";
 import { useRef, useState, useEffect } from "react";
 import { getSystemDir } from "../Api";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
+import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
 
 export default function SelectMyWorkflowsDir() {
   const [isManualEntry, setIsManualEntry] = useState(false);
@@ -106,7 +107,7 @@ export default function SelectMyWorkflowsDir() {
     manualEntry && setNoPermission(false);
     onCloseEditDirectory();
     // to update /my_workflows files in disk to new location
-    await userSettingsTable?.getSetting("twoWaySync");
+    validateOrSaveAllJsonFileMyWorkflows();
   };
 
   const onReset = async () => {
