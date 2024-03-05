@@ -79,11 +79,7 @@ export default function ShowNsfwModelThumbnailSettings() {
   };
 
   return (
-    <Checkbox
-      isChecked={checkedState}
-      onChange={onShowThumbnailsChange}
-      width={"100px"}
-    >
+    <Checkbox isChecked={checkedState} onChange={onShowThumbnailsChange}>
       Show NSFW
     </Checkbox>
   );
