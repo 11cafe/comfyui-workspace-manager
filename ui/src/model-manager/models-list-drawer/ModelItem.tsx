@@ -84,11 +84,7 @@ export function ModelItem({ data }: Props) {
           civitModelVersionID: String(json.id),
           imageUrl: image_url ?? null,
         };
-        if (model != null) {
-          indexdb.models.update(model.id, newModel);
-        } else {
-          indexdb.models.add(newModel);
-        }
+        indexdb.models.put(newModel);
         setModel(newModel);
       } catch (e) {}
     }
