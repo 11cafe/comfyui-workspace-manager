@@ -7,6 +7,7 @@ import {
   Portal,
   Input,
   Select,
+  HStack,
 } from "@chakra-ui/react";
 import Fuse from "fuse.js/min-basic";
 import { useEffect, useState } from "react";
@@ -84,46 +85,6 @@ export default function ModelsListDrawer({ onClose }: Props) {
 
   const DRAWER_WIDTH = 440;
 
-  const renderContent = () => {
-    return (
-      <>
-        <Flex gap={4} justifyContent={"center"} alignItems={"center"} mb={1}>
-          <Input
-            size={"sm"}
-            placeholder="Search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </Flex>
-        <Flex gap={4} justifyContent={"center"} alignItems={"center"} mb={1}>
-          Sort By
-          {searchQuery.length ? (
-            " Search"
-          ) : (
-            <Select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-              <option value="name">Name</option>
-              <option value="date">Date</option>
-            </Select>
-          )}
-          <ShowNsfwModelThumbnailSettings />
-        </Flex>
-        {!searchQuery.length && (
-          <ModelsTags
-            modelTypeList={modelTypeList}
-            setSelectedModel={setSelectedModel}
-            selectedModel={selectedModel}
-          />
-        )}
-        <ModelsList list={curModelList} />
-        {loading && (
-          <Flex justifyContent={"center"} alignItems={"center"} height={"100%"}>
-            <Spinner />
-          </Flex>
-        )}
-      </>
-    );
-  };
-
   return (
     <Portal>
       <Box style={{ width: DRAWER_WIDTH }}>
@@ -138,7 +99,6 @@ export default function ModelsListDrawer({ onClose }: Props) {
           shadow={"xl"}
           zIndex={DRAWER_Z_INDEX}
           overflowY={"auto"}
-          whiteSpace={"nowrap"}
         >
           <Flex justifyContent={"space-between"} alignContent={"center"} py={3}>
             <Heading size={"md"} mr={2}>
@@ -148,7 +108,53 @@ export default function ModelsListDrawer({ onClose }: Props) {
             <InstallModelsButton />
           </Flex>
 
-          {renderContent()}
+          <Flex gap={4} justifyContent={"center"} alignItems={"center"} mb={1}>
+            <Input
+              size={"sm"}
+              placeholder="Search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </Flex>
+          <Flex
+            gap={4}
+            justifyContent={"space-between"}
+            alignItems={"center"}
+            mb={1}
+          >
+            {!searchQuery.length && (
+              <HStack>
+                <span>Sort By</span>
+                <Select
+                  value={sortBy}
+                  size={"sm"}
+                  width={"120px"}
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <option value="name">Name</option>
+                  <option value="date">Date</option>
+                </Select>
+              </HStack>
+            )}
+            <ShowNsfwModelThumbnailSettings />
+          </Flex>
+          {!searchQuery.length && (
+            <ModelsTags
+              modelTypeList={modelTypeList}
+              setSelectedModel={setSelectedModel}
+              selectedModel={selectedModel}
+            />
+          )}
+          <ModelsList list={curModelList} />
+          {loading && (
+            <Flex
+              justifyContent={"center"}
+              alignItems={"center"}
+              height={"100%"}
+            >
+              <Spinner />
+            </Flex>
+          )}
         </Card>
       </Box>
     </Portal>

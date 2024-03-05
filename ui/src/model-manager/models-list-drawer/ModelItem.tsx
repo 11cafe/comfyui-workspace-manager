@@ -1,4 +1,4 @@
-import { Box, Flex, Image, Spinner, Text } from "@chakra-ui/react";
+import { Box, Flex, Image, Spinner, Text, Tooltip } from "@chakra-ui/react";
 import { ModelsListRespItem } from "../types";
 import { useEffect, useState } from "react";
 import { indexdb } from "../../db-tables/indexdb";
@@ -126,7 +126,7 @@ export function ModelItem({ data }: Props) {
             src={url}
             draggable={false}
             boxSize="100%"
-            height={178}
+            height={150}
             objectFit="cover"
             borderRadius={4}
             cursor={model?.civitModelID != null ? "pointer" : "auto"}
@@ -148,21 +148,15 @@ export function ModelItem({ data }: Props) {
           bottom="0"
           left="0"
           right="0"
-          bg="rgba(0, 0, 0, 0.5)"
           color="white"
-          textAlign="center"
-          p="0"
           fontSize={14}
-          borderBottomRightRadius={4}
-          borderBottomLeftRadius={4}
-          noOfLines={1}
-        >
-          {model?.modelName}
-        </Text>
+        ></Text>
       </Box>
-      <Text textAlign="center" p="1" fontSize={14} noOfLines={2}>
-        {data.model_name}
-      </Text>
+      <Tooltip label={data.date.toLocaleDateString()}>
+        <Text textAlign="center" p="1" fontSize={14} noOfLines={2}>
+          {model?.modelName ?? data.model_name}
+        </Text>
+      </Tooltip>
     </Box>
   );
 }
