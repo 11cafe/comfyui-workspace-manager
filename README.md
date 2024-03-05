@@ -45,8 +45,8 @@ Recommend using Chrome browser for the best experience. Safari doesn't work well
 [中文版教程](https://www.uisdc.com/workspace-manager) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Roadmap](https://github.com/orgs/11cafe/projects/1/views/1) 
 
 ### 🦄v2.0 beta: Two-way sync with local folder, select model install path, cloud sync workflows
-- Enable two way sync with selected local folder so you can move files using File Explore or Finder in your OS to add them into workspace!
-- Select models downloading folder. Especially useful for people sharing models with Automatic111 or using external /models path
+- Enable two way sync with selected local folder so you can move files using File Explore or Finder to sync them with workspace!
+- Choose models downloading folder. Useful for people sharing models with Automatic111 or external models path
 - Add models thumbnails image by putting a image file with the same name in models folder
 - One click sharing to cloud to backup your workflows to cloud
 
