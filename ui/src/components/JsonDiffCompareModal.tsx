@@ -1,7 +1,5 @@
 import { Box, Modal, ModalContent } from "@chakra-ui/react";
 import { useContext } from "react";
-// @ts-ignore
-import ReactJsonViewCompare from "react-json-view-compare";
 import { WorkspaceContext } from "../WorkspaceContext";
 
 export default function JsonDiffCompareModal() {
@@ -19,10 +17,7 @@ export default function JsonDiffCompareModal() {
     >
       <ModalContent>
         <Box height={"80vh"} width={"90%"} overflow={"scroll"}>
-          <ReactJsonViewCompare
-            oldData={jsonDiff?.old}
-            newData={jsonDiff?.new}
-          />
+          {/* TODO: add json comparison ui view */}
         </Box>
       </ModalContent>
     </Modal>
