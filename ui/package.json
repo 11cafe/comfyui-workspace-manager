@@ -18,6 +18,7 @@
     "dexie": "^3.2.4",
     "dexie-react-hooks": "^1.1.7",
     "framer-motion": "^10.16.12",
+    "fuse.js": "^7.0.0",
     "jszip": "^3.10.1",
     "nanoid": "^5.0.6",
     "react": "^18.2.0",

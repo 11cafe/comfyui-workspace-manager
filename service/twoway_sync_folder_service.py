@@ -69,6 +69,3 @@ def move_folder_sync(reqJson):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-def get_my_workflows_abs_path(rel_path: str):
-    myworkflows = get_my_workflows_dir()
-    return os.path.join(myworkflows, rel_path)

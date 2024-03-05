@@ -39,11 +39,13 @@ const RecentFilesDrawer = React.lazy(
 );
 const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
 import { IconExternalLink } from "@tabler/icons-react";
-import { DRAWER_Z_INDEX } from "./const";
+import { DRAWER_Z_INDEX, UPGRADE_TO_2WAY_SYNC_KEY } from "./const";
 import ServerEventListener from "./model-manager/hooks/ServerEventListener";
 import { v4 } from "uuid";
 import { WorkspaceRoute } from "./types/types";
 import { useStateRef } from "./customHooks/useStateRef";
+import { indexdb } from "./db-tables/indexdb";
+import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
 
 const ModelManagerTopbar = React.lazy(
   () => import("./model-manager/topbar/ModelManagerTopbar"),
@@ -63,7 +65,6 @@ export default function App() {
   const [flowID, setFlowID] = useState<string | null>(null);
   const curFlowID = useRef<string | null>(null);
 
-  const [openSaveAsModalStamp, setOpenSaveAsModalStamp] = useState(0);
   const [isDirty, setIsDirty] = useState(false);
   const workspaceContainerRef = useRef(null);
   const { showDialog } = useDialog();
@@ -188,6 +189,33 @@ export default function App() {
       await rewriteAllLocalFiles();
       localStorage.setItem("REWRITTEN_ALL_LOCAL_DISK_FILE", "true");
     }
+    indexdb.cache.get(UPGRADE_TO_2WAY_SYNC_KEY).then(async (value) => {
+      if (value?.value !== "true") {
+        const myWorkflowsDir =
+          await userSettingsTable?.getSetting("myWorkflowsDir");
+        showDialog(
+          <EnableTwowaySyncConfirm
+            myWorkflowsDir={myWorkflowsDir ?? "undefined"}
+          />,
+          [
+            {
+              label: "I have downloaded all my workflows and ready to enable",
+              onClick: async () => {
+                await userSettingsTable?.upsert({ twoWaySync: true });
+                if (await userSettingsTable?.getSetting("twoWaySync")) {
+                  indexdb.cache.put({
+                    id: UPGRADE_TO_2WAY_SYNC_KEY,
+                    value: "true",
+                  });
+                  location.reload();
+                }
+              },
+              colorScheme: "red",
+            },
+          ],
+        );
+      }
+    });
   };
 
   const subsribeToWsToStopWarning = () => {
@@ -373,7 +401,7 @@ export default function App() {
         saveCurWorkflow();
         return;
       case EShortcutKeys.SAVE_AS:
-        setOpenSaveAsModalStamp(Date.now());
+        setRoute("saveAsModal");
         return;
     }
   };
@@ -564,7 +592,6 @@ export default function App() {
         jsonDiff: jsonDiff,
         compareJson: compareJsonDiff,
         curVersion: curVersion,
-        openSaveAsModalStamp: openSaveAsModalStamp,
       }}
     >
       <div ref={workspaceContainerRef} className="workspace_manager">

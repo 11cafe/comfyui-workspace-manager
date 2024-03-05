@@ -73,7 +73,7 @@ export const AlertDialogProvider: React.FC<{ children: ReactNode }> = ({
           isOpen={isOpen}
           leastDestructiveRef={cancelRef}
           onClose={handleClose}
-          size={"lg"}
+          size={"xl"}
         >
           <DarkMode>
             <AlertDialogOverlay>

@@ -141,7 +141,7 @@ export async function getAllModelsList() {
       },
     });
     const result = await response.json();
-    return result as ModelsListRespItem[];
+    return result as Array<ModelsListRespItem & { date: number }>;
   } catch (error) {
     console.error("Error get all models list:", error);
   }
