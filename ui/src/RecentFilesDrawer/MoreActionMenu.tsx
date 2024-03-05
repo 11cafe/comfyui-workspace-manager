@@ -7,7 +7,6 @@ import {
   MenuItem,
   useToast,
   Tooltip,
-  Switch,
 } from "@chakra-ui/react";
 import { IconDotsVertical, IconLockOpen, IconLock } from "@tabler/icons-react";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
@@ -56,8 +55,7 @@ export default function MoreActionMenu({ workflow }: Props) {
               icon={isLocked ? <IconLock /> : <IconLockOpen />}
               onClick={onLockChange}
             >
-              {/* {isLocked ? "Unlock" : "Lock"} */}
-              <Switch isChecked={isLocked} />
+              {isLocked ? "Unlock" : "Lock"}
             </MenuItem>
           </Tooltip>
         </MenuList>

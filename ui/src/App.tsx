@@ -78,6 +78,14 @@ export default function App() {
     useStateRef<WorkflowVersion | null>(null);
   const saveCurWorkflow = useCallback(async () => {
     if (curFlowID.current) {
+      if (workflowsTable?.curWorkflow?.saveLock) {
+        toast({
+          title: "The workflow is locked and cannot be saved",
+          status: "warning",
+          duration: 3000,
+        });
+        return;
+      }
       const graphJson = JSON.stringify(app.graph.serialize());
       await Promise.all([
         workflowsTable?.updateFlow(curFlowID.current, {
@@ -88,13 +96,7 @@ export default function App() {
           json: graphJson,
         }),
       ]);
-      userSettingsTable?.autoSave &&
-        toast({
-          title: "Saved",
-          status: "success",
-          duration: 1000,
-          isClosable: true,
-        });
+      isDirty && setIsDirty(false);
     }
   }, []);
   const deleteCurWorkflow = async () => {
@@ -271,6 +273,14 @@ export default function App() {
       app.loadGraphData(JSON.parse(flow.json));
     }
     setRoute("root");
+    /**
+     * By an unlocked flow with isDirty true and unsaved,
+     * When switching to a locked flow, isDirty is still true, and checkIsDirty() is not executed in autoSaveTimer.
+     * causes * to be displayed in front of the topbar flow name,
+     * So add this logic and reset isDirty every time you open a new process
+     * In fact, it is reasonable to reset isDirty every time you open a new flow.
+     */
+    isDirty && setIsDirty(false);
   };
 
   const compareJsonDiff = (diff: { old: Object; new: Object } | null) => {
@@ -439,6 +449,7 @@ export default function App() {
     setLoadChild(true);
     autoSaveTimer.current = setInterval(async () => {
       const autoSaveEnabled = userSettingsTable?.autoSave;
+      if (workflowsTable?.curWorkflow?.saveLock) return;
       const isDirty = checkIsDirty();
       setIsDirty(!!isDirty);
       if (!isDirty) {
@@ -509,6 +520,7 @@ export default function App() {
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       const autoSaveEnabled = userSettingsTable?.autoSave ?? true;
+      if (workflowsTable?.curWorkflow?.saveLock) return;
       const isDirty = checkIsDirty();
 
       if (!autoSaveEnabled && isDirty) {
