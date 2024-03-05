@@ -60,7 +60,7 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
   const maxTagMenuHeight = 37 * 5;
 
   return (
-    <Popover isLazy={true} onOpen={onOpen} closeOnBlur={false}>
+    <Popover isLazy={true} onOpen={onOpen} closeOnBlur={false} placement="auto">
       <PopoverTrigger>
         <MenuItem icon={<IconTag />}>Tag</MenuItem>
       </PopoverTrigger>
