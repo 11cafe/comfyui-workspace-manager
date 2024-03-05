@@ -96,7 +96,7 @@ export default function App() {
           json: graphJson,
         }),
       ]);
-      isDirty && setIsDirty(false);
+      setIsDirty(false);
     }
   }, []);
   const deleteCurWorkflow = async () => {
@@ -401,20 +401,6 @@ export default function App() {
     flow && (await loadWorkflowID(flow.id));
   };
 
-  const shortcutListener = async (event: KeyboardEvent) => {
-    if (document.visibilityState === "hidden") return;
-
-    const matchResult = await matchShortcut(event);
-
-    switch (matchResult) {
-      case EShortcutKeys.SAVE:
-        saveCurWorkflow();
-        return;
-      case EShortcutKeys.SAVE_AS:
-        setRoute("saveAsModal");
-        return;
-    }
-  };
   const onExecutedCreateMedia = useCallback((image: any) => {
     if (curFlowID.current == null) return;
     let path = image.filename;
@@ -497,6 +483,21 @@ export default function App() {
         }
       }
     }, 1000);
+
+    const shortcutListener = async (event: KeyboardEvent) => {
+      if (document.visibilityState === "hidden") return;
+
+      const matchResult = await matchShortcut(event);
+
+      switch (matchResult) {
+        case EShortcutKeys.SAVE:
+          saveCurWorkflow();
+          break;
+        case EShortcutKeys.SAVE_AS:
+          setRoute("saveAsModal");
+          break;
+      }
+    };
 
     window.addEventListener("keydown", shortcutListener);
 
