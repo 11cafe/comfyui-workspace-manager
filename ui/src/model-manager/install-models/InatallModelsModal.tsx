@@ -145,7 +145,7 @@ export default function InatallModelsModal({
       >
         <ModalOverlay />
         <ModalContent width={"90%"} maxWidth={"90vw"} height={"90vh"}>
-          <ModalHeader>
+          <ModalHeader pb={1}>
             <HStack gap={2} mb={2} alignItems={"center"}>
               <Heading size={"md"} mr={2}>
                 Models
@@ -160,7 +160,7 @@ export default function InatallModelsModal({
               </Button>
               <AddApiKeyPopover />
             </HStack>
-            <HStack gap={2} mb={2} wrap={"wrap"}>
+            <HStack gap={2} wrap={"wrap"}>
               <Button
                 size={"sm"}
                 py={1}
@@ -189,7 +189,9 @@ export default function InatallModelsModal({
               {modelType &&
                 foldersList[MODEL_TYPE_TO_FOLDER_MAPPING[modelType]] && (
                   <HStack ml="auto">
-                    <Text whiteSpace="nowrap">Default Download Folder:</Text>
+                    <Text fontSize={17} whiteSpace="nowrap">
+                      Default Download Folder:
+                    </Text>
                     <Select
                       value={defaultFolders[modelType]}
                       onChange={(e) =>
