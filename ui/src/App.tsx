@@ -624,7 +624,9 @@ export default function App() {
               </Suspense>
             )}
             {route === "gallery" && (
-              <GalleryModal onclose={() => setRoute("root")} />
+              <Suspense>
+                <GalleryModal onclose={() => setRoute("root")} />
+              </Suspense>
             )}
           </Box>
           <ServerEventListener />
