@@ -150,10 +150,10 @@ By default, We also enabled auto-saving your current workflow as a cache in case
 
 ## Beta Preview
 
-We're constantly pushing new features in beta branch, and only wait til it's thoroghly tested then push it to main. But if you would like to join our Beta Preview Program, you can receive latest feature updates pre-launch! Here is how to switch to beta, it requires you have some basic knowledge about command line and git.
+We're constantly pushing new features in beta branch. Here is how to switch to beta branch to receive latest feature updates pre-launch! It requires you have some basic knowledge about command line and git.
 
 - Make sure you have [git installed](https://git-scm.com/downloads)
-- Open your terminal, go to the ComfyUI directory (where you usually start your python server by `python main.py`
+- Open your terminal, go to the ComfyUI folder (where you do `python main.py`)
 - in ComfyUI root directory, `cd custom_nodes && cd comfyui-workspace-manager`
 - inside custom_nodes/comfyui-workspace-manager, do `git fetch origin beta && git checkout beta`, you should see something like:
 
@@ -164,12 +164,12 @@ Switched to branch 'beta'
 Your branch is up to date with 'origin/beta'.
 ```
 
-- now go back to ComfyUI restart your python server by `python main.py`
+- Restart ComfyUI python server by `python main.py`
 
 ‼️ Be careful that beta branch can be unstable, so please please make sure you have backups for all your workflows! **Before switching to beta, please make a copy of these folders somewhere:**
 
 `ComfyUI/custom_nodes/comfyui-workspace-manager/db`
-or for extra safety, you can make a copy of the entire `ComfyUI/custom_nodes/comfyui-workspace-manager/` folder
+or the entire `ComfyUI/custom_nodes/comfyui-workspace-manager/` folder
 
 if anything goes wrong, you can always paste back these folders. Also, you should have your /my_workflows folder (workspace save directory) in safe place always
 
