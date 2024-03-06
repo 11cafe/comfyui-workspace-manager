@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { Flex, Input } from "@chakra-ui/react";
+import { FormItem } from "./types.ts";
 
 export const InputBase: FC<FormItem> = (props) => {
   return (

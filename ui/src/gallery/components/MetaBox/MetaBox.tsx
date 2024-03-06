@@ -1,17 +1,11 @@
-import { MetaBoxTypeCom } from "../../utils.ts";
-import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
-  Box,
-  Flex,
-  VStack,
-} from "@chakra-ui/react";
-import { FormItem } from "../FormItem/FormItem.tsx";
+import { MetaData } from "../../utils.ts";
+import { VStack } from "@chakra-ui/react";
+import { Media } from "../../../types/dbTypes.ts";
+import { FormItem } from "../FormItem/types.ts";
+import TopForm from "../TopForm/TopForm.tsx";
+import AllPromptForm from "../AllPromptForm/AllPromptForm.tsx";
 
-const formConfig: {
+export type FormConfigType = {
   topField: {
     promptKey: string | number;
     class_type?: string;
@@ -22,7 +16,8 @@ const formConfig: {
       [key in string]: Partial<FormItem>;
     };
   };
-} = {
+};
+const formConfig: FormConfigType = {
   topField: [
     {
       promptKey: "4",
@@ -96,64 +91,16 @@ const formConfig: {
   },
 };
 
-export const MetaBox: MetaBoxTypeCom = ({ metaData }) => {
-  const prompt = metaData.prompt;
-  console.log(metaData);
-
+export default function MetaBox({
+  metaData,
+}: {
+  metaData: MetaData;
+  media: Media;
+}) {
   return (
     <VStack spacing={2} align={"stretch"}>
-      {formConfig?.topField?.length > 0 && (
-        <Flex gap={2} direction={"column"}>
-          {formConfig?.topField?.map((field) => {
-            const promptValue = prompt?.[field.promptKey]?.inputs?.[field.name];
-            return (
-              <FormItem
-                key={`formTop${field.name}`}
-                {...(formConfig?.formItem?.[field.promptKey]?.[field.name] ??
-                  {})}
-                name={field.name}
-                value={promptValue}
-              />
-            );
-          })}
-        </Flex>
-      )}
-      <Accordion allowToggle>
-        {Object.keys(prompt).map((promptKey) => {
-          const promptElement = prompt[promptKey];
-          const promptInputs = promptElement.inputs;
-          const inputsKeyList = Object.keys(promptInputs).filter(
-            (v) => !Array.isArray(promptInputs[v]),
-          );
-          if (inputsKeyList.length === 0) return null;
-          return (
-            <AccordionItem borderWidth={1} borderRadius={8} my={2}>
-              <AccordionButton>
-                <Box as="span" flex="1" textAlign="left">
-                  {promptElement.class_type}
-                </Box>
-                <AccordionIcon />
-              </AccordionButton>
-              <AccordionPanel>
-                <Flex gap={1} direction={"column"}>
-                  {inputsKeyList?.map((inputsKey) => {
-                    const value = promptInputs[inputsKey];
-                    return (
-                      <FormItem
-                        key={`form${inputsKey}`}
-                        {...(formConfig?.formItem?.[promptKey]?.[inputsKey] ??
-                          {})}
-                        value={value}
-                        name={inputsKey}
-                      />
-                    );
-                  })}
-                </Flex>
-              </AccordionPanel>
-            </AccordionItem>
-          );
-        })}
-      </Accordion>
+      <TopForm metaData={metaData} formConfig={formConfig} />
+      <AllPromptForm metaData={metaData} formConfig={formConfig} />
     </VStack>
   );
-};
+}

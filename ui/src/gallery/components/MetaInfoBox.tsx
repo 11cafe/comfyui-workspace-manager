@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { IconDownload } from "@tabler/icons-react";
 import { formatTimestamp } from "../../utils.tsx";
-import { MetaBox } from "./MetaBox/MetaBox.tsx";
+import MetaBox from "./MetaBox/MetaBox.tsx";
 
 export const MetaInfoBox = ({ media }: { media?: Media }) => {
   const [mediaMetaData, setMediaMetaData] = useState<MetaData>();
@@ -54,16 +54,9 @@ export const MetaInfoBox = ({ media }: { media?: Media }) => {
           <Text>{formatTimestamp(media?.createTime ?? 0, true)}</Text>
         </Flex>
       </SimpleGrid>
-      {(() => {
-        if (!media || !mediaMetaData) return null;
-        const p = { metaData: mediaMetaData, media };
-        return <MetaBox {...p} />;
-        // return (
-        //   (isMultiKSampler(mediaMetaData) && <MultiKSampler {...p} />) || (
-        //     <OneKSampler {...p} />
-        //   )
-        // );
-      })()}
+      {media && mediaMetaData && (
+        <MetaBox metaData={mediaMetaData} media={media} />
+      )}
     </Flex>
   );
 };

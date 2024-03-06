@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { Flex, Select } from "@chakra-ui/react";
+import { FormItem } from "./types.ts";
 
 export const SelectBase: FC<FormItem> = (props) => {
   return (

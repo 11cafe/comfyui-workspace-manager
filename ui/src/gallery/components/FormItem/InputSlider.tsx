@@ -7,6 +7,7 @@ import {
   SliderThumb,
   SliderTrack,
 } from "@chakra-ui/react";
+import { FormItem } from "./types.ts";
 
 export const InputSlider: FC<FormItem> = (props) => {
   return (

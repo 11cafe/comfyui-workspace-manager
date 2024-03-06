@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { Flex, Textarea } from "@chakra-ui/react";
+import { FormItem } from "./types.ts";
 
 export const TextareaBase: FC<FormItem> = (props) => {
   return (

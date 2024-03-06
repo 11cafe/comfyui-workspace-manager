@@ -1,6 +1,6 @@
-type FormItemType = "Input" | "InputSlider" | "Select" | "Textarea";
+export type FormItemType = "Input" | "InputSlider" | "Select" | "Textarea";
 
-interface FormItem {
+export interface FormItem {
   type?: FormItemType;
   name: string;
   label?: string;
