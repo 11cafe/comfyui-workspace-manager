@@ -45,15 +45,19 @@ Recommend using Chrome browser for the best experience. Safari doesn't work well
 [中文版教程](https://www.uisdc.com/workspace-manager) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Roadmap](https://github.com/orgs/11cafe/projects/1/views/1) 
 
 ### 🦄v2.0 beta: Two-way sync with local folder, select model install path, cloud sync workflows
-- Enable two way sync with selected local folder so you can move files using File Explore or Finder to sync them with workspace!
-- Choose models downloading folder. Useful for people sharing models with Automatic111 or external models path
-- Add models thumbnails image by putting a image file with the same name in models folder
+- Two-way sync with selected local folder so you can move files using File Explore or Finder to sync them with workspace!
+- **Models manager support external models path like Automatic1111**! Choose models downloading folder from added external paths.
+- Add models thumbnails image by putting a image file with the same name in models folder like A1111
 - One click sharing to cloud to backup your workflows to cloud
+- models list sort by date/name
 
 `git checkout beta` to view these new features! [instructions to preview beta](https://github.com/11cafe/comfyui-workspace-manager/tree/main?tab=readme-ov-file#beta-preview)
 
-<img width="600" alt="Screenshot 2024-02-28 at 8 47 23 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/58e0c2d0-74ce-4907-8336-40922706550d">
+<img width="580" alt="Screenshot 2024-03-06 at 6 30 41 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/4f010dec-a9eb-44c0-a330-48d4ff0dac0d">
 
+v2.0 demo: https://youtu.be/7Hht_BMe844
+
+Please provide us any feedbacks or problems after you tried 2.0, it can help us expedite launching beta to all! Thank you all! 😄 
 
 ### v1.7 New ComfyUI model manager, view all your models, browse and install models from civit ai, find missing models in workflow automatically in civit ai and hugging face!
 
