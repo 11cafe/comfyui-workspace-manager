@@ -9,7 +9,7 @@ import {
   IconButton,
   Tooltip,
 } from "@chakra-ui/react";
-import { IconExternalLink } from "@tabler/icons-react";
+import { IconExternalLink, IconLock } from "@tabler/icons-react";
 import { formatTimestamp, openWorkflowInNewTab } from "../utils";
 import { MouseEvent, useState, memo, ChangeEvent, useContext } from "react";
 import WorkflowListItemRightClickMenu from "./WorkflowListItemRightClickMenu";
@@ -80,9 +80,19 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
         )}
 
         <Stack textAlign={"left"} gap={0}>
-          <Text fontWeight={"500"} noOfLines={2}>
-            {workflow.name ?? "untitled"}
-          </Text>
+          <Flex alignItems={"center"}>
+            <Text
+              fontWeight={"500"}
+              noOfLines={2}
+              style={{ display: "inline-block" }}
+            >
+              {workflow.name ?? "untitled"}
+            </Text>
+            {workflow.saveLock && (
+              <IconLock size={18} style={{ display: "inline-block" }} />
+            )}
+          </Flex>
+
           <Text color={"GrayText"} ml={2} fontSize={"sm"}>
             Updated: {formatTimestamp(workflow.updateTime)}
           </Text>

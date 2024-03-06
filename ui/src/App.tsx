@@ -97,6 +97,13 @@ export default function App() {
         }),
       ]);
       setIsDirty(false);
+      userSettingsTable?.autoSave &&
+        toast({
+          title: "Saved",
+          status: "success",
+          duration: 1000,
+          isClosable: true,
+        });
     }
   }, []);
   const deleteCurWorkflow = async () => {
