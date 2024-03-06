@@ -96,6 +96,13 @@ export default function App() {
           json: graphJson,
         }),
       ]);
+      userSettingsTable?.autoSave &&
+        toast({
+          title: "Saved",
+          status: "success",
+          duration: 1000,
+          isClosable: true,
+        });
       setIsDirty(false);
     }
   }, []);

@@ -11,8 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { IconExternalLink } from "@tabler/icons-react";
 import { formatTimestamp, openWorkflowInNewTab } from "../utils";
-import { MouseEvent, useState, memo, ChangeEvent, useContext } from "react";
-import WorkflowListItemRightClickMenu from "./WorkflowListItemRightClickMenu";
+import { memo, ChangeEvent, useContext } from "react";
 import DeleteConfirm from "../components/DeleteConfirm";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 import { Workflow } from "../types/dbTypes";
@@ -24,8 +23,6 @@ type Props = {
 };
 export default memo(function WorkflowListItem({ workflow }: Props) {
   const { colorMode } = useColorMode();
-  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const {
     setDraggingFile,
     isMultiSelecting,
@@ -39,23 +36,13 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
     multiSelectedFlowsID.includes(workflow.id);
   const { curFlowID, loadWorkflowID } = useContext(WorkspaceContext);
   const isSelected = curFlowID === workflow.id;
-  const handleContextMenu = (event: MouseEvent) => {
-    event.preventDefault();
-    setMenuPosition({ x: event.clientX, y: event.clientY });
-    setIsMenuOpen(true);
-  };
-  const handleClose = () => {
-    setIsMenuOpen(false);
-  };
   const hoverBgColor = colorMode === "light" ? "gray.200" : "#4A5568";
 
   const basicInfoComp = (
     <Box
       flexShrink={1}
       flexGrow={1}
-      backgroundColor={
-        isSelected ? "teal.200" : isMenuOpen ? hoverBgColor : undefined
-      }
+      backgroundColor={isSelected ? "teal.200" : undefined}
       color={isSelected && !isMultiSelecting ? "#333" : undefined}
       draggable={!isMultiSelecting}
       onDragStart={() => setDraggingFile?.(workflow)}
@@ -92,12 +79,7 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
   );
 
   return (
-    <HStack
-      w={"100%"}
-      mb={1}
-      justify={"space-between"}
-      onContextMenu={handleContextMenu}
-    >
+    <HStack w={"100%"} mb={1} justify={"space-between"}>
       {isMultiSelecting ? (
         <Checkbox
           isChecked={isChecked}
@@ -132,13 +114,6 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
             <MoreActionMenu workflow={workflow} />
           </Flex>
         </>
-      )}
-      {isMenuOpen && (
-        <WorkflowListItemRightClickMenu
-          menuPosition={menuPosition}
-          onClose={handleClose}
-          workflowID={workflow.id}
-        />
       )}
     </HStack>
   );

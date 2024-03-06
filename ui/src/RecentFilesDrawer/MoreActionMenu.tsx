@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import {
   IconButton,
   Menu,
@@ -8,16 +8,24 @@ import {
   useToast,
   Tooltip,
 } from "@chakra-ui/react";
-import { IconDotsVertical, IconLockOpen, IconLock } from "@tabler/icons-react";
+import {
+  IconDotsVertical,
+  IconLockOpen,
+  IconLock,
+  IconCopy,
+} from "@tabler/icons-react";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import { Workflow } from "../types/dbTypes";
 import { workflowsTable } from "../db-tables/WorkspaceDB";
+import { WorkspaceContext } from "../WorkspaceContext";
 
 type Props = {
   workflow: Workflow;
 };
 export default function MoreActionMenu({ workflow }: Props) {
   const toast = useToast();
+  const { onDuplicateWorkflow } = useContext(WorkspaceContext);
+
   const [isLocked, setIsLocked] = useState(workflow.saveLock ?? false);
 
   const onLockChange = async () => {
@@ -45,6 +53,14 @@ export default function MoreActionMenu({ workflow }: Props) {
           variant="outline"
         />
         <MenuList zIndex={101}>
+          <MenuItem
+            icon={<IconCopy />}
+            onClick={() =>
+              onDuplicateWorkflow && onDuplicateWorkflow(workflow.id)
+            }
+          >
+            Duplicate
+          </MenuItem>
           <AddTagToWorkflowPopover workflow={workflow} />
           <Tooltip
             hasArrow
