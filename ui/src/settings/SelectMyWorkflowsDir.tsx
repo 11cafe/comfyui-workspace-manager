@@ -25,6 +25,8 @@ import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
 
 export default function SelectMyWorkflowsDir() {
+  const isWindows = navigator.userAgent.indexOf("Window") > 0;
+  const slash = isWindows ? "\\" : "/";
   const [isManualEntry, setIsManualEntry] = useState(false);
   const [isEditDirectory, setIsEditDirectory] = useState(false);
   const [subdirectoryList, setSubdirectoryList] = useState<string[]>([]);
@@ -69,7 +71,7 @@ export default function SelectMyWorkflowsDir() {
       setIsEditDirectory(true);
       setDirPathList(
         (currentDirectory &&
-          currentDirectory.split(/[\\|\/]/).filter((p) => !!p)) ||
+          currentDirectory.split(slash).filter((p) => !!p)) ||
           [],
       );
     }
@@ -96,7 +98,8 @@ export default function SelectMyWorkflowsDir() {
         return;
       }
     }
-    const newPath = manualEntry ?? `/${dirPathList.join("/")}`;
+    const newPath =
+      manualEntry ?? `${isWindows ? "" : slash}${dirPathList.join(slash)}`;
     await userSettingsTable?.upsert({
       myWorkflowsDir: newPath,
     });
@@ -111,22 +114,26 @@ export default function SelectMyWorkflowsDir() {
 
   const onReset = async () => {
     const { dirPath, dirList } = await getDir("");
-    setDirPathList(dirPath.split("/").filter((p: string) => !!p));
+    setDirPathList(dirPath.split(slash).filter((p: string) => !!p));
     setSubdirectoryList(dirList);
   };
 
   const onDirJump = async (index: number, nextDir?: string) => {
     let nextDirPath = "";
     if (index === -1 && nextDir) {
-      nextDirPath = `/${dirPathList.concat([nextDir]).join("/")}`;
+      nextDirPath = `${isWindows ? "" : slash}${dirPathList.concat([nextDir]).join(slash)}`;
     } else {
-      nextDirPath = `/${dirPathList.slice(0, index + 1).join("/")}`;
+      nextDirPath = `${isWindows ? "" : slash}${dirPathList.slice(0, index + 1).join(slash)}`;
     }
     const { isError = false, dirList = [] } = await getDir(nextDirPath);
 
     if (!isError) {
       setSubdirectoryList(dirList);
-      setDirPathList(nextDirPath.slice(1)?.split("/"));
+      setDirPathList(
+        isWindows
+          ? nextDirPath.split(slash)
+          : nextDirPath.slice(1)?.split(slash),
+      );
     }
   };
   const enterFolderAddressComp = (
@@ -214,7 +221,7 @@ export default function SelectMyWorkflowsDir() {
             <Stack spacing="2px" direction="row" wrap="wrap">
               {dirPathList.map((dir, index) => (
                 <>
-                  /
+                  {index > 0 && slash}
                   <Button
                     colorScheme="teal"
                     variant="link"
