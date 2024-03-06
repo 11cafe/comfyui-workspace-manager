@@ -64,7 +64,11 @@ export default function MoreActionMenu({ workflow }: Props) {
           <AddTagToWorkflowPopover workflow={workflow} />
           <Tooltip
             hasArrow
-            label={isLocked ? "Click to unlock" : "Click to lock"}
+            label={
+              isLocked
+                ? "Unlock workflow, allow modifying"
+                : "Lock workflow, prevent modifying"
+            }
             placement="bottom"
           >
             <MenuItem

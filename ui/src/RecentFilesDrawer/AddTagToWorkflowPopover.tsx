@@ -62,7 +62,7 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
   return (
     <Popover isLazy={true} onOpen={onOpen} closeOnBlur={false} placement="auto">
       <PopoverTrigger>
-        <MenuItem icon={<IconTag />}>Tag</MenuItem>
+        <MenuItem icon={<IconTag />}>Add Tag</MenuItem>
       </PopoverTrigger>
       <PopoverContent>
         <PopoverArrow />
