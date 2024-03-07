@@ -78,6 +78,14 @@ export default function App() {
     useStateRef<WorkflowVersion | null>(null);
   const saveCurWorkflow = useCallback(async () => {
     if (curFlowID.current) {
+      if (workflowsTable?.curWorkflow?.saveLock) {
+        toast({
+          title: "The workflow is locked and cannot be saved",
+          status: "warning",
+          duration: 3000,
+        });
+        return;
+      }
       const graphJson = JSON.stringify(app.graph.serialize());
       await Promise.all([
         workflowsTable?.updateFlow(curFlowID.current, {
@@ -88,6 +96,14 @@ export default function App() {
           json: graphJson,
         }),
       ]);
+      userSettingsTable?.autoSave &&
+        toast({
+          title: "Saved",
+          status: "success",
+          duration: 1000,
+          isClosable: true,
+        });
+      setIsDirty(false);
       userSettingsTable?.autoSave &&
         toast({
           title: "Saved",
@@ -271,6 +287,14 @@ export default function App() {
       app.loadGraphData(JSON.parse(flow.json));
     }
     setRoute("root");
+    /**
+     * By an unlocked flow with isDirty true and unsaved,
+     * When switching to a locked flow, isDirty is still true, and checkIsDirty() is not executed in autoSaveTimer.
+     * causes * to be displayed in front of the topbar flow name,
+     * So add this logic and reset isDirty every time you open a new process
+     * In fact, it is reasonable to reset isDirty every time you open a new flow.
+     */
+    isDirty && setIsDirty(false);
   };
 
   const compareJsonDiff = (diff: { old: Object; new: Object } | null) => {
@@ -391,20 +415,6 @@ export default function App() {
     flow && (await loadWorkflowID(flow.id));
   };
 
-  const shortcutListener = async (event: KeyboardEvent) => {
-    if (document.visibilityState === "hidden") return;
-
-    const matchResult = await matchShortcut(event);
-
-    switch (matchResult) {
-      case EShortcutKeys.SAVE:
-        saveCurWorkflow();
-        return;
-      case EShortcutKeys.SAVE_AS:
-        setRoute("saveAsModal");
-        return;
-    }
-  };
   const onExecutedCreateMedia = useCallback((image: any) => {
     if (curFlowID.current == null) return;
     let path = image.filename;
@@ -439,6 +449,7 @@ export default function App() {
     setLoadChild(true);
     autoSaveTimer.current = setInterval(async () => {
       const autoSaveEnabled = userSettingsTable?.autoSave;
+      if (workflowsTable?.curWorkflow?.saveLock) return;
       const isDirty = checkIsDirty();
       setIsDirty(!!isDirty);
       if (!isDirty) {
@@ -487,6 +498,21 @@ export default function App() {
       }
     }, 1000);
 
+    const shortcutListener = async (event: KeyboardEvent) => {
+      if (document.visibilityState === "hidden") return;
+
+      const matchResult = await matchShortcut(event);
+
+      switch (matchResult) {
+        case EShortcutKeys.SAVE:
+          saveCurWorkflow();
+          break;
+        case EShortcutKeys.SAVE_AS:
+          setRoute("saveAsModal");
+          break;
+      }
+    };
+
     window.addEventListener("keydown", shortcutListener);
 
     const fileInput = document.getElementById(
@@ -509,6 +535,7 @@ export default function App() {
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       const autoSaveEnabled = userSettingsTable?.autoSave ?? true;
+      if (workflowsTable?.curWorkflow?.saveLock) return;
       const isDirty = checkIsDirty();
 
       if (!autoSaveEnabled && isDirty) {
