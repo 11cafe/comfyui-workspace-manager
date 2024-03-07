@@ -1,6 +1,7 @@
 // @ts-ignore
 import { api } from "/scripts/api.js";
 import {
+  Button,
   HStack,
   Progress,
   Stack,
@@ -9,6 +10,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
+import { cancelDownload } from "../../Api";
 
 type Queue = { save_path: string; progress: number };
 
@@ -42,6 +44,7 @@ export default function InstallProgress() {
       zIndex={80}
       backgroundColor={colorMode === "light" ? "white" : "#242424"}
       paddingX={5}
+      pt={2}
     >
       {queue.map(({ save_path, progress }) => (
         <HStack key={save_path}>
@@ -57,6 +60,14 @@ export default function InstallProgress() {
           <Text fontSize={16} width="10%">
             {progress.toFixed(1)}%
           </Text>
+          <Button
+            variant="outline"
+            size="sm"
+            colorScheme="red"
+            onClick={() => cancelDownload(save_path)}
+          >
+            Cancel
+          </Button>
         </HStack>
       ))}
     </Stack>
