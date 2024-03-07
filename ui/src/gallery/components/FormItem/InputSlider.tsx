@@ -1,7 +1,11 @@
 import { FC } from "react";
 import {
   Flex,
-  Input,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
   Slider,
   SliderFilledTrack,
   SliderThumb,
@@ -16,10 +20,41 @@ export const InputSlider: FC<FormItem> = (props) => {
         <Flex gap={1} alignItems={"center"} flexBasis={"200px"}>
           {props.label ?? props.name}
         </Flex>
-        <Input value={props.value} />
+        <NumberInput
+          width={"100%"}
+          step={props?.step}
+          value={props.value}
+          min={props?.min}
+          max={props?.max}
+          onChange={(val) =>
+            props?.updateMetaData?.({
+              promptKey: props.promptKey,
+              name: props.name,
+              value: val,
+            })
+          }
+        >
+          <NumberInputField />
+          <NumberInputStepper>
+            <NumberIncrementStepper />
+            <NumberDecrementStepper />
+          </NumberInputStepper>
+        </NumberInput>
       </Flex>
       <Flex>
-        <Slider aria-label="slider-ex-1" defaultValue={30}>
+        <Slider
+          step={props?.step}
+          value={Number(props.value)}
+          min={props?.min ?? 0}
+          max={props?.max ?? 100}
+          onChange={(val) =>
+            props?.updateMetaData?.({
+              promptKey: props.promptKey,
+              name: props.name,
+              value: val,
+            })
+          }
+        >
           <SliderTrack>
             <SliderFilledTrack />
           </SliderTrack>

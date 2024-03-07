@@ -8,8 +8,21 @@ export const SelectBase: FC<FormItem> = (props) => {
       <Flex gap={1} alignItems={"center"} flexBasis={"200px"}>
         {props.label ?? props.name}
       </Flex>
-      <Select>
-        <option value={props.value}>{props.value}</option>
+      <Select
+        value={props.value}
+        onChange={(e) =>
+          props?.updateMetaData?.({
+            promptKey: props.promptKey,
+            name: props.name,
+            value: e.target.value,
+          })
+        }
+      >
+        {props?.options?.map((v: string) => (
+          <option key={`select${props.classType}${props.name}`} value={v}>
+            {v}
+          </option>
+        ))}
       </Select>
     </Flex>
   );

@@ -1,9 +1,10 @@
 import { MetaData } from "../../utils.ts";
-import { VStack } from "@chakra-ui/react";
+import { Flex } from "@chakra-ui/react";
 import { Media } from "../../../types/dbTypes.ts";
 import { FormItem } from "../FormItem/types.ts";
 import TopForm from "../TopForm/TopForm.tsx";
 import AllPromptForm from "../AllPromptForm/AllPromptForm.tsx";
+import { useState } from "react";
 
 export type FormConfigType = {
   topField: {
@@ -92,15 +93,50 @@ const formConfig: FormConfigType = {
 };
 
 export default function MetaBox({
-  metaData,
+  metaData: oriMetaData,
 }: {
   metaData: MetaData;
   media: Media;
 }) {
+  const [metaData, setMetaData] = useState<MetaData>(
+    JSON.parse(JSON.stringify(oriMetaData)),
+  );
+  const updateMetaData = ({
+    promptKey,
+    name,
+    value,
+  }: {
+    promptKey: string;
+    name: string;
+    value: any;
+  }) => {
+    setMetaData((pre) => ({
+      ...(pre ?? {}),
+      prompt: {
+        ...(pre?.prompt ?? {}),
+        [promptKey]: {
+          ...(pre?.prompt?.[promptKey] ?? {}),
+          inputs: {
+            ...(pre.prompt?.[promptKey]?.inputs ?? {}),
+            [name]: value,
+          },
+        },
+      },
+    }));
+  };
+
   return (
-    <VStack spacing={2} align={"stretch"}>
-      <TopForm metaData={metaData} formConfig={formConfig} />
-      <AllPromptForm metaData={metaData} formConfig={formConfig} />
-    </VStack>
+    <Flex direction={"column"} align={"stretch"}>
+      <TopForm
+        metaData={metaData}
+        formConfig={formConfig}
+        updateMetaData={updateMetaData}
+      />
+      <AllPromptForm
+        metaData={metaData}
+        formConfig={formConfig}
+        updateMetaData={updateMetaData}
+      />
+    </Flex>
   );
 }

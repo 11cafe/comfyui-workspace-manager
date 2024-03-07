@@ -8,7 +8,16 @@ export const InputBase: FC<FormItem> = (props) => {
       <Flex gap={1} alignItems={"center"} flexBasis={"200px"}>
         {props.label ?? props.name}
       </Flex>
-      <Input value={props.value} />
+      <Input
+        value={props.value}
+        onChange={(e) =>
+          props?.updateMetaData?.({
+            promptKey: props.promptKey,
+            name: props.name,
+            value: e.target.value,
+          })
+        }
+      />
     </Flex>
   );
 };

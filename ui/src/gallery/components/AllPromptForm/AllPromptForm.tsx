@@ -10,13 +10,16 @@ import {
 import { FormItemComponent } from "../FormItem/FormItemComponent.tsx";
 import { FormConfigType } from "../MetaBox/MetaBox.tsx";
 import { MetaData } from "../../utils.ts";
+import { FormItem } from "../FormItem/types.ts";
 
 export default function AllPromptForm({
   formConfig,
   metaData,
+  updateMetaData,
 }: {
   metaData: MetaData;
   formConfig: FormConfigType;
+  updateMetaData: FormItem["updateMetaData"];
 }) {
   const prompt = metaData.prompt;
   return (
@@ -37,7 +40,7 @@ export default function AllPromptForm({
               <AccordionIcon />
             </AccordionButton>
             <AccordionPanel>
-              <Flex gap={1} direction={"column"}>
+              <Flex px={2} gap={1} direction={"column"}>
                 {inputsKeyList?.map((inputsKey) => {
                   const value = promptInputs[inputsKey];
                   return (
@@ -45,8 +48,11 @@ export default function AllPromptForm({
                       key={`form${inputsKey}`}
                       {...(formConfig?.formItem?.[promptKey]?.[inputsKey] ??
                         {})}
+                      promptKey={promptKey}
+                      classType={promptElement?.class_type}
                       value={value}
                       name={inputsKey}
+                      updateMetaData={updateMetaData}
                     />
                   );
                 })}
