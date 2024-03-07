@@ -1,4 +1,10 @@
-export type FormItemType = "Input" | "InputSlider" | "Select" | "Textarea";
+export enum FormItemType {
+  Input = "Input",
+  InputSlider = "InputSlider",
+  Select = "Select",
+  Textarea = "Textarea",
+  NoSupport = "NoSupport",
+}
 
 export type FormItem = {
   type?: FormItemType;

@@ -5,12 +5,14 @@ import { SelectBase } from "./SelectBase.tsx";
 import { TextareaBase } from "./TextareaBase.tsx";
 import { FormItem, FormItemType } from "./types.ts";
 import { getNodesInfo } from "../../utils.ts";
+import { NoSupport } from "./NoSupport.tsx";
 
 const INPUT_TYPE_COMPONENT_MAPPING = {
   Input: InputBase,
   InputSlider: InputSlider,
   Select: SelectBase,
   Textarea: TextareaBase,
+  NoSupport: NoSupport,
 } as Record<FormItemType, any>;
 
 const nodesInfo = getNodesInfo();
@@ -25,32 +27,35 @@ function getInputConfigByInfo(props: FormItem): Partial<FormItem> {
   if (inputsInfo?.[0] === "STRING") {
     if (inputsInfo?.[1]?.multiline) {
       return {
-        type: "Textarea",
+        type: FormItemType.Textarea,
       };
     }
     return {
-      type: "Input",
+      type: FormItemType.Input,
     };
   }
   if (inputsInfo?.[0] === "FLOAT") {
     return {
       ...(inputsInfo?.[1] ?? {}),
-      type: "InputSlider",
+      type: FormItemType.InputSlider,
     };
   }
   if (inputsInfo?.[0] === "INT") {
     return {
       ...(inputsInfo?.[1] ?? {}),
-      type: "InputSlider",
+      type: FormItemType.InputSlider,
     };
   }
-  if (Array.isArray(inputsInfo?.[0])) {
+  if (
+    Array.isArray(inputsInfo?.[0]) &&
+    inputsInfo?.[0]?.every((v) => typeof v === "string")
+  ) {
     return {
       options: inputsInfo?.[0],
-      type: "Select",
+      type: FormItemType.Select,
     };
   }
-  return { type: "Input" };
+  return { type: FormItemType.NoSupport };
 }
 
 export const FormItemComponent: FC<FormItem> = (props) => {

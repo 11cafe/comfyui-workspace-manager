@@ -8,17 +8,14 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import { FormItemComponent } from "../FormItem/FormItemComponent.tsx";
-import { FormConfigType } from "../MetaBox/MetaBox.tsx";
 import { MetaData } from "../../utils.ts";
 import { FormItem } from "../FormItem/types.ts";
 
 export default function AllPromptForm({
-  formConfig,
   metaData,
   updateMetaData,
 }: {
   metaData: MetaData;
-  formConfig: FormConfigType;
   updateMetaData: FormItem["updateMetaData"];
 }) {
   const prompt = metaData.prompt;
@@ -46,8 +43,6 @@ export default function AllPromptForm({
                   return (
                     <FormItemComponent
                       key={`form${inputsKey}`}
-                      {...(formConfig?.formItem?.[promptKey]?.[inputsKey] ??
-                        {})}
                       promptKey={promptKey}
                       classType={promptElement?.class_type}
                       value={value}
