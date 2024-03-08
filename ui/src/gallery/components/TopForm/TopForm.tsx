@@ -17,6 +17,7 @@ export default function TopForm({
       {DEFAULT_TOP_FIELDS?.length > 0 && (
         <Flex px={2} gap={2} direction={"column"}>
           {DEFAULT_TOP_FIELDS?.map((field) => {
+            if (!prompt?.[field.promptKey]?.inputs) return null;
             const promptValue = prompt?.[field.promptKey]?.inputs?.[field.name];
             return (
               <FormItemComponent

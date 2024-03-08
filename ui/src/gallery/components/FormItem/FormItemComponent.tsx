@@ -55,6 +55,7 @@ function getInputConfigByInfo(props: FormItem): Partial<FormItem> {
       type: FormItemType.Select,
     };
   }
+  console.log("no support", props, inputsInfo);
   return { type: FormItemType.NoSupport };
 }
 
