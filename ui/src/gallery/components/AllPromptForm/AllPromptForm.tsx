@@ -8,18 +8,20 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import { FormItemComponent } from "../FormItem/FormItemComponent.tsx";
-import { FormConfigType } from "../MetaBox/MetaBox.tsx";
 import { MetaData } from "../../utils.ts";
 import { FormItem } from "../FormItem/types.ts";
+import { isInTopField, TopFieldType } from "../MetaBox/MetaBox.tsx";
 
 export default function AllPromptForm({
-  formConfig,
   metaData,
   updateMetaData,
+  topFields,
+  updateTopField,
 }: {
   metaData: MetaData;
-  formConfig: FormConfigType;
+  topFields: TopFieldType[];
   updateMetaData: FormItem["updateMetaData"];
+  updateTopField?: (field: TopFieldType) => void;
 }) {
   const prompt = metaData.prompt;
   return (
@@ -28,11 +30,21 @@ export default function AllPromptForm({
         const promptElement = prompt[promptKey];
         const promptInputs = promptElement.inputs;
         const inputsKeyList = Object.keys(promptInputs).filter(
-          (v) => !Array.isArray(promptInputs[v]),
+          (v) =>
+            !Array.isArray(promptInputs[v]) &&
+            !isInTopField(topFields, {
+              name: v,
+              promptKey: promptKey,
+            }),
         );
         if (inputsKeyList.length === 0) return null;
         return (
-          <AccordionItem borderWidth={1} borderRadius={8} my={2}>
+          <AccordionItem
+            key={`AccordionItem${promptKey}`}
+            borderWidth={1}
+            borderRadius={8}
+            my={2}
+          >
             <AccordionButton>
               <Box as="span" flex="1" textAlign="left">
                 {promptElement.class_type}
@@ -43,16 +55,25 @@ export default function AllPromptForm({
               <Flex px={2} gap={1} direction={"column"}>
                 {inputsKeyList?.map((inputsKey) => {
                   const value = promptInputs[inputsKey];
+                  if (
+                    isInTopField(topFields, {
+                      name: inputsKey,
+                      promptKey,
+                    })
+                  ) {
+                    return null;
+                  }
                   return (
                     <FormItemComponent
                       key={`form${inputsKey}`}
-                      {...(formConfig?.formItem?.[promptKey]?.[inputsKey] ??
-                        {})}
                       promptKey={promptKey}
                       classType={promptElement?.class_type}
                       value={value}
                       name={inputsKey}
                       updateMetaData={updateMetaData}
+                      updateTopField={updateTopField}
+                      topFields={topFields}
+                      metaData={metaData}
                     />
                   );
                 })}

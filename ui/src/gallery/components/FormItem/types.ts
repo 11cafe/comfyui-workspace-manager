@@ -1,4 +1,13 @@
-export type FormItemType = "Input" | "InputSlider" | "Select" | "Textarea";
+import { TopFieldType } from "../MetaBox/MetaBox.tsx";
+
+export enum FormItemType {
+  Input = "Input",
+  InputSlider = "InputSlider",
+  Select = "Select",
+  Textarea = "Textarea",
+  Checkbox = "Checkbox",
+  NoSupport = "NoSupport",
+}
 
 export type FormItem = {
   type?: FormItemType;
@@ -7,7 +16,9 @@ export type FormItem = {
   value: string | number;
   onChange?: (val: any) => void;
   classType: string;
-  promptKey: string;
+  promptKey: string | number;
+  topFields: TopFieldType[];
+  updateTopField?: (field: TopFieldType) => void;
   updateMetaData?: (data: {
     promptKey: string;
     name: string;

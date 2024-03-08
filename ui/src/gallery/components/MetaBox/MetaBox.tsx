@@ -1,95 +1,57 @@
 import { MetaData } from "../../utils.ts";
 import { Flex } from "@chakra-ui/react";
 import { Media } from "../../../types/dbTypes.ts";
-import { FormItem } from "../FormItem/types.ts";
 import TopForm from "../TopForm/TopForm.tsx";
 import AllPromptForm from "../AllPromptForm/AllPromptForm.tsx";
 import { useState } from "react";
+import { FormItem } from "../FormItem/types.ts";
 
-export type FormConfigType = {
-  topField: {
-    promptKey: string | number;
-    class_type?: string;
-    name: string;
-  }[];
-  formItem: {
-    [key in string]: {
-      [key in string]: Partial<FormItem>;
-    };
-  };
+export type TopFieldType = {
+  promptKey: string | number;
+  class_type?: string;
+  name: string;
 };
-const formConfig: FormConfigType = {
-  topField: [
-    {
-      promptKey: "4",
-      name: "ckpt_name",
-    },
-    {
-      promptKey: "6",
-      name: "text",
-    },
-    {
-      promptKey: "7",
-      name: "text",
-    },
-    {
-      promptKey: "5",
-      name: "width",
-    },
-    {
-      promptKey: "5",
-      name: "height",
-    },
-    {
-      promptKey: "3",
-      name: "steps",
-    },
-    {
-      promptKey: "3",
-      name: "sampler_name",
-    },
-    {
-      promptKey: "3",
-      name: "cfg",
-    },
-  ],
-  formItem: {
-    3: {
-      steps: {
-        type: "InputSlider",
-      },
-      cfg: {
-        type: "InputSlider",
-      },
-      denoise: {
-        type: "InputSlider",
-      },
-      sampler_name: {
-        type: "Select",
-      },
-    },
-    4: {
-      ckpt_name: {
-        type: "Select",
-      },
-    },
-    5: {
-      width: { type: "InputSlider" },
-      height: { type: "InputSlider" },
-    },
-    6: {
-      text: {
-        type: "Textarea",
-        label: "正向提示词",
-      },
-    },
-    7: {
-      text: {
-        type: "Textarea",
-        label: "反向提示词",
-      },
-    },
+export const DEFAULT_TOP_FIELDS: TopFieldType[] = [
+  {
+    promptKey: "4",
+    name: "ckpt_name",
   },
+  {
+    promptKey: "6",
+    name: "text",
+  },
+  {
+    promptKey: "7",
+    name: "text",
+  },
+  {
+    promptKey: "5",
+    name: "width",
+  },
+  {
+    promptKey: "5",
+    name: "height",
+  },
+  {
+    promptKey: "3",
+    name: "steps",
+  },
+  {
+    promptKey: "3",
+    name: "sampler_name",
+  },
+  {
+    promptKey: "3",
+    name: "cfg",
+  },
+];
+export const isInTopField = (
+  topFields: TopFieldType[],
+  item: Pick<FormItem, "name" | "promptKey">,
+) => {
+  return topFields?.some(
+    (top) => top.promptKey === item?.promptKey && top.name === item?.name,
+  );
 };
 
 export default function MetaBox({
@@ -98,6 +60,7 @@ export default function MetaBox({
   metaData: MetaData;
   media: Media;
 }) {
+  const [topFields, setTopFields] = useState(DEFAULT_TOP_FIELDS);
   const [metaData, setMetaData] = useState<MetaData>(
     JSON.parse(JSON.stringify(oriMetaData)),
   );
@@ -125,17 +88,36 @@ export default function MetaBox({
     }));
   };
 
+  const updateTopField = (field: TopFieldType) => {
+    if (
+      isInTopField(topFields, {
+        name: field.name,
+        promptKey: field?.promptKey,
+      })
+    ) {
+      setTopFields((pre) =>
+        pre.filter(
+          (v) => v.name !== field.name || v.promptKey !== field.promptKey,
+        ),
+      );
+    } else {
+      setTopFields((pre) => [...pre, field]);
+    }
+  };
+
   return (
     <Flex direction={"column"} align={"stretch"}>
       <TopForm
+        topFields={topFields}
         metaData={metaData}
-        formConfig={formConfig}
         updateMetaData={updateMetaData}
+        updateTopField={updateTopField}
       />
       <AllPromptForm
+        topFields={topFields}
         metaData={metaData}
-        formConfig={formConfig}
         updateMetaData={updateMetaData}
+        updateTopField={updateTopField}
       />
     </Flex>
   );

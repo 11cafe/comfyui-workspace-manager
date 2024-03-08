@@ -5,12 +5,19 @@ import { SelectBase } from "./SelectBase.tsx";
 import { TextareaBase } from "./TextareaBase.tsx";
 import { FormItem, FormItemType } from "./types.ts";
 import { getNodesInfo } from "../../utils.ts";
+import { NoSupport } from "./NoSupport.tsx";
+import { CheckboxBase } from "./CheckboxBase.tsx";
+import { Flex, Grid, IconButton } from "@chakra-ui/react";
+import { IconPin, IconPinFilled } from "@tabler/icons-react";
+import { isInTopField } from "../MetaBox/MetaBox.tsx";
 
 const INPUT_TYPE_COMPONENT_MAPPING = {
-  Input: InputBase,
-  InputSlider: InputSlider,
-  Select: SelectBase,
-  Textarea: TextareaBase,
+  [FormItemType.Input]: InputBase,
+  [FormItemType.InputSlider]: InputSlider,
+  [FormItemType.Select]: SelectBase,
+  [FormItemType.Textarea]: TextareaBase,
+  [FormItemType.Checkbox]: CheckboxBase,
+  NoSupport: NoSupport,
 } as Record<FormItemType, any>;
 
 const nodesInfo = getNodesInfo();
@@ -25,36 +32,72 @@ function getInputConfigByInfo(props: FormItem): Partial<FormItem> {
   if (inputsInfo?.[0] === "STRING") {
     if (inputsInfo?.[1]?.multiline) {
       return {
-        type: "Textarea",
+        type: FormItemType.Textarea,
       };
     }
     return {
-      type: "Input",
+      type: FormItemType.Input,
+    };
+  }
+  if (inputsInfo?.[0] === "BOOLEAN") {
+    return {
+      type: FormItemType.Checkbox,
     };
   }
   if (inputsInfo?.[0] === "FLOAT") {
     return {
       ...(inputsInfo?.[1] ?? {}),
-      type: "InputSlider",
+      type: FormItemType.InputSlider,
     };
   }
   if (inputsInfo?.[0] === "INT") {
     return {
       ...(inputsInfo?.[1] ?? {}),
-      type: "InputSlider",
+      type: FormItemType.InputSlider,
     };
   }
-  if (Array.isArray(inputsInfo?.[0])) {
+  if (
+    Array.isArray(inputsInfo?.[0]) &&
+    inputsInfo?.[0]?.every((v) => typeof v === "string")
+  ) {
     return {
       options: inputsInfo?.[0],
-      type: "Select",
+      type: FormItemType.Select,
     };
   }
-  return { type: "Input" };
+  // console.log("no support", props, inputsInfo);
+  return { type: FormItemType.NoSupport };
 }
 
 export const FormItemComponent: FC<FormItem> = (props) => {
   const configByNodeInfo = getInputConfigByInfo(props);
   const Com = INPUT_TYPE_COMPONENT_MAPPING[configByNodeInfo.type ?? "Input"];
-  return <Com {...props} {...configByNodeInfo} />;
+  return (
+    <Grid templateColumns={"max-content 1fr"} gap={1}>
+      <Flex>
+        <IconButton
+          onClick={() =>
+            props?.updateTopField?.({
+              name: props.name,
+              promptKey: props.promptKey,
+              class_type: props.classType,
+            })
+          }
+          variant={"text"}
+          icon={
+            isInTopField(props.topFields, {
+              name: props.name,
+              promptKey: props.promptKey,
+            }) ? (
+              <IconPinFilled />
+            ) : (
+              <IconPin />
+            )
+          }
+          aria-label={"pin"}
+        />
+      </Flex>
+      <Com {...props} {...configByNodeInfo} />
+    </Grid>
+  );
 };
