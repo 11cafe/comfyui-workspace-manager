@@ -4,12 +4,14 @@ import { Media } from "../../../types/dbTypes.ts";
 import TopForm from "../TopForm/TopForm.tsx";
 import AllPromptForm from "../AllPromptForm/AllPromptForm.tsx";
 import { useState } from "react";
+import { FormItem } from "../FormItem/types.ts";
 
-export const DEFAULT_TOP_FIELDS: {
+export type TopFieldType = {
   promptKey: string | number;
   class_type?: string;
   name: string;
-}[] = [
+};
+export const DEFAULT_TOP_FIELDS: TopFieldType[] = [
   {
     promptKey: "4",
     name: "ckpt_name",
@@ -43,6 +45,14 @@ export const DEFAULT_TOP_FIELDS: {
     name: "cfg",
   },
 ];
+export const isInTopField = (
+  topFields: TopFieldType[],
+  item: Pick<FormItem, "name" | "promptKey">,
+) => {
+  return topFields?.some(
+    (top) => top.promptKey === item?.promptKey && top.name === item?.name,
+  );
+};
 
 export default function MetaBox({
   metaData: oriMetaData,
@@ -50,6 +60,7 @@ export default function MetaBox({
   metaData: MetaData;
   media: Media;
 }) {
+  const [topFields, setTopFields] = useState(DEFAULT_TOP_FIELDS);
   const [metaData, setMetaData] = useState<MetaData>(
     JSON.parse(JSON.stringify(oriMetaData)),
   );
@@ -77,10 +88,37 @@ export default function MetaBox({
     }));
   };
 
+  const updateTopField = (field: TopFieldType) => {
+    if (
+      isInTopField(topFields, {
+        name: field.name,
+        promptKey: field?.promptKey,
+      })
+    ) {
+      setTopFields((pre) =>
+        pre.filter(
+          (v) => v.name !== field.name || v.promptKey !== field.promptKey,
+        ),
+      );
+    } else {
+      setTopFields((pre) => [...pre, field]);
+    }
+  };
+
   return (
     <Flex direction={"column"} align={"stretch"}>
-      <TopForm metaData={metaData} updateMetaData={updateMetaData} />
-      <AllPromptForm metaData={metaData} updateMetaData={updateMetaData} />
+      <TopForm
+        topFields={topFields}
+        metaData={metaData}
+        updateMetaData={updateMetaData}
+        updateTopField={updateTopField}
+      />
+      <AllPromptForm
+        topFields={topFields}
+        metaData={metaData}
+        updateMetaData={updateMetaData}
+        updateTopField={updateTopField}
+      />
     </Flex>
   );
 }

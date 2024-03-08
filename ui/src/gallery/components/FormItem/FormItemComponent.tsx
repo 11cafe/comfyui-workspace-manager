@@ -7,6 +7,9 @@ import { FormItem, FormItemType } from "./types.ts";
 import { getNodesInfo } from "../../utils.ts";
 import { NoSupport } from "./NoSupport.tsx";
 import { CheckboxBase } from "./CheckboxBase.tsx";
+import { Flex, Grid, IconButton } from "@chakra-ui/react";
+import { IconPin, IconPinFilled } from "@tabler/icons-react";
+import { isInTopField } from "../MetaBox/MetaBox.tsx";
 
 const INPUT_TYPE_COMPONENT_MAPPING = {
   [FormItemType.Input]: InputBase,
@@ -69,5 +72,32 @@ function getInputConfigByInfo(props: FormItem): Partial<FormItem> {
 export const FormItemComponent: FC<FormItem> = (props) => {
   const configByNodeInfo = getInputConfigByInfo(props);
   const Com = INPUT_TYPE_COMPONENT_MAPPING[configByNodeInfo.type ?? "Input"];
-  return <Com {...props} {...configByNodeInfo} />;
+  return (
+    <Grid templateColumns={"max-content 1fr"} gap={1}>
+      <Flex>
+        <IconButton
+          onClick={() =>
+            props?.updateTopField?.({
+              name: props.name,
+              promptKey: props.promptKey,
+              class_type: props.classType,
+            })
+          }
+          variant={"text"}
+          icon={
+            isInTopField(props.topFields, {
+              name: props.name,
+              promptKey: props.promptKey,
+            }) ? (
+              <IconPinFilled />
+            ) : (
+              <IconPin />
+            )
+          }
+          aria-label={"pin"}
+        />
+      </Flex>
+      <Com {...props} {...configByNodeInfo} />
+    </Grid>
+  );
 };
