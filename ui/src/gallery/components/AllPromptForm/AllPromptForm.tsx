@@ -11,6 +11,7 @@ import { FormItemComponent } from "../FormItem/FormItemComponent.tsx";
 import { MetaData } from "../../utils.ts";
 import { FormItem } from "../FormItem/types.ts";
 import { isInTopField, TopFieldType } from "../MetaBox/MetaBox.tsx";
+import { useEffect, useState } from "react";
 
 export default function AllPromptForm({
   metaData,
@@ -24,17 +25,25 @@ export default function AllPromptForm({
   updateTopField?: (field: TopFieldType) => void;
 }) {
   const prompt = metaData.prompt;
+  const [defaultIndex, setDefaultIndex] = useState<number[]>([]);
+  useEffect(() => {
+    setDefaultIndex(Object.keys(prompt).map((_, i) => i));
+  }, [prompt]);
   return (
-    <Accordion allowToggle>
+    <Accordion
+      index={defaultIndex}
+      onChange={(val) => setDefaultIndex(val as number[])}
+      allowMultiple
+    >
       {Object.keys(prompt).map((promptKey) => {
         const promptElement = prompt[promptKey];
         const promptInputs = promptElement.inputs;
         const inputsKeyList = Object.keys(promptInputs).filter(
           (v) =>
-            !Array.isArray(promptInputs[v]) &&
             !isInTopField(topFields, {
               name: v,
               promptKey: promptKey,
+              classType: promptElement.class_type,
             }),
         );
         if (inputsKeyList.length === 0) return null;
@@ -59,6 +68,7 @@ export default function AllPromptForm({
                     isInTopField(topFields, {
                       name: inputsKey,
                       promptKey,
+                      classType: promptElement.class_type,
                     })
                   ) {
                     return null;
