@@ -28,7 +28,6 @@ import {
   generateUrlHashWithFlowId,
   openWorkflowInNewTab,
   validateOrSaveAllJsonFileMyWorkflows,
-  rewriteAllLocalFiles,
 } from "./utils";
 import { Topbar } from "./topbar/Topbar";
 import { EShortcutKeys, Workflow, WorkflowVersion } from "./types/dbTypes";
@@ -46,6 +45,7 @@ import { WorkspaceRoute } from "./types/types";
 import { useStateRef } from "./customHooks/useStateRef";
 import { indexdb } from "./db-tables/indexdb";
 import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
+import { deepJsonDiffCheck } from "./utils/deepJsonDiffCheck";
 
 const ModelManagerTopbar = React.lazy(
   () => import("./model-manager/topbar/ModelManagerTopbar"),
@@ -189,17 +189,21 @@ export default function App() {
     if (latestWfID) {
       loadWorkflowIDImpl(latestWfID);
     }
-    /**
-     * For two-way sync, one-time rewrite all /my_workflows files to the database
-     */
-    if (localStorage.getItem("REWRITTEN_ALL_LOCAL_DISK_FILE") === "true") {
-      await validateOrSaveAllJsonFileMyWorkflows();
-    } else {
-      await rewriteAllLocalFiles();
-      localStorage.setItem("REWRITTEN_ALL_LOCAL_DISK_FILE", "true");
-    }
+
+    await validateOrSaveAllJsonFileMyWorkflows();
+
     indexdb.cache.get(UPGRADE_TO_2WAY_SYNC_KEY).then(async (value) => {
       if (value?.value !== "true") {
+        const workflowsCount = await indexdb.workflows.count();
+        if (workflowsCount == 0) {
+          // empty workflows, enable 2way sync
+          await userSettingsTable?.upsert({ twoWaySync: true });
+          await indexdb.cache.put({
+            id: UPGRADE_TO_2WAY_SYNC_KEY,
+            value: "true",
+          });
+          return;
+        }
         const myWorkflowsDir =
           await userSettingsTable?.getSetting("myWorkflowsDir");
         showDialog(
@@ -233,35 +237,6 @@ export default function App() {
     });
   };
 
-  const deepDiffCheck = (oldData: any, newData: any) => {
-    const oldDataNodes = oldData["nodes"]==null ? [] : oldData["nodes"];
-    const newDataNodes = newData["nodes"]==null ? [] : newData["nodes"];
-    oldData["nodes"] = [];
-    newData["nodes"] = [];
-    let equal = JSON.stringify(oldData) === JSON.stringify(newData);
-    if (equal) {
-      if ( oldDataNodes.length == newDataNodes.length ) {
-        const oldDataNodesMap = oldDataNodes.reduce((map:any, obj:any) => {
-          map.set(obj["id"], JSON.stringify(obj));
-          return map;
-        }, new Map());
-        const newDataNodesMap = newDataNodes.reduce((map:any, obj:any) => {
-          map.set(obj["id"], JSON.stringify(obj));
-          return map;
-        }, new Map());
-        for (let [key, value] of oldDataNodesMap) {
-          if (!newDataNodesMap.has(key) || newDataNodesMap.get(key) !== value) {
-            equal = false;
-            break;
-          }
-        }
-      }
-    }
-    oldData["nodes"]= oldDataNodes;
-    newData["nodes"]= newDataNodes;
-    return equal;
-  }
-
   const checkIsDirty = () => {
     if (curFlowID.current == null) return false;
     const curflow = workflowsTable?.curWorkflow;
@@ -274,7 +249,7 @@ export default function App() {
     } catch (e) {
       console.error("error parsing json", e);
     }
-    const equal = deepDiffCheck(graphJson, lastSaved);
+    const equal = deepJsonDiffCheck(graphJson, lastSaved);
     return !equal;
   };
 
