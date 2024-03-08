@@ -6,12 +6,14 @@ import { TextareaBase } from "./TextareaBase.tsx";
 import { FormItem, FormItemType } from "./types.ts";
 import { getNodesInfo } from "../../utils.ts";
 import { NoSupport } from "./NoSupport.tsx";
+import { CheckboxBase } from "./CheckboxBase.tsx";
 
 const INPUT_TYPE_COMPONENT_MAPPING = {
-  Input: InputBase,
-  InputSlider: InputSlider,
-  Select: SelectBase,
-  Textarea: TextareaBase,
+  [FormItemType.Input]: InputBase,
+  [FormItemType.InputSlider]: InputSlider,
+  [FormItemType.Select]: SelectBase,
+  [FormItemType.Textarea]: TextareaBase,
+  [FormItemType.Checkbox]: CheckboxBase,
   NoSupport: NoSupport,
 } as Record<FormItemType, any>;
 
@@ -32,6 +34,11 @@ function getInputConfigByInfo(props: FormItem): Partial<FormItem> {
     }
     return {
       type: FormItemType.Input,
+    };
+  }
+  if (inputsInfo?.[0] === "BOOLEAN") {
+    return {
+      type: FormItemType.Checkbox,
     };
   }
   if (inputsInfo?.[0] === "FLOAT") {
@@ -55,7 +62,7 @@ function getInputConfigByInfo(props: FormItem): Partial<FormItem> {
       type: FormItemType.Select,
     };
   }
-  console.log("no support", props, inputsInfo);
+  // console.log("no support", props, inputsInfo);
   return { type: FormItemType.NoSupport };
 }
 

@@ -29,7 +29,12 @@ export default function AllPromptForm({
         );
         if (inputsKeyList.length === 0) return null;
         return (
-          <AccordionItem borderWidth={1} borderRadius={8} my={2}>
+          <AccordionItem
+            key={`AccordionItem${promptKey}`}
+            borderWidth={1}
+            borderRadius={8}
+            my={2}
+          >
             <AccordionButton>
               <Box as="span" flex="1" textAlign="left">
                 {promptElement.class_type}
@@ -48,6 +53,7 @@ export default function AllPromptForm({
                       value={value}
                       name={inputsKey}
                       updateMetaData={updateMetaData}
+                      metaData={metaData}
                     />
                   );
                 })}

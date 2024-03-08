@@ -18,8 +18,11 @@ export const SelectBase: FC<FormItem> = (props) => {
           })
         }
       >
-        {props?.options?.map((v: string) => (
-          <option key={`select${props.classType}${props.name}`} value={v}>
+        {props?.options?.map((v: string, i: number) => (
+          <option
+            key={`select${props.promptKey}${props.classType}${props.name}${i}`}
+            value={v}
+          >
             {v}
           </option>
         ))}

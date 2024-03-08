@@ -3,6 +3,7 @@ export enum FormItemType {
   InputSlider = "InputSlider",
   Select = "Select",
   Textarea = "Textarea",
+  Checkbox = "Checkbox",
   NoSupport = "NoSupport",
 }
 
