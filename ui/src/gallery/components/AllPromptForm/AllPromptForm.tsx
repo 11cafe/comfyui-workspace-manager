@@ -40,6 +40,7 @@ export default function AllPromptForm({
         const promptInputs = promptElement.inputs;
         const inputsKeyList = Object.keys(promptInputs).filter(
           (v) =>
+            !Array.isArray(promptInputs[v]) &&
             !isInTopField(topFields, {
               name: v,
               promptKey: promptKey,
