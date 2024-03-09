@@ -1,4 +1,3 @@
-// @ts-ignore
 import { deleteFile, updateFile } from "./Api";
 import { ESortTypes } from "./RecentFilesDrawer/types";
 import { workflowsTable, userSettingsTable } from "./db-tables/WorkspaceDB";
@@ -7,12 +6,15 @@ import {
   saveJsonFileMyWorkflows,
 } from "./db-tables/DiskFileUtils";
 import { Folder, Workflow, EShortcutKeys } from "./types/dbTypes";
-// @ts-ignore
+// @ts-expect-error ComfyUI import
 import { app } from "/scripts/app.js";
 import {
   COMFYSPACE_TRACKING_FIELD_NAME,
   LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
 } from "./const";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare let LiteGraph: any, LGraph: any;
 
 // copied from app.js
 function sanitizeNodeName(string: string): string {
@@ -38,7 +40,6 @@ export function findMissingNodes(): string[] {
     if (n.type == "SDV_img2vid_Conditioning")
       n.type = "SVD_img2vid_Conditioning"; //typo fix
     // Find missing node types
-    // @ts-ignore
     if (!(n.type in LiteGraph.registered_node_types)) {
       n.type = sanitizeNodeName(n.type);
       missingNodeTypes.push(n.type);
@@ -63,7 +64,8 @@ function isValidFileName(fileName: string) {
   }
 
   // Windows reserved characters
-  const windowsInvalidChars = /[<>:"\/\\|?*\x00-\x1F]/;
+  // eslint-disable-next-line no-control-regex
+  const windowsInvalidChars = /[<>:"/\\|?*\x00-\x1F]/;
   if (windowsInvalidChars.test(fileName)) {
     return false;
   }
@@ -194,16 +196,15 @@ export function insertWorkflowToCanvas(json: string, insertPos?: number[]) {
   } else {
     graphData = structuredClone(graphData);
   }
-  // @ts-ignore
+
   let tempGraph = new LGraph();
   tempGraph.configure(graphData);
   const prevClipboard = localStorage.getItem("litegrapheditor_clipboard");
 
-  const tempCanvas = document.createElement("canvas");
-  // @ts-ignore
-  let canvas = new LGraphCanvas(tempCanvas, tempGraph);
-  canvas.selectNodes(tempGraph._nodes);
-  canvas.copyToClipboard(tempGraph._nodes);
+  const graph = app.canvas.graph;
+  app.canvas.setGraph(tempGraph);
+  app.canvas.copyToClipboard(tempGraph._nodes);
+  app.canvas.setGraph(graph);
   const priorPos = app.canvas.graph_mouse;
   if (insertPos) {
     insertPos[0] -= 15;
@@ -217,7 +218,6 @@ export function insertWorkflowToCanvas(json: string, insertPos?: number[]) {
   }
   // Nullify the references to help with garbage collection
   tempGraph = null;
-  canvas = null;
 }
 
 export const matchShortcut = async (event: KeyboardEvent) => {
