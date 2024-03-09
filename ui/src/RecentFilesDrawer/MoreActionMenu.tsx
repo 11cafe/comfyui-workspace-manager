@@ -13,6 +13,7 @@ import {
   IconDotsVertical,
   IconLock,
   IconLockOpen,
+  IconUpload,
 } from "@tabler/icons-react";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import { Workflow } from "../types/dbTypes";
@@ -99,12 +100,12 @@ export default function MoreActionMenu({ workflow }: Props) {
             </MenuItem>
           </Tooltip>
           <MenuItem
-            icon={<IconCopy />}
+            icon={<IconUpload />}
             onClick={() => {
               fileInputRef.current?.click();
             }}
           >
-            Upload
+            Upload Thumbnail Image
           </MenuItem>
         </MenuList>
       </Menu>
