@@ -1,28 +1,29 @@
-import { useState, useContext } from "react";
+import { ChangeEvent, useContext, useRef, useState } from "react";
 import {
   IconButton,
   Menu,
   MenuButton,
-  MenuList,
   MenuItem,
-  useToast,
+  MenuList,
   Tooltip,
+  useToast,
 } from "@chakra-ui/react";
 import {
-  IconDotsVertical,
-  IconLockOpen,
-  IconLock,
   IconCopy,
+  IconDotsVertical,
+  IconLock,
+  IconLockOpen,
 } from "@tabler/icons-react";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import { Workflow } from "../types/dbTypes";
-import { workflowsTable } from "../db-tables/WorkspaceDB";
+import { mediaTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
 
 type Props = {
   workflow: Workflow;
 };
 export default function MoreActionMenu({ workflow }: Props) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
   const { onDuplicateWorkflow } = useContext(WorkspaceContext);
 
@@ -38,6 +39,25 @@ export default function MoreActionMenu({ workflow }: Props) {
       title: `${newLocked ? "Locked" : "Unlocked"} successfully`,
       status: "success",
       duration: 2000,
+    });
+  };
+
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    const body = new FormData();
+    const filename = files[0].name;
+    body.append("image", files[0]);
+    body.append("subfolder", "workspace_manager");
+    body.append("filename", filename);
+    await fetch("/image/save", {
+      method: "POST",
+      body,
+    });
+    mediaTable?.create({
+      workflowID: workflow.id,
+      localPath: `workspace_manager/${filename}`,
     });
   };
 
@@ -78,8 +98,27 @@ export default function MoreActionMenu({ workflow }: Props) {
               {isLocked ? "Unlock" : "Lock"}
             </MenuItem>
           </Tooltip>
+          <MenuItem
+            icon={<IconCopy />}
+            onClick={() => {
+              fileInputRef.current?.click();
+            }}
+          >
+            Upload
+          </MenuItem>
         </MenuList>
       </Menu>
+      <input
+        style={{ display: "none" }}
+        ref={fileInputRef}
+        type="file"
+        accept=".json,image/png"
+        multiple
+        onChange={handleFileChange}
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      />
     </>
   );
 }

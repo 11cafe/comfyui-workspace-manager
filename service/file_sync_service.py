@@ -1,4 +1,5 @@
 import asyncio
+import folder_paths
 from datetime import datetime
 import platform
 import tempfile
@@ -242,3 +243,23 @@ def count_files_sync(reqJson):
             file_count += 1
     return {"success": True, "count": file_count}
 
+@server.PromptServer.instance.routes.post("/image/save")
+async def save_image(request):
+    post = await request.post()
+    image = post.get('image')
+    subfolder = post.get('subfolder')
+    filename = post.get('filename')
+    # 确保上传的是文件对象
+    if image is None or not hasattr(image, 'file'):
+        return web.Response(text="No image provided", status=400)
+    data = image.file.read()
+    output_path = folder_paths.get_output_directory()
+    safe_dir = Path(os.path.join(output_path, "workspace_manager"))
+    if not safe_dir.exists():
+        safe_dir.mkdir(parents=True, exist_ok=True)
+    file_path = safe_dir / filename
+    with open(file_path, 'wb') as f:
+        f.write(data)
+    return web.Response(text=json.dumps({
+        "imgPath": os.path.join(subfolder, filename),
+    }), content_type='application/json')
