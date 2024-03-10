@@ -28,7 +28,6 @@ import {
   generateUrlHashWithFlowId,
   openWorkflowInNewTab,
   validateOrSaveAllJsonFileMyWorkflows,
-  rewriteAllLocalFiles,
 } from "./utils";
 import { Topbar } from "./topbar/Topbar";
 import { EShortcutKeys, Workflow, WorkflowVersion } from "./types/dbTypes";
@@ -46,6 +45,7 @@ import { WorkspaceRoute } from "./types/types";
 import { useStateRef } from "./customHooks/useStateRef";
 import { indexdb } from "./db-tables/indexdb";
 import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
+import { deepJsonDiffCheck } from "./utils/deepJsonDiffCheck";
 
 const ModelManagerTopbar = React.lazy(
   () => import("./model-manager/topbar/ModelManagerTopbar"),
@@ -78,6 +78,14 @@ export default function App() {
     useStateRef<WorkflowVersion | null>(null);
   const saveCurWorkflow = useCallback(async () => {
     if (curFlowID.current) {
+      if (workflowsTable?.curWorkflow?.saveLock) {
+        toast({
+          title: "The workflow is locked and cannot be saved",
+          status: "warning",
+          duration: 3000,
+        });
+        return;
+      }
       const graphJson = JSON.stringify(app.graph.serialize());
       await Promise.all([
         workflowsTable?.updateFlow(curFlowID.current, {
@@ -95,6 +103,7 @@ export default function App() {
           duration: 1000,
           isClosable: true,
         });
+      setIsDirty(false);
     }
   }, []);
   const deleteCurWorkflow = async () => {
@@ -180,17 +189,21 @@ export default function App() {
     if (latestWfID) {
       loadWorkflowIDImpl(latestWfID);
     }
-    /**
-     * For two-way sync, one-time rewrite all /my_workflows files to the database
-     */
-    if (localStorage.getItem("REWRITTEN_ALL_LOCAL_DISK_FILE") === "true") {
-      await validateOrSaveAllJsonFileMyWorkflows();
-    } else {
-      await rewriteAllLocalFiles();
-      localStorage.setItem("REWRITTEN_ALL_LOCAL_DISK_FILE", "true");
-    }
+
+    await validateOrSaveAllJsonFileMyWorkflows();
+
     indexdb.cache.get(UPGRADE_TO_2WAY_SYNC_KEY).then(async (value) => {
       if (value?.value !== "true") {
+        const workflowsCount = await indexdb.workflows.count();
+        if (workflowsCount == 0) {
+          // empty workflows, enable 2way sync
+          await userSettingsTable?.upsert({ twoWaySync: true });
+          await indexdb.cache.put({
+            id: UPGRADE_TO_2WAY_SYNC_KEY,
+            value: "true",
+          });
+          return;
+        }
         const myWorkflowsDir =
           await userSettingsTable?.getSetting("myWorkflowsDir");
         showDialog(
@@ -236,7 +249,7 @@ export default function App() {
     } catch (e) {
       console.error("error parsing json", e);
     }
-    const equal = JSON.stringify(graphJson) === JSON.stringify(lastSaved);
+    const equal = deepJsonDiffCheck(graphJson, lastSaved);
     return !equal;
   };
 
@@ -271,6 +284,14 @@ export default function App() {
       app.loadGraphData(JSON.parse(flow.json));
     }
     setRoute("root");
+    /**
+     * By an unlocked flow with isDirty true and unsaved,
+     * When switching to a locked flow, isDirty is still true, and checkIsDirty() is not executed in autoSaveTimer.
+     * causes * to be displayed in front of the topbar flow name,
+     * So add this logic and reset isDirty every time you open a new process
+     * In fact, it is reasonable to reset isDirty every time you open a new flow.
+     */
+    isDirty && setIsDirty(false);
   };
 
   const compareJsonDiff = (diff: { old: Object; new: Object } | null) => {
@@ -391,20 +412,6 @@ export default function App() {
     flow && (await loadWorkflowID(flow.id));
   };
 
-  const shortcutListener = async (event: KeyboardEvent) => {
-    if (document.visibilityState === "hidden") return;
-
-    const matchResult = await matchShortcut(event);
-
-    switch (matchResult) {
-      case EShortcutKeys.SAVE:
-        saveCurWorkflow();
-        return;
-      case EShortcutKeys.SAVE_AS:
-        setRoute("saveAsModal");
-        return;
-    }
-  };
   const onExecutedCreateMedia = useCallback((image: any) => {
     if (curFlowID.current == null) return;
     let path = image.filename;
@@ -439,6 +446,7 @@ export default function App() {
     setLoadChild(true);
     autoSaveTimer.current = setInterval(async () => {
       const autoSaveEnabled = userSettingsTable?.autoSave;
+      if (workflowsTable?.curWorkflow?.saveLock) return;
       const isDirty = checkIsDirty();
       setIsDirty(!!isDirty);
       if (!isDirty) {
@@ -487,6 +495,21 @@ export default function App() {
       }
     }, 1000);
 
+    const shortcutListener = async (event: KeyboardEvent) => {
+      if (document.visibilityState === "hidden") return;
+
+      const matchResult = await matchShortcut(event);
+
+      switch (matchResult) {
+        case EShortcutKeys.SAVE:
+          saveCurWorkflow();
+          break;
+        case EShortcutKeys.SAVE_AS:
+          setRoute("saveAsModal");
+          break;
+      }
+    };
+
     window.addEventListener("keydown", shortcutListener);
 
     const fileInput = document.getElementById(
@@ -509,6 +532,7 @@ export default function App() {
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       const autoSaveEnabled = userSettingsTable?.autoSave ?? true;
+      if (workflowsTable?.curWorkflow?.saveLock) return;
       const isDirty = checkIsDirty();
 
       if (!autoSaveEnabled && isDirty) {

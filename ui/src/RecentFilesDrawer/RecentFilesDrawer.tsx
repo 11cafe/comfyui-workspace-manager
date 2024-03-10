@@ -208,8 +208,8 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
         <Card
           width={DRAWER_WIDTH}
           height={"100vh"}
-          pl={4}
-          pr={5}
+          pl={2}
+          pr={2}
           pt={4}
           gap={4}
           position={"absolute"}

@@ -53,3 +53,9 @@ export function clipboard(text: string) {
       console.error("Unable to copy to clipboard: ", err);
     });
 }
+
+export function getNodesInfo() {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error
+  return LiteGraph.registered_node_types;
+}

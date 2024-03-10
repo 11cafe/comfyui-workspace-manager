@@ -7,6 +7,7 @@ import {
   IconPhoto,
   IconPlus,
   IconTriangleInvertedFilled,
+  IconLock,
 } from "@tabler/icons-react";
 import DropdownTitle from "../components/DropdownTitle";
 import { useCallback, useContext, useEffect, useState } from "react";
@@ -16,7 +17,7 @@ import { PanelPosition } from "../types/dbTypes";
 import "./Topbar.css";
 import { SharedTopbarButton } from "../share/SharedTopbarButton";
 import VersionNameTopbar from "./VersionNameTopbar";
-import { userSettingsTable } from "../db-tables/WorkspaceDB";
+import { userSettingsTable, workflowsTable } from "../db-tables/WorkspaceDB";
 
 interface Props {
   curFlowName: string | null;
@@ -116,6 +117,9 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
             });
           }}
         />
+        {workflowsTable?.curWorkflow?.saveLock && (
+          <IconLock color="#FFF" size={20} />
+        )}
         {curFlowID && (
           <HStack gap={"4px"}>
             <Tooltip label="Open gallery">

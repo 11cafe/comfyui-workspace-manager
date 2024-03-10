@@ -5,28 +5,24 @@ import {
   Text,
   Checkbox,
   Flex,
-  Image,
   Stack,
   IconButton,
   Tooltip,
 } from "@chakra-ui/react";
-import { IconExternalLink } from "@tabler/icons-react";
-import { formatTimestamp, openWorkflowInNewTab, isImageFormat } from "../utils";
-import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
-import { MouseEvent, useState, memo, ChangeEvent, useContext } from "react";
-import WorkflowListItemRightClickMenu from "./WorkflowListItemRightClickMenu";
+import { IconExternalLink, IconLock } from "@tabler/icons-react";
+import { formatTimestamp, openWorkflowInNewTab } from "../utils";
+import { memo, ChangeEvent, useContext } from "react";
 import DeleteConfirm from "../components/DeleteConfirm";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 import { Workflow } from "../types/dbTypes";
 import MediaPreview from "../components/MediaPreview";
+import MoreActionMenu from "./MoreActionMenu";
 
 type Props = {
   workflow: Workflow;
 };
 export default memo(function WorkflowListItem({ workflow }: Props) {
   const { colorMode } = useColorMode();
-  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const {
     setDraggingFile,
     isMultiSelecting,
@@ -40,24 +36,13 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
     multiSelectedFlowsID.includes(workflow.id);
   const { curFlowID, loadWorkflowID } = useContext(WorkspaceContext);
   const isSelected = curFlowID === workflow.id;
-  const handleContextMenu = (event: MouseEvent) => {
-    event.preventDefault();
-    setMenuPosition({ x: event.clientX, y: event.clientY });
-    setIsMenuOpen(true);
-  };
-  const [isHovered, setIsHovered] = useState(false);
-  const handleClose = () => {
-    setIsMenuOpen(false);
-  };
   const hoverBgColor = colorMode === "light" ? "gray.200" : "#4A5568";
 
   const basicInfoComp = (
     <Box
       flexShrink={1}
       flexGrow={1}
-      backgroundColor={
-        isSelected ? "teal.200" : isMenuOpen ? hoverBgColor : undefined
-      }
+      backgroundColor={isSelected ? "teal.200" : undefined}
       color={isSelected && !isMultiSelecting ? "#333" : undefined}
       draggable={!isMultiSelecting}
       onDragStart={() => setDraggingFile?.(workflow)}
@@ -82,9 +67,19 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
         )}
 
         <Stack textAlign={"left"} gap={0}>
-          <Text fontWeight={"500"} noOfLines={2}>
-            {workflow.name ?? "untitled"}
-          </Text>
+          <Flex alignItems={"center"}>
+            <Text
+              fontWeight={"500"}
+              noOfLines={2}
+              style={{ display: "inline-block" }}
+            >
+              {workflow.name ?? "untitled"}
+            </Text>
+            {workflow.saveLock && (
+              <IconLock size={18} style={{ display: "inline-block" }} />
+            )}
+          </Flex>
+
           <Text color={"GrayText"} ml={2} fontSize={"sm"}>
             Updated: {formatTimestamp(workflow.updateTime)}
           </Text>
@@ -94,18 +89,7 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
   );
 
   return (
-    <HStack
-      w={"100%"}
-      mb={1}
-      justify={"space-between"}
-      onContextMenu={handleContextMenu}
-      onMouseEnter={() => {
-        setIsHovered(true);
-      }}
-      onMouseLeave={() => {
-        setIsHovered(false);
-      }}
-    >
+    <HStack w={"100%"} mb={1} justify={"space-between"}>
       {isMultiSelecting ? (
         <Checkbox
           isChecked={isChecked}
@@ -121,8 +105,6 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
         <>
           {basicInfoComp}
           <Flex width={"90px"} justifyContent={"flex-end"}>
-            {isHovered && <AddTagToWorkflowPopover workflow={workflow} />}
-
             <Tooltip label="Open in new tab">
               <IconButton
                 aria-label="Open in new tab"
@@ -139,15 +121,9 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
                 onDeleteFlow && onDeleteFlow(workflow.id);
               }}
             />
+            <MoreActionMenu workflow={workflow} />
           </Flex>
         </>
-      )}
-      {isMenuOpen && (
-        <WorkflowListItemRightClickMenu
-          menuPosition={menuPosition}
-          onClose={handleClose}
-          workflowID={workflow.id}
-        />
       )}
     </HStack>
   );
