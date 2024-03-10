@@ -226,6 +226,9 @@ export default function App() {
               colorScheme: "red",
             },
           ],
+          {
+            closeOnOverlayClick: false,
+          },
         );
       }
     });
@@ -482,7 +485,6 @@ export default function App() {
                 },
               },
             ],
-            true,
           );
         } else {
           // autosave workflow if enabled
