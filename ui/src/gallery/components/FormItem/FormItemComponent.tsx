@@ -88,6 +88,7 @@ export const FormItemComponent: FC<FormItem> = (props) => {
             isInTopField(props.topFields, {
               name: props.name,
               promptKey: props.promptKey,
+              classType: props.classType,
             }) ? (
               <IconPinFilled />
             ) : (

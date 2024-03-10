@@ -11,46 +11,59 @@ export type TopFieldType = {
   class_type?: string;
   name: string;
 };
+
+// comfyui default workflow
 export const DEFAULT_TOP_FIELDS: TopFieldType[] = [
   {
     promptKey: "4",
     name: "ckpt_name",
+    class_type: "CheckpointLoaderSimple",
   },
   {
     promptKey: "6",
     name: "text",
+    class_type: "CLIPTextEncode",
   },
   {
     promptKey: "7",
     name: "text",
+    class_type: "CLIPTextEncode",
   },
   {
     promptKey: "5",
     name: "width",
+    class_type: "EmptyLatentImage",
   },
   {
     promptKey: "5",
     name: "height",
+    class_type: "EmptyLatentImage",
   },
   {
     promptKey: "3",
     name: "steps",
+    class_type: "KSampler",
   },
   {
     promptKey: "3",
     name: "sampler_name",
+    class_type: "KSampler",
   },
   {
     promptKey: "3",
     name: "cfg",
+    class_type: "KSampler",
   },
 ];
 export const isInTopField = (
   topFields: TopFieldType[],
-  item: Pick<FormItem, "name" | "promptKey">,
+  item: Pick<FormItem, "name" | "promptKey" | "classType">,
 ) => {
   return topFields?.some(
-    (top) => top.promptKey === item?.promptKey && top.name === item?.name,
+    (top) =>
+      top.promptKey === item?.promptKey &&
+      top.name === item?.name &&
+      top.class_type === item.classType,
   );
 };
 
@@ -60,16 +73,15 @@ export default function MetaBox({
   metaData: MetaData;
   media: Media;
 }) {
+  const _metaData = JSON.parse(JSON.stringify(oriMetaData));
   const [topFields, setTopFields] = useState(DEFAULT_TOP_FIELDS);
-  const [metaData, setMetaData] = useState<MetaData>(
-    JSON.parse(JSON.stringify(oriMetaData)),
-  );
+  const [metaData, setMetaData] = useState<MetaData>(_metaData);
   const updateMetaData = ({
     promptKey,
     name,
     value,
   }: {
-    promptKey: string;
+    promptKey: string | number;
     name: string;
     value: any;
   }) => {
@@ -93,6 +105,7 @@ export default function MetaBox({
       isInTopField(topFields, {
         name: field.name,
         promptKey: field?.promptKey,
+        classType: field?.class_type ?? "",
       })
     ) {
       setTopFields((pre) =>
