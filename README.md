@@ -124,13 +124,11 @@ By default, We also enabled auto-saving your current workflow as a cache in case
 
 ### Where are my workflow and workspace data stored?
 
-🍺 All your workflows are saved in a folder in `/ComfyUI/my_workflows`, you can change this path in settings.
-
-⚠️Note: this is a ONE-WAY sync folder by default, that will only reflect changes made from your ComfyUI workspace browser; If you add some files manually using your OS file system (e.g. Finder in MacOS, File Explorer in Windows), workspace manager will not be able to pickup those changes. You need to use the "Import" button in files side bar to add new files to workspace manager.
+🗂️All your workflows are saved in a folder in `/ComfyUI/my_workflows`, you can change this path in settings. 
 
 <img width="360" alt="Screenshot 2024-01-02 at 10 22 45 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/4751b096-0886-4a32-95b1-87c7ce5b3787">
 
-All your data is primarily stored in your browser cache (IndexDB) and backedup in your disk under `/ComfyUI/custom_nodes/comfyui-workspace-manager/db/`. Press F12 or Inspect in right click browser menu, go to Application -> IndexedDB -> comfyui_workspace_db to see your data (workflows, version history, gallery, etc.)
+Other metadata (versions, gallery images) is primarily stored in your browser cache (IndexDB) and backedup in your disk under `/ComfyUI/custom_nodes/comfyui-workspace-manager/db/`. Press F12 or Inspect in right click browser menu, go to Application -> IndexedDB -> comfyui_workspace_db to see your data (workflows, version history, gallery, etc.)
 
 <img width="607" alt="303892585-c04ca874-03f0-4569-9a40-d8453dd9b031" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/17097e17-743d-499f-8f86-0eb1193d0e46">
 
