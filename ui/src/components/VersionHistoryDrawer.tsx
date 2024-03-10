@@ -15,6 +15,8 @@ import {
   Tab,
   TabPanel,
   useToast,
+  Tag,
+  HStack,
 } from "@chakra-ui/react";
 import { IconX } from "@tabler/icons-react";
 import {
@@ -180,27 +182,31 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
               <Stack divider={<StackDivider />} spacing={2}>
                 {changelogs?.map((c) => {
                   return (
-                    <Button
-                      key={c.id}
-                      size={"sm"}
-                      variant={"ghost"}
-                      onClick={() => {
-                        if (isDirty) {
-                          alert(
-                            "You have unsaved changes, please save or discard your changes to proceed switching version, in case losing your changes.",
-                          );
-                          return;
-                        }
-                        app.loadGraphData(JSON.parse(c.json));
-                        workflowsTable?.updateFlow(curFlowID!, {
-                          json: c.json,
-                        });
-                        onClose();
-                      }}
-                      isActive={c.id === selectedVersion}
-                    >
-                      Saved at {formatTimestamp(c.createTime, true)}
-                    </Button>
+                    <HStack key={c.id}>
+                      <Button
+                        size={"sm"}
+                        variant={"ghost"}
+                        onClick={() => {
+                          if (isDirty) {
+                            alert(
+                              "You have unsaved changes, please save or discard your changes to proceed switching version, in case losing your changes.",
+                            );
+                            return;
+                          }
+                          app.loadGraphData(JSON.parse(c.json));
+                          workflowsTable?.updateFlow(curFlowID!, {
+                            json: c.json,
+                          });
+                          onClose();
+                        }}
+                        isActive={c.id === selectedVersion}
+                      >
+                        Saved at {formatTimestamp(c.createTime, true)}
+                      </Button>
+                      {c.isAutoSave ? (
+                        <Tag colorScheme="teal">Auto save</Tag>
+                      ) : null}
+                    </HStack>
                   );
                 })}
               </Stack>

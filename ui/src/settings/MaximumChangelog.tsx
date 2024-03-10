@@ -51,10 +51,16 @@ export function MaximumChangelog() {
 
   const onBlur = async (updateKey: EMaximumChangelogNumberDiffTypes) => {
     if (changelogNumber[updateKey]) {
+      const oldSetting =
+        (await userSettingsTable?.getSetting("maximumChangelogNumber")) ??
+        userSettingsTable?.defaultSettings.maximumChangelogNumber;
+
       await userSettingsTable?.upsert({
-        maximumChangelogNumber: changelogNumber,
+        maximumChangelogNumber: {
+          ...oldSetting!,
+          [updateKey]: Number(changelogNumber[updateKey]),
+        },
       });
-      getMaximumChangelogNumber();
     } else {
       setInputError({
         ...inputError,

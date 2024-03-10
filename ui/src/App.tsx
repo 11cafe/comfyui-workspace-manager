@@ -76,7 +76,7 @@ export default function App() {
   const [jsonDiff, setJsonDiff] = useState<JsonDiff>(null);
   const [curVersion, setCurVersion, curVersionRef] =
     useStateRef<WorkflowVersion | null>(null);
-  const saveCurWorkflow = useCallback(async () => {
+  const saveCurWorkflow = useCallback(async (isAutoSave: boolean = false) => {
     if (curFlowID.current) {
       if (workflowsTable?.curWorkflow?.saveLock) {
         toast({
@@ -87,23 +87,27 @@ export default function App() {
         return;
       }
       const graphJson = JSON.stringify(app.graph.serialize());
-      await Promise.all([
-        workflowsTable?.updateFlow(curFlowID.current, {
-          json: graphJson,
-        }),
-        changelogsTable?.create({
-          workflowID: curFlowID.current,
-          json: graphJson,
-        }),
-      ]);
-      userSettingsTable?.autoSave &&
-        toast({
-          title: "Saved",
-          status: "success",
-          duration: 1000,
-          isClosable: true,
-        });
-      setIsDirty(false);
+      if (graphJson != null) {
+        await Promise.all([
+          workflowsTable?.updateFlow(curFlowID.current, {
+            json: graphJson,
+          }),
+          changelogsTable?.create({
+            workflowID: curFlowID.current,
+            json: graphJson,
+            isAutoSave: isAutoSave,
+          }),
+        ]);
+        !isAutoSave &&
+          userSettingsTable?.autoSave &&
+          toast({
+            title: "Saved",
+            status: "success",
+            duration: 1000,
+            isClosable: true,
+          });
+        setIsDirty(false);
+      }
     }
   }, []);
   const deleteCurWorkflow = async () => {
@@ -486,11 +490,7 @@ export default function App() {
           );
         } else {
           // autosave workflow if enabled
-          const graphJson = JSON.stringify(app.graph.serialize());
-          graphJson != null &&
-            (await workflowsTable?.updateFlow(curFlowID.current!, {
-              json: graphJson,
-            }));
+          saveCurWorkflow(true);
         }
       }
     }, 1000);
