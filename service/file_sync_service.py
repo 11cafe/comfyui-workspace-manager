@@ -242,3 +242,43 @@ def count_files_sync(reqJson):
             file_count += 1
     return {"success": True, "count": file_count}
 
+
+
+# Begin: Copy all files to the new directory when switching the save directory
+@server.PromptServer.instance.routes.post('/workspace/copy_json_files')
+async def copy_json_files(request):
+    reqJson = await request.json()
+    src_dir = reqJson['src']
+    dest_dir = reqJson['dst']
+    try:
+        for item in os.listdir(src_dir):
+            src_item_path = os.path.join(src_dir, item)
+            dest_item_path = os.path.join(dest_dir, item)
+
+            if os.path.isdir(src_item_path):
+                dest_item_path = await get_unique_dir_name(dest_item_path)
+                await asyncio.to_thread(shutil.copytree, src_item_path, dest_item_path)
+            elif item.endswith('.json'):
+                dest_item_path = await get_unique_file_name(dest_item_path)
+                await asyncio.to_thread(shutil.copy2, src_item_path, dest_item_path)
+
+        return web.json_response({"success": True}, content_type='application/json')
+    except Exception as e:
+        return web.json_response({"success": False, "error": str(e)}, content_type='application/json')
+
+async def get_unique_file_name(path):
+    base, extension = os.path.splitext(path)
+    counter = 1
+    while os.path.exists(path):
+        path = f"{base}_{counter}{extension}"
+        counter += 1
+    return path
+
+async def get_unique_dir_name(path):
+    original_path = path
+    counter = 1
+    while os.path.exists(path):
+        path = f"{original_path}_{counter}"
+        counter += 1
+    return path
+# End: Copy all files to the new directory when switching the save directory
