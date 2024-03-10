@@ -3,6 +3,7 @@ import { Table, workflowsTable } from "./WorkspaceDB";
 import { TableBase } from "./TableBase";
 import { Media } from "../types/dbTypes";
 import { indexdb } from "./indexdb";
+import { getMetadataFromUrl } from "../gallery/utils.ts";
 
 export class MediaTable extends TableBase<Media> {
   static readonly TABLE_NAME: Table = "media";
@@ -24,15 +25,21 @@ export class MediaTable extends TableBase<Media> {
   }): Promise<Media | null> {
     const format = input.localPath.split(".").pop();
     if (format == null) return null;
+    //link media to workflow
+    const workflow = await workflowsTable?.get(input.workflowID);
+
+    const res = await getMetadataFromUrl(
+      `/workspace/view_media?filename=${input.localPath}`,
+    );
+
     const md: Media = {
       id: uuidv4(),
       localPath: input.localPath,
       workflowID: input.workflowID,
       createTime: Date.now(),
+      workflowJSON: JSON.stringify(res?.workflow),
       format: format,
     };
-    //link media to workflow
-    const workflow = await workflowsTable?.get(input.workflowID);
     const newMedia = new Set(workflow?.mediaIDs ?? []).add(md.id);
     await workflowsTable?.updateMetaInfo(input.workflowID, {
       mediaIDs: Array.from(newMedia),

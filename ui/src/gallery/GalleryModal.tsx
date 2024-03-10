@@ -1,23 +1,25 @@
 import {
+  Checkbox,
+  Flex,
+  Heading,
   HStack,
-  Text,
+  IconButton,
   Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
   ModalBody,
   ModalCloseButton,
-  IconButton,
-  Heading,
-  Checkbox,
+  ModalContent,
+  ModalHeader,
+  ModalOverlay,
+  Text,
 } from "@chakra-ui/react";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { mediaTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import { IconArrowLeft, IconX } from "@tabler/icons-react";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { Media } from "../types/dbTypes";
 import { MetaDataInfo } from "./components/MetaDataInfo.tsx";
 import GalleryMediaItem from "./components/GalleryMediaItem.tsx";
+import SearchInput from "../components/SearchInput.tsx";
 
 export default function GalleryModal({ onclose }: { onclose: () => void }) {
   const { curFlowID } = useContext(WorkspaceContext);
@@ -27,6 +29,10 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
   const [coverPath, setCoverPath] = useState("");
   const [images, setImages] = useState<Media[]>([]);
   const [metaData, setMetaData] = useState<Media>();
+  const [searchValue, setSearchValue] = useState("");
+  const onUpdateSearchValue = (val: string) => {
+    setSearchValue(val);
+  };
 
   const loadData = async () => {
     if (curFlowID == null) return;
@@ -44,6 +50,14 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
         }
       });
   }, []);
+
+  const calcImages = useMemo(
+    () =>
+      images?.filter((v) =>
+        /*!v?.workflowJSON || */ v.workflowJSON?.includes(searchValue ?? ""),
+      ),
+    [images, searchValue],
+  );
 
   if (curFlowID == null) {
     return null;
@@ -63,6 +77,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
   };
   const isAllSelected =
     images.length > 0 && selectedID.length === images.length;
+
   return (
     <Modal isOpen={true} onClose={onclose} blockScrollOnMount={true}>
       <ModalOverlay />
@@ -80,6 +95,14 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
                 />
               )}
               Gallery - {workflowName}
+              {!metaData && (
+                <Flex gap={2} display={"inline-flex"} ml={2}>
+                  <SearchInput
+                    searchValue={searchValue}
+                    onUpdateSearchValue={onUpdateSearchValue}
+                  />
+                </Flex>
+              )}
             </Heading>
             {/* <Button
               size={"sm"}
@@ -121,7 +144,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
         <ModalBody overflowY={"auto"}>
           {!metaData ? (
             <HStack wrap={"wrap"}>
-              {images.map((media) => {
+              {calcImages.map((media) => {
                 return (
                   <GalleryMediaItem
                     key={media.id}
