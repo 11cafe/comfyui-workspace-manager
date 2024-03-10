@@ -14,6 +14,7 @@ import FolderOnTopSettings from "../settings/FolderOnTopSettings";
 import TwoWaySyncSettings from "../settings/TwoWaySyncSettings";
 import CommonCheckboxSettings from "../settings/CommonCheckboxSettings";
 import SelectMyWorkflowsDir from "../settings/SelectMyWorkflowsDir";
+import { MaximumChangelog } from "../settings/MaximumChangelog";
 
 export default function WorkspaceSettingsModal({
   onClose,
@@ -37,6 +38,7 @@ export default function WorkspaceSettingsModal({
               >
                 <SelectMyWorkflowsDir />
                 <ShortcutSettings />
+                <MaximumChangelog />
                 <CommonCheckboxSettings
                   settingKey="autoSave"
                   text="Enable auto save workflow"

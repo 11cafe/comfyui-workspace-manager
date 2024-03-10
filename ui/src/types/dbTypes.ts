@@ -74,6 +74,11 @@ export enum EShortcutKeys {
   SAVE_AS = "saveAs",
 }
 
+export enum EMaximumChangelogNumberDiffTypes {
+  manualSave = "manualSave",
+  autoSave = "autoSave",
+}
+
 export type UserSettings = {
   id: string;
   myWorkflowsDir: string;
@@ -87,6 +92,7 @@ export type UserSettings = {
   cloudHost: string;
   overwriteCurWorkflowWhenDroppingFileToCanvas: boolean;
   defaultFolders: Record<MODEL_TYPE, string>;
+  maximumChangelogNumber: Record<EMaximumChangelogNumberDiffTypes, number>;
 };
 
 export interface PanelPosition {
