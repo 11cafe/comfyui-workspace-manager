@@ -38,11 +38,10 @@ It is recommended to do git clone than downloading zip folder, because you can g
   - 🤏**Drag and drop** to insert subworkflows into current flow.
   - 🗂️Organize workflows with folders, 🏷️tags
   - 📂Save and sync all your workflows in a local folder (by default under `/ComfyUI/my_workflows` customize this location in Settings)
-     - Save workflow by pressing the 💾 button, or ⌨Shift+S shortcut
+     - Save workflow by pressing the 💾 button, or ⌨Shift+S shortcut (customize this shortcut in Settings).
+     - Every time you save, it will create a new record in **Version History**. You can easily revert to any version.
      - Enable/disable autosave workflow
-  - 🕛**Version control** of workflow
-    - Everytime you press save, it will log a new version in history. You can easily revert back to any versions
-    - Create named workflow version
+  - 🕛**Version control** of workflow, create/switch versions
   - Bulk import workflows into your workspace
   - 1click download all your workflows into a .zip
 - **🔮Models manager**:
@@ -51,9 +50,7 @@ It is recommended to do git clone than downloading zip folder, because you can g
   - drag and drop to insert "load model_type" node into workflow
   - automatic search for missing models of workflow from civit ai and hugging face
 - **🖼️Image Gallery**: Every image/video you generate will be saved in the gallery of the current workflow. You can set any image in the gallery as the cover photo of the workflow
-- **Settings**:
-  - Dark/light mode
-  - Customize Shortcuts
+- Dark/light mode
 - cloud sync & backup workspace so you will never lose your data (Upcoming!)
 - [beta!]One-click share workflow
 
@@ -67,14 +64,15 @@ Recommend using Chrome browser for the best experience. Safari doesn't work well
 - Add models thumbnails image by putting a image file with the same name in models folder like A1111
 - One click sharing to cloud to backup your workflows to cloud
 - models list sort by date/name
-
-`git checkout beta` to view these new features! [instructions to preview beta](https://github.com/11cafe/comfyui-workspace-manager/tree/main?tab=readme-ov-file#beta-preview)
-
-<img width="580" alt="Screenshot 2024-03-06 at 6 30 41 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/4f010dec-a9eb-44c0-a330-48d4ff0dac0d">
-
 v2.0 demo: https://youtu.be/7Hht_BMe844
 
-Please provide us any feedbacks or problems after you tried 2.0, it can help us expedite launching beta to all! Thank you all! 😄 
+**Make sure you clicked these 2 buttons after updating to v2.0** 
+Once you have enabled two-way sync, DO NOT disable it again. We are migrating away from browser storage and embracing two-way sync with your local disk, so that everything is persistently stored in your disk.
+
+<img width="541" alt="Screenshot 2024-03-11 at 12 24 35 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/4b0d44ba-b2e4-4077-bb8a-262829787c05">
+
+
+
 
 **v1.7 ComfyUI model manager, view your installed models, install models from civit ai, open workflow in multiple browser tabs**
 
@@ -85,10 +83,6 @@ Please provide us any feedbacks or problems after you tried 2.0, it can help us 
 <img width="400" alt="Screenshot 2024-01-23 at 12 27 34 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/3b543024-3a6b-4fca-9980-e535d83e206e">
 
 <img width="200" alt="Screenshot 2024-01-23 at 12 26 56 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/d29d0831-a15a-4597-acf6-facee4dbc76e">
-
-Save your workflow by pressing the 💾 button, or ⌨**Shift+S** shortcut (customize this shortcut in Settings). Every time you save, it will create a new record in **Version History**.
-
-<img width="467" alt="sidebar" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/0b9b5e1a-02b4-46ed-ab5c-cb8ed366765f">
 
 <img width="460" alt="gallery" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/2b7886c9-2d4a-46c6-adac-429720f74f11">
 
