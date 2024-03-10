@@ -28,7 +28,10 @@ interface DialogContextType {
   showDialog: (
     message: string | React.ReactNode,
     buttons?: (DialogButton | null)[],
-    hideCloseIcon?: boolean,
+    options?: {
+      hideCloseIcon?: boolean;
+      closeOnOverlayClick?: boolean;
+    },
   ) => void;
 }
 
@@ -49,14 +52,16 @@ export const AlertDialogProvider: React.FC<{ children: ReactNode }> = ({
   const [message, setMessage] = useState<string | React.ReactNode>("");
   const [buttons, setButtons] = useState<(DialogButton | null)[]>([]);
   const [hideCloseIcon, setHideCloseIcon] = useState(false);
+  const [closeOnOverlayClick, setCloseOnOverlayClick] = useState(true);
   const cancelRef = React.useRef<HTMLButtonElement>(null);
 
   const showDialog: DialogContextType["showDialog"] = useCallback(
-    (message, buttons, hideCloseIcon = false) => {
+    (message, buttons, options) => {
       setMessage(message);
       setButtons(buttons ?? []);
       setIsOpen(true);
-      setHideCloseIcon(hideCloseIcon);
+      setHideCloseIcon(options?.hideCloseIcon ?? false);
+      setCloseOnOverlayClick(options?.closeOnOverlayClick ?? true);
     },
     [],
   );
@@ -74,6 +79,7 @@ export const AlertDialogProvider: React.FC<{ children: ReactNode }> = ({
           leastDestructiveRef={cancelRef}
           onClose={handleClose}
           size={"xl"}
+          closeOnOverlayClick={closeOnOverlayClick}
         >
           <DarkMode>
             <AlertDialogOverlay>
