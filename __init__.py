@@ -32,8 +32,6 @@ if os.path.exists(dist_path):
         web.static('/workspace_web/', dist_path),
     ])
 
-server.PromptServer.instance.app.add_subapp("/workspace_web/", workspace_app)
-
 BACKUP_DIR = os.path.join(workspace_path, "backup")
 MAX_BACKUP_FILES = 20
 
