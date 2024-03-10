@@ -16,8 +16,6 @@ FILE_HASH_DICT_FOLDER_PATH = os.path.join(os.path.dirname(__file__), "../../hash
 FILE_HASH_DICT_PATH = os.path.join(FILE_HASH_DICT_FOLDER_PATH, "file_hash_dict")
 if not os.path.exists(FILE_HASH_DICT_FOLDER_PATH):
     os.makedirs(FILE_HASH_DICT_FOLDER_PATH)
-# Use shelve to store file_hash_dict
-file_hash_dict = shelve.open(FILE_HASH_DICT_PATH)
 
 file_list = []
 file_list_lock = threading.Lock()
@@ -27,8 +25,8 @@ is_populating = False
 
 
 def save_file_hash(file_path, file_hash):
-    global file_hash_dict
-    file_hash_dict[file_path] = file_hash
+    with shelve.open(FILE_HASH_DICT_PATH) as file_hash_dict:
+        file_hash_dict[file_path] = file_hash
 
 
 def compute_hash(file_path):
@@ -41,7 +39,7 @@ def compute_hash(file_path):
     return sha256_hash.hexdigest()
 
 
-def process_file(folder, file):
+def process_file(folder, file, file_hash_dict):
     file_path = folder_paths.get_full_path(folder, file)
     # check if the file hash is already calculated
     if file_path in file_hash_dict:
@@ -63,12 +61,13 @@ def populate_file_hash_dict():
     global is_populating, file_list
     local_file_list = []
     folder_list = dict(folder_paths.folder_names_and_paths)
-    for folder in folder_list:
-        if folder == "configs" or folder == "custom_nodes":
-            continue
-        files = folder_paths.get_filename_list(folder)
-        for file in files:
-            local_file_list.append(process_file(folder, file))
+    with shelve.open(FILE_HASH_DICT_PATH) as file_hash_dict:
+        for folder in folder_list:
+            if folder == "configs" or folder == "custom_nodes":
+                continue
+            files = folder_paths.get_filename_list(folder)
+            for file in files:
+                local_file_list.append(process_file(folder, file, file_hash_dict))
     with file_list_lock:
         file_list = local_file_list
         send_ws("model_list", file_list)  # send the list without hash to the client
@@ -79,7 +78,8 @@ def populate_file_hash_dict():
                 file["model_type"], file["model_name"] + file["model_extension"]
             )
             file_hash = compute_hash(file_path)
-            file_hash_dict[file_path] = file_hash
+            with shelve.open(FILE_HASH_DICT_PATH) as file_hash_dict:
+                file_hash_dict[file_path] = file_hash
             with file_list_lock:
                 file["file_hash"] = file_hash
                 send_ws("model_list", file_list)  # update the list with the new hash
