@@ -71,11 +71,19 @@ export default function App() {
   const [loadChild, setLoadChild] = useState(false);
   const developmentEnvLoadFirst = useRef(false);
   const autoSaveTimer = useRef(0);
+  const autoSaveDebounceTimer = useRef(0);
+  const autoSaveDebounceJson = useRef({});
   const toast = useToast();
   const workflowOverwriteNoticeStateRef = useRef("hide"); // disabled/hide/show;
   const [jsonDiff, setJsonDiff] = useState<JsonDiff>(null);
   const [curVersion, setCurVersion, curVersionRef] =
     useStateRef<WorkflowVersion | null>(null);
+
+  const resetAutoSaveDebounce = () => {
+    clearTimeout(autoSaveDebounceTimer.current);
+    autoSaveDebounceTimer.current = 0;
+    autoSaveDebounceJson.current = {};
+  };
   const saveCurWorkflow = useCallback(async (isAutoSave: boolean = false) => {
     if (curFlowID.current) {
       if (workflowsTable?.curWorkflow?.saveLock) {
@@ -88,6 +96,7 @@ export default function App() {
       }
       const graphJson = JSON.stringify(app.graph.serialize());
       if (graphJson != null) {
+        resetAutoSaveDebounce();
         await Promise.all([
           workflowsTable?.updateFlow(curFlowID.current, {
             json: graphJson,
@@ -296,6 +305,7 @@ export default function App() {
      * In fact, it is reasonable to reset isDirty every time you open a new flow.
      */
     isDirty && setIsDirty(false);
+    resetAutoSaveDebounce();
   };
 
   const compareJsonDiff = (diff: { old: Object; new: Object } | null) => {
@@ -456,9 +466,10 @@ export default function App() {
       if (!isDirty) {
         return;
       }
+      const curGraphJson = app.graph.serialize();
       if (
         curVersionRef.current != null &&
-        curVersionRef.current.json !== JSON.stringify(app.graph.serialize())
+        curVersionRef.current.json !== JSON.stringify(curGraphJson)
       ) {
         setCurVersion(null);
       }
@@ -489,8 +500,21 @@ export default function App() {
             true,
           );
         } else {
-          // autosave workflow if enabled
-          saveCurWorkflow(true);
+          /**
+           * When the auto-save logic is met, first determine whether there are unexecuted auto-save tasks;
+           * If it exists, compare the json to be saved in the previous automatic save task and the latest json to see if they are the same;
+           * If different, reset the auto-save task.
+           * Avoid excessive execution of automatic save logic when continuously modifying the workflow.
+           */
+          if (
+            !autoSaveDebounceTimer.current ||
+            !deepJsonDiffCheck(curGraphJson, autoSaveDebounceJson.current)
+          ) {
+            resetAutoSaveDebounce();
+            autoSaveDebounceTimer.current = setTimeout(() => {
+              saveCurWorkflow(true);
+            }, 2000);
+          }
         }
       }
     }, 1000);
