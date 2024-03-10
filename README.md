@@ -34,18 +34,16 @@ It is recommended to do git clone than downloading zip folder, because you can g
 ## Features
 
 - **Workflows manager**
-  - 🔁Switch between different workflows easily
-  - 1click open workflow in multiple browser tabs.
+  - 🔁Switch between different workflows easily. 1click open workflow in multiple browser tabs.
   - 🤏**Drag and drop** to insert subworkflows into current flow.
   - 🗂️Organize workflows with folders, 🏷️tags
-    - Create, move, rename, delete workflows and folders
   - 📂Save and sync all your workflows in a local folder (by default under `/ComfyUI/my_workflows` customize this location in Settings)
      - Save workflow by pressing the 💾 button, or ⌨Shift+S shortcut
      - Enable/disable autosave workflow
-  - 🕛**Version control** of workflow, never lose any changes
+  - 🕛**Version control** of workflow
     - Everytime you press save, it will log a new version in history. You can easily revert back to any versions
     - Create named workflow version
-  - **Bulk import** workflows into your workspace
+  - Bulk import workflows into your workspace
   - 1click download all your workflows into a .zip
 - **🔮Models manager**:
   - 1click install models from civitai to `models/` subfolder of the matching model type
@@ -55,9 +53,7 @@ It is recommended to do git clone than downloading zip folder, because you can g
 - **🖼️Image Gallery**: Every image/video you generate will be saved in the gallery of the current workflow. You can set any image in the gallery as the cover photo of the workflow
 - **Settings**:
   - Dark/light mode
-  - Customize Shortcuts:
-    - Save: ⌨Shift+S
-    - Save As:  ⌨Ctrl+Alt+S
+  - Customize Shortcuts
 - cloud sync & backup workspace so you will never lose your data (Upcoming!)
 - [beta!]One-click share workflow
 
