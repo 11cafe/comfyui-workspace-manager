@@ -52,7 +52,6 @@ export const calcOneKSampler: (metaData: MetaData) => {
   [key: string]: any;
 } = (metaData) => {
   const { prompt, workflow } = metaData;
-  console.log(workflow);
   // KSampler
   const kSampler =
     prompt?.[

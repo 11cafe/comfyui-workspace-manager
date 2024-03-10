@@ -34,7 +34,7 @@ export class MediaTable extends TableBase<Media> {
     //link media to workflow
     const workflow = await workflowsTable?.get(input.workflowID);
     const newMedia = new Set(workflow?.mediaIDs ?? []).add(md.id);
-    await workflowsTable?.updateFlow(input.workflowID, {
+    await workflowsTable?.updateMetaInfo(input.workflowID, {
       mediaIDs: Array.from(newMedia),
       coverMediaPath: md.localPath,
     });

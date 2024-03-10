@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { getAllModelsList } from "../../Api";
 import type { ModelsListRespItem } from "../types";
 // @ts-ignore
 import { api } from "/scripts/api.js";
+
+type ModelsListRespItemFromApi = ModelsListRespItem & { date: number };
 
 export const useUpdateModels = () => {
   // all model types
@@ -18,7 +20,7 @@ export const useUpdateModels = () => {
     initData();
     api.addEventListener(
       "model_list",
-      (e: { detail: ModelsListRespItem[] }) => {
+      (e: { detail: ModelsListRespItemFromApi[] }) => {
         updateModels(e.detail);
       },
     );
@@ -29,7 +31,7 @@ export const useUpdateModels = () => {
     updateModels(file_list);
   };
 
-  const updateModels = async (file_list?: ModelsListRespItem[]) => {
+  const updateModels = async (file_list?: ModelsListRespItemFromApi[]) => {
     if (!file_list) return;
     setLoading(false);
     const modelTypeList = Array.from(
@@ -42,7 +44,9 @@ export const useUpdateModels = () => {
     }
     modelTypeList.unshift("checkpoints");
     setModelTypeList(modelTypeList);
-    setModelsList(file_list);
+    setModelsList(
+      file_list.map((item) => ({ ...item, date: new Date(item.date * 1000) })),
+    );
   };
 
   return {

@@ -24,6 +24,8 @@ import {
   Input,
   Tooltip,
   DarkMode,
+  Tag,
+  HStack,
 } from "@chakra-ui/react";
 import {
   IconArrowBackUpDouble,
@@ -43,18 +45,26 @@ import HoverMenu from "./HoverMenu";
 const ShareDialog = lazy(() => import("../share/ShareDialog"));
 // @ts-ignore
 import { app } from "/scripts/app.js";
+import JsonDiffCompareModal from "./JsonDiffCompareModal";
 
 export default function DropdownTitle() {
-  const { curFlowID, loadWorkflowID, discardUnsavedChanges, saveCurWorkflow } =
-    useContext(WorkspaceContext);
+  const {
+    curFlowID,
+    loadWorkflowID,
+    discardUnsavedChanges,
+    saveCurWorkflow,
+    setRoute,
+    route,
+  } = useContext(WorkspaceContext);
 
   const [isOpenNewVersion, setIsOpenNewVersion] = useState(false);
-  const [isOpenNewName, setIsOpenNewName] = useState(false);
-  const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [newFlowName, setNewFlowName] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [workflow, setWorkflow] = useState<Workflow>();
-  const [saveShortcut, setSaveShortcut] = useState("");
+  const [saveShortcut, setSaveShortcut] = useState({
+    save: "",
+    saveAs: "",
+  });
   const [isShareOpen, setIsShareOpen] = useState(false);
 
   useEffect(() => {
@@ -65,7 +75,7 @@ export default function DropdownTitle() {
       });
     }
     userSettingsTable?.getSetting("shortcuts").then((res) => {
-      setSaveShortcut(res?.save);
+      setSaveShortcut(res);
     });
   }, [curFlowID]);
 
@@ -88,12 +98,12 @@ export default function DropdownTitle() {
       parentFolderID: workflow?.parentFolderID,
     });
 
-    flow && (await loadWorkflowID(flow.id, true));
+    flow && (await loadWorkflowID(flow.id, null, true));
     handleOnCloseModal();
   };
 
   const handleOnCloseModal = () => {
-    setIsOpenNewName(false);
+    setRoute("root");
   };
 
   const handleDownload = useCallback(async () => {
@@ -126,8 +136,8 @@ export default function DropdownTitle() {
               height={"29px"}
               aria-label="menu"
               size={"sm"}
-              colorScheme="gray"
-              backgroundColor={"gray.700"}
+              // backgroundColor={"gray.700"}
+              backgroundColor={"teal.600"}
             >
               File
               <IconChevronDown size={20} />
@@ -141,7 +151,7 @@ export default function DropdownTitle() {
                 onClick={saveCurWorkflow}
                 icon={<IconDeviceFloppy size={20} />}
                 iconSpacing={1}
-                command={saveShortcut}
+                command={saveShortcut.save}
               >
                 Save
               </MenuItem>
@@ -150,7 +160,6 @@ export default function DropdownTitle() {
                   onClick={discardUnsavedChanges}
                   icon={<IconArrowBackUpDouble size={20} />}
                   iconSpacing={1}
-                  isDisabled={workflow?.lastSavedJson == null}
                 >
                   Discard unsaved changes
                 </MenuItem>
@@ -163,9 +172,10 @@ export default function DropdownTitle() {
                 Download
               </MenuItem>
               <MenuItem
-                onClick={() => setIsOpenNewName(true)}
+                onClick={() => setRoute("saveAsModal")}
                 icon={<IconDeviceFloppy size={20} />}
                 iconSpacing={1}
+                command={saveShortcut.saveAs}
               >
                 Save As
               </MenuItem>
@@ -177,28 +187,34 @@ export default function DropdownTitle() {
                 Create Version
               </MenuItem>
               <MenuItem
-                onClick={() => setIsVersionHistoryOpen(true)}
+                onClick={() => setRoute("versionHistory")}
                 icon={<IconHistory size={20} />}
                 iconSpacing={1}
               >
                 Versions History
               </MenuItem>
-              {/* <MenuItem
+              <MenuItem
                 onClick={() => setIsShareOpen(true)}
                 icon={<IconShare2 size={20} />}
                 iconSpacing={1}
+                alignItems={"center"}
               >
-                Share
-              </MenuItem> */}
+                <HStack>
+                  <p>Share</p> <Tag size={"sm"}>🧪🧪beta</Tag>
+                </HStack>
+              </MenuItem>
             </MenuList>
           </Menu>
         }
       />
       {isShareOpen && <ShareDialog onClose={() => setIsShareOpen(false)} />}
-      {isVersionHistoryOpen && (
-        <VersionHistoryDrawer onClose={() => setIsVersionHistoryOpen(false)} />
+      {route == "versionHistory" && (
+        <VersionHistoryDrawer onClose={() => setRoute("root")} />
       )}
-      {isOpenNewName && (
+
+      <JsonDiffCompareModal />
+
+      {route === "saveAsModal" && (
         <Modal isOpen={true} onClose={handleOnCloseModal}>
           <ModalOverlay />
           <ModalContent>

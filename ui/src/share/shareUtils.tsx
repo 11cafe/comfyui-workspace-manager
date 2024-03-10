@@ -27,7 +27,6 @@ export const privacyOptions: CustomSelectorOption<WorkflowPrivacy>[] = [
 
 export const getNodeDefs = () => {
   const allNodes = app.graph._nodes;
-  // console.log("allNodes", allNodes);
 
   const nodeDefs = {};
   for (let n of allNodes) {
@@ -62,13 +61,11 @@ export const getNodeDefs = () => {
 export async function fetchCloudWorkflowPrivacy(
   workflow: Workflow,
 ): Promise<WorkflowPrivacy> {
-  const cloudURL = workflow.cloudURL;
-  if (!cloudURL) {
+  const cloudOrigin = workflow.cloudOrigin;
+  if (!cloudOrigin) {
     throw Error("cloudURL is required");
   }
-  const urlObj = new URL(cloudURL);
-  const host = urlObj.origin; // "http://localhost:3000"
-  return fetch(host + `/api/getWorkflow?id=${workflow.cloudID}`)
+  return fetch(cloudOrigin + `/api/getWorkflow?id=${workflow.cloudID}`)
     .then((res) => res.json())
     .then((json) => {
       const privacy = json.data?.privacy;

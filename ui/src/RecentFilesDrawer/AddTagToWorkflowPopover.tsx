@@ -9,7 +9,7 @@ import {
   PopoverHeader,
   Input,
   HStack,
-  IconButton,
+  MenuItem,
 } from "@chakra-ui/react";
 import { useState, useContext } from "react";
 import { tagsTable, workflowsTable } from "../db-tables/WorkspaceDB";
@@ -60,14 +60,9 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
   const maxTagMenuHeight = 37 * 5;
 
   return (
-    <Popover isLazy={true} onOpen={onOpen}>
+    <Popover isLazy={true} onOpen={onOpen} closeOnBlur={false} placement="auto">
       <PopoverTrigger>
-        <IconButton
-          aria-label="Delete confirm"
-          size={"sm"}
-          variant="ghost"
-          icon={<IconTag color={"#718096"} />}
-        />
+        <MenuItem icon={<IconTag />}>Add Tag</MenuItem>
       </PopoverTrigger>
       <PopoverContent>
         <PopoverArrow />
@@ -84,7 +79,7 @@ export default function AddTagToWorkflowPopover({ workflow }: Props) {
             value={selectedTags}
             onChange={async (selected) => {
               setSelectedTags(selected);
-              await workflowsTable?.updateFlow(workflow.id, {
+              await workflowsTable?.updateMetaInfo(workflow.id, {
                 tags: selected.map((s) => s.value),
               });
               await onRefreshFilesList?.();

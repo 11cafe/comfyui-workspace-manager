@@ -41,6 +41,7 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
       : { backgroundColor: "#4A5568" };
 
   useEffect(() => {
+    if (isCollapsed) return;
     workflowsTable
       ?.listFolderContent(
         folder.id,
@@ -49,7 +50,7 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
       .then((child) => {
         setChildren(child);
       });
-  }, [folder.id, refreshFolderStamp]);
+  }, [folder.id, refreshFolderStamp, isCollapsed]);
 
   const handleContextMenu = (event: MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -62,12 +63,11 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
     if (!draggingFile) return setIsActive(false);
     if (isFolder(draggingFile)) {
       if (draggingFile.id === folder.id) return setIsActive(false);
-      await foldersTable?.update({
-        id: draggingFile.id,
+      await foldersTable?.update(draggingFile.id, {
         parentFolderID: folder.id,
       });
     } else if (!isFolder(draggingFile)) {
-      await workflowsTable?.updateFlow(draggingFile.id, {
+      await workflowsTable?.updateFolder(draggingFile.id, {
         parentFolderID: folder.id,
       });
     }
@@ -76,11 +76,19 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
   };
   useEffect(() => {
     if (!!folder.isCollapse === isCollapsed) return;
-    foldersTable?.update({
-      id: folder.id,
+    foldersTable?.update(folder.id, {
       isCollapse: isCollapsed,
     });
   }, [isCollapsed]);
+  useEffect(() => {
+    const cur = workflowsTable?.curWorkflow;
+    const curWorkflowPath = cur?.parentFolderID + "/";
+    const folderPath = folder.id + "/";
+    const childreHasCurworkflow = curWorkflowPath.startsWith(folderPath);
+    if (childreHasCurworkflow) {
+      setIsCollapsed(false);
+    }
+  }, []);
   return (
     <Stack>
       <HStack

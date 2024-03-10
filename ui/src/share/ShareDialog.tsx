@@ -1,4 +1,5 @@
 import {
+  Badge,
   Button,
   Flex,
   HStack,
@@ -73,19 +74,20 @@ export default function ShareDialog({ onClose }: Props) {
 
     cloudID &&
       localID &&
-      (await workflowsTable?.updateFlow(localID, {
+      (await workflowsTable?.updateMetaInfo(localID, {
         cloudID: cloudID,
-        cloudURL: cloudHostRef.current + "/workflow/" + cloudID,
+        cloudOrigin: event.origin,
+        privacy: privacy,
       }));
     localVerID &&
       cloudVersionID &&
       (await workflowVersionsTable?.update(localVerID, {
         cloudID: cloudVersionID,
-        cloudURL: cloudHostRef.current + "/workflow_ver/" + cloudVersionID,
+        cloudOrigin: event.origin,
       }));
     loadData();
     window.open(
-      cloudHostRef.current + "/workflow_ver/" + cloudVersionID,
+      cloudHostRef.current + "/workflow/" + cloudID + "/" + cloudVersionID,
       "_blank",
     );
     setLoading(false);
@@ -109,7 +111,7 @@ export default function ShareDialog({ onClose }: Props) {
     }
     const workflow = workflowsTable?.curWorkflow ?? undefined;
     setWorkflow(workflow);
-    if (workflow?.cloudID && workflow.cloudURL) {
+    if (workflow?.cloudID && workflow.cloudOrigin) {
       fetchCloudWorkflowPrivacy(workflow).then((privacy) => {
         setPrivacy(privacy);
       });
@@ -270,7 +272,7 @@ export default function ShareDialog({ onClose }: Props) {
                     }}
                   />
                   <Flex color="green">
-                    <Text>New version</Text>
+                    <Badge colorScheme="purple">New version</Badge>
                   </Flex>
                 </HStack>
 
@@ -280,6 +282,7 @@ export default function ShareDialog({ onClose }: Props) {
                       key={ver.id}
                       version={ver}
                       cloudHost={cloudHost}
+                      cloudWorkflowID={cloudWorkflowID ?? null}
                     />
                   );
                 })}

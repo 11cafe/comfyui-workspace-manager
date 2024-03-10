@@ -122,33 +122,17 @@ export async function openWorkflowsFolder() {
   }
 }
 
-export type ScanLocalFile = {
-  name: string;
-  json: string;
-};
-export type ScanLocalFolder = {
-  name: string;
-  list: ScanLocalResult[];
-};
-export type ScanLocalResult = ScanLocalFile | ScanLocalFolder;
-
-export async function scanLocalNewFiles(path: string, existFlowIds: string[]) {
-  try {
-    const response = await fetch("/workspace/scan_local_new_files", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        path,
-        existFlowIds,
-      }),
-    });
-    const result: ScanLocalResult[] = await response.json();
-    return result;
-  } catch (error) {
-    console.error("Error scan local new files:", error);
+export async function fetchMyWorkflowsDir() {
+  const resp = await fetch("/workspace/get_my_workflows_dir");
+  const res = (await resp.json()) as {
+    path?: string;
+    error?: string;
+    os: string;
+  };
+  if (res.error) {
+    alert(`Failed to fetch my workflows path: ${res.error}`);
   }
+  return res.path;
 }
 
 export async function getAllModelsList() {
@@ -160,7 +144,7 @@ export async function getAllModelsList() {
       },
     });
     const result = await response.json();
-    return result as ModelsListRespItem[];
+    return result as Array<ModelsListRespItem & { date: number }>;
   } catch (error) {
     console.error("Error get all models list:", error);
   }
@@ -175,7 +159,7 @@ export async function getAllFoldersList() {
       },
     });
     const result = await response.json();
-    return result as string[];
+    return result as Record<string, string[]>;
   } catch (error) {
     console.error("Error get all models list:", error);
   }
@@ -196,5 +180,45 @@ export async function deleteLocalDiskFolder(folderPath: string) {
     return result;
   } catch (error) {
     console.error("Error move file:", error);
+  }
+}
+
+export async function cancelDownload(savePath: string) {
+  try {
+    const response = await fetch("/model_manager/cancel_installation", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        save_path: savePath,
+      }),
+    });
+    const result = await response.text();
+    return result;
+  } catch (error) {
+    console.error("Error move file:", error);
+  }
+}
+
+export async function copyFlowsToNewDirectory(
+  sourceDir: string,
+  dstDir: string,
+) {
+  try {
+    const response = await fetch("/workspace/copy_json_files", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        src: sourceDir,
+        dst: dstDir,
+      }),
+    });
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error copy flows to new directory:", error);
   }
 }

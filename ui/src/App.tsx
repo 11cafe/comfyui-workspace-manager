@@ -10,39 +10,42 @@ import {
 import { app } from "/scripts/app.js";
 // @ts-ignore
 import { api } from "/scripts/api.js";
-import { Box, Portal } from "@chakra-ui/react";
+import { Box, Portal, useToast } from "@chakra-ui/react";
 import {
   loadDBs,
   workflowsTable,
   userSettingsTable,
   changelogsTable,
   mediaTable,
+  workflowVersionsTable,
 } from "./db-tables/WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
-import { WorkspaceContext } from "./WorkspaceContext";
+import { JsonDiff, WorkspaceContext } from "./WorkspaceContext";
 import {
-  Route,
-  syncNewFlowOfLocalDisk,
   getFileUrl,
-  matchSaveWorkflowShortcut,
-  validateOrSaveAllJsonFileMyWorkflows,
+  matchShortcut,
   getWorkflowIdInUrlHash,
   generateUrlHashWithFlowId,
-  rewriteAllLocalFiles,
   openWorkflowInNewTab,
+  validateOrSaveAllJsonFileMyWorkflows,
 } from "./utils";
 import { Topbar } from "./topbar/Topbar";
-// import { authTokenListener, pullAuthTokenCloseIfExist } from "./auth/authUtils";
-import { PanelPosition, Workflow } from "./types/dbTypes";
+import { EShortcutKeys, Workflow, WorkflowVersion } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
 import React from "react";
 const RecentFilesDrawer = React.lazy(
   () => import("./RecentFilesDrawer/RecentFilesDrawer"),
 );
 const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
-import { scanLocalNewFiles } from "./Api";
 import { IconExternalLink } from "@tabler/icons-react";
-import { DRAWER_Z_INDEX } from "./const";
+import { DRAWER_Z_INDEX, UPGRADE_TO_2WAY_SYNC_KEY } from "./const";
+import ServerEventListener from "./model-manager/hooks/ServerEventListener";
+import { v4 } from "uuid";
+import { WorkspaceRoute } from "./types/types";
+import { useStateRef } from "./customHooks/useStateRef";
+import { indexdb } from "./db-tables/indexdb";
+import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
+import { deepJsonDiffCheck } from "./utils/deepJsonDiffCheck";
 
 const ModelManagerTopbar = React.lazy(
   () => import("./model-manager/topbar/ModelManagerTopbar"),
@@ -57,25 +60,35 @@ const usedWsEvents = [
 
 export default function App() {
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
-  const [route, setRoute] = useState<Route>("root");
+  const [route, setRoute] = useState<WorkspaceRoute>("root");
   const [loadingDB, setLoadingDB] = useState(true);
   const [flowID, setFlowID] = useState<string | null>(null);
   const curFlowID = useRef<string | null>(null);
-  const [positionStyle, setPositionStyle] = useState<PanelPosition>();
+
   const [isDirty, setIsDirty] = useState(false);
   const workspaceContainerRef = useRef(null);
   const { showDialog } = useDialog();
   const [loadChild, setLoadChild] = useState(false);
   const developmentEnvLoadFirst = useRef(false);
   const autoSaveTimer = useRef(0);
+  const toast = useToast();
   const workflowOverwriteNoticeStateRef = useRef("hide"); // disabled/hide/show;
-
+  const [jsonDiff, setJsonDiff] = useState<JsonDiff>(null);
+  const [curVersion, setCurVersion, curVersionRef] =
+    useStateRef<WorkflowVersion | null>(null);
   const saveCurWorkflow = useCallback(async () => {
     if (curFlowID.current) {
+      if (workflowsTable?.curWorkflow?.saveLock) {
+        toast({
+          title: "The workflow is locked and cannot be saved",
+          status: "warning",
+          duration: 3000,
+        });
+        return;
+      }
       const graphJson = JSON.stringify(app.graph.serialize());
       await Promise.all([
         workflowsTable?.updateFlow(curFlowID.current, {
-          lastSavedJson: graphJson,
           json: graphJson,
         }),
         changelogsTable?.create({
@@ -83,6 +96,14 @@ export default function App() {
           json: graphJson,
         }),
       ]);
+      userSettingsTable?.autoSave &&
+        toast({
+          title: "Saved",
+          status: "success",
+          duration: 1000,
+          isClosable: true,
+        });
+      setIsDirty(false);
     }
   }, []);
   const deleteCurWorkflow = async () => {
@@ -93,7 +114,7 @@ export default function App() {
       if (userInput) {
         // User clicked OK
         await workflowsTable?.delete(curFlowID.current);
-        setCurFlowIDAndName(null, "");
+        setCurFlowIDAndName(null);
       }
     }
   };
@@ -105,23 +126,34 @@ export default function App() {
 
     if (userInput) {
       // User clicked OK
-      if (curFlowID.current) {
-        const flow = await workflowsTable?.get(curFlowID.current);
-        if (flow) {
-          if (flow.lastSavedJson) {
-            await app.loadGraphData(JSON.parse(flow.lastSavedJson));
-          }
-        }
+      const curID = workflowsTable?.curWorkflow?.id;
+      if (curID == null) return;
+      let lastSavedJson;
+      if (userSettingsTable?.autoSave) {
+        lastSavedJson = (await changelogsTable?.getLastestByWorkflowID(curID))
+          ?.json;
+      } else {
+        lastSavedJson = (await workflowsTable?.get(curID))?.json;
+      }
+      if (lastSavedJson) {
+        workflowsTable?.updateCurWorkflow({
+          ...workflowsTable.curWorkflow!,
+          json: lastSavedJson,
+        });
+        await app.loadGraphData(JSON.parse(lastSavedJson));
+      } else {
+        alert("Error: No last saved version found");
       }
     }
   };
 
-  const setCurFlowIDAndName = (id: string | null, name: string) => {
+  const setCurFlowIDAndName = (workflow: Workflow | null) => {
     // curID null is when you deleted current workflow
+    const id = workflow?.id ?? null;
+    workflowsTable?.updateCurWorkflow(workflow);
     curFlowID.current = id;
     setFlowID(id);
-    setCurFlowName(name);
-    workflowsTable?.updateCurWorkflowID(id);
+    setCurFlowName(workflow?.name ?? "");
     if (id == null) {
       document.title = "ComfyUI";
       window.location.hash = "";
@@ -131,10 +163,10 @@ export default function App() {
     if (getWorkflowIdInUrlHash()) {
       const newUrlHash = generateUrlHashWithFlowId(id);
       window.location.hash = newUrlHash;
-      document.title = name + " - ComfyUI";
+      document.title = workflow!.name + " - ComfyUI";
     } else {
       localStorage.setItem("curFlowID", id);
-      document.title = "ComfyUI - " + name;
+      document.title = "ComfyUI - " + workflow!.name;
     }
   };
 
@@ -144,9 +176,6 @@ export default function App() {
     localStorage.removeItem("comfyspace");
     try {
       await loadDBs();
-      await userSettingsTable?.getSetting("topBarStyle").then((res) => {
-        updatePanelPosition(res, false);
-      });
     } catch (error) {
       console.error("error loading db", error);
     }
@@ -158,20 +187,48 @@ export default function App() {
       latestWfID = localStorage.getItem("curFlowID");
     }
     if (latestWfID) {
-      // since we changed to lazy load our component, app.configureGraph will come before our app loading,
-      // localStorage.setItem("workflow") will not take effect anymore and will result different workflow appearing bug when refreshing
       loadWorkflowIDImpl(latestWfID);
     }
 
-    /**
-     * For two-way sync, one-time rewrite all /my_workflows files to the database
-     */
-    if (localStorage.getItem("REWRITTEN_ALL_LOCAL_DISK_FILE") === "true") {
-      await validateOrSaveAllJsonFileMyWorkflows();
-    } else {
-      await rewriteAllLocalFiles();
-      localStorage.setItem("REWRITTEN_ALL_LOCAL_DISK_FILE", "true");
-    }
+    await validateOrSaveAllJsonFileMyWorkflows();
+
+    indexdb.cache.get(UPGRADE_TO_2WAY_SYNC_KEY).then(async (value) => {
+      if (value?.value !== "true") {
+        const workflowsCount = await indexdb.workflows.count();
+        if (workflowsCount == 0) {
+          // empty workflows, enable 2way sync
+          await userSettingsTable?.upsert({ twoWaySync: true });
+          await indexdb.cache.put({
+            id: UPGRADE_TO_2WAY_SYNC_KEY,
+            value: "true",
+          });
+          return;
+        }
+        const myWorkflowsDir =
+          await userSettingsTable?.getSetting("myWorkflowsDir");
+        showDialog(
+          <EnableTwowaySyncConfirm
+            myWorkflowsDir={myWorkflowsDir ?? "undefined"}
+          />,
+          [
+            {
+              label: "I have downloaded all my workflows and ready to enable",
+              onClick: async () => {
+                await userSettingsTable?.upsert({ twoWaySync: true });
+                if (await userSettingsTable?.getSetting("twoWaySync")) {
+                  indexdb.cache.put({
+                    id: UPGRADE_TO_2WAY_SYNC_KEY,
+                    value: "true",
+                  });
+                  location.reload();
+                }
+              },
+              colorScheme: "red",
+            },
+          ],
+        );
+      }
+    });
   };
 
   const subsribeToWsToStopWarning = () => {
@@ -180,63 +237,85 @@ export default function App() {
     });
   };
 
-  const checkIsDirty = async () => {
-    if (curFlowID.current != null) {
-      const curWorkflow = await workflowsTable?.get(curFlowID.current);
-      return !!curWorkflow && checkIsDirtyImpl(curWorkflow);
-    }
-    return false;
-  };
-  const checkIsDirtyImpl = (curflow: Workflow) => {
-    if (curflow.lastSavedJson == null) return true;
+  const checkIsDirty = () => {
+    if (curFlowID.current == null) return false;
+    const curflow = workflowsTable?.curWorkflow;
+    if (curflow == null) return false;
+    if (curflow.json == null) return true;
     const graphJson = app.graph.serialize() ?? {};
     let lastSaved = {};
     try {
-      lastSaved = curflow?.lastSavedJson
-        ? JSON.parse(curflow?.lastSavedJson)
-        : {};
+      lastSaved = curflow?.json ? JSON.parse(curflow?.json) : {};
     } catch (e) {
       console.error("error parsing json", e);
     }
-    const equal = JSON.stringify(graphJson) === JSON.stringify(lastSaved);
+    const equal = deepJsonDiffCheck(graphJson, lastSaved);
     return !equal;
   };
 
-  const loadWorkflowIDImpl = async (id: string) => {
+  const loadWorkflowIDImpl = async (id: string, versionID?: string | null) => {
     if (app.graph == null) {
       console.error("app.graph is null cannot load workflow");
       return;
     }
 
     const flow = await workflowsTable?.get(id);
-
     // If the currently loaded flow does not exist, you need to clear the URL hash and localStorage to avoid popping up another prompt that the flow does not exist when refreshing the page.
     if (flow == null) {
       alert("Error: Workflow not found! id: " + id);
-      setCurFlowIDAndName(null, "");
+      setCurFlowIDAndName(null);
       return;
     }
-    setCurFlowIDAndName(id, flow.name);
+    const version = versionID
+      ? await workflowVersionsTable?.get(versionID)
+      : null;
+
     app.ui.dialog.close();
-    app.loadGraphData(JSON.parse(flow.json));
+    if (version) {
+      setCurVersion(version);
+      setCurFlowIDAndName({
+        ...flow,
+        json: version.json,
+      });
+      app.loadGraphData(JSON.parse(version.json));
+    } else {
+      setCurFlowIDAndName(flow);
+      setCurVersion(null);
+      app.loadGraphData(JSON.parse(flow.json));
+    }
     setRoute("root");
+    /**
+     * By an unlocked flow with isDirty true and unsaved,
+     * When switching to a locked flow, isDirty is still true, and checkIsDirty() is not executed in autoSaveTimer.
+     * causes * to be displayed in front of the topbar flow name,
+     * So add this logic and reset isDirty every time you open a new process
+     * In fact, it is reasonable to reset isDirty every time you open a new flow.
+     */
+    isDirty && setIsDirty(false);
+  };
+
+  const compareJsonDiff = (diff: { old: Object; new: Object } | null) => {
+    setJsonDiff(diff);
   };
 
   const loadWorkflowID = async (
     id: string | null,
+    versionID?: string | null,
     forceLoad: boolean = false,
   ) => {
     // No current workflow, id is null when you deleted current workflow
     if (id === null) {
-      setCurFlowIDAndName(null, "");
+      setCurFlowIDAndName(null);
       app.graph.clear();
       return;
     }
-    // auto save enabled
-    const autoSaveEnabled =
-      (await userSettingsTable?.getSetting("autoSave")) ?? true;
-    if (autoSaveEnabled || !isDirty || forceLoad) {
-      loadWorkflowIDImpl(id);
+
+    if (
+      !isDirty ||
+      forceLoad ||
+      (await userSettingsTable?.getSetting("autoSave"))
+    ) {
+      loadWorkflowIDImpl(id, versionID);
       return;
     }
     // prompt when auto save disabled and dirty
@@ -267,7 +346,6 @@ export default function App() {
         label: "Discard",
         colorScheme: "red",
         onClick: async () => {
-          await discardUnsavedChanges();
           newIDToLoad && loadWorkflowIDImpl(newIDToLoad);
         },
       });
@@ -334,36 +412,6 @@ export default function App() {
     flow && (await loadWorkflowID(flow.id));
   };
 
-  const updatePanelPosition = useCallback(
-    (position?: PanelPosition, needUpdateDB: boolean = false) => {
-      const { top: curTop = 0, left: curLeft = 0 } = positionStyle || {};
-      let { top = 0, left = 0 } = position ?? {};
-      top += curTop;
-      left += curLeft;
-      const clientWidth = document.documentElement.clientWidth;
-      const clientHeight = document.documentElement.clientHeight;
-      const panelElement = document.getElementById("workspaceManagerPanel");
-      const offsetWidth = panelElement?.offsetWidth || 392;
-
-      if (top + 36 > clientHeight) top = clientHeight - 36;
-      if (left + offsetWidth >= clientWidth) left = clientWidth - offsetWidth;
-
-      setPositionStyle({ top: Math.max(0, top), left: Math.max(0, left) });
-
-      needUpdateDB &&
-        userSettingsTable?.upsert({
-          topBarStyle: { top, left },
-        });
-    },
-    [positionStyle],
-  );
-
-  const shortcutListener = async (event: KeyboardEvent) => {
-    const needSave = await matchSaveWorkflowShortcut(event);
-    if (needSave) {
-      saveCurWorkflow();
-    }
-  };
   const onExecutedCreateMedia = useCallback((image: any) => {
     if (curFlowID.current == null) return;
     let path = image.filename;
@@ -397,9 +445,19 @@ export default function App() {
     graphAppSetup();
     setLoadChild(true);
     autoSaveTimer.current = setInterval(async () => {
-      const autoSaveEnabled =
-        (await userSettingsTable?.getSetting("autoSave")) ?? true;
-
+      const autoSaveEnabled = userSettingsTable?.autoSave;
+      if (workflowsTable?.curWorkflow?.saveLock) return;
+      const isDirty = checkIsDirty();
+      setIsDirty(!!isDirty);
+      if (!isDirty) {
+        return;
+      }
+      if (
+        curVersionRef.current != null &&
+        curVersionRef.current.json !== JSON.stringify(app.graph.serialize())
+      ) {
+        setCurVersion(null);
+      }
       if (curFlowID.current != null && autoSaveEnabled) {
         const isLatest = await workflowsTable?.latestVersionCheck();
         if (
@@ -430,41 +488,52 @@ export default function App() {
           // autosave workflow if enabled
           const graphJson = JSON.stringify(app.graph.serialize());
           graphJson != null &&
-            (await workflowsTable?.updateFlow(curFlowID.current, {
+            (await workflowsTable?.updateFlow(curFlowID.current!, {
               json: graphJson,
             }));
         }
       }
-
-      checkIsDirty().then((res) => {
-        setIsDirty(res);
-      });
     }, 1000);
-    // pullAuthTokenCloseIfExist();
+
+    const shortcutListener = async (event: KeyboardEvent) => {
+      if (document.visibilityState === "hidden") return;
+
+      const matchResult = await matchShortcut(event);
+
+      switch (matchResult) {
+        case EShortcutKeys.SAVE:
+          saveCurWorkflow();
+          break;
+        case EShortcutKeys.SAVE_AS:
+          setRoute("saveAsModal");
+          break;
+      }
+    };
 
     window.addEventListener("keydown", shortcutListener);
-    // window.addEventListener("message", authTokenListener);
 
     const fileInput = document.getElementById(
       "comfy-file-input",
     ) as HTMLInputElement;
     const fileInputListener = async () => {
       if (fileInput && fileInput.files && fileInput.files.length > 0) {
-        const flow = await workflowsTable?.createFlow({
+        const newFlow: Workflow = {
+          id: v4(),
           name: fileInput.files[0].name,
           json: JSON.stringify(defaultGraph),
-        });
-
-        flow && setCurFlowIDAndName(flow.id, flow.name ?? "Unknown name");
+          updateTime: Date.now(),
+          createTime: Date.now(),
+        };
+        setCurFlowIDAndName(newFlow);
+        await workflowsTable?.createFlow(newFlow);
       }
     };
     fileInput?.addEventListener("change", fileInputListener);
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       const autoSaveEnabled = userSettingsTable?.autoSave ?? true;
-      const isDirty =
-        !!workflowsTable?.curWorkflow &&
-        checkIsDirtyImpl(workflowsTable?.curWorkflow);
+      if (workflowsTable?.curWorkflow?.saveLock) return;
+      const isDirty = checkIsDirty();
 
       if (!autoSaveEnabled && isDirty) {
         e.preventDefault(); // For modern browsers
@@ -503,17 +572,20 @@ export default function App() {
           "overwriteCurWorkflowWhenDroppingFileToCanvas",
         )) ?? false;
       if (!overwriteFlow && fileName) {
-        const flow = await workflowsTable?.createFlow({
+        const newFlow: Workflow = {
+          id: v4(),
           name: fileName,
-        });
-
-        flow && setCurFlowIDAndName(flow.id, flow.name);
+          json: JSON.stringify(defaultGraph),
+          updateTime: Date.now(),
+          createTime: Date.now(),
+        };
+        setCurFlowIDAndName(newFlow);
+        await workflowsTable?.createFlow(newFlow);
       }
     };
     app.canvasEl.addEventListener("drop", handleDrop);
 
     return () => {
-      // window.removeEventListener("message", authTokenListener);
       window.removeEventListener("keydown", shortcutListener);
       window.removeEventListener("change", fileInputListener);
       window.removeEventListener("beforeunload", handleBeforeUnload);
@@ -524,7 +596,7 @@ export default function App() {
     };
   }, []);
 
-  if (loadingDB || !positionStyle) {
+  if (loadingDB) {
     return null;
   }
 
@@ -540,6 +612,10 @@ export default function App() {
         loadNewWorkflow: loadNewWorkflow,
         loadFilePath: loadFilePath,
         setRoute: setRoute,
+        route: route,
+        jsonDiff: jsonDiff,
+        compareJson: compareJsonDiff,
+        curVersion: curVersion,
       }}
     >
       <div ref={workspaceContainerRef} className="workspace_manager">
@@ -554,12 +630,7 @@ export default function App() {
             zIndex={DRAWER_Z_INDEX}
             draggable={false}
           >
-            <Topbar
-              curFlowName={curFlowName}
-              setCurFlowName={setCurFlowName}
-              updatePanelPosition={updatePanelPosition}
-              positionStyle={positionStyle}
-            />
+            <Topbar curFlowName={curFlowName} setCurFlowName={setCurFlowName} />
             {loadChild && (
               <Suspense>
                 <ModelManagerTopbar />
@@ -577,9 +648,12 @@ export default function App() {
               </Suspense>
             )}
             {route === "gallery" && (
-              <GalleryModal onclose={() => setRoute("root")} />
+              <Suspense>
+                <GalleryModal onclose={() => setRoute("root")} />
+              </Suspense>
             )}
           </Box>
+          <ServerEventListener />
         </Portal>
       </div>
     </WorkspaceContext.Provider>

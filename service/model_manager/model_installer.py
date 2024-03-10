@@ -9,14 +9,18 @@ import urllib.request
 import threading
 import server
 import time
-from .missing_models import find_missing_models # type: ignore noqa
-from .model_list import start_populate_file_hash_dict, save_file_hash 
+from .missing_models import find_missing_models  # type: ignore noqa
+from .model_list import start_populate_file_hash_dict, save_file_hash
 
 comfy_path = os.path.dirname(folder_paths.__file__)
+
+
 def download_url_with_wget(url, save_path):
     print(f"Downloading {url} to {save_path} ...")
     if not is_wget_installed():
-        print("wget is not installed. Please install wget or use a different download method.")
+        print(
+            "wget is not installed. Please install wget or use a different download method."
+        )
         return False
 
     try:
@@ -26,7 +30,7 @@ def download_url_with_wget(url, save_path):
 
         while True:
             output = process.stderr.readline()
-            if process.poll() is not None and output == b'':
+            if process.poll() is not None and output == b"":
                 break
             if output:
                 progress = parse_wget_output(output.decode())
@@ -44,19 +48,28 @@ def download_url_with_wget(url, save_path):
     print("\nDownload completed successfully.")
     return True
 
+
 def is_wget_installed():
     try:
-        subprocess.run("wget --version", shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(
+            "wget --version",
+            shell=True,
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
         return True
     except subprocess.CalledProcessError:
         return False
+
 
 def parse_wget_output(output):
     """
     Parse wget output to extract and return the download progress.
     """
-    match = re.search(r'\d+%|\d+K \d+Kb/s', output)
+    match = re.search(r"\d+%|\d+K \d+Kb/s", output)
     return match.group(0) if match else ""
+
 
 # Create a dictionary to store download tasks
 download_tasks = []
@@ -64,6 +77,9 @@ download_tasks = []
 download_tasks_lock = threading.Lock()
 # Create a thread that will execute the download tasks
 download_thread = None
+# Create a variable to store the path of the download that needs to be canceled
+cancel_path = None
+
 
 def download_worker():
     while True:
@@ -72,32 +88,31 @@ def download_worker():
             # Get a task from the list
             if download_tasks:
                 task = download_tasks.pop(0)
-
         if task is not None:
             # Execute the download task and update the download progress
-            download_url_with_agent(task['url'], task['save_path'])
+            download_url_with_agent(
+                url=task["url"],
+                save_path=task["save_path"],
+                file_name=task["filename"],
+                file_hash=task.get("file_hash"),
+            )
             # calculate newly downloaded models' hash
             start_populate_file_hash_dict()
-                
+
         else:
             # No more tasks, break the loop
-            send_ws('download_progress', [])
+            send_ws("download_progress", [])
             break
+
 
 @server.PromptServer.instance.routes.post("/model_manager/install_model")
 async def install_model(request):
     global download_thread
 
     json_data = await request.json()
-    url = json_data['url']
-    save_path = get_model_dir(json_data)
-    file_hash = json_data.get('file_hash')
-    if file_hash is not None:
-        save_file_hash(save_path, file_hash)
-
     with download_tasks_lock:
         # Add the task to the list
-        download_tasks.append({ 'url': url, 'save_path': save_path, 'filename': json_data['filename'] })
+        download_tasks.append(json_data)
 
     # If the previous thread is not active, start a new one
     if download_thread is None or not download_thread.is_alive():
@@ -105,91 +120,99 @@ async def install_model(request):
         download_thread.daemon = True
         download_thread.start()
 
-    return web.Response(text=f"Downloading {url} to {save_path} ...")
+    return web.Response(
+        text=f"Downloading {json_data['url']} to {json_data['save_path']} ..."
+    )
 
-@server.PromptServer.instance.routes.post("/model_manager/install_model_stream")
-async def install_model_stream(request):
+
+@server.PromptServer.instance.routes.post("/model_manager/cancel_installation")
+async def cancel_installation(request):
+    global download_thread, cancel_path
+
     json_data = await request.json()
-    model_path = get_model_path(json_data)
+    save_path = json_data["save_path"]
+    is_canceled = False
+    with download_tasks_lock:
+        # Remove the task from the list
+        for task in download_tasks:
+            if task["filename"] == save_path:
+                download_tasks.remove(task)
+                is_canceled = True
+                break
+        print(download_tasks)
 
-    response = web.StreamResponse()
-    response.headers['Content-Type'] = 'text/plain'
-    await response.prepare(request)
-    print(f"🖌️Model Manager: Installing model '{json_data['name']}' into '{model_path}' ...")
-    async def progress_callback(progress):
-        progress_message = f"Installing {json_data['name']}: {progress:.2f}%\n"
-        await response.write(progress_message.encode('utf-8'))
+    # if the download is not in task list, the download is in progress, cancel it
+    if not is_canceled:
+        cancel_path = save_path
 
-    try:
-        if model_path is not None:
-            result = await download_url_with_agent(json_data['url'], model_path, progress_callback)
-            if result:
-                await response.write(b"Installation complete.\n")
-            else:
-                await response.write(b"Installation failed.\n")
-        else:
-            print(f"Model installation error: invalid model type - {json_data['type']}")
-            await response.write(b"Installation failed: Invalid model type.\n")
+    return web.Response(text=f"Canceled download to {save_path} ...")
 
-    except Exception as e:
-        print(f"[ERROR] {e}", file=sys.stderr)
-        await response.write(f"Installation failed: {e}\n".encode('utf-8'))
 
-    await response.write_eof()
-    return response
-
-def download_url_with_agent(url, save_path, progress_callback=None):
-    print('download_url_with_agent', url, save_path)
+def download_url_with_agent(url, save_path, file_name, file_hash):
+    print("download_url_with_agent", url, save_path)
+    global cancel_path
 
     try:
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+        }
         print(f"Downloading {url} to {save_path} ...")
 
         req = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(req) as response:
             if response.status != 200:
-              raise Exception(f"Request returned status code {response.status}")
-  
-            file_size = int(response.headers.get('content-length', 0))
+                raise Exception(f"Request returned status code {response.status}")
+
+            file_size = int(response.headers.get("content-length", 0))
             print(f"File size: {file_size} bytes")
-            file_name = response.headers.get('Content-Disposition').split('filename=')[1].strip('"')
-            file_path = os.path.join(save_path, file_name)
+            content_disposition = response.headers.get("Content-Disposition")
+            if content_disposition:
+                file_name = content_disposition.split("filename=")[1].strip('"')
+            file_path = os.path.join(get_model_dir(save_path), file_name)
+            if file_hash is not None:
+                save_file_hash(file_path, file_hash)
+
             temp_file_path = file_path + ".temp"  # Temporary file
             chunk_size = 1024  # 1KB per chunk
             downloaded = 0
 
             if file_size == 0:
-              html = response.read().decode()
-              title = re.search(r'<title>(.*?)</title>', html)[0]
-              if 'Sign in' in title:
-                raise Exception(f"You need to add API key to download this model.")
-              else:
-                raise Exception(f"Download failed. {title}")
+                html = response.read().decode()
+                title = re.search(r"<title>(.*?)</title>", html)[0]
+                if "Sign in" in title:
+                    raise ValueError("You need to add API key to download this model.")
+                else:
+                    raise ValueError(f"Download failed. {title}")
 
             if not os.path.exists(os.path.dirname(temp_file_path)):
                 os.makedirs(os.path.dirname(temp_file_path))
 
-            with open(temp_file_path, 'wb') as f:
+            with open(temp_file_path, "wb") as f:
                 while True:
+                    if cancel_path == file_path:
+                        break
                     chunk = response.read(chunk_size)
                     if not chunk:
                         break
                     f.write(chunk)
                     downloaded += len(chunk)
                     progress = (downloaded / file_size) * 100
-                    print(f'\rProgress: {progress:.2f}%', end='')
-                    send_download_status({'save_path': file_path, 'progress': progress})
+                    print(f"\rProgress: {progress:.2f}%", end="")
+                    send_download_status({"save_path": file_path, "progress": progress})
 
-                    # if progress_callback:
-                    #     progress_callback(progress)
+            if cancel_path == file_path:
+                print(f"\nDownload to {save_path} is canceled.")
+                if os.path.exists(temp_file_path):
+                    os.remove(temp_file_path)
+                cancel_path = None
+                return False
 
         # Rename temp file to final filename after successful download
         os.rename(temp_file_path, file_path)
 
     except Exception as e:
         print(f"\nDownload error: {url} / {e}", file=sys.stderr)
-        send_ws('download_error', f"{url} / {e}")
+        send_ws("download_error", f"{url} / {e}")
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)  # Clean up the temporary file in case of failure
         return False
@@ -197,49 +220,11 @@ def download_url_with_agent(url, save_path, progress_callback=None):
     print("\nDownload complete. File saved as:", save_path)
     return True
 
-def get_model_dir(data):
-    if data['save_path'] != 'default':
-        if '..' in data['save_path'] or data['save_path'].startswith('/'):
-            print(f"[WARN] '{data['save_path']}' is not allowed path. So it will be saved into 'models/etc'.")
-            base_model = "etc"
-        else:
-            if data['save_path'].startswith("custom_nodes"):
-                base_model = os.path.join(comfy_path, data['save_path'])
-            else:
-                base_model = os.path.join(folder_paths.models_dir, data['save_path'])
+def get_model_dir(save_path):
+    if os.path.isabs(save_path):
+        return save_path
     else:
-        model_type = data['type']
-        if model_type == "checkpoints":
-            base_model = folder_paths.folder_names_and_paths["checkpoints"][0][0]
-        elif model_type == "unclip":
-            base_model = folder_paths.folder_names_and_paths["checkpoints"][0][0]
-        elif model_type == "VAE":
-            base_model = folder_paths.folder_names_and_paths["vae"][0][0]
-        elif model_type == "lora":
-            base_model = folder_paths.folder_names_and_paths["loras"][0][0]
-        elif model_type == "T2I-Adapter":
-            base_model = folder_paths.folder_names_and_paths["controlnet"][0][0]
-        elif model_type == "T2I-Style":
-            base_model = folder_paths.folder_names_and_paths["controlnet"][0][0]
-        elif model_type == "controlnet":
-            base_model = folder_paths.folder_names_and_paths["controlnet"][0][0]
-        elif model_type == "clip_vision":
-            base_model = folder_paths.folder_names_and_paths["clip_vision"][0][0]
-        elif model_type == "gligen":
-            base_model = folder_paths.folder_names_and_paths["gligen"][0][0]
-        elif model_type == "upscale":
-            base_model = folder_paths.folder_names_and_paths["upscale_models"][0][0]
-        elif model_type == "embeddings":
-            base_model = folder_paths.folder_names_and_paths["embeddings"][0][0]
-        else:
-            base_model = "etc"
-
-    return base_model
-
-
-def get_model_path(data):
-    base_model = get_model_dir(data)
-    return os.path.join(base_model, data['filename'])
+        return folder_paths.folder_names_and_paths[save_path][0][0]
 
 
 last_call_time = 0
@@ -252,10 +237,12 @@ def send_download_status(data):
     with download_tasks_lock:
         progress_list = [data]
         for task in download_tasks:
-            progress_list.append({'save_path': task['filename'], 'progress': 0})
-        send_ws('download_progress', progress_list)
+            progress_list.append({"save_path": task["filename"], "progress": 0})
+        send_ws("download_progress", progress_list)
+
 
 loop = asyncio.get_event_loop()
 def send_ws(event, data):
-    asyncio.run_coroutine_threadsafe(server.PromptServer.instance.send(event, data) , loop)
-    
+    asyncio.run_coroutine_threadsafe(
+        server.PromptServer.instance.send(event, data), loop
+    )

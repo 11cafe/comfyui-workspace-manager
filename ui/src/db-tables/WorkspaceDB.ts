@@ -71,7 +71,7 @@ export async function backfillIndexdb() {
   const backfillWorkflows = async () => {
     try {
       const all = await workflowsTable?.getRecords();
-      all && (await indexdb.workflows.bulkAdd(Object.values(all)));
+      all && (await indexdb.workflows.bulkPut(Object.values(all)));
     } catch (error) {
       console.error(error);
     }
@@ -79,7 +79,7 @@ export async function backfillIndexdb() {
   const backfillFolders = async () => {
     try {
       const all = await foldersTable?.getRecords();
-      all && (await indexdb.folders.bulkAdd(Object.values(all)));
+      all && (await indexdb.folders.bulkPut(Object.values(all)));
     } catch (error) {
       console.error(error);
     }
@@ -87,7 +87,7 @@ export async function backfillIndexdb() {
   const backfillMedia = async () => {
     try {
       const all = await mediaTable?.getRecords();
-      all && (await indexdb.media.bulkAdd(Object.values(all)));
+      all && (await indexdb.media.bulkPut(Object.values(all)));
     } catch (error) {
       console.error(error);
     }
@@ -95,7 +95,7 @@ export async function backfillIndexdb() {
   const backfillChangelogs = async () => {
     try {
       const all = await changelogsTable?.getRecords();
-      all && (await indexdb.changelogs.bulkAdd(Object.values(all)));
+      all && (await indexdb.changelogs.bulkPut(Object.values(all)));
     } catch (error) {
       console.error(error);
     }
@@ -103,7 +103,7 @@ export async function backfillIndexdb() {
   const backfillTags = async () => {
     try {
       const all = await tagsTable?.getRecords();
-      all && (await indexdb.tags.bulkAdd(Object.values(all)));
+      all && (await indexdb.tags.bulkPut(Object.values(all)));
     } catch (error) {
       console.error(error);
     }
@@ -129,7 +129,7 @@ export async function backfillIndexdb() {
   const backfillWorkflowVersions = async () => {
     try {
       const all = await workflowVersionsTable?.getRecords();
-      all && (await indexdb.workflowVersions.bulkAdd(Object.values(all)));
+      all && (await indexdb.workflowVersions.bulkPut(Object.values(all)));
     } catch (error) {
       console.error(error);
     }

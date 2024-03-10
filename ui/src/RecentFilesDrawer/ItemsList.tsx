@@ -31,12 +31,11 @@ export default function ItemsList({
     if (!draggingFile) return setIsDraggingOver(false);
     if (isFolder(draggingFile)) {
       if (draggingFile.id === parentFolderID) return setIsDraggingOver(false);
-      await foldersTable?.update({
-        id: draggingFile.id,
+      await foldersTable?.update(draggingFile.id, {
         parentFolderID: parentFolderID,
       });
     } else {
-      await workflowsTable?.updateFlow(draggingFile.id, {
+      await workflowsTable?.updateFolder(draggingFile.id, {
         parentFolderID: parentFolderID,
       });
     }

@@ -1,30 +1,20 @@
-// @ts-ignore
-import {
-  ScanLocalFile,
-  ScanLocalFolder,
-  ScanLocalResult,
-  deleteFile,
-  updateFile,
-} from "./Api";
+import { deleteFile, updateFile } from "./Api";
 import { ESortTypes } from "./RecentFilesDrawer/types";
-import {
-  workflowsTable,
-  foldersTable,
-  userSettingsTable,
-} from "./db-tables/WorkspaceDB";
+import { workflowsTable, userSettingsTable } from "./db-tables/WorkspaceDB";
 import {
   generateFilePathAbsolute,
   saveJsonFileMyWorkflows,
 } from "./db-tables/DiskFileUtils";
-import { Folder, Workflow } from "./types/dbTypes";
-// @ts-ignore
+import { Folder, Workflow, EShortcutKeys } from "./types/dbTypes";
+// @ts-expect-error ComfyUI import
 import { app } from "/scripts/app.js";
 import {
   COMFYSPACE_TRACKING_FIELD_NAME,
   LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
 } from "./const";
 
-export type Route = "root" | "customNodes" | "recentFlows" | "gallery";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare let LiteGraph: any, LGraph: any;
 
 // copied from app.js
 function sanitizeNodeName(string: string): string {
@@ -50,7 +40,6 @@ export function findMissingNodes(): string[] {
     if (n.type == "SDV_img2vid_Conditioning")
       n.type = "SVD_img2vid_Conditioning"; //typo fix
     // Find missing node types
-    // @ts-ignore
     if (!(n.type in LiteGraph.registered_node_types)) {
       n.type = sanitizeNodeName(n.type);
       missingNodeTypes.push(n.type);
@@ -75,7 +64,8 @@ function isValidFileName(fileName: string) {
   }
 
   // Windows reserved characters
-  const windowsInvalidChars = /[<>:"\/\\|?*\x00-\x1F]/;
+  // eslint-disable-next-line no-control-regex
+  const windowsInvalidChars = /[<>:"/\\|?*\x00-\x1F]/;
   if (windowsInvalidChars.test(fileName)) {
     return false;
   }
@@ -163,6 +153,8 @@ export function sortFlows(
 export async function validateOrSaveAllJsonFileMyWorkflows(
   deleteEmptyFolder = false,
 ) {
+  const twoWaySync = await userSettingsTable?.getSetting("twoWaySync");
+  if (twoWaySync) return; // disable this function in two way sync mode
   const flowList = (await workflowsTable?.listAll()) ?? [];
   for (const workflow of flowList) {
     const fullPath = await generateFilePathAbsolute(workflow);
@@ -204,16 +196,15 @@ export function insertWorkflowToCanvas(json: string, insertPos?: number[]) {
   } else {
     graphData = structuredClone(graphData);
   }
-  // @ts-ignore
+
   let tempGraph = new LGraph();
   tempGraph.configure(graphData);
   const prevClipboard = localStorage.getItem("litegrapheditor_clipboard");
 
-  const tempCanvas = document.createElement("canvas");
-  // @ts-ignore
-  let canvas = new LGraphCanvas(tempCanvas, tempGraph);
-  canvas.selectNodes(tempGraph._nodes);
-  canvas.copyToClipboard(tempGraph._nodes);
+  const graph = app.canvas.graph;
+  app.canvas.setGraph(tempGraph);
+  app.canvas.copyToClipboard(tempGraph._nodes);
+  app.canvas.setGraph(graph);
   const priorPos = app.canvas.graph_mouse;
   if (insertPos) {
     insertPos[0] -= 15;
@@ -227,31 +218,37 @@ export function insertWorkflowToCanvas(json: string, insertPos?: number[]) {
   }
   // Nullify the references to help with garbage collection
   tempGraph = null;
-  canvas = null;
 }
 
-export const matchSaveWorkflowShortcut = async (event: KeyboardEvent) => {
-  const short = await userSettingsTable?.getSetting("shortcuts").then((res) => {
-    return res?.save;
-  });
-  if (!short) return false;
-  return matchShortcut(event, short);
-};
+export const matchShortcut = async (event: KeyboardEvent) => {
+  const shortcuts =
+    (await userSettingsTable?.getSetting("shortcuts")) ??
+    userSettingsTable?.defaultSettings.shortcuts;
 
-export const matchShortcut = (
-  event: KeyboardEvent,
-  shortcutString: string,
-): boolean => {
-  const keys = shortcutString.split("+");
-  const keyEvent: Record<string, boolean> = {
-    Control: event.ctrlKey,
-    Shift: event.shiftKey,
-    Alt: event.altKey,
-    Command: event.metaKey,
-    [event.key.toUpperCase()]: true,
-  };
+  if (!shortcuts) return false;
 
-  return keys.every((key) => keyEvent[key]);
+  for (const shortcutType in shortcuts) {
+    const shortcutString = shortcuts[shortcutType as EShortcutKeys];
+    const keys = shortcutString.split("+");
+    const pressedKeys: Record<string, boolean> = {
+      Control: event.ctrlKey,
+      Shift: event.shiftKey,
+      Alt: event.altKey,
+      Command: event.metaKey,
+      [event.key.toUpperCase()]: true,
+    };
+    for (const key in pressedKeys) {
+      if (!pressedKeys[key]) {
+        delete pressedKeys[key];
+      }
+    }
+    if (
+      keys.length === Object.keys(pressedKeys).length &&
+      keys.every((key) => pressedKeys[key])
+    ) {
+      return shortcutType;
+    }
+  }
 };
 
 export function isImageFormat(fileName: string) {
@@ -267,41 +264,6 @@ export function isVideoFormat(fileName: string) {
 
 export function getFileUrl(relativePath: string) {
   return `/workspace/view_media?filename=${relativePath}`;
-}
-
-export async function syncNewFlowOfLocalDisk(
-  scanList: ScanLocalResult[],
-  parentFolderID?: string,
-) {
-  const fileList = scanList.filter((s): s is ScanLocalFile => "json" in s);
-  if (fileList.length) {
-    await workflowsTable?.batchCreateFlows(fileList, true, parentFolderID);
-  }
-
-  const folderList = scanList.filter((s): s is ScanLocalFolder => "list" in s);
-  if (folderList.length) {
-    const currentFolderList = await foldersTable?.listAll();
-
-    for (const folder of folderList) {
-      const existFolder = currentFolderList?.find(
-        (f) => f.name === folder.name,
-      );
-
-      let folderId;
-
-      if (existFolder) {
-        folderId = existFolder.id;
-      } else {
-        const newFolder = await foldersTable?.create({
-          name: folder.name,
-          parentFolderID,
-        });
-        folderId = newFolder?.id;
-      }
-
-      await syncNewFlowOfLocalDisk(folder.list, folderId);
-    }
-  }
 }
 
 export function getWorkflowIdInUrlHash() {

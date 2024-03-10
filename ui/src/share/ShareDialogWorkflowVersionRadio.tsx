@@ -6,18 +6,20 @@ import { IconCloud, IconExternalLink } from "@tabler/icons-react";
 export default function ShareDialogWorkflowVersionRadio({
   version,
   cloudHost,
+  cloudWorkflowID,
 }: {
   version: WorkflowVersion;
   cloudHost: string;
+  cloudWorkflowID: string | null;
 }) {
   const ver = version;
   const content = (
     <HStack spacing={4} alignItems={"center"}>
       <Text>{ver.name}</Text>
       <Text color={"GrayText"}>{formatTimestamp(ver.createTime, false)}</Text>
-      {ver.cloudID && (
+      {ver.cloudID && cloudWorkflowID && (
         <a
-          href={cloudHost + "/workflow_ver/" + ver.cloudID}
+          href={cloudHost + "/workflow/" + cloudWorkflowID + "/" + ver.cloudID}
           target="_blank"
           rel="noopener noreferrer"
           style={{ textDecoration: "none" }}

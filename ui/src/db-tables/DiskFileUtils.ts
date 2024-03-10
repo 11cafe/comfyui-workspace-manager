@@ -5,7 +5,8 @@ import {
   LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
 } from "../const";
 import { toFileNameFriendly } from "../utils";
-import { Workflow } from "../types/dbTypes";
+import { Folder, Workflow } from "../types/dbTypes";
+import { TwowayFolderSyncAPI } from "../apis/TwowaySyncFolderApi";
 
 export async function saveJsonFileMyWorkflows(workflow: Workflow) {
   const file_path = await generateFilePath(workflow);
@@ -13,7 +14,7 @@ export async function saveJsonFileMyWorkflows(workflow: Workflow) {
     return;
   }
   const fullPath = await generateFilePathAbsolute(workflow);
-  await workflowsTable?.updateFlow(workflow.id, {
+  await workflowsTable?.updateMetaInfo(workflow.id, {
     filePath: fullPath ?? undefined,
   });
   const json = workflow.json;
@@ -53,6 +54,23 @@ export async function generateFilePath(
   return filePath ?? null;
 }
 
+export async function genFolderRelPath(
+  folderId: string | null,
+): Promise<string> {
+  let filePath = "";
+  let curFolderID = folderId;
+  while (curFolderID != null) {
+    const folder = await foldersTable?.get(curFolderID);
+    if (folder == null) {
+      break;
+    }
+    const folderName = folder.name;
+    filePath = `${folderName}/${filePath}`;
+    curFolderID = folder.parentFolderID ?? null;
+  }
+
+  return filePath;
+}
 export async function generateFilePathAbsolute(
   workflow: Workflow,
 ): Promise<string | null> {
@@ -95,6 +113,10 @@ export async function generateFolderPath(id: string): Promise<string | null> {
 }
 
 export async function getFileCountInFolder(folderId: string): Promise<number> {
+  const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
+  if (twoWaySyncEnabled) {
+    return (await TwowayFolderSyncAPI.genFilesCountInFolder(folderId)) ?? 0;
+  }
   const allFlows = (await workflowsTable?.listAll()) ?? [];
   const allFolders = (await foldersTable?.listAll()) ?? [];
   const nestedFolderIdStack = [folderId];
