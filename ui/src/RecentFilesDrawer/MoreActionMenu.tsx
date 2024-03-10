@@ -48,17 +48,20 @@ export default function MoreActionMenu({ workflow }: Props) {
     if (!files) return;
 
     const body = new FormData();
-    const filename = files[0].name;
-    body.append("image", files[0]);
+
+    Array.from(files).forEach((file, index) => {
+      body.append(`images[${index}]`, file, file.name);
+    });
     body.append("subfolder", "workspace_manager");
-    body.append("filename", filename);
-    await fetch("/image/save", {
+    await fetch("/images/save", {
       method: "POST",
       body,
     });
-    mediaTable?.create({
-      workflowID: workflow.id,
-      localPath: `workspace_manager/${filename}`,
+    Array.from(files).forEach((file) => {
+      mediaTable?.create({
+        workflowID: workflow.id,
+        localPath: `workspace_manager/${file.name}`,
+      });
     });
   };
 
