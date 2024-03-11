@@ -14,7 +14,7 @@ export const WorkspaceContext = createContext<{
     versionID?: string | null,
     forceLoad?: boolean,
   ) => void;
-  saveCurWorkflow: (isAutoSave: boolean) => void;
+  saveCurWorkflow: () => void;
   discardUnsavedChanges: () => Promise<void>;
   isDirty: boolean;
   loadNewWorkflow: (input?: { json: string; name?: string }) => void;

@@ -46,6 +46,7 @@ import { useStateRef } from "./customHooks/useStateRef";
 import { indexdb } from "./db-tables/indexdb";
 import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
 import { deepJsonDiffCheck } from "./utils/deepJsonDiffCheck";
+import useDebounceFn from "./customHooks/useDebounceFn";
 
 const ModelManagerTopbar = React.lazy(
   () => import("./model-manager/topbar/ModelManagerTopbar"),
@@ -71,7 +72,6 @@ export default function App() {
   const [loadChild, setLoadChild] = useState(false);
   const developmentEnvLoadFirst = useRef(false);
   const autoSaveTimer = useRef(0);
-  const autoSaveDebounceTimer = useRef(0);
   const autoSaveDebounceJson = useRef({});
   const toast = useToast();
   const workflowOverwriteNoticeStateRef = useRef("hide"); // disabled/hide/show;
@@ -79,12 +79,27 @@ export default function App() {
   const [curVersion, setCurVersion, curVersionRef] =
     useStateRef<WorkflowVersion | null>(null);
 
-  const resetAutoSaveDebounce = () => {
-    clearTimeout(autoSaveDebounceTimer.current);
-    autoSaveDebounceTimer.current = 0;
-    autoSaveDebounceJson.current = {};
-  };
-  const saveCurWorkflow = useCallback(async (isAutoSave: boolean = false) => {
+  const autoSaveHandler = useCallback(async () => {
+    if (curFlowID.current) {
+      const graphJson = JSON.stringify(app.graph.serialize());
+      await Promise.all([
+        workflowsTable?.updateFlow(curFlowID.current, {
+          json: graphJson,
+        }),
+        changelogsTable?.create({
+          workflowID: curFlowID.current,
+          json: graphJson,
+          isAutoSave: true,
+        }),
+      ]);
+      setIsDirty(false);
+    }
+  }, []);
+
+  const [debounceAutoSaveHandler, cancelDebounceAutoSaveHandler] =
+    useDebounceFn(autoSaveHandler, 5000);
+
+  const saveCurWorkflow = useCallback(async () => {
     if (curFlowID.current) {
       if (workflowsTable?.curWorkflow?.saveLock) {
         toast({
@@ -95,30 +110,27 @@ export default function App() {
         return;
       }
       const graphJson = JSON.stringify(app.graph.serialize());
-      if (graphJson != null) {
-        resetAutoSaveDebounce();
-        await Promise.all([
-          workflowsTable?.updateFlow(curFlowID.current, {
-            json: graphJson,
-          }),
-          changelogsTable?.create({
-            workflowID: curFlowID.current,
-            json: graphJson,
-            isAutoSave: isAutoSave,
-          }),
-        ]);
-        !isAutoSave &&
-          userSettingsTable?.autoSave &&
-          toast({
-            title: "Saved",
-            status: "success",
-            duration: 1000,
-            isClosable: true,
-          });
-        setIsDirty(false);
-      }
+      await Promise.all([
+        workflowsTable?.updateFlow(curFlowID.current, {
+          json: graphJson,
+        }),
+        changelogsTable?.create({
+          workflowID: curFlowID.current,
+          json: graphJson,
+          isAutoSave: false,
+        }),
+      ]);
+      userSettingsTable?.autoSave &&
+        toast({
+          title: "Saved",
+          status: "success",
+          duration: 1000,
+          isClosable: true,
+        });
+      setIsDirty(false);
     }
   }, []);
+
   const deleteCurWorkflow = async () => {
     if (curFlowID.current) {
       const userInput = confirm(
@@ -308,7 +320,7 @@ export default function App() {
      * In fact, it is reasonable to reset isDirty every time you open a new flow.
      */
     isDirty && setIsDirty(false);
-    resetAutoSaveDebounce();
+    cancelDebounceAutoSaveHandler();
   };
 
   const compareJsonDiff = (diff: { old: Object; new: Object } | null) => {
@@ -506,17 +518,10 @@ export default function App() {
            * When the auto-save logic is met, first determine whether there are unexecuted auto-save tasks;
            * If it exists, compare the json to be saved in the previous automatic save task and the latest json to see if they are the same;
            * If different, reset the auto-save task.
-           * Avoid excessive execution of automatic save logic when continuously modifying the workflow.
            */
-          if (
-            !autoSaveDebounceTimer.current ||
-            !deepJsonDiffCheck(curGraphJson, autoSaveDebounceJson.current)
-          ) {
-            resetAutoSaveDebounce();
+          if (!deepJsonDiffCheck(curGraphJson, autoSaveDebounceJson.current)) {
             autoSaveDebounceJson.current = curGraphJson;
-            autoSaveDebounceTimer.current = setTimeout(() => {
-              saveCurWorkflow(true);
-            }, 2000);
+            debounceAutoSaveHandler();
           }
         }
       }

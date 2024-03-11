@@ -148,9 +148,7 @@ export default function DropdownTitle() {
           <Menu isOpen={true}>
             <MenuList minWidth={150} zIndex={1000}>
               <MenuItem
-                onClick={() => {
-                  saveCurWorkflow(false);
-                }}
+                onClick={saveCurWorkflow}
                 icon={<IconDeviceFloppy size={20} />}
                 iconSpacing={1}
                 command={saveShortcut.save}

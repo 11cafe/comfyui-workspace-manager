@@ -138,9 +138,7 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
           <Tooltip label="Save workflow">
             <IconButton
               // style={{ width: 26 }}
-              onClick={() => {
-                saveCurWorkflow(false);
-              }}
+              onClick={saveCurWorkflow}
               icon={<IconDeviceFloppy size={23} color="white" />}
               size={"xs"}
               paddingY={4}
