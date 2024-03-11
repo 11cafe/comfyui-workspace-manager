@@ -97,7 +97,7 @@ export default function App() {
   }, []);
 
   const [debounceAutoSaveHandler, cancelDebounceAutoSaveHandler] =
-    useDebounceFn(autoSaveHandler, 5000);
+    useDebounceFn(autoSaveHandler, 2000);
 
   const saveCurWorkflow = useCallback(async () => {
     if (curFlowID.current) {
