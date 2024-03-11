@@ -200,3 +200,25 @@ export async function cancelDownload(savePath: string) {
     console.error("Error move file:", error);
   }
 }
+
+export async function copyFlowsToNewDirectory(
+  sourceDir: string,
+  dstDir: string,
+) {
+  try {
+    const response = await fetch("/workspace/copy_json_files", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        src: sourceDir,
+        dst: dstDir,
+      }),
+    });
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error copy flows to new directory:", error);
+  }
+}

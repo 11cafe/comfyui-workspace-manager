@@ -20,9 +20,13 @@ import {
 } from "@chakra-ui/react";
 import { IconEdit } from "@tabler/icons-react";
 import { useRef, useState, useEffect } from "react";
-import { fetchMyWorkflowsDir, getSystemDir } from "../Api";
+import {
+  copyFlowsToNewDirectory,
+  fetchMyWorkflowsDir,
+  getSystemDir,
+} from "../Api";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
-import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
+import { useDialog } from "../components/AlertDialogProvider";
 
 export default function SelectMyWorkflowsDir() {
   const isWindows = navigator.userAgent.indexOf("Window") > 0;
@@ -36,6 +40,7 @@ export default function SelectMyWorkflowsDir() {
   const [noPermission, setNoPermission] = useState(false);
   const manualEntryRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
+  const { showDialog } = useDialog();
 
   useEffect(() => {
     fetchMyWorkflowsDir().then((dir) => setCurrentDirectory(dir ?? ""));
@@ -83,7 +88,26 @@ export default function SelectMyWorkflowsDir() {
     setDirPathList([]);
   };
 
-  const onSaveDirectory = async (manualEntry?: string) => {
+  const saveDirectory = async (
+    newPath: string,
+    needCopy: boolean = false,
+    isManualEntry: boolean = false,
+  ) => {
+    if (needCopy) {
+      const sourcePath = await fetchMyWorkflowsDir();
+      sourcePath && (await copyFlowsToNewDirectory(sourcePath, newPath));
+    }
+    await userSettingsTable?.upsert({
+      myWorkflowsDir: newPath,
+    });
+    const getNewPath =
+      (await userSettingsTable?.getSetting("myWorkflowsDir")) ?? "";
+    setCurrentDirectory(getNewPath);
+    isManualEntry && setNoPermission(false);
+    onCloseEditDirectory();
+  };
+
+  const onSubmit = async (manualEntry?: string) => {
     if (manualEntry) {
       const { error = "" } = await getSystemDir(manualEntry);
       if (error.includes("Not a directory")) {
@@ -100,16 +124,21 @@ export default function SelectMyWorkflowsDir() {
     }
     const newPath =
       manualEntry ?? `${isWindows ? "" : slash}${dirPathList.join(slash)}`;
-    await userSettingsTable?.upsert({
-      myWorkflowsDir: newPath,
-    });
-    const getNewPath =
-      (await userSettingsTable?.getSetting("myWorkflowsDir")) ?? "";
-    setCurrentDirectory(getNewPath);
-    manualEntry && setNoPermission(false);
-    onCloseEditDirectory();
-    // to update /my_workflows files in disk to new location
-    validateOrSaveAllJsonFileMyWorkflows();
+
+    showDialog("Do you want to copy all workflows to new directory?", [
+      {
+        label: "Yes",
+        onClick: () => {
+          saveDirectory(newPath, true, !!manualEntry);
+        },
+      },
+      {
+        label: "No",
+        onClick: () => {
+          saveDirectory(newPath, false, !!manualEntry);
+        },
+      },
+    ]);
   };
 
   const onReset = async () => {
@@ -150,7 +179,7 @@ export default function SelectMyWorkflowsDir() {
         size="sm"
         onClick={() => {
           manualEntryRef?.current?.value &&
-            onSaveDirectory(manualEntryRef?.current?.value);
+            onSubmit(manualEntryRef?.current?.value);
         }}
       >
         Save
@@ -220,7 +249,7 @@ export default function SelectMyWorkflowsDir() {
           <VStack spacing={2} alignItems="start">
             <Stack spacing="2px" direction="row" wrap="wrap">
               {dirPathList.map((dir, index) => (
-                <>
+                <span key={dir}>
                   {index > 0 && slash}
                   <Button
                     colorScheme="teal"
@@ -233,7 +262,7 @@ export default function SelectMyWorkflowsDir() {
                   >
                     {dir}
                   </Button>
-                </>
+                </span>
               ))}
             </Stack>
             <SimpleGrid
@@ -271,7 +300,7 @@ export default function SelectMyWorkflowsDir() {
                 colorScheme="teal"
                 size="sm"
                 onClick={() => {
-                  onSaveDirectory();
+                  onSubmit();
                 }}
               >
                 Save
