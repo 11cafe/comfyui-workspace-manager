@@ -201,15 +201,20 @@ export function insertWorkflowToCanvas(json: string, insertPos?: number[]) {
   const hiddenCanvas = document.createElement("canvas");
   hiddenCanvas.style.display = "none"; // Make it hidden
   document.body.appendChild(hiddenCanvas); // Append to the body to make it part of the DOM
-  const tempCanvas = new LGraphCanvas(hiddenCanvas, tempGraph);
+  let tempCanvas = new LGraphCanvas(hiddenCanvas, tempGraph);
 
   const prevClipboard = localStorage.getItem("litegrapheditor_clipboard");
-  const prevGraph = app.canvas.graph;
+  const prevGraph = app.graph;
   const prevCanvas = app.canvas;
   app.canvas = tempCanvas;
   app.graph = tempGraph;
   tempGraph.configure(graphData);
   app.canvas.copyToClipboard(tempGraph._nodes);
+
+  // clear the tempGraph and remove the hiddenCanvas
+  tempCanvas.graph.clear();
+  document.body.removeChild(hiddenCanvas);
+
   app.graph = prevGraph;
   app.canvas = prevCanvas;
   const priorPos = app.canvas.graph_mouse;
@@ -223,8 +228,9 @@ export function insertWorkflowToCanvas(json: string, insertPos?: number[]) {
   if (prevClipboard) {
     localStorage.setItem("litegrapheditor_clipboard", prevClipboard);
   }
-  // Nullify the references to help with garbage collection
+  // Nullify the temporary graph and canvas references for garbage collection
   tempGraph = null;
+  tempCanvas = null;
 }
 
 export const matchShortcut = async (event: KeyboardEvent) => {
