@@ -2,6 +2,7 @@ const targetNode = document.body;
 
 // Options for the observer (which mutations to observe)
 const config = { childList: true, subtree: true };
+const api_base = window.location.pathname.split("/").slice(0, -1).join("/");
 
 // @ts-ignore
 const callback = function (mutationsList, observer) {
@@ -11,7 +12,7 @@ const callback = function (mutationsList, observer) {
       mutation.addedNodes.forEach((node) => {
         if (node.nodeName === "CANVAS") {
           // @ts-ignore
-          import("/workspace_web/input.js");
+          import(api_base + "/workspace_web/input.js");
           observer.disconnect();
         }
       });
