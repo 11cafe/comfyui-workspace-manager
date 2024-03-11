@@ -513,6 +513,7 @@ export default function App() {
             !deepJsonDiffCheck(curGraphJson, autoSaveDebounceJson.current)
           ) {
             resetAutoSaveDebounce();
+            autoSaveDebounceJson.current = curGraphJson;
             autoSaveDebounceTimer.current = setTimeout(() => {
               saveCurWorkflow(true);
             }, 2000);
