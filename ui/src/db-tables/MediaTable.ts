@@ -30,14 +30,17 @@ export class MediaTable extends TableBase<Media> {
 
     const res = await getMetadataFromUrl(
       `/workspace/view_media?filename=${input.localPath}`,
-    );
+    ).catch((e) => {
+      console.error("get meta error:", e);
+      return { prompt: "" };
+    });
 
     const md: Media = {
       id: uuidv4(),
       localPath: input.localPath,
       workflowID: input.workflowID,
       createTime: Date.now(),
-      workflowJSON: JSON.stringify(res?.workflow),
+      workflowJSON: JSON.stringify(res?.prompt),
       format: format,
     };
     const newMedia = new Set(workflow?.mediaIDs ?? []).add(md.id);
