@@ -53,7 +53,7 @@ export default function MoreActionMenu({ workflow }: Props) {
       body.append(`images[${index}]`, file, file.name);
     });
     body.append("subfolder", "workspace_manager");
-    await fetch("/images/save", {
+    await fetch("/workspace/images/save", {
       method: "POST",
       body,
     });

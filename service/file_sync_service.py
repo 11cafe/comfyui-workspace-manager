@@ -281,7 +281,7 @@ async def get_unique_dir_name(path):
     return path
 # End: Copy all files to the new directory when switching the save directory
 
-@server.PromptServer.instance.routes.post("/images/save")
+@server.PromptServer.instance.routes.post('/workspace/images/save')
 async def save_images(request):
     reader = await request.multipart()
     subfolder = "workspace_manager"  # 默认子文件夹，实际上你可能会从表单中动态获取
