@@ -239,6 +239,9 @@ export default function App() {
               colorScheme: "red",
             },
           ],
+          {
+            closeOnOverlayClick: false,
+          },
         );
       }
     });
@@ -497,7 +500,6 @@ export default function App() {
                 },
               },
             ],
-            true,
           );
         } else {
           /**

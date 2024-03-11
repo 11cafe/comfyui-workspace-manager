@@ -20,12 +20,12 @@ export default function TopForm({
     <>
       {topFields?.length > 0 && (
         <Flex px={2} gap={2} direction={"column"}>
-          {topFields?.map((field) => {
+          {topFields?.map((field, i) => {
             if (!prompt?.[field.promptKey]?.inputs) return null;
             const promptValue = prompt?.[field.promptKey]?.inputs?.[field.name];
             return (
               <FormItemComponent
-                key={`formTop${field.name}`}
+                key={`formTop${field.name}${i}`}
                 promptKey={field.promptKey as string}
                 classType={prompt?.[field.promptKey]?.class_type}
                 name={field.name}
