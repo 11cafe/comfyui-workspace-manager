@@ -68,21 +68,27 @@ def populate_file_hash_dict():
             continue
         files = folder_paths.get_filename_list(folder)
         for file in files:
-            local_file_list.append(process_file(folder, file))
+            try:
+                local_file_list.append(process_file(folder, file))
+            except Exception as e:
+                print(f"Error processing file: {file} in folder: {folder}. Error: {e}")
     with file_list_lock:
         file_list = local_file_list
         send_ws("model_list", file_list)  # send the list without hash to the client
     # After all files are added, calculate hashes for those that don't have it yet
     for file in file_list:
-        if file["file_hash"] is None:
-            file_path = folder_paths.get_full_path(
-                file["model_type"], file["model_name"] + file["model_extension"]
-            )
-            file_hash = compute_hash(file_path)
-            file_hash_dict[file_path] = file_hash
-            with file_list_lock:
-                file["file_hash"] = file_hash
-                send_ws("model_list", file_list)  # update the list with the new hash
+        try:
+            if file["file_hash"] is None:
+                file_path = folder_paths.get_full_path(
+                    file["model_type"], file["model_name"] + file["model_extension"]
+                )
+                file_hash = compute_hash(file_path)
+                file_hash_dict[file_path] = file_hash
+                with file_list_lock:
+                    file["file_hash"] = file_hash
+                    send_ws("model_list", file_list)  # update the list with the new hash
+        except Exception as e:
+            print(f"Error calculating hash for file: {file}. Error: {e}")
     # Set populate_done to True when done
     is_populating = False
 
