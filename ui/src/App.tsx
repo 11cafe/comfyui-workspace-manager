@@ -82,6 +82,7 @@ export default function App() {
   const autoSaveHandler = useCallback(async () => {
     if (curFlowID.current) {
       const graphJson = JSON.stringify(app.graph.serialize());
+      autoSaveDebounceJson.current = {};
       await Promise.all([
         workflowsTable?.updateFlow(curFlowID.current, {
           json: graphJson,
@@ -321,6 +322,7 @@ export default function App() {
      */
     isDirty && setIsDirty(false);
     cancelDebounceAutoSaveHandler();
+    autoSaveDebounceJson.current = {};
   };
 
   const compareJsonDiff = (diff: { old: Object; new: Object } | null) => {
