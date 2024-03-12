@@ -2,6 +2,7 @@ import os
 from PIL import Image
 import base64
 from io import BytesIO
+from pathlib import Path
 
 MAX_IMAGE_SIZE = 400
 
@@ -9,7 +10,8 @@ def preview_file(filename: str):
     preview_exts = [".jpg", ".png", ".jpeg", ".gif"]
     preview_exts = [*preview_exts, *[".preview" + x for x in preview_exts]]
     for ext in preview_exts:
-        path = os.path.splitext(filename)[0] + ext
+        pathStr = os.path.splitext(filename)[0] + ext
+        path = Path(pathStr).resolve()
         if os.path.exists(path):
             # because ComfyUI has extra model path feature
             # the path might not be relative to the ComfyUI root
@@ -22,7 +24,7 @@ def preview_file(filename: str):
     return None
 
 
-def get_thumbnail_for_image_file(file_path):
+def get_thumbnail_for_image_file(file_path: Path):
     with Image.open(file_path) as img:
         # If the image is too large, resize it
         if img.width > MAX_IMAGE_SIZE and img.height > MAX_IMAGE_SIZE:
