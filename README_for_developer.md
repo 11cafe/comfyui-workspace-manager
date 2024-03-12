@@ -4,12 +4,15 @@ This is a document specially prepared for developers, explaining some special de
 
 ## Clean up indexdb if it's in bad state
 Make sure you have .json files under `ComfyUI/comfyui-workspace-manager/db`, so your indexdb data (version history, gallery image data) can be recovered after deleting
+
 <img width="318" alt="Screenshot 2024-03-12 at 12 35 24 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/722a96ca-82a3-4126-83fd-2951de0a18cb">
 
-1. F12 -> Application -> IndexedDB -> delete current indexdb 
+1. F12 -> Application -> IndexedDB -> delete current indexdb
+
 <img width="731" alt="Screenshot 2024-03-12 at 12 30 48 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/4c4f0f6a-e402-4fd5-94cd-b00ff6f2a96f">
 
-2. If you want to recover your data like version history, gallery image data, F12 -> Application -> Local Storage -> delete WORKSPACE_INDEXDB_BACKFILL key in localstorage so your indexdb can be backedup (you don't have to do this if you only need workflows .json data)
+3. If you want to recover your data like version history, gallery image data, F12 -> Application -> Local Storage -> delete WORKSPACE_INDEXDB_BACKFILL key in localstorage so your indexdb can be backedup (you don't have to do this if you only need workflows .json data)
+
 <img width="723" alt="Screenshot 2024-03-12 at 12 33 08 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/c9ca969d-fdee-4c1e-bfc5-c646ce241fd8">
 
 
