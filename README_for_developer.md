@@ -3,6 +3,7 @@
 This is a document specially prepared for developers, explaining some special development details.Installation
 
 ## Clean up indexdb if it's in bad state
+
 Make sure you have .json files under `ComfyUI/comfyui-workspace-manager/db`, so your indexdb data (version history, gallery image data) can be recovered after deleting
 
 <img width="318" alt="Screenshot 2024-03-12 at 12 35 24 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/722a96ca-82a3-4126-83fd-2951de0a18cb">
@@ -15,6 +16,18 @@ Make sure you have .json files under `ComfyUI/comfyui-workspace-manager/db`, so 
 
 <img width="723" alt="Screenshot 2024-03-12 at 12 33 08 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/c9ca969d-fdee-4c1e-bfc5-c646ce241fd8">
 
+## Install custom git hooks
+
+When running the project for the first time, it is recommended that you execute the following command to install our customized git hooks
+
+```javascript
+cd ui
+npm run setupGithooks
+```
+
+Current hooks include:
+
+1. When switching to a non-main/beta branch, additional .gitignore logic is automatically added to ignore the "/dist" folder.
 
 ## How to use Hot Module Replacement
 
