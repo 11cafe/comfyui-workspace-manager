@@ -36,7 +36,7 @@ export class MediaTable extends TableBase<Media> {
     const newMedia = new Set(workflow?.mediaIDs ?? []).add(md.id);
     await workflowsTable?.updateMetaInfo(input.workflowID, {
       mediaIDs: Array.from(newMedia),
-      coverMediaPath: md.localPath,
+      latestImage: md.localPath,
     });
     // save indexdb
     indexdb.media.add(md);

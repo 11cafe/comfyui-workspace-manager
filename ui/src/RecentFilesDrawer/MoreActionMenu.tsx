@@ -1,28 +1,30 @@
-import { useState, useContext } from "react";
+import { ChangeEvent, useContext, useRef, useState } from "react";
 import {
   IconButton,
   Menu,
   MenuButton,
-  MenuList,
   MenuItem,
-  useToast,
+  MenuList,
   Tooltip,
+  useToast,
 } from "@chakra-ui/react";
 import {
-  IconDotsVertical,
-  IconLockOpen,
-  IconLock,
   IconCopy,
+  IconDotsVertical,
+  IconLock,
+  IconLockOpen,
+  IconUpload,
 } from "@tabler/icons-react";
 import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import { Workflow } from "../types/dbTypes";
-import { workflowsTable } from "../db-tables/WorkspaceDB";
+import { mediaTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
 
 type Props = {
   workflow: Workflow;
 };
 export default function MoreActionMenu({ workflow }: Props) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
   const { onDuplicateWorkflow } = useContext(WorkspaceContext);
 
@@ -38,6 +40,28 @@ export default function MoreActionMenu({ workflow }: Props) {
       title: `${newLocked ? "Locked" : "Unlocked"} successfully`,
       status: "success",
       duration: 2000,
+    });
+  };
+
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    const body = new FormData();
+
+    Array.from(files).forEach((file, index) => {
+      body.append(`images[${index}]`, file, file.name);
+    });
+    body.append("subfolder", "workspace_manager");
+    await fetch("/workspace/images/save", {
+      method: "POST",
+      body,
+    });
+    Array.from(files).forEach((file) => {
+      mediaTable?.create({
+        workflowID: workflow.id,
+        localPath: `workspace_manager/${file.name}`,
+      });
     });
   };
 
@@ -78,8 +102,27 @@ export default function MoreActionMenu({ workflow }: Props) {
               {isLocked ? "Unlock" : "Lock"}
             </MenuItem>
           </Tooltip>
+          <MenuItem
+            icon={<IconUpload />}
+            onClick={() => {
+              fileInputRef.current?.click();
+            }}
+          >
+            Upload Thumbnail Image
+          </MenuItem>
         </MenuList>
       </Menu>
+      <input
+        style={{ display: "none" }}
+        ref={fileInputRef}
+        type="file"
+        accept=".json,image/png"
+        multiple
+        onChange={handleFileChange}
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      />
     </>
   );
 }

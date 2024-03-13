@@ -20,6 +20,7 @@ export interface Workflow extends SortableItem {
   cloudID?: string; // TODO will be deprecated
   cloudOrigin?: string;
   saveLock?: boolean;
+  latestImage?: string;
 }
 
 export interface TableBaseModel {

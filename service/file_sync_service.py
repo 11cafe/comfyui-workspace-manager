@@ -1,4 +1,5 @@
 import asyncio
+import folder_paths
 from datetime import datetime
 import platform
 import tempfile
@@ -241,9 +242,6 @@ def count_files_sync(reqJson):
         if file.is_file():
             file_count += 1
     return {"success": True, "count": file_count}
-
-
-
 # Begin: Copy all files to the new directory when switching the save directory
 @server.PromptServer.instance.routes.post('/workspace/copy_json_files')
 async def copy_json_files(request):
@@ -282,3 +280,32 @@ async def get_unique_dir_name(path):
         counter += 1
     return path
 # End: Copy all files to the new directory when switching the save directory
+
+@server.PromptServer.instance.routes.post('/workspace/images/save')
+async def save_images(request):
+    reader = await request.multipart()
+    subfolder = "workspace_manager"  # 默认子文件夹，实际上你可能会从表单中动态获取
+    output_path = folder_paths.get_output_directory()
+    safe_dir = Path(os.path.join(output_path, subfolder))
+    if not safe_dir.exists():
+        safe_dir.mkdir(parents=True, exist_ok=True)
+
+    # 用于存储保存的文件路径
+    files_saved = []
+    # 处理multipart/form-data中的每一部分
+    async for part in reader:
+        if part.name.startswith('images'):
+            filename = part.filename
+            if not filename:
+                continue
+            file_path = safe_dir / filename
+            loop = asyncio.get_running_loop()
+            # 异步写入文件
+            with open(file_path, 'wb') as f:
+                while True:
+                    chunk = await part.read_chunk()  # 默认8192 bytes
+                    if not chunk:
+                        break
+                    await loop.run_in_executor(None, f.write, chunk)
+            files_saved.append(str(file_path))
+    return web.Response(text=json.dumps({"imgPaths": files_saved}), content_type='application/json')
