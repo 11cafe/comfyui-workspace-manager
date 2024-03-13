@@ -4,7 +4,8 @@ A ComfyUI workflow and model manager extension to **organize and manage all your
 
 If you have questions or suggestions, please [join our Discord](https://discord.gg/HHvfEurv2Z)!
 
-[New!] our custom nodes library wiki: https://www.nodecafe.org/
+[New!] we're building a comfyui custom nodes library wiki like Pypi: https://www.nodecafe.org/
+welcome any feedbacks!
 
 <img width="610" alt="Screenshot 2024-03-08 at 6 41 18 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/30455eb1-3d12-4930-bb81-28b33148fbaa">
 
