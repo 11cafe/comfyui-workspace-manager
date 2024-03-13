@@ -115,6 +115,7 @@ export type Changelog = {
 export type Media = {
   id: string;
   workflowID: string;
+  workflowJSON?: string;
   createTime: number;
   localPath: string;
   format: string;
