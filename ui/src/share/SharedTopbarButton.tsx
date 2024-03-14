@@ -31,7 +31,7 @@ export function SharedTopbarButton({}) {
     <a href={cloudURL} style={{ textDecoration: "none" }} target="_blank">
       <DarkMode>
         <Tag>
-          {privacy ? <PrivacyLabel privacy={privacy} showEmoji /> : "Shared"}
+          {privacy === "PUBLIC" ? "🌐" : privacy === "UNLISTED" ? "🔗" : "🔒"}
         </Tag>
       </DarkMode>
     </a>

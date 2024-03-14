@@ -45,7 +45,6 @@ import HoverMenu from "./HoverMenu";
 const ShareDialog = lazy(() => import("../share/ShareDialog"));
 // @ts-ignore
 import { app } from "/scripts/app.js";
-import JsonDiffCompareModal from "./JsonDiffCompareModal";
 
 export default function DropdownTitle() {
   const {
@@ -155,15 +154,17 @@ export default function DropdownTitle() {
               >
                 Save
               </MenuItem>
-              <Tooltip label="Revert workflow to your last saved version. You will lose all changes made since your last save.">
-                <MenuItem
-                  onClick={discardUnsavedChanges}
-                  icon={<IconArrowBackUpDouble size={20} />}
-                  iconSpacing={1}
-                >
-                  Discard unsaved changes
-                </MenuItem>
-              </Tooltip>
+              {!userSettingsTable?.autoSave && (
+                <Tooltip label="Revert workflow to your last saved version. You will lose all changes made since your last save.">
+                  <MenuItem
+                    onClick={discardUnsavedChanges}
+                    icon={<IconArrowBackUpDouble size={20} />}
+                    iconSpacing={1}
+                  >
+                    Discard unsaved changes
+                  </MenuItem>
+                </Tooltip>
+              )}
               <MenuItem
                 onClick={handleDownload}
                 icon={<IconDownload size={20} />}
@@ -211,9 +212,6 @@ export default function DropdownTitle() {
       {route == "versionHistory" && (
         <VersionHistoryDrawer onClose={() => setRoute("root")} />
       )}
-
-      <JsonDiffCompareModal />
-
       {route === "saveAsModal" && (
         <Modal isOpen={true} onClose={handleOnCloseModal}>
           <ModalOverlay />

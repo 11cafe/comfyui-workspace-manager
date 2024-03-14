@@ -4,14 +4,10 @@ A ComfyUI workflow and model manager extension to **organize and manage all your
 
 If you have questions or suggestions, please [join our Discord](https://discord.gg/HHvfEurv2Z)!
 
-<a href="https://discord.gg/HHvfEurv2Z">
-  <img src="https://animeartmagazine.com/wp-content/uploads/2022/05/discord-button600.webp" alt="Join Discord" width="120"/>
-</a>
-<br/>
+[New!] we're building a comfyui custom nodes library wiki like Pypi: https://www.nodecafe.org/
+welcome any feedbacks!
 
 <img width="610" alt="Screenshot 2024-03-08 at 6 41 18 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/30455eb1-3d12-4930-bb81-28b33148fbaa">
-
-
 
 ## Installation
 
@@ -33,14 +29,18 @@ It is recommended to do git clone than downloading zip folder, because you can g
 
 ## Features
 
+🚧🔴 Drag and drop to insert subworkflow is not working. I have debugged for many hours but just can't make it work perfectly. If anyone is interested here is the code:
+https://github.com/11cafe/comfyui-workspace-manager/blob/d2d2f0c1f1ace35236e73fa5074e9feb83342773/ui/src/utils.tsx#L192
+I would really appreciate it if someone can find a solution to insert a subworkflow to current canvas given the json object.
+
 - **Workflows manager**
   - 🔁Switch between different workflows easily. 1click open workflow in multiple browser tabs.
   - 🤏**Drag and drop** to insert subworkflows into current flow.
   - 🗂️Organize workflows with folders, 🏷️tags
   - 📂Save and sync all your workflows in a local folder (by default under `/ComfyUI/my_workflows` customize this location in Settings)
-     - Save workflow by pressing the 💾 button, or ⌨Shift+S shortcut (customize this shortcut in Settings).
-     - Every time you save, it will create a new record in **Version History**. You can easily revert to any version.
-     - Enable/disable autosave workflow
+    - Save workflow by pressing the 💾 button, or ⌨Shift+S shortcut (customize this shortcut in Settings).
+    - Every time you save, it will create a new record in **Version History**. You can easily revert to any version.
+    - Enable/disable autosave workflow
   - 🕛**Version control** of workflow, create/switch versions
   - Bulk import workflows into your workspace
   - 1click download all your workflows into a .zip
@@ -56,23 +56,21 @@ It is recommended to do git clone than downloading zip folder, because you can g
 
 Recommend using Chrome browser for the best experience. Safari doesn't work well. Edge or firefox should be fine too.
 
-[中文版教程](https://www.uisdc.com/workspace-manager) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Roadmap](https://github.com/orgs/11cafe/projects/1/views/1) 
+[中文版教程](https://www.uisdc.com/workspace-manager) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Roadmap](https://github.com/orgs/11cafe/projects/1/views/1)
 
 ### 🦄v2.0 beta: Two-way sync with local folder, select model install path, cloud sync workflows
+
 - Two-way sync with selected local folder so you can move files using File Explore or Finder to sync them with workspace!
 - **Models manager support external models path like Automatic1111**! Choose models downloading folder from added external paths.
 - Add models thumbnails image by putting a image file with the same name in models folder like A1111
 - One click sharing to cloud to backup your workflows to cloud
 - models list sort by date/name
-v2.0 demo: https://youtu.be/7Hht_BMe844
+  v2.0 demo: https://youtu.be/7Hht_BMe844
 
-**Make sure you clicked these 2 buttons after updating to v2.0** 
+**Make sure you clicked these 2 buttons after updating to v2.0**
 Once you have enabled two-way sync, DO NOT disable it again. We are migrating away from browser storage and embracing two-way sync with your local disk, so that everything is persistently stored in your disk.
 
 <img width="541" alt="Screenshot 2024-03-11 at 12 24 35 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/4b0d44ba-b2e4-4077-bb8a-262829787c05">
-
-
-
 
 **v1.7 ComfyUI model manager, view your installed models, install models from civit ai, open workflow in multiple browser tabs**
 
@@ -121,17 +119,15 @@ By default, We also enabled auto-saving your current workflow as a cache in case
 <img width="297" alt="Screenshot 2024-01-23 at 12 37 37 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/9ca0a63e-ddae-4436-a374-6ef0276c23fb">
 <img width="402" alt="Screenshot 2024-01-22 at 2 33 00 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/061a8463-f7e6-4985-9516-8117d7a5edd5">
 
-
 ### Where are my workflow and workspace data stored?
 
-🗂️All your workflows are saved in a folder in `/ComfyUI/my_workflows`, you can change this path in settings. 
+🗂️All your workflows are saved in a folder in `/ComfyUI/my_workflows`, you can change this path in settings.
 
 <img width="360" alt="Screenshot 2024-01-02 at 10 22 45 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/4751b096-0886-4a32-95b1-87c7ce5b3787">
 
 Other metadata (versions, gallery images) is primarily stored in your browser cache (IndexDB) and backedup in your disk under `/ComfyUI/custom_nodes/comfyui-workspace-manager/db/`. Press F12 or Inspect in right click browser menu, go to Application -> IndexedDB -> comfyui_workspace_db to see your data (workflows, version history, gallery, etc.)
 
 <img width="607" alt="303892585-c04ca874-03f0-4569-9a40-d8453dd9b031" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/17097e17-743d-499f-8f86-0eb1193d0e46">
-
 
 **Looking for colaborators and coworkers** to develop this ComfyUI project management tool. If you know React, Python or ML model deployment, please reach out to weixuanfu01@gmail.com We want to make it easy to **manage, share and deploy** ComfyUI project.
 
