@@ -74,8 +74,6 @@ Once you have enabled two-way sync, DO NOT disable it again. We are migrating aw
 
 **v1.7 ComfyUI model manager, view your installed models, install models from civit ai, open workflow in multiple browser tabs**
 
-<img width="300" alt="Screenshot 2024-02-02 at 5 51 31 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/a95dbf03-bd5a-43ce-af1f-b6ff246acf77">
-
 <img width="700" alt="Screenshot 2024-02-02 at 5 51 13 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/86dc9007-c45c-4b7b-b74a-76ddc93c89a8">
 
 <img width="400" alt="Screenshot 2024-01-23 at 12 27 34 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/3b543024-3a6b-4fca-9980-e535d83e206e">
