@@ -53,12 +53,12 @@ export default function AppEventListener() {
       const isLatest = await workflowsTable?.latestVersionCheck();
       if (!isLatest) {
         toast({
-          title: "You are working on an outdated version",
+          title: "Your changes cannot be saved!",
           description:
-            "This workflow is changed by another tab. Please close the page and reopen to get the latest version.",
+            "You are working on an outdated version. This workflow is changed by another tab. Please refresh to get the latest version.",
           status: "warning",
-          duration: 5000,
           isClosable: true,
+          duration: null,
         });
       } else {
         // autosave workflow if enabled
