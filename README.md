@@ -30,6 +30,9 @@ and restart your ComfyUI.
 It is recommended to do git clone than downloading zip folder, because you can get latest updates by `git pull`!
 
 ## Features
+🚧🔴 Drag and drop to insert subworkflow is not working. I have debugged for many hours but just can't make it work perfectly. If anyone is interested here is the code:
+https://github.com/11cafe/comfyui-workspace-manager/blob/d2d2f0c1f1ace35236e73fa5074e9feb83342773/ui/src/utils.tsx#L192
+I would really appreciate it if someone can find a solution to insert a subworkflow to current canvas given the json object.
 
 - **Workflows manager**
   - 🔁Switch between different workflows easily. 1click open workflow in multiple browser tabs.
