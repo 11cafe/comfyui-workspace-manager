@@ -20,17 +20,16 @@ import {
   workflowVersionsTable,
 } from "./db-tables/WorkspaceDB";
 import { defaultGraph } from "./defaultGraph";
-import { JsonDiff, WorkspaceContext } from "./WorkspaceContext";
+import { WorkspaceContext } from "./WorkspaceContext";
 import {
   getFileUrl,
-  matchShortcut,
   getWorkflowIdInUrlHash,
   generateUrlHashWithFlowId,
   openWorkflowInNewTab,
   validateOrSaveAllJsonFileMyWorkflows,
 } from "./utils";
 import { Topbar } from "./topbar/Topbar";
-import { EShortcutKeys, Workflow, WorkflowVersion } from "./types/dbTypes";
+import { Workflow, WorkflowVersion } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
 import React from "react";
 const RecentFilesDrawer = React.lazy(
@@ -46,7 +45,7 @@ import { useStateRef } from "./customHooks/useStateRef";
 import { indexdb } from "./db-tables/indexdb";
 import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
 import { deepJsonDiffCheck } from "./utils/deepJsonDiffCheck";
-
+const AppEventListener = React.lazy(() => import("./topbar/AppEventListener"));
 const ModelManagerTopbar = React.lazy(
   () => import("./model-manager/topbar/ModelManagerTopbar"),
 );
@@ -70,12 +69,8 @@ export default function App() {
   const { showDialog } = useDialog();
   const [loadChild, setLoadChild] = useState(false);
   const developmentEnvLoadFirst = useRef(false);
-  const autoSaveTimer = useRef(0);
   const toast = useToast();
-  const workflowOverwriteNoticeStateRef = useRef("hide"); // disabled/hide/show;
-  const [jsonDiff, setJsonDiff] = useState<JsonDiff>(null);
-  const [curVersion, setCurVersion, curVersionRef] =
-    useStateRef<WorkflowVersion | null>(null);
+  const [curVersion, setCurVersion] = useStateRef<WorkflowVersion | null>(null);
   const saveCurWorkflow = useCallback(async () => {
     if (curFlowID.current) {
       if (workflowsTable?.curWorkflow?.saveLock) {
@@ -120,6 +115,10 @@ export default function App() {
   };
 
   const discardUnsavedChanges = async () => {
+    if (userSettingsTable?.autoSave) {
+      alert("You cannot discard unsaved changes when auto save is enabled");
+      return;
+    }
     const userInput = confirm(
       "Are you sure you want to discard unsaved changes? This will revert current workflow to your last saved version. You will lose all changes made since your last save.",
     );
@@ -128,19 +127,14 @@ export default function App() {
       // User clicked OK
       const curID = workflowsTable?.curWorkflow?.id;
       if (curID == null) return;
-      let lastSavedJson;
-      if (userSettingsTable?.autoSave) {
-        lastSavedJson = (await changelogsTable?.getLastestByWorkflowID(curID))
-          ?.json;
-      } else {
-        lastSavedJson = (await workflowsTable?.get(curID))?.json;
-      }
+      const lastSavedJson = (await workflowsTable?.get(curID))?.json;
       if (lastSavedJson) {
         workflowsTable?.updateCurWorkflow({
           ...workflowsTable.curWorkflow!,
           json: lastSavedJson,
         });
         await app.loadGraphData(JSON.parse(lastSavedJson));
+        setIsDirty(false);
       } else {
         alert("Error: No last saved version found");
       }
@@ -189,7 +183,6 @@ export default function App() {
     if (latestWfID) {
       loadWorkflowIDImpl(latestWfID);
     }
-
     await validateOrSaveAllJsonFileMyWorkflows();
 
     indexdb.cache.get(UPGRADE_TO_2WAY_SYNC_KEY).then(async (value) => {
@@ -258,10 +251,8 @@ export default function App() {
 
   const loadWorkflowIDImpl = async (id: string, versionID?: string | null) => {
     if (app.graph == null) {
-      console.error("app.graph is null cannot load workflow");
       return;
     }
-
     const flow = await workflowsTable?.get(id);
     // If the currently loaded flow does not exist, you need to clear the URL hash and localStorage to avoid popping up another prompt that the flow does not exist when refreshing the page.
     if (flow == null) {
@@ -287,18 +278,7 @@ export default function App() {
       app.loadGraphData(JSON.parse(flow.json));
     }
     setRoute("root");
-    /**
-     * By an unlocked flow with isDirty true and unsaved,
-     * When switching to a locked flow, isDirty is still true, and checkIsDirty() is not executed in autoSaveTimer.
-     * causes * to be displayed in front of the topbar flow name,
-     * So add this logic and reset isDirty every time you open a new process
-     * In fact, it is reasonable to reset isDirty every time you open a new flow.
-     */
     isDirty && setIsDirty(false);
-  };
-
-  const compareJsonDiff = (diff: { old: Object; new: Object } | null) => {
-    setJsonDiff(diff);
   };
 
   const loadWorkflowID = async (
@@ -447,72 +427,6 @@ export default function App() {
     }
     graphAppSetup();
     setLoadChild(true);
-    autoSaveTimer.current = setInterval(async () => {
-      const autoSaveEnabled = userSettingsTable?.autoSave;
-      if (workflowsTable?.curWorkflow?.saveLock) return;
-      const isDirty = checkIsDirty();
-      setIsDirty(!!isDirty);
-      if (!isDirty) {
-        return;
-      }
-      if (
-        curVersionRef.current != null &&
-        curVersionRef.current.json !== JSON.stringify(app.graph.serialize())
-      ) {
-        setCurVersion(null);
-      }
-      if (curFlowID.current != null && autoSaveEnabled) {
-        const isLatest = await workflowsTable?.latestVersionCheck();
-        if (
-          workflowOverwriteNoticeStateRef.current !== "disabled" &&
-          !isLatest
-        ) {
-          workflowOverwriteNoticeStateRef.current = "show";
-          showDialog(
-            `This notification is to inform you that it appears you've opened the same workflow in multiple tabs. If all tabs are set to auto-save, this may lead to conflicts and potential data loss.\n\nYou might want to consider disabling auto-save to prevent this. We will remind you to save changes if you leave a page with unsaved work.`,
-            [
-              {
-                label: "Do Not Remind Again",
-                onClick: () => {
-                  workflowOverwriteNoticeStateRef.current = "disabled";
-                },
-              },
-              {
-                label: "Disable Auto-Save",
-                colorScheme: "teal",
-                onClick: () => {
-                  userSettingsTable?.upsert({ autoSave: false });
-                },
-              },
-            ],
-          );
-        } else {
-          // autosave workflow if enabled
-          const graphJson = JSON.stringify(app.graph.serialize());
-          graphJson != null &&
-            (await workflowsTable?.updateFlow(curFlowID.current!, {
-              json: graphJson,
-            }));
-        }
-      }
-    }, 1000);
-
-    const shortcutListener = async (event: KeyboardEvent) => {
-      if (document.visibilityState === "hidden") return;
-
-      const matchResult = await matchShortcut(event);
-
-      switch (matchResult) {
-        case EShortcutKeys.SAVE:
-          saveCurWorkflow();
-          break;
-        case EShortcutKeys.SAVE_AS:
-          setRoute("saveAsModal");
-          break;
-      }
-    };
-
-    window.addEventListener("keydown", shortcutListener);
 
     const fileInput = document.getElementById(
       "comfy-file-input",
@@ -588,13 +502,10 @@ export default function App() {
     app.canvasEl.addEventListener("drop", handleDrop);
 
     return () => {
-      window.removeEventListener("keydown", shortcutListener);
       window.removeEventListener("change", fileInputListener);
       window.removeEventListener("beforeunload", handleBeforeUnload);
       window.removeEventListener("executed", handleExecuted);
       app.canvasEl.removeEventListener("drop", handleDrop);
-
-      clearInterval(autoSaveTimer.current);
     };
   }, []);
 
@@ -611,13 +522,13 @@ export default function App() {
         discardUnsavedChanges: discardUnsavedChanges,
         saveCurWorkflow: saveCurWorkflow,
         isDirty: isDirty,
+        setIsDirty: setIsDirty,
         loadNewWorkflow: loadNewWorkflow,
         loadFilePath: loadFilePath,
         setRoute: setRoute,
         route: route,
-        jsonDiff: jsonDiff,
-        compareJson: compareJsonDiff,
         curVersion: curVersion,
+        setCurVersion: setCurVersion,
       }}
     >
       <div ref={workspaceContainerRef} className="workspace_manager">
@@ -656,6 +567,7 @@ export default function App() {
             )}
           </Box>
           <ServerEventListener />
+          <AppEventListener />
         </Portal>
       </div>
     </WorkspaceContext.Provider>

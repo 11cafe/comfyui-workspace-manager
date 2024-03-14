@@ -14,6 +14,7 @@ export const WorkspaceContext = createContext<{
     versionID?: string | null,
     forceLoad?: boolean,
   ) => void;
+  setIsDirty: (dirty: boolean) => void;
   saveCurWorkflow: () => void;
   discardUnsavedChanges: () => Promise<void>;
   isDirty: boolean;
@@ -21,9 +22,8 @@ export const WorkspaceContext = createContext<{
   loadFilePath: (path: string, overwriteCurrent?: boolean) => void;
   setRoute: (route: WorkspaceRoute) => void;
   route: WorkspaceRoute;
-  jsonDiff: JsonDiff;
-  compareJson: (jsonDiff: JsonDiff) => void;
   curVersion: WorkflowVersion | null;
+  setCurVersion: (version: WorkflowVersion | null) => void;
 }>({
   curFlowID: null,
   loadWorkflowID: () => {},
@@ -34,9 +34,9 @@ export const WorkspaceContext = createContext<{
   loadFilePath: () => {},
   setRoute: () => {},
   route: "root",
-  jsonDiff: null,
-  compareJson: () => {},
   curVersion: null,
+  setIsDirty: () => {},
+  setCurVersion: () => {},
 });
 
 export const RecentFilesContext = createContext<{
