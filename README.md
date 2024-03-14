@@ -56,6 +56,10 @@ Recommend using Chrome browser for the best experience. Safari doesn't work well
 
 [中文版教程](https://www.uisdc.com/workspace-manager) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Roadmap](https://github.com/orgs/11cafe/projects/1/views/1)
 
+🚧🔴 Drag and drop to insert subworkflow is not working. I have debugged for many hours but just can't make it work perfectly. If anyone is interested here is the code:
+https://github.com/11cafe/comfyui-workspace-manager/blob/d2d2f0c1f1ace35236e73fa5074e9feb83342773/ui/src/utils.tsx#L192
+I would really appreciate it if someone can find a solution to insert a subworkflow to current canvas given the json object.
+
 ### 🦄v2.0 beta: Two-way sync with local folder, select model install path, cloud sync workflows
 
 - Two-way sync with selected local folder so you can move files using File Explore or Finder to sync them with workspace!
