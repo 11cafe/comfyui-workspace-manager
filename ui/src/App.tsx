@@ -189,7 +189,24 @@ export default function App() {
     if (latestWfID) {
       loadWorkflowIDImpl(latestWfID);
     }
-
+    // console.log("jjjj😂j", app.graph);
+    document.addEventListener("click", (e) => {
+      console.log("app.canvas.", app.canvas);
+      if (
+        app.canvas.node_over != null ||
+        app.canvas.node_capturing_input != null ||
+        app.canvas.node_widget != null
+      ) {
+        console.log("🙀on change node click!!");
+      }
+    });
+    // console.log("jjjj😂j LGrpaoh", LGraph.prototype);
+    document.addEventListener("keyup", function (event) {
+      console.log("keyyyyyy app.canvas", app.canvas);
+      if (event.target?.matches("input, textarea")) {
+        console.log("🎹🎹on change keyboard click!!");
+      }
+    });
     await validateOrSaveAllJsonFileMyWorkflows();
 
     indexdb.cache.get(UPGRADE_TO_2WAY_SYNC_KEY).then(async (value) => {
