@@ -45,7 +45,7 @@ import { WorkspaceRoute } from "./types/types";
 import { useStateRef } from "./customHooks/useStateRef";
 import { indexdb } from "./db-tables/indexdb";
 import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
-import { deepJsonDiffCheck } from "./utils/deepJsonDiffCheck";
+import { fastDiffCheck } from "./utils/fastDiffCheck";
 
 const ModelManagerTopbar = React.lazy(
   () => import("./model-manager/topbar/ModelManagerTopbar"),
@@ -57,6 +57,9 @@ const usedWsEvents = [
   // useUpdateModels.ts
   "model_list",
 ];
+
+
+
 
 export default function App() {
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
@@ -252,7 +255,7 @@ export default function App() {
     } catch (e) {
       console.error("error parsing json", e);
     }
-    const equal = deepJsonDiffCheck(graphJson, lastSaved);
+    const equal = fastDiffCheck(graphJson, lastSaved);
     return !equal;
   };
 
@@ -431,6 +434,68 @@ export default function App() {
     setRoute("root");
   }, []);
 
+  const onWorkflowChange = ()=>{
+    if(autoSaveTimer.current){
+      clearTimeout(autoSaveTimer.current);
+    }
+    autoSaveTimer.current = setTimeout(()=>{
+      checkDiffWhenWorkflowChange();
+      clearTimeout(autoSaveTimer.current);
+    },1000);
+
+  }
+
+  const checkDiffWhenWorkflowChange = async () => {
+    const autoSaveEnabled = userSettingsTable?.autoSave;
+    if (workflowsTable?.curWorkflow?.saveLock) return;
+    const isDirty = checkIsDirty();
+    setIsDirty(!!isDirty);
+    if (!isDirty) {
+      return;
+    }
+    if (
+      curVersionRef.current != null &&
+      curVersionRef.current.json !== JSON.stringify(app.graph.serialize())
+    ) {
+      setCurVersion(null);
+    }
+    if (curFlowID.current != null && autoSaveEnabled) {
+      const isLatest = await workflowsTable?.latestVersionCheck();
+      if (
+        workflowOverwriteNoticeStateRef.current !== "disabled" &&
+        !isLatest
+      ) {
+        workflowOverwriteNoticeStateRef.current = "show";
+        showDialog(
+          `This notification is to inform you that it appears you've opened the same workflow in multiple tabs. If all tabs are set to auto-save, this may lead to conflicts and potential data loss.\n\nYou might want to consider disabling auto-save to prevent this. We will remind you to save changes if you leave a page with unsaved work.`,
+          [
+            {
+              label: "Do Not Remind Again",
+              onClick: () => {
+                workflowOverwriteNoticeStateRef.current = "disabled";
+              },
+            },
+            {
+              label: "Disable Auto-Save",
+              colorScheme: "teal",
+              onClick: () => {
+                userSettingsTable?.upsert({ autoSave: false });
+              },
+            },
+          ],
+        );
+      } else {
+        // autosave workflow if enabled
+        const graphJson = JSON.stringify(app.graph.serialize());
+        graphJson != null &&
+          (await workflowsTable?.updateFlow(curFlowID.current!, {
+            json: graphJson,
+          }));
+      }
+    }
+  }
+
+
   useEffect(() => {
     /**
      * because we have turned on strict mode, useEffect will be executed twice in strict mode in the development environment.
@@ -447,56 +512,9 @@ export default function App() {
     }
     graphAppSetup();
     setLoadChild(true);
-    autoSaveTimer.current = setInterval(async () => {
-      const autoSaveEnabled = userSettingsTable?.autoSave;
-      if (workflowsTable?.curWorkflow?.saveLock) return;
-      const isDirty = checkIsDirty();
-      setIsDirty(!!isDirty);
-      if (!isDirty) {
-        return;
-      }
-      if (
-        curVersionRef.current != null &&
-        curVersionRef.current.json !== JSON.stringify(app.graph.serialize())
-      ) {
-        setCurVersion(null);
-      }
-      if (curFlowID.current != null && autoSaveEnabled) {
-        const isLatest = await workflowsTable?.latestVersionCheck();
-        if (
-          workflowOverwriteNoticeStateRef.current !== "disabled" &&
-          !isLatest
-        ) {
-          workflowOverwriteNoticeStateRef.current = "show";
-          showDialog(
-            `This notification is to inform you that it appears you've opened the same workflow in multiple tabs. If all tabs are set to auto-save, this may lead to conflicts and potential data loss.\n\nYou might want to consider disabling auto-save to prevent this. We will remind you to save changes if you leave a page with unsaved work.`,
-            [
-              {
-                label: "Do Not Remind Again",
-                onClick: () => {
-                  workflowOverwriteNoticeStateRef.current = "disabled";
-                },
-              },
-              {
-                label: "Disable Auto-Save",
-                colorScheme: "teal",
-                onClick: () => {
-                  userSettingsTable?.upsert({ autoSave: false });
-                },
-              },
-            ],
-          );
-        } else {
-          // autosave workflow if enabled
-          const graphJson = JSON.stringify(app.graph.serialize());
-          graphJson != null &&
-            (await workflowsTable?.updateFlow(curFlowID.current!, {
-              json: graphJson,
-            }));
-        }
-      }
-    }, 1000);
-
+    if(app._proxy_on_workflow_chang_proxy){// if _proxy_on_workflow_chang_proxy has set ,then it means the app has been initialized
+      app._proxy_on_workflow_chang_proxy = onWorkflowChange;
+    }
     const shortcutListener = async (event: KeyboardEvent) => {
       if (document.visibilityState === "hidden") return;
 
@@ -593,8 +611,6 @@ export default function App() {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       window.removeEventListener("executed", handleExecuted);
       app.canvasEl.removeEventListener("drop", handleDrop);
-
-      clearInterval(autoSaveTimer.current);
     };
   }, []);
 

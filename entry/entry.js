@@ -1,3 +1,4 @@
+import { app } from "/scripts/app.js";
 const targetNode = document.body;
 
 // Options for the observer (which mutations to observe)
@@ -19,6 +20,25 @@ const callback = function (mutationsList, observer) {
     }
   }
 };
+
+app._proxy_on_workflow_chang_proxy = function () {
+  // do nothing when the extension unload
+};
+
+const hookMount = function (funcName, mountPoint) {
+  const original = mountPoint[funcName];
+  mountPoint[funcName] = function () {
+    original?.apply(this, arguments);
+    app._proxy_on_workflow_chang_proxy();
+  };
+};
+
+app.registerExtension({
+  name: "customnodes.WorkflowManager",
+  async setup() {
+    hookMount("change", LGraph.prototype);
+  },
+});
 
 // Create an instance of the MutationObserver
 const observer = new MutationObserver(callback);

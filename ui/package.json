@@ -21,12 +21,14 @@
     "framer-motion": "^10.16.12",
     "fuse.js": "^7.0.0",
     "jszip": "^3.10.1",
+    "lodash.isequal": "^4.5.0",
     "nanoid": "^5.0.6",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@types/lodash.isequal": "^4.5.8",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
     "@types/uuid": "^9.0.7",
