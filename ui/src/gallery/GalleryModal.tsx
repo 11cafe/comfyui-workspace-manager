@@ -51,13 +51,11 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
       });
   }, []);
 
-  const calcImages = useMemo(
-    () =>
-      images?.filter((v) =>
+  const calcImages = searchValue.length
+    ? images?.filter((v) =>
         /*!v?.workflowJSON || */ v.workflowJSON?.includes(searchValue ?? ""),
-      ),
-    [images, searchValue],
-  );
+      )
+    : images;
 
   if (curFlowID == null) {
     return null;
