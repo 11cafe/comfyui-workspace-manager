@@ -28,6 +28,8 @@ export default function InstallMissingModelsButton({}: Props) {
   const [showMyModels, setShowMyModels] = useState(false);
   const [missingModels, setMissingModels] = useState<MissingModel[]>([]);
   useEffect(() => {
+    // temporary disable missing model check
+    return;
     // monkey patch queue prompt api to catch errors
     const queuePrompt = app.queuePrompt as Function;
     app.queuePrompt = async function () {
