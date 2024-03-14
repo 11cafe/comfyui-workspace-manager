@@ -12,7 +12,7 @@ import {
   ModalOverlay,
   Text,
 } from "@chakra-ui/react";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { mediaTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import { IconArrowLeft, IconX } from "@tabler/icons-react";
 import { WorkspaceContext } from "../WorkspaceContext";
@@ -38,6 +38,9 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
     if (curFlowID == null) return;
     const media = await mediaTable?.listByWorkflowID(curFlowID);
     setImages(media ?? []);
+    if (Number(media?.length) <= 6 && media?.[0]) {
+      setMetaData(media[0]);
+    }
   };
 
   useEffect(() => {
@@ -83,7 +86,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
         <ModalHeader>
           <HStack gap={2} mb={2}>
             <Heading size={"md"} mr={2}>
-              {!!metaData && (
+              {!!metaData && images.length > 6 && (
                 <IconButton
                   onClick={() => setMetaData(undefined)}
                   variant={"ghost"}

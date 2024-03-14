@@ -55,6 +55,7 @@ export const DEFAULT_TOP_FIELDS: TopFieldType[] = [
     class_type: "KSampler",
   },
 ];
+
 export const isInTopField = (
   topFields: TopFieldType[],
   item: Pick<FormItem, "name" | "promptKey" | "classType">,
