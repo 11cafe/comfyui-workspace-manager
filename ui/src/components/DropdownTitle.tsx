@@ -45,7 +45,6 @@ import HoverMenu from "./HoverMenu";
 const ShareDialog = lazy(() => import("../share/ShareDialog"));
 // @ts-ignore
 import { app } from "/scripts/app.js";
-import JsonDiffCompareModal from "./JsonDiffCompareModal";
 
 export default function DropdownTitle() {
   const {
@@ -211,9 +210,6 @@ export default function DropdownTitle() {
       {route == "versionHistory" && (
         <VersionHistoryDrawer onClose={() => setRoute("root")} />
       )}
-
-      <JsonDiffCompareModal />
-
       {route === "saveAsModal" && (
         <Modal isOpen={true} onClose={handleOnCloseModal}>
           <ModalOverlay />
