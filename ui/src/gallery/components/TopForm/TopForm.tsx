@@ -15,29 +15,31 @@ export default function TopForm({
   updateMetaData: FormItem["updateMetaData"];
   updateTopField?: (field: TopFieldType) => void;
 }) {
+  if (topFields.length === 0) return null;
   const prompt = metaData.prompt;
   return (
     <>
-      {topFields?.length > 0 && (
-        <Flex px={2} gap={2} direction={"column"}>
-          {topFields?.map((field, i) => {
-            if (!prompt?.[field.promptKey]?.inputs) return null;
-            const promptValue = prompt?.[field.promptKey]?.inputs?.[field.name];
-            return (
-              <FormItemComponent
-                key={`formTop${field.name}${i}`}
-                promptKey={field.promptKey as string}
-                classType={prompt?.[field.promptKey]?.class_type}
-                name={field.name}
-                value={promptValue}
-                updateMetaData={updateMetaData}
-                updateTopField={updateTopField}
-                topFields={topFields}
-              />
-            );
-          })}
-        </Flex>
-      )}
+      <Flex px={2} gap={2} direction={"column"}>
+        {topFields?.map((field, i) => {
+          const nodeInputs = prompt?.[field.promptKey]?.inputs;
+          if (!nodeInputs) return null;
+          const nodeClassType = prompt?.[field.promptKey]?.class_type;
+          if (nodeClassType !== field.class_type) return null;
+          const inputValue = nodeInputs?.[field.name];
+          return (
+            <FormItemComponent
+              key={`formTop${field.name}${i}`}
+              promptKey={field.promptKey as string}
+              classType={prompt?.[field.promptKey]?.class_type}
+              name={field.name}
+              value={inputValue}
+              updateMetaData={updateMetaData}
+              updateTopField={updateTopField}
+              topFields={topFields}
+            />
+          );
+        })}
+      </Flex>
     </>
   );
 }
