@@ -63,7 +63,7 @@ export default function AppEventListener() {
     setIsDirty(false);
   };
   const [debounceAutoSaveWorkflow, _cancelDebounceAutoSaveWorkflow] =
-    useDebounceFn(autoSaveWorkflow, 2000);
+    useDebounceFn(autoSaveWorkflow, 1000);
   const onIsDirty = async () => {
     if (workflowsTable?.curWorkflow?.saveLock) return;
     const autoSaveEnabled = await userSettingsTable?.getSetting("autoSave");

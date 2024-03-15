@@ -57,7 +57,7 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
       }}
     >
       <HStack>
-        {(workflow.coverMediaPath != null || workflow.latestImage !== null) && (
+        {(workflow.coverMediaPath?.length || workflow.latestImage?.length) && (
           <MediaPreview
             mediaLocalPath={
               workflow.coverMediaPath ?? workflow.latestImage ?? ""
