@@ -4,4 +4,5 @@ export type WorkspaceRoute =
   | "recentFlows"
   | "gallery"
   | "versionHistory"
-  | "saveAsModal";
+  | "saveAsModal"
+  | "modelList";

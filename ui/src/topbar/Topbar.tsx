@@ -92,6 +92,15 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
             <IconTriangleInvertedFilled size={8} />
           </HStack>
         </Button>
+        <Button
+          size={"sm"}
+          colorScheme="blue"
+          aria-label="My models"
+          onClick={() => setRoute("modelList")}
+          px={1}
+        >
+          Models
+        </Button>
         <Tooltip label="New workflow">
           <Button
             size={"sm"}
