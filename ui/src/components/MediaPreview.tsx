@@ -49,15 +49,34 @@ export default function MediaPreview({
       alt="workflow image renamed or moved from output folder"
     />
   ) : (
-    <video
-      width={size}
-      height={size}
-      src={`/workspace/view_media?filename=${mediaLocalPath}`}
-      loop={true}
-      autoPlay={autoPlay ?? false}
-      muted={true}
+    <div
+      style={{
+        width: size + "px",
+        height: size + `px`,
+        overflow: "hidden",
+        position: "relative",
+      }}
     >
-      <track kind="captions" />
-    </video>
+      <video
+        width={size}
+        height={size}
+        src={`/workspace/view_media?filename=${mediaLocalPath}`}
+        loop={true}
+        autoPlay={autoPlay ?? false}
+        muted={true}
+        style={{
+          // for video to crop to center
+          objectFit: "cover",
+          width: "100%",
+          height: "100%",
+          // position: "absolute",
+          // top: "50%", // Align the center of the video with the center of the container vertically
+          // left: "50%", // Align the center of the video with the center of the container horizontally
+          // transform: "translate(-50%, -50%)", // Offset the video to ensure it is centered
+        }}
+      >
+        <track kind="captions" />
+      </video>
+    </div>
   );
 }

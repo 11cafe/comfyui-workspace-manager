@@ -1,4 +1,5 @@
 
+import asyncio
 import server
 from aiohttp import web
 import folder_paths
@@ -8,7 +9,7 @@ from .model_manager.model_preview import get_thumbnail_for_image_file
 image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
 video_extensions = ['.mp4', '.mov', '.avi', '.webm', '.mkv']
 
-async def view_media(filename, isPreview = False):
+def view_media(filename, isPreview = False):
     if not filename:
         return web.Response(status=404)
     
@@ -49,9 +50,9 @@ async def view_media(filename, isPreview = False):
 @server.PromptServer.instance.routes.get("/workspace/preview_media")
 async def preview_file(request):
     filename = request.query.get("filename", None)
-    return await view_media(filename, True)
+    return await asyncio.to_thread(view_media, filename, True)
 
 @server.PromptServer.instance.routes.get("/workspace/view_media")
 async def view_file(request):
     filename = request.query.get("filename", None)
-    return await view_media(filename, False)
+    return await asyncio.to_thread(view_media, filename, False)
