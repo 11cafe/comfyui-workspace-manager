@@ -22,6 +22,7 @@ import { DRAWER_Z_INDEX } from "../../const";
 import ShowNsfwModelThumbnailSettings from "../../settings/ShowNsfwModelThumbnailSettings";
 import { indexdb } from "../../db-tables/indexdb";
 import { type Model } from "../../types/dbTypes";
+import ModelDropEventListener from "../topbar/ModelDropEventListener";
 interface Props {
   onClose: () => void;
 }
@@ -156,6 +157,7 @@ export default function ModelsListDrawer({ onClose }: Props) {
             </Flex>
           )}
         </Card>
+        <ModelDropEventListener />
       </Box>
     </Portal>
   );

@@ -45,7 +45,9 @@ import { useStateRef } from "./customHooks/useStateRef";
 import { indexdb } from "./db-tables/indexdb";
 import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
 import { deepJsonDiffCheck } from "./utils/deepJsonDiffCheck";
-const AppEventListener = React.lazy(() => import("./topbar/AppEventListener"));
+const AppIsDirtyEventListener = React.lazy(
+  () => import("./topbar/AppIsDirtyEventListener"),
+);
 const ModelsListDrawer = React.lazy(
   () => import("./model-manager/models-list-drawer/ModelsListDrawer"),
 );
@@ -566,7 +568,7 @@ export default function App() {
             )}
           </Box>
           <ServerEventListener />
-          <AppEventListener />
+          <AppIsDirtyEventListener />
         </Portal>
       </div>
     </WorkspaceContext.Provider>

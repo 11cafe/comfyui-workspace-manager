@@ -18,6 +18,7 @@ import "./Topbar.css";
 import { SharedTopbarButton } from "../share/SharedTopbarButton";
 import VersionNameTopbar from "./VersionNameTopbar";
 import { userSettingsTable, workflowsTable } from "../db-tables/WorkspaceDB";
+import { TOPBAR_BUTTON_HEIGHT } from "../const";
 
 interface Props {
   curFlowName: string | null;
@@ -95,6 +96,7 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
         <Button
           size={"sm"}
           colorScheme="blue"
+          height={TOPBAR_BUTTON_HEIGHT + "px"}
           aria-label="My models"
           onClick={() => setRoute("modelList")}
           px={1}
@@ -107,6 +109,7 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
             variant={"outline"}
             colorScheme="teal"
             aria-label="new workflow"
+            height={TOPBAR_BUTTON_HEIGHT + "px"}
             onClick={() => loadNewWorkflow()}
             px={2}
             py={2}
