@@ -37,10 +37,10 @@ def save_file_sync(reqJson):
         # Compare the current id with the expected id
         if current_id is not None and current_id != expected_id:
             return {"error": "Mismatching workspace_info.id."}
-    except json.JSONDecodeError:
-        return { "error": "Existing file is not a valid JSON."}
     except FileNotFoundError:
         return {"error": f"File not found in path {current_path}"}
+    except Exception as e:
+        return { "error": str(e)}
     
     # If checks pass, write the new JSON data to the file
     try:

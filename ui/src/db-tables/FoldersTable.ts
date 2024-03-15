@@ -100,7 +100,6 @@ export class FoldersTable extends TableBase<Folder> {
       await scanLocalFiles(id, true, true).then((files) => {
         files.forEach((file) => {
           if (file.type === "workflow") {
-            console.log("delete workflow", file);
             workflowsTable?.deleteFlow(file.id);
           }
         });

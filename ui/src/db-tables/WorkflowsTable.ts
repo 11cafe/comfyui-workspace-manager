@@ -119,20 +119,19 @@ export class WorkflowsTable extends TableBase<Workflow> {
   public async createFlow(
     input: Partial<Workflow>,
   ): Promise<Workflow | undefined> {
-    const { id, json, name } = input;
+    const { name } = input;
     const newFlowName = await this.generateUniqueName(
       name,
       input.parentFolderID ?? undefined,
     );
-    const uuid = id ?? nanoid(); // ⇨ '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
     const time = Date.now();
     const newWorkflow: Workflow = {
       ...input,
-      id: uuid,
-      json: json ?? JSON.stringify(defaultGraph),
+      id: input.id ?? nanoid(),
+      json: input.json ?? JSON.stringify(defaultGraph),
       name: newFlowName,
-      updateTime: time,
-      createTime: time,
+      updateTime: input.updateTime ?? time,
+      createTime: input.createTime ?? time,
     };
     //add to IndexDB
     await indexdb.workflows.add(newWorkflow);
