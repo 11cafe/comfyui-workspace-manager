@@ -189,34 +189,51 @@ export const sortFileItem = (
   return copyFlows;
 };
 
+export function json2ClipboardString(graphData: any) {
+  const nodes = graphData.nodes;
+  const links = new Array();
+  const relative_id_map = new Map();
+  for (let i = 0; i < graphData.nodes.length; ++i) {
+    const node = graphData.nodes[i];
+    if (node.inputs) {
+      for (const input of node.inputs) {
+        if (input.link) {
+          input.link = null;
+        }
+      }
+    }
+    if (node.outputs) {
+      for (const output of node.outputs) {
+        if (output.links) {
+          output.links = [];
+        }
+      }
+    }
+    relative_id_map.set(node.id, i);
+  }
+  for (const link of graphData.links) {
+    links.push([
+      relative_id_map.get(link[1]),
+      link[2],
+      relative_id_map.get(link[3]),
+      link[4],
+      link[1],
+    ]);
+  }
+  return JSON.stringify({ nodes, links });
+}
+
 export function insertWorkflowToCanvas(json: string, insertPos?: number[]) {
   let graphData = JSON.parse(json);
-  if (typeof structuredClone === "undefined") {
-    graphData = JSON.parse(JSON.stringify(graphData));
-  } else {
-    graphData = structuredClone(graphData);
-  }
-
-  let tempGraph = new LGraph();
-  const hiddenCanvas = document.createElement("canvas");
-  hiddenCanvas.style.display = "none"; // Make it hidden
-  document.body.appendChild(hiddenCanvas); // Append to the body to make it part of the DOM
-  let tempCanvas = new LGraphCanvas(hiddenCanvas, tempGraph);
+  if (!graphData || !graphData.nodes || graphData.nodes.length == 0) return;
 
   const prevClipboard = localStorage.getItem("litegrapheditor_clipboard");
-  const prevGraph = app.graph;
-  const prevCanvas = app.canvas;
-  app.canvas = tempCanvas;
-  app.graph = tempGraph;
-  tempGraph.configure(graphData);
-  app.canvas.copyToClipboard(tempGraph._nodes);
 
-  // clear the tempGraph and remove the hiddenCanvas
-  tempCanvas.graph.clear();
-  document.body.removeChild(hiddenCanvas);
+  localStorage.setItem(
+    "litegrapheditor_clipboard",
+    json2ClipboardString(graphData),
+  );
 
-  app.graph = prevGraph;
-  app.canvas = prevCanvas;
   const priorPos = app.canvas.graph_mouse;
   if (insertPos) {
     insertPos[0] -= 15;
@@ -228,9 +245,6 @@ export function insertWorkflowToCanvas(json: string, insertPos?: number[]) {
   if (prevClipboard) {
     localStorage.setItem("litegrapheditor_clipboard", prevClipboard);
   }
-  // Nullify the temporary graph and canvas references for garbage collection
-  tempGraph = null;
-  tempCanvas = null;
 }
 
 export const matchShortcut = async (event: KeyboardEvent) => {
