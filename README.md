@@ -58,6 +58,10 @@ Recommend using Chrome browser for the best experience. Safari doesn't work well
 
 [中文版教程](https://www.uisdc.com/workspace-manager) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Roadmap](https://github.com/orgs/11cafe/projects/1/views/1)
 
+🚧🔴 Drag and drop to insert subworkflow is not working. I have debugged for many hours but just can't make it work perfectly. If anyone is interested here is the code:
+https://github.com/11cafe/comfyui-workspace-manager/blob/d2d2f0c1f1ace35236e73fa5074e9feb83342773/ui/src/utils.tsx#L192
+I would really appreciate it if someone can find a solution to insert a subworkflow to current canvas given the json object.
+
 ### 🦄v2.0 beta: Two-way sync with local folder, select model install path, cloud sync workflows
 
 - Two-way sync with selected local folder so you can move files using File Explore or Finder to sync them with workspace!
@@ -73,8 +77,6 @@ Once you have enabled two-way sync, DO NOT disable it again. We are migrating aw
 <img width="541" alt="Screenshot 2024-03-11 at 12 24 35 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/4b0d44ba-b2e4-4077-bb8a-262829787c05">
 
 **v1.7 ComfyUI model manager, view your installed models, install models from civit ai, open workflow in multiple browser tabs**
-
-<img width="300" alt="Screenshot 2024-02-02 at 5 51 31 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/a95dbf03-bd5a-43ce-af1f-b6ff246acf77">
 
 <img width="700" alt="Screenshot 2024-02-02 at 5 51 13 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/86dc9007-c45c-4b7b-b74a-76ddc93c89a8">
 
