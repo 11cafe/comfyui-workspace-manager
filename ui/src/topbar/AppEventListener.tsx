@@ -52,6 +52,15 @@ export default function AppEventListener() {
       }
     });
   }, []);
+  const autoSaveWorkflow = async () => {
+    // autosave workflow if enabled
+    const graphJson = JSON.stringify(app.graph.serialize());
+    graphJson != null &&
+      (await workflowsTable?.updateFlow(workflowsTable.curWorkflow!.id, {
+        json: graphJson,
+      }));
+    setIsDirty(false);
+  };
   const onIsDirty = async () => {
     if (workflowsTable?.curWorkflow?.saveLock) return;
     const autoSaveEnabled = await userSettingsTable?.getSetting("autoSave");
@@ -61,6 +70,8 @@ export default function AppEventListener() {
     }
     if (workflowsTable?.curWorkflow?.id && autoSaveEnabled) {
       const isLatest = await workflowsTable?.latestVersionCheck();
+      // isLast will alwasy be false when click "Load" to load a workflow
+      //   const isLatest = true;
       if (!isLatest) {
         toast({
           title: "Your changes cannot be saved!",
@@ -71,13 +82,7 @@ export default function AppEventListener() {
           duration: null,
         });
       } else {
-        // autosave workflow if enabled
-        const graphJson = JSON.stringify(app.graph.serialize());
-        graphJson != null &&
-          (await workflowsTable?.updateFlow(workflowsTable.curWorkflow.id, {
-            json: graphJson,
-          }));
-        setIsDirty(false);
+        autoSaveWorkflow();
       }
     }
   };
