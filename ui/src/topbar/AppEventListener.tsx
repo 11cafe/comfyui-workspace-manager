@@ -6,6 +6,7 @@ import { userSettingsTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import { useToast } from "@chakra-ui/react";
 import { matchShortcut } from "../utils";
 import { EShortcutKeys } from "../types/dbTypes";
+import useDebounceFn from "../customHooks/useDebounceFn";
 
 export default function AppEventListener() {
   const { setIsDirty, setRoute, saveCurWorkflow } =
@@ -61,6 +62,8 @@ export default function AppEventListener() {
       }));
     setIsDirty(false);
   };
+  const [debounceAutoSaveWorkflow, _cancelDebounceAutoSaveWorkflow] =
+    useDebounceFn(autoSaveWorkflow, 2000);
   const onIsDirty = async () => {
     if (workflowsTable?.curWorkflow?.saveLock) return;
     const autoSaveEnabled = await userSettingsTable?.getSetting("autoSave");
@@ -82,7 +85,7 @@ export default function AppEventListener() {
           duration: null,
         });
       } else {
-        autoSaveWorkflow();
+        debounceAutoSaveWorkflow();
       }
     }
   };
