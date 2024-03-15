@@ -22,6 +22,15 @@ export default function AppEventListener() {
           break;
       }
     };
+
+    const originalOnAfterChange = app.graph.onAfterChange;
+    app.graph.onAfterChange = function () {
+      // Call the original onAfterChange method
+      // Use .apply() to correctly set 'this' context and pass all arguments
+      originalOnAfterChange?.apply(app.canvas, arguments);
+      onIsDirty();
+    };
+
     document.addEventListener("click", (e) => {
       if (
         app.canvas.node_over != null ||
@@ -48,6 +57,7 @@ export default function AppEventListener() {
     const autoSaveEnabled = await userSettingsTable?.getSetting("autoSave");
     if (!autoSaveEnabled) {
       setIsDirty(true);
+      return;
     }
     if (workflowsTable?.curWorkflow?.id && autoSaveEnabled) {
       const isLatest = await workflowsTable?.latestVersionCheck();
