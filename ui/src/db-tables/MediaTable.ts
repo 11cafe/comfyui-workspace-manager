@@ -25,8 +25,6 @@ export class MediaTable extends TableBase<Media> {
   }): Promise<Media | null> {
     const format = input.localPath.split(".").pop();
     if (format == null) return null;
-    //link media to workflow
-    const workflow = await workflowsTable?.get(input.workflowID);
 
     const res = await getMetadataFromUrl(
       `/workspace/view_media?filename=${input.localPath}`,
@@ -43,9 +41,7 @@ export class MediaTable extends TableBase<Media> {
       workflowJSON: JSON.stringify(res?.prompt),
       format: format,
     };
-    const newMedia = new Set(workflow?.mediaIDs ?? []).add(md.id);
     await workflowsTable?.updateMetaInfo(input.workflowID, {
-      mediaIDs: Array.from(newMedia),
       latestImage: md.localPath,
     });
     // save indexdb
