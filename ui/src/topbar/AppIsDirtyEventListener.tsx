@@ -8,7 +8,7 @@ import { matchShortcut } from "../utils";
 import { EShortcutKeys } from "../types/dbTypes";
 import useDebounceFn from "../customHooks/useDebounceFn";
 
-export default function AppEventListener() {
+export default function AppIsDirtyEventListener() {
   const { setIsDirty, setRoute, saveCurWorkflow } =
     useContext(WorkspaceContext);
   const toast = useToast();

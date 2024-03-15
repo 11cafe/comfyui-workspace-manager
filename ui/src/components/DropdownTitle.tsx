@@ -45,6 +45,7 @@ import HoverMenu from "./HoverMenu";
 const ShareDialog = lazy(() => import("../share/ShareDialog"));
 // @ts-ignore
 import { app } from "/scripts/app.js";
+import { TOPBAR_BUTTON_HEIGHT } from "../const";
 
 export default function DropdownTitle() {
   const {
@@ -132,7 +133,7 @@ export default function DropdownTitle() {
           <DarkMode>
             <Button
               px={1}
-              height={"29px"}
+              height={TOPBAR_BUTTON_HEIGHT + "px"}
               aria-label="menu"
               size={"sm"}
               // backgroundColor={"gray.700"}

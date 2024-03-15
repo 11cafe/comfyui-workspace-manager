@@ -45,10 +45,13 @@ import { useStateRef } from "./customHooks/useStateRef";
 import { indexdb } from "./db-tables/indexdb";
 import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
 import { deepJsonDiffCheck } from "./utils/deepJsonDiffCheck";
-const AppEventListener = React.lazy(() => import("./topbar/AppEventListener"));
-const ModelManagerTopbar = React.lazy(
-  () => import("./model-manager/topbar/ModelManagerTopbar"),
+const AppIsDirtyEventListener = React.lazy(
+  () => import("./topbar/AppIsDirtyEventListener"),
 );
+const ModelsListDrawer = React.lazy(
+  () => import("./model-manager/models-list-drawer/ModelsListDrawer"),
+);
+
 const usedWsEvents = [
   // InstallProgress.tsx
   "download_progress",
@@ -544,11 +547,6 @@ export default function App() {
             draggable={false}
           >
             <Topbar curFlowName={curFlowName} setCurFlowName={setCurFlowName} />
-            {loadChild && (
-              <Suspense>
-                <ModelManagerTopbar />
-              </Suspense>
-            )}
             {loadChild && route === "recentFlows" && (
               <Suspense>
                 <RecentFilesDrawer
@@ -565,9 +563,12 @@ export default function App() {
                 <GalleryModal onclose={() => setRoute("root")} />
               </Suspense>
             )}
+            {route === "modelList" && (
+              <ModelsListDrawer onClose={() => setRoute("root")} />
+            )}
           </Box>
           <ServerEventListener />
-          <AppEventListener />
+          <AppIsDirtyEventListener />
         </Portal>
       </div>
     </WorkspaceContext.Provider>
