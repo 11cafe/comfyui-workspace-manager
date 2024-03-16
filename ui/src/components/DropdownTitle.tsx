@@ -107,24 +107,30 @@ export default function DropdownTitle() {
   };
 
   const handleDownload = useCallback(async () => {
-    const json_data = curFlowID ? await workflowsTable?.get(curFlowID) : null;
-
-    if (!json_data) {
-      alert("Workspace does not exist");
+    const curWorkflow = workflowsTable?.curWorkflow;
+    if (!curWorkflow) {
+      alert("No current workflow!");
       return;
     }
-
-    const blob = new Blob([json_data.json], { type: "application/json" });
+    const graph = app.graph.serialize();
+    const json = JSON.stringify(graph);
+    const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${json_data.name}.json`;
+    a.download = `${curWorkflow.name}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }, [curFlowID]);
+
+  const handleDownloadSpaceJson = useCallback(async () => {
+    console.log("app.graph", app.graph);
+    const graph = app.graph.serialize();
+    console.log("graph serialize", graph);
+  }, []);
 
   return (
     <>
@@ -172,6 +178,13 @@ export default function DropdownTitle() {
                 iconSpacing={1}
               >
                 Download
+              </MenuItem>
+              <MenuItem
+                onClick={handleDownloadSpaceJson}
+                icon={<IconDownload size={20} />}
+                iconSpacing={1}
+              >
+                Download .space.json
               </MenuItem>
               <MenuItem
                 onClick={() => setRoute("saveAsModal")}
