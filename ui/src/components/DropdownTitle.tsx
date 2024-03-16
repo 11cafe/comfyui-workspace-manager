@@ -136,7 +136,7 @@ export default function DropdownTitle() {
               height={TOPBAR_BUTTON_HEIGHT + "px"}
               aria-label="menu"
               size={"sm"}
-              // backgroundColor={"gray.700"}
+              // backgroundColor={"#4a4d6b"}
               backgroundColor={"teal.600"}
             >
               File

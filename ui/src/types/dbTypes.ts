@@ -88,6 +88,7 @@ export type UserSettings = {
   cloudHost: string;
   overwriteCurWorkflowWhenDroppingFileToCanvas: boolean;
   defaultFolders: Record<MODEL_TYPE, string>;
+  maximumChangelogNumber: number;
 };
 
 export interface PanelPosition {

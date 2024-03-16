@@ -92,6 +92,7 @@ export default function App() {
         changelogsTable?.create({
           workflowID: curFlowID.current,
           json: graphJson,
+          isAutoSave: false,
         }),
       ]);
       userSettingsTable?.autoSave &&
@@ -445,6 +446,7 @@ export default function App() {
         };
         setCurFlowIDAndName(newFlow);
         await workflowsTable?.createFlow(newFlow);
+        setIsDirty(true);
       }
     };
     fileInput?.addEventListener("change", fileInputListener);
@@ -501,6 +503,7 @@ export default function App() {
         setCurFlowIDAndName(newFlow);
         await workflowsTable?.createFlow(newFlow);
       }
+      setIsDirty(true);
     };
     app.canvasEl.addEventListener("drop", handleDrop);
 
@@ -562,9 +565,6 @@ export default function App() {
               <Suspense>
                 <GalleryModal onclose={() => setRoute("root")} />
               </Suspense>
-            )}
-            {route === "modelList" && (
-              <ModelsListDrawer onClose={() => setRoute("root")} />
             )}
           </Box>
           <ServerEventListener />
