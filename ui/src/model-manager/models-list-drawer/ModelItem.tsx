@@ -152,9 +152,17 @@ export function ModelItem({ data }: Props) {
           fontSize={14}
         ></Text>
       </Box>
-      <Tooltip label={data.date.toLocaleDateString()}>
+      <Tooltip
+        label={
+          <span>
+            {data.model_name + data.model_extension}
+            <br />
+            {data.date.toLocaleDateString()}
+          </span>
+        }
+      >
         <Text textAlign="center" p="1" fontSize={14} noOfLines={2}>
-          {model?.modelName ?? data.model_name}
+          {model?.modelName ?? data.model_name + data.model_extension}
         </Text>
       </Tooltip>
     </Box>
