@@ -1,5 +1,5 @@
-import { Button, ButtonGroup, Flex, IconButton } from "@chakra-ui/react";
-import { IconPlus, IconTriangleInvertedFilled } from "@tabler/icons-react";
+import { Button, ButtonGroup, Flex } from "@chakra-ui/react";
+import { IconTriangleInvertedFilled } from "@tabler/icons-react";
 import { useContext, useEffect } from "react";
 import { WorkspaceContext } from "../WorkspaceContext";
 
@@ -7,9 +7,8 @@ export default function VersionNameTopbar({}: {}) {
   const { setRoute, curVersion, isDirty, setCurVersion } =
     useContext(WorkspaceContext);
   useEffect(() => {
-    if (isDirty) {
-      curVersion &&
-        setCurVersion?.({ ...curVersion, name: curVersion.name + "*" });
+    if (isDirty && curVersion && curVersion?.name.endsWith("*") === false) {
+      setCurVersion?.({ ...curVersion, name: curVersion.name + "*" });
     }
   }, [isDirty]);
   if (!curVersion) {

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { Table } from "./WorkspaceDB";
+import { Table, userSettingsTable } from "./WorkspaceDB";
 import { Changelog } from "../types/dbTypes";
 import { TableBase } from "./TableBase";
 import { indexdb } from "./indexdb";
@@ -29,6 +29,7 @@ export class ChangelogsTable extends TableBase<Changelog> {
   public async create(input: {
     json: string;
     workflowID: string;
+    isAutoSave: boolean;
   }): Promise<Changelog | null> {
     const latest = await this.getLastestByWorkflowID(input.workflowID);
     // only create when there is a change
@@ -41,29 +42,23 @@ export class ChangelogsTable extends TableBase<Changelog> {
       json: input.json,
       workflowID: input.workflowID,
       createTime: Date.now(),
+      isAutoSave: input.isAutoSave,
     };
+    this.deleteLogsExceedLimit(input.workflowID);
     await indexdb.changelogs.add(change);
     await this.saveDiskDB();
     return change;
   }
-  async deleteLogsExceedLimit(workflowID: string, limit: number = LIMIT) {
+  async deleteLogsExceedLimit(workflowID: string) {
     const all = await indexdb.changelogs
       .where("workflowID")
       .equals(workflowID)
       .reverse()
       .sortBy("createTime");
-    const autoSaved = all.filter((c) => c.isAutoSave === true);
-    const manualSaved = all.filter(
-      (c) => c.isAutoSave == null || c.isAutoSave == false,
-    );
-
-    if (autoSaved.length > limit) {
-      const toDelete = autoSaved.slice(limit);
-      await indexdb.changelogs.bulkDelete(toDelete.map((c) => c.id));
-      await this.saveDiskDB();
-    }
-    if (manualSaved.length > limit) {
-      const toDelete = manualSaved.slice(limit);
+    const limit =
+      (await userSettingsTable?.getSetting("maximumChangelogNumber")) ?? LIMIT;
+    if (all.length > limit) {
+      const toDelete = all.slice(limit);
       await indexdb.changelogs.bulkDelete(toDelete.map((c) => c.id));
       await this.saveDiskDB();
     }

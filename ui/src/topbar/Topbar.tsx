@@ -85,6 +85,7 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
         <Button
           size={"sm"}
           aria-label="workspace folder"
+          // backgroundColor={colorMode === "dark" ? "#333547" : undefined}
           onClick={() => setRoute("recentFlows")}
           px={2}
         >

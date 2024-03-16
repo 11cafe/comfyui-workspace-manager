@@ -92,6 +92,7 @@ export default function App() {
         changelogsTable?.create({
           workflowID: curFlowID.current,
           json: graphJson,
+          isAutoSave: false,
         }),
       ]);
       userSettingsTable?.autoSave &&
