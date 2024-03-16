@@ -34,7 +34,8 @@ import DeleteConfirm from "./DeleteConfirm";
 
 export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
   const toast = useToast();
-  const { curFlowID, isDirty, loadWorkflowID } = useContext(WorkspaceContext);
+  const { curFlowID, isDirty, loadWorkflowID, curVersion } =
+    useContext(WorkspaceContext);
   const [active, setActive] = useState(0); // 0: version、1: changelog
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
   const [changelogs, setChangelogs] = useState<Changelog[]>([]);
@@ -55,11 +56,6 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
     const vers =
       (await workflowVersionsTable?.listByWorkflowID(curFlowID!)) ?? [];
     setVersions(vers);
-
-    const graphJson = JSON.stringify(app.graph.serialize());
-    const selectedVer = vers?.filter((c) => c.json === graphJson);
-    const selectedVerID = selectedVer?.[0]?.id;
-    selectedVerID && setSelectedVersion(selectedVerID);
   };
 
   const onDelete = (id: string) => {
@@ -88,7 +84,7 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
 
   return (
     <Card
-      width={400}
+      width={430}
       height={"100vh"}
       gap={0}
       position={"fixed"}
@@ -130,7 +126,7 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
                       mb={1}
                       justify={"space-between"}
                       backgroundColor={
-                        version.id === selectedVersion ? "teal.300" : undefined
+                        version.id === curVersion?.id ? "teal.300" : undefined
                       }
                       borderRadius={4}
                     >
@@ -154,12 +150,6 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
                             }
                             app.loadGraphData(JSON.parse(version.json));
                             loadWorkflowID(curFlowID!, version.id);
-                            // toast({
-                            //   title: `Switched to version "${version.name}"`,
-                            //   status: "success",
-                            //   duration: 3000,
-                            //   isClosable: true,
-                            // });
                             onClose();
                           }}
                         >
@@ -182,7 +172,7 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
               <Stack divider={<StackDivider />} spacing={2}>
                 {changelogs?.map((c) => {
                   return (
-                    <HStack key={c.id}>
+                    <HStack key={c.id} justifyContent={"space-between"}>
                       <Button
                         key={c.id}
                         size={"sm"}
@@ -202,10 +192,12 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
                         }}
                         isActive={c.id === selectedVersion}
                       >
-                        Saved at {formatTimestamp(c.createTime, true)}
+                        Saved at {new Date(c.createTime).toLocaleString()}
                       </Button>
                       {c.isAutoSave ? (
-                        <Tag colorScheme="teal">Auto save</Tag>
+                        <Tag colorScheme="teal" size={"sm"}>
+                          Auto save
+                        </Tag>
                       ) : null}
                     </HStack>
                   );

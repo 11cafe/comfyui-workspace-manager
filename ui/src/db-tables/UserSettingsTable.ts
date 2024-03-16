@@ -55,6 +55,7 @@ export class UserSettingsTable extends TableBase<UserSettings> {
       foldersOnTop: false,
       cloudHost: "https://www.comfyspace.art",
       overwriteCurWorkflowWhenDroppingFileToCanvas: false,
+      maximumChangelogNumber: 200,
     };
   }
 

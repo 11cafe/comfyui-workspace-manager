@@ -2,8 +2,12 @@ import { useContext, useEffect } from "react";
 // @ts-expect-error
 import { app } from "/scripts/app.js";
 import { WorkspaceContext } from "../WorkspaceContext";
-import { userSettingsTable, workflowsTable } from "../db-tables/WorkspaceDB";
-import { useToast } from "@chakra-ui/react";
+import {
+  changelogsTable,
+  userSettingsTable,
+  workflowsTable,
+} from "../db-tables/WorkspaceDB";
+import { Box, useToast } from "@chakra-ui/react";
 import { matchShortcut } from "../utils";
 import { EShortcutKeys } from "../types/dbTypes";
 import useDebounceFn from "../customHooks/useDebounceFn";
@@ -43,24 +47,43 @@ export default function AppIsDirtyEventListener() {
     });
     document.addEventListener("keydown", async function (event) {
       if (document.visibilityState === "hidden") return;
-
       const matchResult = await matchShortcut(event);
       if (matchResult) {
         shortcutListener(matchResult);
+      } else if (
         // @ts-expect-error
-      } else if (event.target?.matches("input, textarea")) {
+        event.target?.matches("input, textarea") &&
+        Object.keys(app.canvas.selected_nodes ?? {}).length
+      ) {
         onIsDirty();
       }
     });
   }, []);
   const autoSaveWorkflow = async () => {
     // autosave workflow if enabled
+    if (!workflowsTable?.curWorkflow?.id) {
+      return;
+    }
     const graphJson = JSON.stringify(app.graph.serialize());
     graphJson != null &&
-      (await workflowsTable?.updateFlow(workflowsTable.curWorkflow!.id, {
+      (await workflowsTable?.updateFlow(workflowsTable.curWorkflow.id, {
         json: graphJson,
       }));
+    changelogsTable?.create({
+      workflowID: workflowsTable.curWorkflow.id,
+      isAutoSave: true,
+      json: graphJson,
+    });
     setIsDirty(false);
+    toast({
+      position: "bottom-left",
+      duration: 1000,
+      render: () => (
+        <Box color="white" p={3}>
+          Auto saved
+        </Box>
+      ),
+    });
   };
   const [debounceAutoSaveWorkflow, _cancelDebounceAutoSaveWorkflow] =
     useDebounceFn(autoSaveWorkflow, 1000);

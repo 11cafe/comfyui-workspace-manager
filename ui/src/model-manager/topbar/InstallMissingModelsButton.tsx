@@ -28,7 +28,7 @@ export default function InstallMissingModelsButton({}: Props) {
   const [showMyModels, setShowMyModels] = useState(false);
   const [missingModels, setMissingModels] = useState<MissingModel[]>([]);
   useEffect(() => {
-    // temporary disable missing model check
+    // diable until it is working
     return;
     // monkey patch queue prompt api to catch errors
     const queuePrompt = app.queuePrompt as Function;
@@ -43,7 +43,7 @@ export default function InstallMissingModelsButton({}: Props) {
         setMissingModels(
           Object.values(nodeErrors).flatMap((nodeError) =>
             nodeError.errors
-              .filter((error) => error.type === "value_not_in_list")
+              ?.filter((error) => error?.type === "value_not_in_list")
               .map((error) => {
                 const { input_name, received_value } = error.extra_info;
                 return {
@@ -79,6 +79,7 @@ export default function InstallMissingModelsButton({}: Props) {
         aria-label="missing models"
         px={2}
         onClick={() => setShowMyModels(true)}
+        colorScheme="teal"
       >
         Install Missing ({missingModels.length})
       </Button>

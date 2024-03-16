@@ -14,6 +14,7 @@ import FolderOnTopSettings from "../settings/FolderOnTopSettings";
 import TwoWaySyncSettings from "../settings/TwoWaySyncSettings";
 import CommonCheckboxSettings from "../settings/CommonCheckboxSettings";
 import SelectMyWorkflowsDir from "../settings/SelectMyWorkflowsDir";
+import { MaximumChangelog } from "../settings/MaximumChangelogSettings";
 
 export default function WorkspaceSettingsModal({
   onClose,
@@ -47,6 +48,7 @@ export default function WorkspaceSettingsModal({
                   settingKey="overwriteCurWorkflowWhenDroppingFileToCanvas"
                   text="Overwrite current workflow when drag and drop workflow file to canvas"
                 />
+                <MaximumChangelog />
               </VStack>
             </HStack>
           </ModalBody>
