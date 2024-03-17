@@ -179,13 +179,13 @@ export default function DropdownTitle() {
               >
                 Download
               </MenuItem>
-              <MenuItem
+              {/* <MenuItem
                 onClick={handleDownloadSpaceJson}
                 icon={<IconDownload size={20} />}
                 iconSpacing={1}
               >
                 Download .space.json
-              </MenuItem>
+              </MenuItem> */}
               <MenuItem
                 onClick={() => setRoute("saveAsModal")}
                 icon={<IconDeviceFloppy size={20} />}
