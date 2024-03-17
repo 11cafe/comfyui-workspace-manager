@@ -5,7 +5,7 @@ import TopForm from "../TopForm/TopForm.tsx";
 import AllPromptForm from "../AllPromptForm/AllPromptForm.tsx";
 import { useContext, useEffect, useState } from "react";
 import { FormItem } from "../FormItem/types.ts";
-import { calcMeta, getNodeTypeByPath, type InputResultItem } from "./utils.ts";
+import { calcMeta, type InputResultItem } from "./utils.ts";
 import { MetaBoxContext } from "./metaBoxContext.ts";
 import { workflowsTable } from "../../../db-tables/WorkspaceDB.ts";
 import { WorkspaceContext } from "../../../WorkspaceContext.ts";
