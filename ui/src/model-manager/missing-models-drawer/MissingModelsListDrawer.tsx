@@ -36,7 +36,7 @@ export default function MissingModelsListDrawer({
     };
   }, []);
 
-  const DRAWER_WIDTH = 440;
+  const DRAWER_WIDTH = 480;
 
   return (
     <Portal>
@@ -61,7 +61,7 @@ export default function MissingModelsListDrawer({
               <InstallModelsButton />
             </Flex>
           </CardHeader>
-          <Grid templateColumns="1" gap={1} marginTop={2}>
+          <Grid templateColumns="1" gap={1} marginTop={2} width={"100%"}>
             {missingModels.map((model) => (
               <MissingModelItem key={model.received_value} model={model} />
             ))}

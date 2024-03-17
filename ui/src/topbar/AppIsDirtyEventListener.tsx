@@ -17,6 +17,8 @@ export default function AppIsDirtyEventListener() {
     useContext(WorkspaceContext);
   const toast = useToast();
   useEffect(() => {
+    let isFirstConfigureCall = true;
+
     const shortcutListener = async (matchResult: string) => {
       switch (matchResult) {
         case EShortcutKeys.SAVE:
@@ -27,12 +29,21 @@ export default function AppIsDirtyEventListener() {
           break;
       }
     };
-
-    const originalOnAfterChange = app.graph.onAfterChange;
+    const originalOnAfterChange = app.canvas.onAfterChange;
     app.graph.onAfterChange = function () {
       // Call the original onAfterChange method
-      // Use .apply() to correctly set 'this' context and pass all arguments
-      originalOnAfterChange?.apply(app.canvas, arguments);
+      originalOnAfterChange?.apply(this, arguments);
+      onIsDirty();
+    };
+
+    const originalOnConfigure = app.graph.onConfigure;
+    app.graph.onConfigure = function () {
+      if (isFirstConfigureCall) {
+        isFirstConfigureCall = false;
+        return;
+      }
+      // Call the original onConfigure method
+      originalOnConfigure?.apply(this, arguments);
       onIsDirty();
     };
 
