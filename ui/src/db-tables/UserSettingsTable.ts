@@ -93,6 +93,10 @@ export class UserSettingsTable extends TableBase<UserSettings> {
     await instance.getSetting("autoSave").then((res) => {
       instance._autoSave = res ?? true;
     });
+    // overwrite legacy comfyspace.art
+    await instance.upsert({
+      cloudHost: instance.defaultSettings.cloudHost,
+    });
     return instance;
   }
 }

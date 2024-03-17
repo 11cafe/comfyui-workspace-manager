@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import { getAllModelsList } from "../../Api";
-import type { ModelsListRespItem } from "../types";
+import type { ModelsListRespItem, ModelsListRespItemFromApi } from "../types";
 // @ts-ignore
 import { api } from "/scripts/api.js";
-
-type ModelsListRespItemFromApi = ModelsListRespItem & { date: number };
 
 export const useUpdateModels = () => {
   // all model types
@@ -20,7 +18,7 @@ export const useUpdateModels = () => {
     initData();
     api.addEventListener(
       "model_list",
-      (e: { detail: ModelsListRespItemFromApi[] }) => {
+      async (e: { detail: ModelsListRespItemFromApi[] }) => {
         updateModels(e.detail);
       },
     );
