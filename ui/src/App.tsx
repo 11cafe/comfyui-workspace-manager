@@ -446,7 +446,6 @@ export default function App() {
         };
         setCurFlowIDAndName(newFlow);
         await workflowsTable?.createFlow(newFlow);
-        setIsDirty(true);
       }
     };
     fileInput?.addEventListener("change", fileInputListener);
@@ -503,7 +502,6 @@ export default function App() {
         setCurFlowIDAndName(newFlow);
         await workflowsTable?.createFlow(newFlow);
       }
-      setIsDirty(true);
     };
     app.canvasEl.addEventListener("drop", handleDrop);
 

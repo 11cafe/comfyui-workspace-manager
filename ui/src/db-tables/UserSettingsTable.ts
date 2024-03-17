@@ -53,7 +53,7 @@ export class UserSettingsTable extends TableBase<UserSettings> {
       autoSave: true,
       twoWaySync: false,
       foldersOnTop: false,
-      cloudHost: "https://www.comfyspace.art",
+      cloudHost: "https://www.nodecafe.org",
       overwriteCurWorkflowWhenDroppingFileToCanvas: false,
       maximumChangelogNumber: 200,
     };
