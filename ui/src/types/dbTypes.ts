@@ -46,11 +46,11 @@ export type LocalCache = {
 export type Model = {
   id: string;
   fileName: string;
-  modelName: string;
   fileFolder: string;
-  fileHash: string;
-  civitModelID: string;
-  civitModelVersionID: string;
+  fileHash: string | null; // files are not guaranteed to finish hashing
+  modelName: string | null;
+  civitModelID?: string;
+  civitModelVersionID?: string;
   imageUrl?: string | null;
 };
 

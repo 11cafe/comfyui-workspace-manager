@@ -48,9 +48,6 @@ import { deepJsonDiffCheck } from "./utils/deepJsonDiffCheck";
 const AppIsDirtyEventListener = React.lazy(
   () => import("./topbar/AppIsDirtyEventListener"),
 );
-const ModelsListDrawer = React.lazy(
-  () => import("./model-manager/models-list-drawer/ModelsListDrawer"),
-);
 
 const usedWsEvents = [
   // InstallProgress.tsx

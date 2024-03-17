@@ -46,6 +46,7 @@ const ShareDialog = lazy(() => import("../share/ShareDialog"));
 // @ts-ignore
 import { app } from "/scripts/app.js";
 import { TOPBAR_BUTTON_HEIGHT } from "../const";
+import DownloadSpaceJsonDialog from "../spacejson/DownloadSpaceJsonDialog";
 
 export default function DropdownTitle() {
   const {
@@ -126,12 +127,6 @@ export default function DropdownTitle() {
     URL.revokeObjectURL(url);
   }, [curFlowID]);
 
-  const handleDownloadSpaceJson = useCallback(async () => {
-    console.log("app.graph", app.graph);
-    const graph = app.graph.serialize();
-    console.log("graph serialize", graph);
-  }, []);
-
   return (
     <>
       <HoverMenu
@@ -142,8 +137,8 @@ export default function DropdownTitle() {
               height={TOPBAR_BUTTON_HEIGHT + "px"}
               aria-label="menu"
               size={"sm"}
-              // backgroundColor={"#4a4d6b"}
-              backgroundColor={"teal.600"}
+              backgroundColor={"#434554"}
+              // backgroundColor={"teal.600"}
             >
               File
               <IconChevronDown size={20} />
@@ -179,13 +174,13 @@ export default function DropdownTitle() {
               >
                 Download
               </MenuItem>
-              {/* <MenuItem
-                onClick={handleDownloadSpaceJson}
+              <MenuItem
+                onClick={() => setRoute("downloadSpaceJson")}
                 icon={<IconDownload size={20} />}
                 iconSpacing={1}
               >
                 Download .space.json
-              </MenuItem> */}
+              </MenuItem>
               <MenuItem
                 onClick={() => setRoute("saveAsModal")}
                 icon={<IconDeviceFloppy size={20} />}
@@ -226,6 +221,7 @@ export default function DropdownTitle() {
       {route == "versionHistory" && (
         <VersionHistoryDrawer onClose={() => setRoute("root")} />
       )}
+      {route == "downloadSpaceJson" && <DownloadSpaceJsonDialog />}
       {route === "saveAsModal" && (
         <Modal isOpen={true} onClose={handleOnCloseModal}>
           <ModalOverlay />
