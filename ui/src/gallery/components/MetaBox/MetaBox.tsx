@@ -41,8 +41,7 @@ export default function MetaBox({
   const { curFlowID } = useContext(WorkspaceContext);
 
   useEffect(() => {
-    const allInputList = calcMeta(_metaData);
-    const calcInput = allInputList.map((input) => getNodeTypeByPath({ input }));
+    const calcInput = calcMeta(_metaData);
     setCalcInputList(calcInput);
   }, []);
 

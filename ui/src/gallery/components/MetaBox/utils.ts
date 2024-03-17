@@ -108,97 +108,6 @@ const getInputConfig = (props: { classType: string; name: string }) => {
   };
 };
 
-// 根据节点路径信息猜测节点类型(模型,正向提示词,方向提示词)
-export function getNodeTypeByPath({ input }: { input: InputResultItem }) {
-  if (
-    input.name === "width" &&
-    input.inputInfo?.output?.some((out: string) => out === "LATENT")
-  ) {
-    return {
-      ...input,
-      isTop: true,
-    };
-  }
-  if (
-    input.name === "cfg" &&
-    input.inputInfo?.output?.some((out: string) => out === "LATENT")
-  ) {
-    return {
-      ...input,
-      isTop: true,
-    };
-  }
-
-  if (
-    input.name === "steps" &&
-    input.inputInfo?.output?.some((out: string) => out === "LATENT")
-  ) {
-    return {
-      ...input,
-      isTop: true,
-    };
-  }
-  if (
-    input.name === "sampler_name" &&
-    input.inputInfo?.output?.some((out: string) => out === "LATENT")
-  ) {
-    return {
-      ...input,
-      isTop: true,
-    };
-  }
-
-  if (
-    input.name === "height" &&
-    input.inputInfo?.output?.some((out: string) => out === "LATENT")
-  ) {
-    return {
-      ...input,
-      isTop: true,
-    };
-  }
-
-  if (
-    input.path.some((v) => v.name === "model") &&
-    input.inputInfo?.output?.some((out: string) => out === "MODEL")
-  ) {
-    return {
-      ...input,
-      isTop: true,
-    };
-  }
-
-  if (
-    input.path.some((v) => v.name === "positive") &&
-    input.inputInfo?.output?.some((out: string) =>
-      ["CONDITIONING", "STRING"].includes(out),
-    ) &&
-    input.inputInfo?.["0"] === "STRING"
-  ) {
-    return {
-      ...input,
-      formLabel: `positive-${input.name}`,
-      isTop: true,
-    };
-  }
-  if (
-    input.path.some((v) => v.name === "negative") &&
-    input.inputInfo?.output?.some((out: string) =>
-      ["CONDITIONING", "STRING"].includes(out),
-    ) &&
-    input.inputInfo?.["0"] === "STRING"
-  ) {
-    return {
-      ...input,
-      formLabel: `negative-${input.name}`,
-      isTop: true,
-    };
-  }
-  return {
-    ...input,
-  };
-}
-
 function fineRoot(prompt: Meta["prompt"]) {
   const keyList = Object.keys(prompt);
   const allInputs = keyList.reduce<string[]>((previousValue, currentValue) => {
@@ -234,17 +143,32 @@ function getInputListByLinkId({
   }
   const class_type = prompt[linkId].class_type;
   const currentInputKeyList = Object.keys(prompt[linkId].inputs);
-  const inputList = currentInputKeyList.map(
-    (input) =>
-      ({
-        name: input,
-        class_type: class_type,
-        linkId: linkId,
-        value: prompt[linkId]?.inputs?.[input],
-        path: parentItem ?? [],
-        inputInfo: getInputConfig({ classType: class_type, name: input }),
-      }) as InputResultItem,
-  );
+  const inputList = currentInputKeyList.map((input) => {
+    const inputInfo = getInputConfig({ classType: class_type, name: input });
+    let formLabel;
+    // 判断是否是 正向提示词
+    if (
+      parentItem?.some((v) => v.name === "positive") &&
+      inputInfo?.["0"] === "STRING"
+    ) {
+      formLabel = `positive-${input}`;
+    }
+    if (
+      parentItem?.some((v) => v.name === "negative") &&
+      inputInfo?.["0"] === "STRING"
+    ) {
+      formLabel = `negative-${input}`;
+    }
+    return {
+      name: input,
+      class_type: class_type,
+      linkId: linkId,
+      value: prompt[linkId]?.inputs?.[input],
+      path: parentItem ?? [],
+      inputInfo: getInputConfig({ classType: class_type, name: input }),
+      formLabel,
+    } as InputResultItem;
+  });
 
   // 遍历节点所有input
   const childrenInputList = inputList.reduce<InputResultItem[]>(
