@@ -3,6 +3,7 @@ import { FC, useEffect, useState } from "react";
 import { Box, Flex, Grid, Image } from "@chakra-ui/react";
 import Carousel from "../../components/Carousel/Carousel.tsx";
 import { MetaInfoBox } from "./MetaInfoBox.tsx";
+import { isImageFormat } from "../../utils.tsx";
 
 interface MetaDataInfoProps {
   media: Media;
@@ -47,13 +48,29 @@ export const MetaDataInfo: FC<MetaDataInfoProps> = ({ mediaList, media }) => {
                 border={mediaAct?.id === media.id ? "1px solid gray" : ""}
                 onClick={() => setMediaAct(media)}
               >
-                <Image
-                  src={`/workspace/view_media?filename=${media.localPath}`}
-                  alt={`image-bottom-${media.id}`}
-                  width={"100%"}
-                  height={"100%"}
-                  objectFit="contain"
-                />
+                {isImageFormat(
+                  `/workspace/view_media?filename=${media.localPath}`,
+                ) ? (
+                  <Image
+                    src={`/workspace/view_media?filename=${media.localPath}`}
+                    alt={`image-${media.id}`}
+                    width={"100%"}
+                    height={"100%"}
+                    objectFit="contain"
+                  />
+                ) : (
+                  <video
+                    style={{ objectFit: "contain" }}
+                    width={"100%"}
+                    height={"100%"}
+                    src={`/workspace/view_media?filename=${media.localPath}`}
+                    loop={true}
+                    autoPlay={true}
+                    muted={true}
+                  >
+                    <track kind="captions" />
+                  </video>
+                )}
               </Box>
             ))}
           </Flex>

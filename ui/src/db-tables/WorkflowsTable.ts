@@ -157,6 +157,13 @@ export class WorkflowsTable extends TableBase<Workflow> {
     throw new Error("Method not allowed.");
   }
 
+  public async updateTopFields(
+    id: string,
+    change: Pick<Partial<Workflow>, "topFieldsConfig">,
+  ): Promise<Workflow | null> {
+    return this._update(id, change);
+  }
+
   public async updateMetaInfo(
     id: string,
     change: Omit<Partial<Workflow>, "id" | "name" | "parentFolderID" | "json">,

@@ -108,7 +108,8 @@ const getInputConfig = (props: { classType: string; name: string }) => {
   };
 };
 
-function getTopInfo({ input }: { input: InputResultItem }) {
+// 根据节点路径信息猜测节点类型(模型,正向提示词,方向提示词)
+export function getNodeTypeByPath({ input }: { input: InputResultItem }) {
   if (
     input.name === "width" &&
     input.inputInfo?.output?.some((out: string) => out === "LATENT")
@@ -170,7 +171,7 @@ function getTopInfo({ input }: { input: InputResultItem }) {
   if (
     input.path.some((v) => v.name === "positive") &&
     input.inputInfo?.output?.some((out: string) =>
-      ["CONDITIONING", "STRING"].indexOf(out),
+      ["CONDITIONING", "STRING"].includes(out),
     ) &&
     input.inputInfo?.["0"] === "STRING"
   ) {
@@ -183,7 +184,7 @@ function getTopInfo({ input }: { input: InputResultItem }) {
   if (
     input.path.some((v) => v.name === "negative") &&
     input.inputInfo?.output?.some((out: string) =>
-      ["CONDITIONING", "STRING"].indexOf(out),
+      ["CONDITIONING", "STRING"].includes(out),
     ) &&
     input.inputInfo?.["0"] === "STRING"
   ) {
@@ -232,22 +233,23 @@ function getInputListByLinkId({
     return [];
   }
   const class_type = prompt[linkId].class_type;
-  const inputList = Object.keys(prompt[linkId].inputs).map(
+  const currentInputKeyList = Object.keys(prompt[linkId].inputs);
+  const inputList = currentInputKeyList.map(
     (input) =>
-      getTopInfo({
-        input: {
-          name: input,
-          class_type: class_type,
-          linkId: linkId,
-          value: prompt[linkId]?.inputs?.[input],
-          path: parentItem ?? [],
-          inputInfo: getInputConfig({ classType: class_type, name: input }),
-        },
+      ({
+        name: input,
+        class_type: class_type,
+        linkId: linkId,
+        value: prompt[linkId]?.inputs?.[input],
+        path: parentItem ?? [],
+        inputInfo: getInputConfig({ classType: class_type, name: input }),
       }) as InputResultItem,
   );
 
+  // 遍历节点所有input
   const childrenInputList = inputList.reduce<InputResultItem[]>(
     (previousValue, currentValue) => {
+      // 如果节点为array,则数据为上一节点传入的数据,递归查询上一节点的信息,同时保存当前节点路径,便于后续查找节点的父子关系
       if (Array.isArray(currentValue.value)) {
         const curList = getInputListByLinkId({
           oriMeta,
@@ -256,6 +258,7 @@ function getInputListByLinkId({
         });
         return [
           ...previousValue,
+          // 如果之前已经添加过该节点,则跳过,(有的节点数据会提供给多个node)
           ...curList.filter(
             (cur) =>
               !previousValue.some(
@@ -270,26 +273,18 @@ function getInputListByLinkId({
     [],
   );
 
+  // 最终输出的是当前节点的信息, 加上递归的节点数据
   return [
     ...inputList.filter((v) => !Array.isArray(v.value)),
     ...childrenInputList,
   ];
 }
 
+// 递归遍历所有子节点
 export function calcMeta(oriMeta: Meta): InputResultItem[] {
   // const last_link_id = oriMeta.workflow.last_node_id;
   const rootId = fineRoot(oriMeta.prompt);
-  console.log(432, rootId);
 
-  console.log(
-    465,
-    getInputListByLinkId({
-      oriMeta,
-      linkId: `${rootId[0]}`,
-    }),
-    oriMeta.prompt,
-    oriMeta.workflow,
-  );
   if (rootId.length) {
     return getInputListByLinkId({
       oriMeta,

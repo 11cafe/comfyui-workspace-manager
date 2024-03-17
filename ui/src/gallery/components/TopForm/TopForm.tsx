@@ -1,14 +1,11 @@
 import { Flex } from "@chakra-ui/react";
 import { FormItemComponent } from "../FormItem/FormItemComponent.tsx";
-import { FormBoxProps } from "../AllPromptForm/AllPromptForm.tsx";
+import { useContext } from "react";
+import { MetaBoxContext } from "../MetaBox/metaBoxContext.ts";
 
-export default function TopForm({
-  metaData,
-  updateMetaData,
-  topFields,
-  updateTopField,
-  calcInputList,
-}: FormBoxProps) {
+export default function TopForm() {
+  const { topFields, updateTopField, calcInputList, updateMetaData, metaData } =
+    useContext(MetaBoxContext);
   if (topFields.length === 0) return null;
   const prompt = metaData.prompt;
   return (

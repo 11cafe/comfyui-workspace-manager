@@ -3,9 +3,12 @@ import { Flex } from "@chakra-ui/react";
 import { Media } from "../../../types/dbTypes.ts";
 import TopForm from "../TopForm/TopForm.tsx";
 import AllPromptForm from "../AllPromptForm/AllPromptForm.tsx";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { FormItem } from "../FormItem/types.ts";
-import { calcMeta, type InputResultItem } from "./utils.ts";
+import { calcMeta, getNodeTypeByPath, type InputResultItem } from "./utils.ts";
+import { MetaBoxContext } from "./metaBoxContext.ts";
+import { workflowsTable } from "../../../db-tables/WorkspaceDB.ts";
+import { WorkspaceContext } from "../../../WorkspaceContext.ts";
 
 export type TopFieldType = {
   promptKey: string | number;
@@ -35,19 +38,12 @@ export default function MetaBox({
 }) {
   const _metaData = JSON.parse(JSON.stringify(oriMetaData));
   const [calcInputList, setCalcInputList] = useState<InputResultItem[]>([]);
+  const { curFlowID } = useContext(WorkspaceContext);
 
   useEffect(() => {
-    const calcInput = calcMeta(_metaData);
+    const allInputList = calcMeta(_metaData);
+    const calcInput = allInputList.map((input) => getNodeTypeByPath({ input }));
     setCalcInputList(calcInput);
-    setTopFields(
-      calcInput
-        ?.filter((input: InputResultItem) => input.isTop)
-        ?.map((input: InputResultItem) => ({
-          name: input.name,
-          promptKey: input.linkId,
-          class_type: input.class_type,
-        })),
-    );
   }, []);
 
   const [topFields, setTopFields] = useState<TopFieldType[]>([]);
@@ -76,6 +72,17 @@ export default function MetaBox({
     }));
   };
 
+  useEffect(() => {
+    (async () => {
+      if (curFlowID) {
+        const topFieldsConfig = (await workflowsTable?.get(curFlowID))
+          ?.topFieldsConfig;
+        if (topFieldsConfig) {
+          setTopFields(topFieldsConfig);
+        }
+      }
+    })();
+  }, [curFlowID]);
   const updateTopField = (field: TopFieldType) => {
     if (
       isInTopField(topFields, {
@@ -84,34 +91,41 @@ export default function MetaBox({
         classType: field?.class_type ?? "",
       })
     ) {
-      setTopFields((pre) =>
-        pre.filter(
-          (v) => v.name !== field.name || v.promptKey !== field.promptKey,
-        ),
+      const topFieldsConfig = topFields.filter(
+        (v) => v.name !== field.name || v.promptKey !== field.promptKey,
       );
+      setTopFields(topFieldsConfig);
+      if (curFlowID) {
+        workflowsTable?.updateTopFields(curFlowID, {
+          topFieldsConfig,
+        });
+      }
     } else {
-      setTopFields((pre) => [...pre, field]);
+      const topFieldsConfig = [...topFields, field];
+      setTopFields(topFieldsConfig);
+      if (curFlowID) {
+        workflowsTable?.updateTopFields(curFlowID, {
+          topFieldsConfig,
+        });
+      }
     }
   };
 
   return (
-    <Flex direction={"column"} align={"stretch"}>
-      <TopForm
-        showNodeName={showNodeName}
-        topFields={topFields}
-        metaData={metaData}
-        updateMetaData={updateMetaData}
-        updateTopField={updateTopField}
-        calcInputList={calcInputList}
-      />
-      <AllPromptForm
-        showNodeName={showNodeName}
-        topFields={topFields}
-        metaData={metaData}
-        updateMetaData={updateMetaData}
-        updateTopField={updateTopField}
-        calcInputList={calcInputList}
-      />
-    </Flex>
+    <MetaBoxContext.Provider
+      value={{
+        topFields,
+        metaData,
+        updateMetaData,
+        showNodeName,
+        calcInputList,
+        updateTopField,
+      }}
+    >
+      <Flex direction={"column"} align={"stretch"}>
+        <TopForm />
+        <AllPromptForm />
+      </Flex>
+    </MetaBoxContext.Provider>
   );
 }

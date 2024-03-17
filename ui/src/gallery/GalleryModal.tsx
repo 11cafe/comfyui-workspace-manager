@@ -1,3 +1,5 @@
+// @ts-expect-error ComfyUI import
+import { app } from "/scripts/app.js";
 import {
   Checkbox,
   Flex,
@@ -20,6 +22,8 @@ import { Media } from "../types/dbTypes";
 import { MetaDataInfo } from "./components/MetaDataInfo.tsx";
 import GalleryMediaItem from "./components/GalleryMediaItem.tsx";
 import SearchInput from "../components/SearchInput.tsx";
+import { nanoid } from "nanoid";
+import { MediaWithMetaData } from "./components/MetaInfoBox.tsx";
 
 export default function GalleryModal({ onclose }: { onclose: () => void }) {
   const { curFlowID } = useContext(WorkspaceContext);
@@ -28,7 +32,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
   const [isSelecting, setIsSelecting] = useState(false);
   const [coverPath, setCoverPath] = useState("");
   const [images, setImages] = useState<Media[]>([]);
-  const [metaData, setMetaData] = useState<Media>();
+  const [metaData, setMetaData] = useState<MediaWithMetaData>();
   const [searchValue, setSearchValue] = useState("");
   const onUpdateSearchValue = (val: string) => {
     setSearchValue(val);
@@ -38,7 +42,23 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
     if (curFlowID == null) return;
     const media = await mediaTable?.listByWorkflowID(curFlowID);
     setImages(media ?? []);
-    if (Number(media?.length) <= 6 && media?.[0]) {
+    if (media?.length === 0) {
+      app.graphToPrompt().then((prompt) => {
+        setMetaData({
+          id: nanoid(),
+          workflowJSON: "",
+          localPath: "",
+          createTime: 0,
+          format: "",
+          workflowID: "",
+          metaData: {
+            prompt: prompt.output,
+            workflow: prompt.workflow,
+          },
+        });
+        return app.graph._nodes;
+      });
+    } else if (Number(media?.length) <= 6 && media?.[0]) {
       setMetaData(media[0]);
     }
   };
@@ -86,7 +106,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
         <ModalHeader>
           <HStack gap={2} mb={2}>
             <Heading size={"md"} mr={2}>
-              {!!metaData && images.length > 6 && (
+              {!!metaData && (
                 <IconButton
                   onClick={() => setMetaData(undefined)}
                   variant={"ghost"}

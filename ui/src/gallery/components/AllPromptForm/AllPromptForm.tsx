@@ -8,28 +8,21 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import { FormItemComponent } from "../FormItem/FormItemComponent.tsx";
-import { MetaData } from "../../utils.ts";
-import { FormItem } from "../FormItem/types.ts";
-import { isInTopField, TopFieldType } from "../MetaBox/MetaBox.tsx";
-import { Fragment, useEffect, useState } from "react";
+import { isInTopField } from "../MetaBox/MetaBox.tsx";
+import { Fragment, useContext, useEffect, useState } from "react";
 import { InputResultItem } from "../MetaBox/utils.ts";
+import { MetaBoxContext } from "../MetaBox/metaBoxContext.ts";
 
-export type FormBoxProps = {
-  metaData: MetaData;
-  topFields: TopFieldType[];
-  updateMetaData: FormItem["updateMetaData"];
-  updateTopField?: (field: TopFieldType) => void;
-  calcInputList: InputResultItem[];
-  showNodeName: boolean;
-};
-export default function AllPromptForm({
-  metaData,
-  updateMetaData,
-  topFields,
-  updateTopField,
-  calcInputList,
-  showNodeName,
-}: FormBoxProps) {
+export default function AllPromptForm() {
+  const {
+    topFields,
+    updateTopField,
+    calcInputList,
+    updateMetaData,
+    metaData,
+    showNodeName,
+  } = useContext(MetaBoxContext);
+
   const [defaultIndex, setDefaultIndex] = useState<number[]>([]);
 
   const groupInputList =
