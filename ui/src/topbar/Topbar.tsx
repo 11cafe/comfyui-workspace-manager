@@ -23,6 +23,7 @@ import SpotlightSearch from "../components/SpotlightSearch";
 const ModelManagerTopbar = lazy(
   () => import("../model-manager/topbar/ModelManagerTopbar"),
 );
+import SpotlightSearch from "../components/SpotlightSearch";
 
 interface Props {
   curFlowName: string | null;
