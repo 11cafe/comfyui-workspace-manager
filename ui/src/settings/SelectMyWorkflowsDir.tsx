@@ -29,8 +29,6 @@ import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { useDialog } from "../components/AlertDialogProvider";
 
 export default function SelectMyWorkflowsDir() {
-  const isWindows = navigator.userAgent.indexOf("Window") > 0;
-  const slash = isWindows ? "\\" : "/";
   const [isManualEntry, setIsManualEntry] = useState(false);
   const [isEditDirectory, setIsEditDirectory] = useState(false);
   const [subdirectoryList, setSubdirectoryList] = useState<string[]>([]);
@@ -38,12 +36,17 @@ export default function SelectMyWorkflowsDir() {
   const [dirPathList, setDirPathList] = useState<string[]>([]);
   const [twoWaySync, setTwoWaySync] = useState(false);
   const [noPermission, setNoPermission] = useState(false);
+  const [isWindows, setIsWindows] = useState(false);
   const manualEntryRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
   const { showDialog } = useDialog();
+  const slash = isWindows ? "\\" : "/";
 
   useEffect(() => {
-    fetchMyWorkflowsDir().then((dir) => setCurrentDirectory(dir ?? ""));
+    fetchMyWorkflowsDir().then((res) => {
+      setCurrentDirectory(res.path ?? "");
+      setIsWindows(res.os === "win32");
+    });
     userSettingsTable?.getSetting("twoWaySync").then((res) => {
       setTwoWaySync(res ?? false);
     });
@@ -94,8 +97,8 @@ export default function SelectMyWorkflowsDir() {
     isManualEntry: boolean = false,
   ) => {
     if (needCopy) {
-      const sourcePath = await fetchMyWorkflowsDir();
-      sourcePath && (await copyFlowsToNewDirectory(sourcePath, newPath));
+      const { path } = await fetchMyWorkflowsDir();
+      path && (await copyFlowsToNewDirectory(path, newPath));
     }
     await userSettingsTable?.upsert({
       myWorkflowsDir: newPath,
