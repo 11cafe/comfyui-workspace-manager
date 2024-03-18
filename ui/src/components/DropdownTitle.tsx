@@ -137,7 +137,7 @@ export default function DropdownTitle() {
               aria-label="menu"
               size={"sm"}
               // backgroundColor={"#4a4d6b"}
-              backgroundColor={"teal.600"}
+              backgroundColor={"#434554"}
             >
               File
               <IconChevronDown size={20} />
