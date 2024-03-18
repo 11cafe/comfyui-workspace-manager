@@ -48,6 +48,7 @@ export class UserSettingsTable extends TableBase<UserSettings> {
       shortcuts: {
         save: "Shift+S",
         saveAs: "Control+Alt+S",
+        openSpotlightSearch: "Control+P",
       },
       defaultFolders: MODEL_TYPE_TO_FOLDER_MAPPING,
       autoSave: true,
@@ -65,6 +66,12 @@ export class UserSettingsTable extends TableBase<UserSettings> {
     const currentUserSettings: UserSettings | undefined = await this.get(
       this.DEFAULT_USER,
     );
+    if (key === "shortcuts" && currentUserSettings?.shortcuts) {
+      return {
+        ...this.defaultSettings.shortcuts,
+        ...currentUserSettings.shortcuts,
+      } as UserSettings[K];
+    }
     return currentUserSettings?.[key] ?? this.defaultSettings[key];
   }
 

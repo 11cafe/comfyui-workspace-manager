@@ -5,4 +5,5 @@ export type WorkspaceRoute =
   | "gallery"
   | "versionHistory"
   | "saveAsModal"
-  | "modelList";
+  | "modelList"
+  | "spotlightSearch";

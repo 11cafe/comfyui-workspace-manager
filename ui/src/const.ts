@@ -5,3 +5,4 @@ export const COMFYSPACE_AUTH_REDIRECT_URL = "http://localhost:8188/";
 export const DRAWER_Z_INDEX = 9999999;
 export const UPGRADE_TO_2WAY_SYNC_KEY = "upgrade_to_2way_sync";
 export const TOPBAR_BUTTON_HEIGHT = 29;
+export const RECENTLY_OPENED_FILE_LIST = "recently_opened_file_ist";

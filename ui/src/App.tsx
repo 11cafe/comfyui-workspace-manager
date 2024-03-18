@@ -27,6 +27,7 @@ import {
   generateUrlHashWithFlowId,
   openWorkflowInNewTab,
   validateOrSaveAllJsonFileMyWorkflows,
+  updateRecentlyOpenedFileList,
 } from "./utils";
 import { Topbar } from "./topbar/Topbar";
 import { Workflow, WorkflowVersion } from "./types/dbTypes";
@@ -165,6 +166,14 @@ export default function App() {
     } else {
       localStorage.setItem("curFlowID", id);
       document.title = "ComfyUI - " + workflow!.name;
+    }
+    if (workflow) {
+      updateRecentlyOpenedFileList({
+        id: workflow.id,
+        name: workflow.name.replace(/\.json$/, ""),
+        updateTime: workflow.updateTime,
+        type: "workflow",
+      });
     }
   };
 

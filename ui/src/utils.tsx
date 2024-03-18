@@ -5,13 +5,20 @@ import {
   generateFilePathAbsolute,
   saveJsonFileMyWorkflows,
 } from "./db-tables/DiskFileUtils";
-import { Folder, Workflow, EShortcutKeys } from "./types/dbTypes";
+import {
+  Folder,
+  Workflow,
+  EShortcutKeys,
+  RecentlyOpenedFile,
+} from "./types/dbTypes";
 // @ts-expect-error ComfyUI import
 import { app } from "/scripts/app.js";
 import {
   COMFYSPACE_TRACKING_FIELD_NAME,
   LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
+  RECENTLY_OPENED_FILE_LIST,
 } from "./const";
+import { indexdb } from "./db-tables/indexdb";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let LiteGraph: any, LGraph: any, LGraphCanvas: any;
@@ -193,13 +200,13 @@ export function json2ClipboardString(graphData: any) {
   const nodes = graphData.nodes;
   const links = new Array();
   const relative_id_map = new Map();
-  const exist_link_ids = new Array()
+  const exist_link_ids = new Array();
   for (let i = 0; i < graphData.nodes.length; ++i) {
     const node = graphData.nodes[i];
     if (node.inputs) {
       for (const input of node.inputs) {
         if (input.link) {
-          exist_link_ids.push(input.link)
+          exist_link_ids.push(input.link);
           input.link = null;
         }
       }
@@ -207,7 +214,7 @@ export function json2ClipboardString(graphData: any) {
     if (node.outputs) {
       for (const output of node.outputs) {
         if (output.links) {
-          exist_link_ids.concat(output.links)
+          exist_link_ids.concat(output.links);
           output.links = [];
         }
       }
@@ -215,7 +222,7 @@ export function json2ClipboardString(graphData: any) {
     relative_id_map.set(node.id, i);
   }
   for (const link of graphData.links) {
-    if(!exist_link_ids.includes(link[0])){
+    if (!exist_link_ids.includes(link[0])) {
       continue;
     }
     links.push([
@@ -343,4 +350,36 @@ export async function rewriteAllLocalFiles() {
       console.error(error);
     }
   }
+}
+
+export async function getRecentlyOpenedFileList() {
+  const fileListCache = await indexdb.cache.get(RECENTLY_OPENED_FILE_LIST);
+  let recentlyOpenedFileList: RecentlyOpenedFile[] = [];
+  try {
+    fileListCache?.value &&
+      (recentlyOpenedFileList = JSON.parse(fileListCache?.value));
+  } catch (e) {
+    console.error("error parsing recently opened file list", e);
+  }
+  return recentlyOpenedFileList;
+}
+
+export async function updateRecentlyOpenedFileList(
+  curOpenFile: RecentlyOpenedFile,
+) {
+  const recentlyOpenedFileList = await getRecentlyOpenedFileList();
+  const findIndex = recentlyOpenedFileList.findIndex(
+    (file) => file.id === curOpenFile.id,
+  );
+  if (findIndex >= 0) {
+    recentlyOpenedFileList.splice(findIndex, 1);
+  }
+  recentlyOpenedFileList.unshift(curOpenFile);
+  if (recentlyOpenedFileList.length >= 20) {
+    recentlyOpenedFileList.length = 20;
+  }
+  indexdb.cache.put({
+    id: RECENTLY_OPENED_FILE_LIST,
+    value: JSON.stringify(recentlyOpenedFileList),
+  });
 }

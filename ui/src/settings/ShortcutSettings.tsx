@@ -21,10 +21,15 @@ export function ShortcutSettings() {
       title: "Save as current workflow",
       key: EShortcutKeys.SAVE_AS,
     },
+    {
+      title: "Open spotlight search",
+      key: EShortcutKeys.openSpotlightSearch,
+    },
   ]);
   const [shortcut, setShortcut] = useState<Record<EShortcutKeys, string>>({
     save: "",
     saveAs: "",
+    openSpotlightSearch: "",
   });
   const [focusedKey, setFocusedKey] = useState<EShortcutKeys>();
 

@@ -19,14 +19,21 @@ import { SharedTopbarButton } from "../share/SharedTopbarButton";
 import VersionNameTopbar from "./VersionNameTopbar";
 import { userSettingsTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import { TOPBAR_BUTTON_HEIGHT } from "../const";
+import SpotlightSearch from "../components/SpotlightSearch";
 
 interface Props {
   curFlowName: string | null;
   setCurFlowName: (newName: string) => void;
 }
 export function Topbar({ curFlowName, setCurFlowName }: Props) {
-  const { isDirty, loadNewWorkflow, saveCurWorkflow, setRoute, curFlowID } =
-    useContext(WorkspaceContext);
+  const {
+    isDirty,
+    loadNewWorkflow,
+    saveCurWorkflow,
+    setRoute,
+    curFlowID,
+    route,
+  } = useContext(WorkspaceContext);
   const [positionStyle, setPositionStyle] = useState<PanelPosition>();
   const updatePanelPosition: (
     position?: PanelPosition,
@@ -171,6 +178,7 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
           size={15}
           color="#FFF"
         />
+        {route === "spotlightSearch" && <SpotlightSearch />}
       </HStack>
     </Draggable>
   );
