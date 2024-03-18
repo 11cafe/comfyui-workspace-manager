@@ -9,7 +9,7 @@ from .model_manager.model_preview import get_thumbnail_for_image_file
 image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
 video_extensions = ['.mp4', '.mov', '.avi', '.webm', '.mkv']
 
-def view_media(filename, isPreview = False):
+def view_media(filename, isPreview = False, isInput = False):
     if not filename:
         return web.Response(status=404)
     
@@ -17,8 +17,8 @@ def view_media(filename, isPreview = False):
     if filename[0] == '/' or '..' in filename:
         return web.Response(status=400)
 
-    output_path = folder_paths.get_output_directory()
-    file_path = os.path.join(output_path, filename)
+    path = folder_paths.get_input_directory() if isInput else folder_paths.get_output_directory()
+    file_path = os.path.join(path, filename)
 
     if not os.path.exists(file_path):
         return web.Response(status=404)
@@ -55,4 +55,6 @@ async def preview_file(request):
 @server.PromptServer.instance.routes.get("/workspace/view_media")
 async def view_file(request):
     filename = request.query.get("filename", None)
-    return await asyncio.to_thread(view_media, filename, False)
+    isPreview = request.query.get("isPreview", False)
+    isInput = request.query.get("isInput", False)
+    return await asyncio.to_thread(view_media, filename, isPreview, isInput)

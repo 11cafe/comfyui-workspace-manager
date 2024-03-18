@@ -39,7 +39,7 @@ export async function extractAndFetchFileNames(
 ): Promise<DepsResult> {
   let modelPromises: Promise<ModelFile>[] = [];
   let images: ImageFile[] = [];
-  const modelFileExtensions = [".safetensors", ".bin"];
+  const modelFileExtensions = [".ckpt", ".pt", ".bin", ".pth", ".safetensors"];
   const imageFileExtensions = [".jpeg", ".jpg", ".png", ".gif"];
 
   nodes.forEach((node) => {

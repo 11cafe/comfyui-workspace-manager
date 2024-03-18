@@ -40,7 +40,6 @@ export default function ModelManagerTopbar() {
     api.addEventListener(
       "model_list",
       async (e: { detail: ModelsListRespItemFromApi[] }) => {
-        console.log("model_list", e.detail);
         const modelsPromises = e.detail?.map(async (item) => {
           let newModel: Model = {
             id: item.model_name + "@" + item.model_type,

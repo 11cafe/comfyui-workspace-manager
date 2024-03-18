@@ -50,6 +50,7 @@ export type Model = {
   fileHash: string | null; // files are not guaranteed to finish hashing
   modelName: string | null;
   civitModelID?: string;
+  downloadUrl?: string;
   civitModelVersionID?: string;
   imageUrl?: string | null;
 };

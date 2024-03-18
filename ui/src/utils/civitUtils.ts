@@ -1,5 +1,4 @@
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
-import { Model } from "../types/dbTypes";
 
 const CIVIT_API_KEY_STORAGE_KEY = "WORKSPACE_CIVIT_API_KEY_STORAGE_KEY";
 export function getCivitApiKey() {
@@ -8,6 +7,14 @@ export function getCivitApiKey() {
 
 export function setCivitApiKey(apiKey: string) {
   localStorage.setItem(CIVIT_API_KEY_STORAGE_KEY, apiKey);
+}
+
+export function getCivitModelDownloadUrl(modelVersionID: string) {
+  return `https://civitai.com/api/download/models/${modelVersionID}`;
+}
+
+export function getCivitModelPageUrl(modelID: string, modelVersionID: string) {
+  return `https://civitai.com/models/${modelID}?modelVersionId=${modelVersionID}`;
 }
 
 interface ResponsePartial {

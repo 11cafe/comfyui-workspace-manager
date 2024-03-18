@@ -1,16 +1,20 @@
 import { useContext, useEffect, useState } from "react";
 import { WorkspaceContext } from "../WorkspaceContext";
 import {
-  Box,
+  Badge,
+  Button,
   Flex,
+  HStack,
   Heading,
+  Image,
   Input,
   Modal,
   ModalBody,
   ModalContent,
-  ModalOverlay,
   Stack,
   Tag,
+  Text,
+  Tooltip,
 } from "@chakra-ui/react";
 import {
   DepsResult,
@@ -20,10 +24,13 @@ import {
 // @ts-ignore
 import { app } from "/scripts/app.js";
 import {
-  IconAlertCircle,
-  IconEscalator,
+  IconExternalLink,
+  IconInfoCircle,
+  IconInfoCircleFilled,
   IconQuestionMark,
+  IconRefresh,
 } from "@tabler/icons-react";
+import { getCivitModelDownloadUrl } from "../utils/civitUtils";
 
 export default function DownloadSpaceJsonDialog() {
   const { route, setRoute } = useContext(WorkspaceContext);
@@ -45,14 +52,25 @@ export default function DownloadSpaceJsonDialog() {
     <Modal isOpen={true} onClose={() => setRoute("root")} size={"xl"}>
       {/* <ModalOverlay /> */}
       <ModalContent>
-        <ModalBody p={5}>
-          <Stack gap={5}>
+        <ModalBody p={5} gap={5}>
+          <HStack>
             <Heading size={"md"}>Workflow Resouce Dependencies</Heading>
-
+            <Tooltip
+              label=".space.json workflows include all resource dependecy links
+              (models, cursom nodes, input images) and can be one-click
+              installed and run in any ComfyUI with workpace-manager installed."
+            >
+              <Badge borderRadius={10}>
+                <IconInfoCircle size={20} />
+              </Badge>
+            </Tooltip>
+          </HStack>
+          <Text color={"GrayText"}>Export one-click installable workflow</Text>
+          <Stack gap={5} mt={5}>
             <Stack>
               <Heading size={"sm"}>Models ({result.models.length})</Heading>
-              {result.models.map((modelFile) => (
-                <ModelDepsItem modelFile={modelFile} />
+              {result.models.map((modelFile, index) => (
+                <ModelDepsItem modelFile={modelFile} key={index} />
               ))}
             </Stack>
 
@@ -60,10 +78,19 @@ export default function DownloadSpaceJsonDialog() {
               <Stack>
                 <Heading size={"sm"}>Images ({result.images.length})</Heading>
                 {result.images.map((image) => (
-                  <p key={image.filename}>{image.filename}</p>
+                  <Stack>
+                    <p key={image.filename}>{image.filename}</p>
+                    <Image
+                      width={250}
+                      src={`/workspace/view_media?filename=${image.filename}&isPreview=true&isInput=true`}
+                    />
+                  </Stack>
                 ))}
               </Stack>
             )}
+            <Button width={"fit-content"} colorScheme="teal">
+              Download .space.json
+            </Button>
           </Stack>
         </ModalBody>
       </ModalContent>
@@ -75,31 +102,54 @@ function ModelDepsItem({ modelFile }: { modelFile: ModelFile }) {
   if (!modelFile.models?.length) {
     return (
       <Stack>
-        <Flex>
+        <Flex gap={2}>
           <p>{modelFile.filename}</p>
+          <Tag size={"sm"} colorScheme={"red"}>
+            Model file not found
+          </Tag>
         </Flex>
-        <Input placeholder={"Please enter model download url"} />
+        <Button size={"sm"} leftIcon={<IconRefresh />} width={"fit-content"}>
+          Fetch model file
+        </Button>
       </Stack>
     );
   }
-  if (modelFile.models.length === 1) {
-    const model = modelFile.models[0];
-    return (
-      <Flex key={model.id} gap={2}>
-        <Tag>{model.fileFolder}</Tag>
-        <p>{modelFile.filename}</p>
-      </Flex>
-    );
-  }
+  const model = modelFile.models[0];
+  const downloadLink = model.civitModelVersionID
+    ? getCivitModelDownloadUrl(model.civitModelVersionID)
+    : model.downloadUrl;
   return (
     <Stack ml={2}>
-      <p key={modelFile.filename}>{modelFile.filename}</p>
-      {modelFile.models?.map((model) => (
-        <Flex key={model.id} gap={2}>
-          <Tag>{model.fileFolder}</Tag>
-          <p>{model.modelName}</p>
-        </Flex>
-      ))}
+      <Flex key={modelFile.filename + modelFile.nodeType} gap={2}>
+        {modelFile.models?.map((model, index) => (
+          <Tag
+            height={"fit-content"}
+            colorScheme={index === 0 ? "teal" : undefined}
+          >
+            {model.fileFolder}
+          </Tag>
+        ))}
+        {modelFile.models[0].civitModelVersionID ? (
+          <HStack>
+            <a href={downloadLink}>{modelFile.filename}</a>
+            <IconExternalLink size={18} />
+          </HStack>
+        ) : (
+          <Stack>
+            <span>
+              {modelFile.filename} <span>❓</span>
+            </span>
+            <Tooltip
+              label={"Model download link, supports Huggingface and Civitai"}
+            >
+              <Input
+                size={"sm"}
+                placeholder={"https://civitai.com/api/download/models/324524"}
+              />
+            </Tooltip>
+          </Stack>
+        )}
+      </Flex>
     </Stack>
   );
 }
