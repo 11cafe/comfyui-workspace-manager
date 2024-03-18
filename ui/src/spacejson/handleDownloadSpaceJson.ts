@@ -1,5 +1,6 @@
 import { indexdb } from "../db-tables/indexdb";
 import { Model } from "../types/dbTypes";
+import { getCivitModelDownloadUrl } from "../utils/civitUtils";
 
 type LiteNode = {
   id: number;
@@ -10,7 +11,11 @@ type LiteNode = {
 export type ModelFile = {
   filename: string;
   nodeType: string;
-  models?: Model[];
+  fileHash: string | null;
+  fileFolder: string | null;
+  downloadUrl: string | null;
+  civitModelID?: string;
+  length: number;
 };
 
 type ImageFile = {
@@ -29,8 +34,18 @@ async function fetchModelData(
 ): Promise<ModelFile> {
   const res =
     (await indexdb.models.where("fileName").equals(filename).toArray()) ?? [];
-
-  const modelFile: ModelFile = { filename, nodeType, models: res };
+  const first = res.at(0);
+  const modelFile: ModelFile = {
+    filename,
+    nodeType,
+    fileHash: first?.fileHash ?? null,
+    fileFolder: first?.fileFolder ?? null,
+    downloadUrl: first?.civitModelVersionID
+      ? getCivitModelDownloadUrl(first.civitModelVersionID)
+      : null,
+    length: res.length,
+    civitModelID: first?.civitModelID,
+  };
   return modelFile;
 }
 
@@ -61,5 +76,5 @@ export async function extractAndFetchFileNames(
   // Wait for all the model data fetch operations to complete
   const models = await Promise.all(modelPromises);
 
-  return { models, images };
+  return { models: models, images };
 }

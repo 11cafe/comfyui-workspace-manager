@@ -13,7 +13,10 @@ export function getCivitModelDownloadUrl(modelVersionID: string) {
   return `https://civitai.com/api/download/models/${modelVersionID}`;
 }
 
-export function getCivitModelPageUrl(modelID: string, modelVersionID: string) {
+export function getCivitModelPageUrl(modelID: string, modelVersionID?: string) {
+  if (!modelVersionID) {
+    return `https://civitai.com/models/${modelID}`;
+  }
   return `https://civitai.com/models/${modelID}?modelVersionId=${modelVersionID}`;
 }
 
