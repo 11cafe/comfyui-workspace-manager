@@ -1,4 +1,4 @@
-# ☕️ ComfyUI Workspace Manager
+# ☕️ ComfyUI Workspace Manager - Comfyspace
 
 A ComfyUI workflow and model manager extension to **organize and manage all your workflows, models and generated images in one place**. Seamlessly switch between workflows, track version history and image generation history, 1 click install models from Civit ai, browse/update your installed models
 
