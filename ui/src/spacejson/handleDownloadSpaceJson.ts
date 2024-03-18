@@ -58,7 +58,7 @@ export async function extractAndFetchFileNames(
   const imageFileExtensions = [".jpeg", ".jpg", ".png", ".gif"];
 
   nodes.forEach((node) => {
-    if (node.widgets_values) {
+    if (node.widgets_values && Array.isArray(node.widgets_values)) {
       node.widgets_values.forEach((value) => {
         if (typeof value != "string") return;
         // Check if it's a model file

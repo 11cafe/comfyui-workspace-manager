@@ -37,9 +37,12 @@ def read_table(table):
     if not os.path.exists(file_name):
         return None
 
-    with open(file_name, 'r') as file:
-        data = json.load(file)
-    return data
+    try:
+        with open(file_name, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+            return data
+    except json.JSONDecodeError as e:
+        return None
 
 
 @server.PromptServer.instance.routes.get("/workspace/get_db")

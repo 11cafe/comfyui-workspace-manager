@@ -93,7 +93,7 @@ export default function DownloadSpaceJsonDialog() {
     return isValid;
   }, []);
 
-  const handleSubmit = (event: any) => {
+  const handleSubmit = async (event: any) => {
     event.preventDefault();
     const formData = new FormData(event.target);
     const modelDeps =
@@ -110,6 +110,10 @@ export default function DownloadSpaceJsonDialog() {
       return;
     }
 
+    const uploadResp = await fetch(
+      "/workspace/upload_image?image=" + deps?.images[0].filename,
+    );
+    console.log("uploadResp", uploadResp);
     setErrors({});
   };
 
