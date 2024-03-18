@@ -10,7 +10,7 @@ import {
   IconLock,
 } from "@tabler/icons-react";
 import DropdownTitle from "../components/DropdownTitle";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { lazy, useCallback, useContext, useEffect, useState } from "react";
 import EditFlowName from "../components/EditFlowName";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { PanelPosition } from "../types/dbTypes";
@@ -20,6 +20,9 @@ import VersionNameTopbar from "./VersionNameTopbar";
 import { userSettingsTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import { TOPBAR_BUTTON_HEIGHT } from "../const";
 import SpotlightSearch from "../components/SpotlightSearch";
+const ModelManagerTopbar = lazy(
+  () => import("../model-manager/topbar/ModelManagerTopbar"),
+);
 
 interface Props {
   curFlowName: string | null;
@@ -101,16 +104,7 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
             <IconTriangleInvertedFilled size={8} />
           </HStack>
         </Button>
-        <Button
-          size={"sm"}
-          colorScheme="blue"
-          height={TOPBAR_BUTTON_HEIGHT + "px"}
-          aria-label="My models"
-          onClick={() => setRoute("modelList")}
-          px={1}
-        >
-          Models
-        </Button>
+        <ModelManagerTopbar />
         <Tooltip label="New workflow">
           <Button
             size={"sm"}

@@ -127,12 +127,12 @@ export async function fetchMyWorkflowsDir() {
   const res = (await resp.json()) as {
     path?: string;
     error?: string;
-    os: string;
+    os: "win32" | "darwin" | "linux";
   };
   if (res.error) {
     alert(`Failed to fetch my workflows path: ${res.error}`);
   }
-  return res.path;
+  return res;
 }
 
 export async function getAllModelsList() {

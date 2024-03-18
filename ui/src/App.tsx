@@ -49,9 +49,6 @@ import { deepJsonDiffCheck } from "./utils/deepJsonDiffCheck";
 const AppIsDirtyEventListener = React.lazy(
   () => import("./topbar/AppIsDirtyEventListener"),
 );
-const ModelsListDrawer = React.lazy(
-  () => import("./model-manager/models-list-drawer/ModelsListDrawer"),
-);
 
 const usedWsEvents = [
   // InstallProgress.tsx
@@ -197,47 +194,48 @@ export default function App() {
       loadWorkflowIDImpl(latestWfID);
     }
     await validateOrSaveAllJsonFileMyWorkflows();
-
-    indexdb.cache.get(UPGRADE_TO_2WAY_SYNC_KEY).then(async (value) => {
-      if (value?.value !== "true") {
-        const workflowsCount = await indexdb.workflows.count();
-        if (workflowsCount == 0) {
-          // empty workflows, enable 2way sync
-          await userSettingsTable?.upsert({ twoWaySync: true });
-          await indexdb.cache.put({
-            id: UPGRADE_TO_2WAY_SYNC_KEY,
-            value: "true",
-          });
-          return;
-        }
-        const myWorkflowsDir =
-          await userSettingsTable?.getSetting("myWorkflowsDir");
-        showDialog(
-          <EnableTwowaySyncConfirm
-            myWorkflowsDir={myWorkflowsDir ?? "undefined"}
-          />,
-          [
-            {
-              label: "I have downloaded all my workflows and ready to enable",
-              onClick: async () => {
-                await userSettingsTable?.upsert({ twoWaySync: true });
-                if (await userSettingsTable?.getSetting("twoWaySync")) {
-                  indexdb.cache.put({
-                    id: UPGRADE_TO_2WAY_SYNC_KEY,
-                    value: "true",
-                  });
-                  location.reload();
-                }
+    const twoway = await userSettingsTable?.getSetting("twoWaySync");
+    !twoway &&
+      indexdb.cache.get(UPGRADE_TO_2WAY_SYNC_KEY).then(async (value) => {
+        if (value?.value !== "true") {
+          const workflowsCount = await indexdb.workflows.count();
+          if (workflowsCount == 0) {
+            // empty workflows, enable 2way sync
+            await userSettingsTable?.upsert({ twoWaySync: true });
+            await indexdb.cache.put({
+              id: UPGRADE_TO_2WAY_SYNC_KEY,
+              value: "true",
+            });
+            return;
+          }
+          const myWorkflowsDir =
+            await userSettingsTable?.getSetting("myWorkflowsDir");
+          showDialog(
+            <EnableTwowaySyncConfirm
+              myWorkflowsDir={myWorkflowsDir ?? "undefined"}
+            />,
+            [
+              {
+                label: "I have downloaded all my workflows and ready to enable",
+                onClick: async () => {
+                  await userSettingsTable?.upsert({ twoWaySync: true });
+                  if (await userSettingsTable?.getSetting("twoWaySync")) {
+                    indexdb.cache.put({
+                      id: UPGRADE_TO_2WAY_SYNC_KEY,
+                      value: "true",
+                    });
+                    location.reload();
+                  }
+                },
+                colorScheme: "red",
               },
-              colorScheme: "red",
+            ],
+            {
+              closeOnOverlayClick: false,
             },
-          ],
-          {
-            closeOnOverlayClick: false,
-          },
-        );
-      }
-    });
+          );
+        }
+      });
   };
 
   const subsribeToWsToStopWarning = () => {
@@ -572,9 +570,6 @@ export default function App() {
               <Suspense>
                 <GalleryModal onclose={() => setRoute("root")} />
               </Suspense>
-            )}
-            {route === "modelList" && (
-              <ModelsListDrawer onClose={() => setRoute("root")} />
             )}
           </Box>
           <ServerEventListener />
