@@ -1,5 +1,6 @@
 
 import asyncio
+import json
 import server
 from aiohttp import FormData, web, ClientSession
 import folder_paths
@@ -68,18 +69,11 @@ async def upload_image_handler(request):
     
     if not image_path:
         return web.Response(status=400, text="Image path is required")
-
     abs_path = os.path.join(folder_paths.get_input_directory(), image_path)
-    print('get abs_path', abs_path)
     data = FormData()
-    
-
     # Open and read the image file into memory
     with open(abs_path, 'rb') as img:
-        # Here, img.read() reads the file content into memory
-        print('img.read()', img)
         data.add_field('file', img.read(), filename=os.path.basename(image_path), content_type='application/octet-stream')
-    print('data', data)
     # Forward the image to the Next.js API
     try:
         async with ClientSession() as session:
@@ -90,7 +84,7 @@ async def upload_image_handler(request):
                     return web.Response(status=response.status, text=text)
                 print('response', response)
                 result = await response.json()
-                return web.Response(text=str(result), content_type='application/json')
+                return web.Response(text=json.dumps(result), content_type='application/json')
     except Exception as e:
         # Handle exceptions related to the POST request
         return web.Response(status=500, text=f"Error forwarding the image to the Next.js API: {e}")

@@ -109,12 +109,13 @@ export default function DownloadSpaceJsonDialog() {
     if (!validateModelDeps(modelDeps)) {
       return;
     }
+    setErrors({});
 
     const uploadResp = await fetch(
       "/workspace/upload_image?image=" + deps?.images[0].filename,
     );
-    console.log("uploadResp", uploadResp);
-    setErrors({});
+    const json = await uploadResp.json();
+    console.log("uploadResp", json);
   };
 
   if (!deps) {
