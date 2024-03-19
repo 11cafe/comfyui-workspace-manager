@@ -30,24 +30,24 @@ and restart your ComfyUI.
 It is recommended to do git clone than downloading zip folder, because you can get latest updates by `git pull`!
 
 ## Features
-
-- **Workflows manager**
+**Workflows manager**
   - 🔁Switch between different workflows easily. 1click open workflow in multiple browser tabs.
   - 🤏**Drag and drop** to insert subworkflows into current flow.
-  - 🗂️Organize workflows with folders, 🏷️tags
-  - 📂Save and sync all your workflows in a local folder (by default under `/ComfyUI/my_workflows` customize this location in Settings)
-    - Save workflow by pressing the 💾 button, or ⌨Shift+S shortcut (customize this shortcut in Settings).
+  - 🗂️Organize workflows with folders, tags
+  - 📂Save and sync all your workflows in a local folder (by default under `/ComfyUI/my_workflows` customize in Settings)
+    - **Save workflow by pressing the 💾 button, or ⌨Shift+S shortcut** (customize in Settings).
     - Every time you save, it will create a new record in **Version History**. You can easily revert to any version.
-    - Enable/disable autosave workflow
+    - **Enable/disable autosave workflow**
   - 🕛**Version control** of workflow, create/switch versions
   - Bulk import workflows into your workspace
   - 1click download all your workflows into a .zip
-- **🔮Models manager**:
+
+**🔮Models manager**:
   - 1click install models from civitai to `models/` subfolder of the matching model type
   - Browse installed models with thumbnail image
   - drag and drop to insert "load model_type" node into workflow
-  - automatic search for missing models of workflow from civit ai and hugging face
-- **🖼️Image Gallery**: Every image/video you generate will be saved in the gallery of the current workflow. You can set any image in the gallery as the cover photo of the workflow
+
+**🖼️Image Gallery**: Every image/video you generate will be saved in the gallery of the current workflow. You can set any image in the gallery as the cover photo of the workflow
 - Dark/light mode
 - cloud sync & backup workspace so you will never lose your data (Upcoming!)
 - [beta!]One-click share workflow
