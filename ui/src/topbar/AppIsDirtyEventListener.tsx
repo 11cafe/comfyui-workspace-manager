@@ -11,14 +11,13 @@ import { Box, useToast } from "@chakra-ui/react";
 import { matchShortcut } from "../utils";
 import { EShortcutKeys } from "../types/dbTypes";
 import useDebounceFn from "../customHooks/useDebounceFn";
+import { deepJsonDiffCheck } from "../utils/deepJsonDiffCheck";
 
 export default function AppIsDirtyEventListener() {
-  const { setIsDirty, setRoute, saveCurWorkflow } =
+  const { isDirty, setIsDirty, setRoute, saveCurWorkflow } =
     useContext(WorkspaceContext);
   const toast = useToast();
   useEffect(() => {
-    let isFirstConfigureCall = true;
-
     const shortcutListener = async (matchResult: string) => {
       switch (matchResult) {
         case EShortcutKeys.SAVE:
@@ -33,28 +32,32 @@ export default function AppIsDirtyEventListener() {
     app.graph.onAfterChange = function () {
       // Call the original onAfterChange method
       originalOnAfterChange?.apply(this, arguments);
-      onIsDirty();
+      debounceOnIsDirty();
     };
 
     const originalOnConfigure = app.graph.onConfigure;
     app.graph.onConfigure = function () {
       originalOnConfigure?.apply(this, arguments);
-
-      if (isFirstConfigureCall) {
-        isFirstConfigureCall = false;
-        return;
-      }
-      // Call the original onConfigure method
-      onIsDirty();
+      // delay check diff json cuz it takes time for graph.serialize() to settle up and return the correct json
+      setTimeout(() => {
+        const deepCheck = deepJsonDiffCheck(
+          app.graph.serialize(),
+          JSON.parse(workflowsTable?.curWorkflow?.json ?? "{}"),
+        );
+        if (!deepCheck) {
+          debounceOnIsDirty();
+        }
+      }, 1000);
     };
 
     document.addEventListener("click", (e) => {
+      if (!Object.keys(app.canvas.selected_nodes ?? {}).length) return;
       if (
         app.canvas.node_over != null ||
         app.canvas.node_capturing_input != null ||
         app.canvas.node_widget != null
       ) {
-        onIsDirty();
+        debounceOnIsDirty();
       }
     });
     document.addEventListener("keydown", async function (event) {
@@ -67,7 +70,7 @@ export default function AppIsDirtyEventListener() {
         event.target?.matches("input, textarea") &&
         Object.keys(app.canvas.selected_nodes ?? {}).length
       ) {
-        onIsDirty();
+        debounceOnIsDirty();
       }
     });
   }, []);
@@ -103,7 +106,7 @@ export default function AppIsDirtyEventListener() {
     if (workflowsTable?.curWorkflow?.saveLock) return;
     const autoSaveEnabled = await userSettingsTable?.getSetting("autoSave");
     if (!autoSaveEnabled) {
-      setIsDirty(true);
+      !isDirty && setIsDirty(true);
       return;
     }
     if (workflowsTable?.curWorkflow?.id && autoSaveEnabled) {
@@ -124,5 +127,7 @@ export default function AppIsDirtyEventListener() {
       }
     }
   };
+  const [debounceOnIsDirty, _] = useDebounceFn(onIsDirty, 500);
+
   return null;
 }
