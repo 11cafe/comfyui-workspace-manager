@@ -38,12 +38,13 @@ export default function AppIsDirtyEventListener() {
 
     const originalOnConfigure = app.graph.onConfigure;
     app.graph.onConfigure = function () {
+      originalOnConfigure?.apply(this, arguments);
+
       if (isFirstConfigureCall) {
         isFirstConfigureCall = false;
         return;
       }
       // Call the original onConfigure method
-      originalOnConfigure?.apply(this, arguments);
       onIsDirty();
     };
 
