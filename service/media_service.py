@@ -60,34 +60,47 @@ async def view_file(request):
     isInput = request.query.get("isInput", False)
     return await asyncio.to_thread(view_media, filename, isPreview, isInput)
 
-@server.PromptServer.instance.routes.get("/workspace/upload_image")
+@server.PromptServer.instance.routes.post("/workspace/upload_image")  # Handle POST requests
 async def upload_image_handler(request):
-    # The URL to your Next.js API endpoint
-    next_js_api_url = 'http://localhost:3000/api/image/upload'
+    # Assuming JSON payload
+    data = await request.json()
+    image_paths = data.get("images")
+    print(f"image_paths: {image_paths}")
+    if not image_paths:
+        return web.Response(status=400, text="Images parameter is required and should be a list of image paths.")
 
-    image_path = request.query.get("image", None)
+    # Initialize FormData for multipart upload
+    multipart_data = FormData()
+    files_not_found = []
+
+    # Iterate over image paths to add them to FormData
+    for image_path in image_paths:
+        print(f"image_path: {image_path}")
+        abs_path = os.path.join(folder_paths.get_input_directory(), image_path)
+        
+        if not os.path.exists(abs_path):
+            files_not_found.append(image_path)
+            continue  # Skip this file and proceed with the next
+
+        with open(abs_path, 'rb') as img:
+            multipart_data.add_field('file', img.read(), 
+                                     filename=os.path.basename(image_path),
+                                     content_type='application/octet-stream')  # Adjust MIME type as necessary
+
+    # Handle case where one or more files were not found
+    if files_not_found:
+        return web.Response(status=404, text=f"Image file(s) not found: {', '.join(files_not_found)}")
+
+    next_js_api_url = 'http://localhost:3000/api/image/upload'
     
-    if not image_path:
-        return web.Response(status=400, text="Image path is required")
-    abs_path = os.path.join(folder_paths.get_input_directory(), image_path)
-    data = FormData()
-    # Open and read the image file into memory
-    with open(abs_path, 'rb') as img:
-        data.add_field('file', img.read(), filename=os.path.basename(image_path), content_type='application/octet-stream')
-    # Forward the image to the Next.js API
     try:
         async with ClientSession() as session:
-            async with session.post(next_js_api_url, data=data) as response:
-                # Check for HTTP errors
+            async with session.post(next_js_api_url, data=multipart_data) as response:
                 if response.status != 200:
                     text = await response.text()
                     return web.Response(status=response.status, text=text)
-                print('response', response)
+                
                 result = await response.json()
                 return web.Response(text=json.dumps(result), content_type='application/json')
     except Exception as e:
-        # Handle exceptions related to the POST request
-        return web.Response(status=500, text=f"Error forwarding the image to the Next.js API: {e}")
-
-
-
+        return web.Response(status=500, text=f"Error forwarding the images to the Next.js API: {e}")

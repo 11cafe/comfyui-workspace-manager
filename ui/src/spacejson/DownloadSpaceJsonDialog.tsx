@@ -1,12 +1,4 @@
-import {
-  Dispatch,
-  FormEvent,
-  SetStateAction,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { WorkspaceContext } from "../WorkspaceContext";
 import {
   Badge,
@@ -37,6 +29,7 @@ import {
   IconRefresh,
 } from "@tabler/icons-react";
 import { getCivitModelPageUrl } from "../utils/civitUtils";
+import { getAllModelsList } from "../Api";
 
 export default function DownloadSpaceJsonDialog() {
   const { route, setRoute } = useContext(WorkspaceContext);
@@ -111,9 +104,12 @@ export default function DownloadSpaceJsonDialog() {
     }
     setErrors({});
 
-    const uploadResp = await fetch(
-      "/workspace/upload_image?image=" + deps?.images[0].filename,
-    );
+    const uploadResp = await fetch("/workspace/upload_image", {
+      method: "POST",
+      body: JSON.stringify({
+        images: deps?.images.map((image) => image.filename) ?? [],
+      }),
+    });
     const json = await uploadResp.json();
     console.log("uploadResp", json);
   };
@@ -205,6 +201,7 @@ function ModelDepsItem({
           width={"fit-content"}
           borderColor={"red"}
           borderWidth={errors[inputKey] != null ? 2 : 0}
+          onClick={async () => await getAllModelsList()}
         >
           Fetch model file
         </Button>
