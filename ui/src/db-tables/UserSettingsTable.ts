@@ -88,7 +88,7 @@ export class UserSettingsTable extends TableBase<UserSettings> {
     const instance = new UserSettingsTable();
     const myWorkflowsDir = await fetchMyWorkflowsDir();
 
-    instance.defaultSettings.myWorkflowsDir = myWorkflowsDir!;
+    instance.defaultSettings.myWorkflowsDir = myWorkflowsDir.path!;
 
     await instance.getSetting("autoSave").then((res) => {
       instance._autoSave = res ?? true;

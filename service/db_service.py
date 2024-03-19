@@ -58,6 +58,12 @@ def get_my_workflows_dir():
             curDir = records[DEFAULT_USER]['myWorkflowsDir']  
         elif 'myWorkflowsDir' in records:  
             curDir = records['myWorkflowsDir']
-        if os.path.exists(curDir):
+        
+        # this is to be compatible of a bug that a dict is stored in userSettings.myWorkflowsDir
+        # should not be needed once all users refresh their settings
+        if not isinstance(curDir, str):
+            curDir = curDir.get('path', None)
+
+        if curDir and os.path.exists(curDir):
             return curDir
     return os.path.join(comfy_path, 'my_workflows')
