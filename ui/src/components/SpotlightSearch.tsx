@@ -53,14 +53,19 @@ export default function SpotlightSearch() {
     setLoading(false);
   };
 
-  const [debounceAutoSaveWorkflow] = useDebounceFn(handlerSearch, 300);
+  const [debounceSearch, cancelDebounceSearch] = useDebounceFn(
+    handlerSearch,
+    300,
+  );
 
   const onSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchKey(event.target.value);
     if (event.target.value) {
-      debounceAutoSaveWorkflow();
+      debounceSearch();
       !loading && setLoading(true);
     } else {
+      setLoading(false);
+      cancelDebounceSearch();
       setSearchResult([]);
     }
   };
@@ -108,10 +113,8 @@ export default function SpotlightSearch() {
    */
   const updateRecentlyOpenedFileList = async (
     allFiles: RecentlyOpenedFile[],
+    recentlyOpenedFileList: RecentlyOpenedFile[],
   ) => {
-    console.log("allFiles", allFiles);
-    const recentlyOpenedFileList = await getRecentlyOpenedFileList();
-
     const recentlyOpenedFileMap: Map<string, RecentlyOpenedFile> = new Map();
     const allFilesMap: Map<string, RecentlyOpenedFile> = new Map();
 
@@ -144,6 +147,9 @@ export default function SpotlightSearch() {
   };
 
   const init = async () => {
+    const recentlyOpenedFileList = await getRecentlyOpenedFileList();
+    setRecentlyOpenedFileList(recentlyOpenedFileList);
+
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
     let allFiles;
     if (twoWaySyncEnabled) {
@@ -175,7 +181,7 @@ export default function SpotlightSearch() {
         ) ?? [];
     }
     setAllFileList(allFiles);
-    updateRecentlyOpenedFileList(allFiles);
+    updateRecentlyOpenedFileList(allFiles, recentlyOpenedFileList);
   };
 
   useEffect(() => {
