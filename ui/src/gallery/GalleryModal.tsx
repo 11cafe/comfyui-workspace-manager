@@ -22,7 +22,6 @@ import { Media } from "../types/dbTypes";
 import { MetaDataInfo } from "./components/MetaDataInfo.tsx";
 import GalleryMediaItem from "./components/GalleryMediaItem.tsx";
 import SearchInput from "../components/SearchInput.tsx";
-import { nanoid } from "nanoid";
 import { MediaWithMetaData } from "./components/MetaInfoBox.tsx";
 
 export default function GalleryModal({ onclose }: { onclose: () => void }) {
@@ -42,23 +41,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
     if (curFlowID == null) return;
     const media = await mediaTable?.listByWorkflowID(curFlowID);
     setImages(media ?? []);
-    if (media?.length === 0) {
-      app.graphToPrompt().then((prompt: any) => {
-        setMetaData({
-          id: nanoid(),
-          workflowJSON: "",
-          localPath: "",
-          createTime: 0,
-          format: "",
-          workflowID: "",
-          metaData: {
-            prompt: prompt.output,
-            workflow: prompt.workflow,
-          },
-        });
-        return app.graph._nodes;
-      });
-    } else if (Number(media?.length) <= 6 && media?.[0]) {
+    if (media?.length) {
       setMetaData(media[0]);
     }
   };
@@ -163,7 +146,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody overflowY={"auto"}>
-          {!metaData ? (
+          {/* {!metaData ? (
             <HStack wrap={"wrap"}>
               {calcImages.map((media) => {
                 return (
@@ -180,9 +163,9 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
                 );
               })}
             </HStack>
-          ) : (
-            <MetaDataInfo mediaList={images} media={metaData} />
-          )}
+          ) : ( */}
+          <MetaDataInfo mediaList={images} media={metaData ?? null} />
+          {/* )} */}
         </ModalBody>
       </ModalContent>
     </Modal>

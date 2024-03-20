@@ -1,5 +1,3 @@
-import { getNodesInfo } from "../../utils.ts";
-
 type MetaValue = string | number | null | any[];
 interface Workflow {
   last_node_id: number;
@@ -71,18 +69,16 @@ interface WidgetIdxMap {
   };
 }
 
-interface Meta {
-  prompt: {
-    [key: string | number]: {
-      class_type: string;
-      inputs: {
-        [key: string]: MetaValue | any;
-      };
-    };
+export type ImagePrompt = {
+  [key: string | number]: ImagePromptNodeItem;
+};
+export type ImagePromptNodeItem = {
+  class_type: string;
+  inputs: {
+    [key: string]: MetaValue | any;
   };
-  workflow: Workflow;
-}
-
+  promptKey?: string;
+};
 export type InputResultItem = {
   class_type: string;
   name: string;
@@ -94,129 +90,61 @@ export type InputResultItem = {
   formLabel?: string;
 };
 
-const nodesInfo = getNodesInfo();
-
-const getInputConfig = (props: { classType: string; name: string }) => {
-  const nodeData = nodesInfo[props.classType]?.nodeData;
-  return {
-    ...({
-      ...(nodeData?.input?.required ?? {}),
-      ...(nodeData?.input?.optional ?? {}),
-    }?.[props.name] ?? {}),
-    output: nodeData?.output ?? [],
-    output_name: nodeData?.output_name ?? [],
-  };
+let toExecute: ImagePromptNodeItem[] = [];
+export type PromptNodeInputItem = {
+  classType: string;
+  inputName: string;
+  inputValue: any;
+  promptKey: string;
+  path?: string[];
 };
 
-function fineRoot(prompt: Meta["prompt"]) {
-  const keyList = Object.keys(prompt);
-  const allInputs = keyList.reduce<string[]>((previousValue, currentValue) => {
-    const inputs = prompt[currentValue].inputs;
-    const allArrValue = Object.keys(inputs).reduce<string[]>(
-      (previousValue1, currentValue1) => {
-        if (Array.isArray(inputs[currentValue1])) {
-          return [...previousValue1, inputs[currentValue1]?.[0]];
-        }
-        return [...previousValue1];
-      },
-      [],
-    );
-    return [...previousValue, ...allArrValue];
-  }, []);
-  return keyList.filter((item) => {
-    return !allInputs.includes(item);
-  });
-}
-
-function getInputListByLinkId({
-  oriMeta,
-  linkId,
-  parentItem,
-}: {
-  oriMeta: Meta;
-  linkId: string;
-  parentItem?: InputResultItem[];
-}): InputResultItem[] {
-  const prompt = oriMeta.prompt;
-  if (!prompt[linkId]) {
+function recursiveGetInputList(
+  promptNode: ImagePromptNodeItem,
+  prompt: ImagePrompt,
+  path: string[],
+) {
+  const index = toExecute.findIndex(
+    (v) => v.promptKey === promptNode.promptKey,
+  );
+  if (index == -1) {
     return [];
   }
-  const class_type = prompt[linkId].class_type;
-  const currentInputKeyList = Object.keys(prompt[linkId].inputs);
-  const inputList = currentInputKeyList.map((input) => {
-    const inputInfo = getInputConfig({ classType: class_type, name: input });
-    let formLabel;
-    // 判断是否是 正向提示词
-    if (
-      parentItem?.some((v) => v.name === "positive") &&
-      inputInfo?.["0"] === "STRING"
-    ) {
-      formLabel = `positive-${input}`;
+  toExecute = toExecute.filter((v) => v !== promptNode);
+
+  const inputList: PromptNodeInputItem[] = [];
+  Object.entries(promptNode.inputs).forEach(([inputName, value]) => {
+    if (Array.isArray(value)) {
+      const list = recursiveGetInputList(prompt[value[0]], prompt, [
+        ...path,
+        inputName,
+      ]);
+      inputList.push(...list);
+      return;
     }
-    if (
-      parentItem?.some((v) => v.name === "negative") &&
-      inputInfo?.["0"] === "STRING"
-    ) {
-      formLabel = `negative-${input}`;
-    }
-    return {
-      name: input,
-      class_type: class_type,
-      linkId: linkId,
-      value: prompt[linkId]?.inputs?.[input],
-      path: parentItem ?? [],
-      inputInfo: getInputConfig({ classType: class_type, name: input }),
-      formLabel,
-    } as InputResultItem;
+    inputList.push({
+      classType: promptNode.class_type,
+      inputName,
+      promptKey: promptNode.promptKey ?? "",
+      inputValue: value,
+      path: [...path, inputName],
+    });
   });
-
-  // 遍历节点所有input
-  const childrenInputList = inputList.reduce<InputResultItem[]>(
-    (previousValue, currentValue) => {
-      // 如果节点为array,则数据为上一节点传入的数据,递归查询上一节点的信息,同时保存当前节点路径,便于后续查找节点的父子关系
-      if (Array.isArray(currentValue.value)) {
-        const curList = getInputListByLinkId({
-          oriMeta,
-          linkId: currentValue?.value?.[0] ?? "",
-          parentItem: [...(parentItem ?? []), currentValue],
-        });
-        return [
-          ...previousValue,
-          // 如果之前已经添加过该节点,则跳过,(有的节点数据会提供给多个node)
-          ...curList.filter(
-            (cur) =>
-              !previousValue.some(
-                (value) =>
-                  value.linkId === cur.linkId && value.name === cur.name,
-              ),
-          ),
-        ];
-      }
-      return previousValue;
-    },
-    [],
-  );
-
-  // 最终输出的是当前节点的信息, 加上递归的节点数据
-  return [
-    ...inputList.filter((v) => !Array.isArray(v.value)),
-    ...childrenInputList,
-  ];
+  return inputList;
 }
 
-// 递归遍历所有子节点
-export function calcMeta(oriMeta: Meta): InputResultItem[] {
-  // const last_link_id = oriMeta.workflow.last_node_id;
-  const rootId = fineRoot(oriMeta.prompt);
-
-  if (rootId.length) {
-    return getInputListByLinkId({
-      oriMeta,
-      linkId: `${rootId[0]}`,
-    });
+export function calcInputListRecursive(
+  prompt: ImagePrompt,
+): PromptNodeInputItem[] {
+  toExecute = Object.values(prompt);
+  for (const key of Object.keys(prompt)) {
+    prompt[key].promptKey = key;
   }
-  return getInputListByLinkId({
-    oriMeta,
-    linkId: `${rootId}`,
-  });
+  const res = [];
+  while (toExecute.length) {
+    const inputList = recursiveGetInputList(toExecute[0], prompt, []);
+    res.push(...inputList);
+  }
+  console.log("calcInputListRecursive res", res);
+  return res;
 }

@@ -19,11 +19,6 @@ export type FormItem = {
   promptKey: string | number;
   topFields: TopFieldType[];
   updateTopField?: (field: TopFieldType) => void;
-  updateMetaData?: (data: {
-    promptKey: string | number;
-    name: string;
-    value: any;
-  }) => void;
 } & {
   [key in string]: any;
 };

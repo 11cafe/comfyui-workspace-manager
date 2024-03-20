@@ -19,26 +19,6 @@ export type MediaWithMetaData = Media & {
 };
 export const MetaInfoBox = ({ media }: { media?: MediaWithMetaData }) => {
   const [showNodeName, setShowNodeName] = useState(true);
-  const [mediaMetaData, setMediaMetaData] = useState<MetaData>();
-  const getMetaData = async (curMedia: Media) => {
-    try {
-      const res = await getMetadataFromUrl(
-        `/workspace/view_media?filename=${curMedia.localPath}`,
-      );
-      setMediaMetaData(res);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-  useEffect(() => {
-    if (media) {
-      if (media?.metaData) {
-        setMediaMetaData(media?.metaData);
-      } else {
-        getMetaData(media);
-      }
-    }
-  }, [media]);
 
   return (
     <Flex overflowY={"auto"} mb={4} direction={"column"} gap={2} flex={1}>
@@ -79,13 +59,7 @@ export const MetaInfoBox = ({ media }: { media?: MediaWithMetaData }) => {
           </Checkbox>
         </Flex>
       </SimpleGrid>
-      {media && mediaMetaData && (
-        <MetaBox
-          showNodeName={showNodeName}
-          metaData={mediaMetaData}
-          media={media}
-        />
-      )}
+      <MetaBox showNodeName={showNodeName} media={media ?? null} />
     </Flex>
   );
 };

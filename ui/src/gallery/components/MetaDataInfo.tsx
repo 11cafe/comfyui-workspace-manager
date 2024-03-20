@@ -3,13 +3,13 @@ import { FC, useEffect, useState } from "react";
 import { Box, Flex, Grid, Image } from "@chakra-ui/react";
 import Carousel from "../../components/Carousel/Carousel.tsx";
 import { MetaInfoBox } from "./MetaInfoBox.tsx";
-import { isImageFormat } from "../../utils.tsx";
+import MediaPreview from "../../components/MediaPreview.tsx";
 
 interface MetaDataInfoProps {
-  media: Media;
+  media: Media | null;
   mediaList: Media[];
 }
-
+const GALLERY_IMAGE_SIZE = 120;
 export const MetaDataInfo: FC<MetaDataInfoProps> = ({ mediaList, media }) => {
   const [mediaAct, setMediaAct] = useState<Media>();
   useEffect(() => {
@@ -35,46 +35,28 @@ export const MetaDataInfo: FC<MetaDataInfoProps> = ({ mediaList, media }) => {
             setMediaAct(mediaList?.find((v) => v.id === newMedia.id))
           }
         />
-        {mediaList.length <= 6 && (
-          <Flex>
-            {mediaList?.map((media) => (
-              <Box
-                display={"inline-block"}
-                p={2}
-                borderRadius={"4px"}
-                key={`image-bottom-${media.id}`}
-                width={"16.6%"}
-                cursor={"pointer"}
-                border={mediaAct?.id === media.id ? "1px solid gray" : ""}
-                onClick={() => setMediaAct(media)}
-              >
-                {isImageFormat(
-                  `/workspace/view_media?filename=${media.localPath}`,
-                ) ? (
-                  <Image
-                    src={`/workspace/view_media?filename=${media.localPath}`}
-                    alt={`image-${media.id}`}
-                    width={"100%"}
-                    height={"100%"}
-                    objectFit="contain"
-                  />
-                ) : (
-                  <video
-                    style={{ objectFit: "contain" }}
-                    width={"100%"}
-                    height={"100%"}
-                    src={`/workspace/view_media?filename=${media.localPath}`}
-                    loop={true}
-                    autoPlay={true}
-                    muted={true}
-                  >
-                    <track kind="captions" />
-                  </video>
-                )}
-              </Box>
-            ))}
-          </Flex>
-        )}
+
+        <Flex wrap={"wrap"}>
+          {mediaList?.map((media) => (
+            <Box
+              display={"inline-block"}
+              p={2}
+              borderRadius={"4px"}
+              key={`image-bottom-${media.id}`}
+              width={`${GALLERY_IMAGE_SIZE + 3}px`}
+              height={`${GALLERY_IMAGE_SIZE + 3}px`}
+              cursor={"pointer"}
+              border={mediaAct?.id === media.id ? "1px solid gray" : ""}
+              onClick={() => setMediaAct(media)}
+            >
+              <MediaPreview
+                mediaLocalPath={media.localPath}
+                size={GALLERY_IMAGE_SIZE}
+                objectFit="contain"
+              />
+            </Box>
+          ))}
+        </Flex>
       </Grid>
       <MetaInfoBox media={mediaAct} />
     </Flex>

@@ -1,15 +1,21 @@
-import { MetaData } from "../../utils.ts";
+import { MetaData, getMetadataFromUrl } from "../../utils.ts";
 import { Flex } from "@chakra-ui/react";
 import { Media } from "../../../types/dbTypes.ts";
 import TopForm from "../TopForm/TopForm.tsx";
 import AllPromptForm from "../AllPromptForm/AllPromptForm.tsx";
 import { useContext, useEffect, useState } from "react";
 import { FormItem } from "../FormItem/types.ts";
-import { calcMeta, type InputResultItem } from "./utils.ts";
+import {
+  calcInputListRecursive,
+  ImagePrompt,
+  PromptNodeInputItem,
+  type InputResultItem,
+} from "./utils.ts";
 import { MetaBoxContext } from "./metaBoxContext.ts";
 import { workflowsTable } from "../../../db-tables/WorkspaceDB.ts";
 import { WorkspaceContext } from "../../../WorkspaceContext.ts";
-
+// @ts-ignore
+import { app } from "/scripts/app.js";
 export type TopFieldType = {
   promptKey: string | number;
   class_type?: string;
@@ -29,47 +35,42 @@ export const isInTopField = (
 };
 
 export default function MetaBox({
-  metaData: oriMetaData,
   showNodeName,
+  media,
 }: {
-  metaData: MetaData;
-  media: Media;
+  media: Media | null;
   showNodeName: boolean;
 }) {
-  const _metaData = JSON.parse(JSON.stringify(oriMetaData));
-  const [calcInputList, setCalcInputList] = useState<InputResultItem[]>([]);
+  const [calcInputList, setCalcInputList] = useState<PromptNodeInputItem[]>([]);
   const { curFlowID } = useContext(WorkspaceContext);
+  const [imagePrompt, setImagePrompt] = useState<ImagePrompt>();
 
   useEffect(() => {
-    const calcInput = calcMeta(_metaData);
+    if (media) {
+      getMetadataFromUrl(
+        `/workspace/view_media?filename=${media.localPath}`,
+      ).then((data) => {
+        console.log("setMediaMetaData by fetch", data);
+        setImagePrompt(data.prompt);
+      });
+    } else {
+      app
+        .graphToPrompt(app.graph)
+        .then((data: { output: any; workflow: any }) => {
+          setImagePrompt(data.output);
+          console.log("setMediaMetaData by graph", data);
+        });
+    }
+  }, [media]);
+
+  useEffect(() => {
+    if (!imagePrompt) return;
+    console.log("imagePrompt", imagePrompt);
+    const calcInput = calcInputListRecursive(imagePrompt);
     setCalcInputList(calcInput);
-  }, []);
+  }, [imagePrompt]);
 
   const [topFields, setTopFields] = useState<TopFieldType[]>([]);
-  const [metaData, setMetaData] = useState<MetaData>(_metaData);
-  const updateMetaData = ({
-    promptKey,
-    name,
-    value,
-  }: {
-    promptKey: string | number;
-    name: string;
-    value: any;
-  }) => {
-    setMetaData((pre) => ({
-      ...(pre ?? {}),
-      prompt: {
-        ...(pre?.prompt ?? {}),
-        [promptKey]: {
-          ...(pre?.prompt?.[promptKey] ?? {}),
-          inputs: {
-            ...(pre.prompt?.[promptKey]?.inputs ?? {}),
-            [name]: value,
-          },
-        },
-      },
-    }));
-  };
 
   useEffect(() => {
     (async () => {
@@ -114,8 +115,6 @@ export default function MetaBox({
     <MetaBoxContext.Provider
       value={{
         topFields,
-        metaData,
-        updateMetaData,
         showNodeName,
         calcInputList,
         updateTopField,
