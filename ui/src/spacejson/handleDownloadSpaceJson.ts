@@ -1,5 +1,4 @@
 import { indexdb } from "../db-tables/indexdb";
-import { Model } from "../types/dbTypes";
 import { getCivitModelDownloadUrl } from "../utils/civitUtils";
 
 type LiteNode = {
@@ -14,16 +13,25 @@ export type ModelFile = {
   fileHash: string | null;
   fileFolder: string | null;
   downloadUrl: string | null;
-  civitModelID?: string;
-  length: number;
 };
 
 type ImageFile = {
   filename: string;
   nodeType: string;
+  url?: string;
 };
 
 export type DepsResult = {
+  models: (ModelFile & { civitModelID?: string; length: number })[];
+  images: ImageFile[];
+};
+
+export type DepsResultModel = ModelFile & {
+  civitModelID?: string;
+  length: number;
+};
+
+export type WorkspaceInfoDeps = {
   models: ModelFile[];
   images: ImageFile[];
 };
@@ -31,11 +39,11 @@ export type DepsResult = {
 async function fetchModelData(
   filename: string,
   nodeType: string,
-): Promise<ModelFile> {
+): Promise<DepsResultModel> {
   const res =
     (await indexdb.models.where("fileName").equals(filename).toArray()) ?? [];
   const first = res.at(0);
-  const modelFile: ModelFile = {
+  const modelFile: DepsResultModel = {
     filename,
     nodeType,
     fileHash: first?.fileHash ?? null,
@@ -52,7 +60,7 @@ async function fetchModelData(
 export async function extractAndFetchFileNames(
   nodes: LiteNode[],
 ): Promise<DepsResult> {
-  let modelPromises: Promise<ModelFile>[] = [];
+  let modelPromises: Promise<DepsResultModel>[] = [];
   let images: ImageFile[] = [];
   const modelFileExtensions = [".ckpt", ".pt", ".bin", ".pth", ".safetensors"];
   const imageFileExtensions = [".jpeg", ".jpg", ".png", ".gif"];

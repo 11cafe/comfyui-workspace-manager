@@ -11,6 +11,7 @@ import {
   Modal,
   ModalBody,
   ModalContent,
+  Spinner,
   Stack,
   Tag,
   Text,
@@ -19,6 +20,7 @@ import {
 import {
   DepsResult,
   ModelFile,
+  WorkspaceInfoDeps,
   extractAndFetchFileNames,
 } from "./handleDownloadSpaceJson";
 // @ts-ignore
@@ -30,12 +32,15 @@ import {
 } from "@tabler/icons-react";
 import { getCivitModelPageUrl } from "../utils/civitUtils";
 import { getAllModelsList } from "../Api";
+import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
+import { downloadJsonFile } from "../utils/downloadJsonFile";
+import { workflowsTable } from "../db-tables/WorkspaceDB";
 
 export default function DownloadSpaceJsonDialog() {
-  const { route, setRoute } = useContext(WorkspaceContext);
+  const { setRoute } = useContext(WorkspaceContext);
   const [deps, setDeps] = useState<DepsResult>();
   const [errors, setErrors] = useState<Record<string, string>>({});
-
+  const [uploadingImage, setUploadingImage] = useState(false);
   useEffect(() => {
     console.log("app.graph", app.graph);
     const graph = app.graph.serialize();
@@ -89,10 +94,14 @@ export default function DownloadSpaceJsonDialog() {
   const handleSubmit = async (event: any) => {
     event.preventDefault();
     const formData = new FormData(event.target);
+
     const modelDeps =
       deps?.models.map((model) => {
         return {
-          ...model,
+          filename: model.filename,
+          nodeType: model.nodeType,
+          fileHash: model.fileHash,
+          fileFolder: model.fileFolder,
           downloadUrl:
             model.downloadUrl ??
             formData.get(model.filename + model.nodeType)?.toString() ??
@@ -103,24 +112,47 @@ export default function DownloadSpaceJsonDialog() {
       return;
     }
     setErrors({});
+    setUploadingImage(true);
+    const imageDeps: WorkspaceInfoDeps["images"] = deps?.images ?? [];
+    if (imageDeps.length) {
+      const uploadResp = await fetch("/workspace/upload_image", {
+        method: "POST",
+        body: JSON.stringify({
+          images: deps?.images.map((image) => image.filename) ?? [],
+        }),
+      });
+      const json = await uploadResp.json();
+      imageDeps.forEach((image) => {
+        image.url = json[image.filename];
+      });
+    }
+    const graph = app.graph.serialize();
+    (graph.extra ||= {})[COMFYSPACE_TRACKING_FIELD_NAME] ||= {};
+    graph.extra[COMFYSPACE_TRACKING_FIELD_NAME].deps = {
+      models: modelDeps,
+      images: imageDeps,
+    } as WorkspaceInfoDeps;
+    console.log("graph", graph);
 
-    const uploadResp = await fetch("/workspace/upload_image", {
-      method: "POST",
-      body: JSON.stringify({
-        images: deps?.images.map((image) => image.filename) ?? [],
-      }),
-    });
-    const json = await uploadResp.json();
-    console.log("uploadResp", json);
+    downloadJsonFile(
+      JSON.stringify(graph),
+      (workflowsTable?.curWorkflow?.name ?? "unknown") + ".space",
+    );
+    setUploadingImage(false);
   };
 
   if (!deps) {
-    return <div>Preparing...</div>;
+    return (
+      <Modal isOpen={true} onClose={() => setRoute("root")} size={"xl"}>
+        <ModalContent p={5}>
+          <Text>Loading...</Text>
+        </ModalContent>
+      </Modal>
+    );
   }
 
   return (
     <Modal isOpen={true} onClose={() => setRoute("root")} size={"xl"}>
-      {/* <ModalOverlay /> */}
       <ModalContent>
         <ModalBody p={5} gap={5}>
           <HStack>
@@ -152,6 +184,11 @@ export default function DownloadSpaceJsonDialog() {
               {deps.models.length > 0 && (
                 <Stack>
                   <Heading size={"sm"}>Images ({deps.images.length})</Heading>
+                  {uploadingImage && (
+                    <span>
+                      <Spinner size="md" color="teal.400" /> Uploading
+                    </span>
+                  )}
                   {deps.images.map((image) => (
                     <Stack key={image.filename}>
                       <p>{image.filename}</p>
@@ -163,7 +200,12 @@ export default function DownloadSpaceJsonDialog() {
                   ))}
                 </Stack>
               )}
-              <Button width={"fit-content"} colorScheme="teal" type="submit">
+              <Button
+                width={"fit-content"}
+                colorScheme="teal"
+                type="submit"
+                mt={10}
+              >
                 Download .space.json
               </Button>
             </form>
@@ -178,12 +220,9 @@ function ModelDepsItem({
   modelFile,
   errors,
 }: {
-  modelFile: ModelFile;
+  modelFile: DepsResult["models"][0];
   errors: Record<string, string>;
 }) {
-  useEffect(() => {
-    console.log("modelFile", modelFile);
-  }, []);
   const inputKey = modelFile.filename + modelFile.nodeType;
 
   if (!modelFile.fileFolder) {

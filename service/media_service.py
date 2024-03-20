@@ -9,7 +9,7 @@ from .model_manager.model_preview import get_thumbnail_for_image_file
 
 image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
 video_extensions = ['.mp4', '.mov', '.avi', '.webm', '.mkv']
-
+API_URL = 'http://localhost:3000/api/image/upload'
 def view_media(filename, isPreview = False, isInput = False):
     if not filename:
         return web.Response(status=404)
@@ -90,12 +90,10 @@ async def upload_image_handler(request):
     # Handle case where one or more files were not found
     if files_not_found:
         return web.Response(status=404, text=f"Image file(s) not found: {', '.join(files_not_found)}")
-
-    next_js_api_url = 'http://localhost:3000/api/image/upload'
     
     try:
         async with ClientSession() as session:
-            async with session.post(next_js_api_url, data=multipart_data) as response:
+            async with session.post(API_URL, data=multipart_data) as response:
                 if response.status != 200:
                     text = await response.text()
                     return web.Response(status=response.status, text=text)

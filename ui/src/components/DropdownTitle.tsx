@@ -47,6 +47,7 @@ const ShareDialog = lazy(() => import("../share/ShareDialog"));
 import { app } from "/scripts/app.js";
 import { TOPBAR_BUTTON_HEIGHT } from "../const";
 import DownloadSpaceJsonDialog from "../spacejson/DownloadSpaceJsonDialog";
+import { downloadJsonFile } from "../utils/downloadJsonFile";
 
 export default function DropdownTitle() {
   const {
@@ -115,16 +116,7 @@ export default function DropdownTitle() {
     }
     const graph = app.graph.serialize();
     const json = JSON.stringify(graph);
-    const blob = new Blob([json], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${curWorkflow.name}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadJsonFile(json, curWorkflow.name);
   }, [curFlowID]);
 
   return (
