@@ -15,12 +15,13 @@ import { useState, ChangeEvent, useEffect, useContext } from "react";
 import { RECENTLY_OPENED_FILE_LIST } from "../const";
 import { indexdb } from "../db-tables/indexdb";
 import { RecentlyOpenedFile } from "../types/dbTypes";
-import { formatTimestamp, getRecentlyOpenedFileList } from "../utils";
+import { formatTimestamp } from "../utils";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { userSettingsTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import { scanLocalFiles } from "../apis/TwowaySyncApi";
 import useDebounceFn from "../customHooks/useDebounceFn";
 import { useStateRef } from "../customHooks/useStateRef";
+import { getRecentlyOpenedFileList } from "../utils/recentOpenedFilesUtils";
 
 export default function SpotlightSearch() {
   const { loadWorkflowID, setRoute } = useContext(WorkspaceContext);
