@@ -1,3 +1,5 @@
+// @ts-expect-error ComfyUI import
+import { app } from "/scripts/app.js";
 import {
   Checkbox,
   Flex,
@@ -12,7 +14,7 @@ import {
   ModalOverlay,
   Text,
 } from "@chakra-ui/react";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { mediaTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import { IconArrowLeft, IconX } from "@tabler/icons-react";
 import { WorkspaceContext } from "../WorkspaceContext";
@@ -20,6 +22,8 @@ import { Media } from "../types/dbTypes";
 import { MetaDataInfo } from "./components/MetaDataInfo.tsx";
 import GalleryMediaItem from "./components/GalleryMediaItem.tsx";
 import SearchInput from "../components/SearchInput.tsx";
+import { nanoid } from "nanoid";
+import { MediaWithMetaData } from "./components/MetaInfoBox.tsx";
 
 export default function GalleryModal({ onclose }: { onclose: () => void }) {
   const { curFlowID } = useContext(WorkspaceContext);
@@ -28,7 +32,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
   const [isSelecting, setIsSelecting] = useState(false);
   const [coverPath, setCoverPath] = useState("");
   const [images, setImages] = useState<Media[]>([]);
-  const [metaData, setMetaData] = useState<Media>();
+  const [metaData, setMetaData] = useState<MediaWithMetaData>();
   const [searchValue, setSearchValue] = useState("");
   const onUpdateSearchValue = (val: string) => {
     setSearchValue(val);
@@ -38,6 +42,25 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
     if (curFlowID == null) return;
     const media = await mediaTable?.listByWorkflowID(curFlowID);
     setImages(media ?? []);
+    if (media?.length === 0) {
+      app.graphToPrompt().then((prompt) => {
+        setMetaData({
+          id: nanoid(),
+          workflowJSON: "",
+          localPath: "",
+          createTime: 0,
+          format: "",
+          workflowID: "",
+          metaData: {
+            prompt: prompt.output,
+            workflow: prompt.workflow,
+          },
+        });
+        return app.graph._nodes;
+      });
+    } else if (Number(media?.length) <= 6 && media?.[0]) {
+      setMetaData(media[0]);
+    }
   };
 
   useEffect(() => {

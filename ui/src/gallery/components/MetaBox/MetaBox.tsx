@@ -3,8 +3,12 @@ import { Flex } from "@chakra-ui/react";
 import { Media } from "../../../types/dbTypes.ts";
 import TopForm from "../TopForm/TopForm.tsx";
 import AllPromptForm from "../AllPromptForm/AllPromptForm.tsx";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { FormItem } from "../FormItem/types.ts";
+import { calcMeta, type InputResultItem } from "./utils.ts";
+import { MetaBoxContext } from "./metaBoxContext.ts";
+import { workflowsTable } from "../../../db-tables/WorkspaceDB.ts";
+import { WorkspaceContext } from "../../../WorkspaceContext.ts";
 
 export type TopFieldType = {
   promptKey: string | number;
@@ -12,49 +16,6 @@ export type TopFieldType = {
   name: string;
 };
 
-// comfyui default workflow
-export const DEFAULT_TOP_FIELDS: TopFieldType[] = [
-  {
-    promptKey: "4",
-    name: "ckpt_name",
-    class_type: "CheckpointLoaderSimple",
-  },
-  {
-    promptKey: "6",
-    name: "text",
-    class_type: "CLIPTextEncode",
-  },
-  {
-    promptKey: "7",
-    name: "text",
-    class_type: "CLIPTextEncode",
-  },
-  {
-    promptKey: "5",
-    name: "width",
-    class_type: "EmptyLatentImage",
-  },
-  {
-    promptKey: "5",
-    name: "height",
-    class_type: "EmptyLatentImage",
-  },
-  {
-    promptKey: "3",
-    name: "steps",
-    class_type: "KSampler",
-  },
-  {
-    promptKey: "3",
-    name: "sampler_name",
-    class_type: "KSampler",
-  },
-  {
-    promptKey: "3",
-    name: "cfg",
-    class_type: "KSampler",
-  },
-];
 export const isInTopField = (
   topFields: TopFieldType[],
   item: Pick<FormItem, "name" | "promptKey" | "classType">,
@@ -69,12 +30,22 @@ export const isInTopField = (
 
 export default function MetaBox({
   metaData: oriMetaData,
+  showNodeName,
 }: {
   metaData: MetaData;
   media: Media;
+  showNodeName: boolean;
 }) {
   const _metaData = JSON.parse(JSON.stringify(oriMetaData));
-  const [topFields, setTopFields] = useState(DEFAULT_TOP_FIELDS);
+  const [calcInputList, setCalcInputList] = useState<InputResultItem[]>([]);
+  const { curFlowID } = useContext(WorkspaceContext);
+
+  useEffect(() => {
+    const calcInput = calcMeta(_metaData);
+    setCalcInputList(calcInput);
+  }, []);
+
+  const [topFields, setTopFields] = useState<TopFieldType[]>([]);
   const [metaData, setMetaData] = useState<MetaData>(_metaData);
   const updateMetaData = ({
     promptKey,
@@ -100,6 +71,17 @@ export default function MetaBox({
     }));
   };
 
+  useEffect(() => {
+    (async () => {
+      if (curFlowID) {
+        const topFieldsConfig = (await workflowsTable?.get(curFlowID))
+          ?.topFieldsConfig;
+        if (topFieldsConfig) {
+          setTopFields(topFieldsConfig);
+        }
+      }
+    })();
+  }, [curFlowID]);
   const updateTopField = (field: TopFieldType) => {
     if (
       isInTopField(topFields, {
@@ -108,30 +90,41 @@ export default function MetaBox({
         classType: field?.class_type ?? "",
       })
     ) {
-      setTopFields((pre) =>
-        pre.filter(
-          (v) => v.name !== field.name || v.promptKey !== field.promptKey,
-        ),
+      const topFieldsConfig = topFields.filter(
+        (v) => v.name !== field.name || v.promptKey !== field.promptKey,
       );
+      setTopFields(topFieldsConfig);
+      if (curFlowID) {
+        workflowsTable?.updateTopFields(curFlowID, {
+          topFieldsConfig,
+        });
+      }
     } else {
-      setTopFields((pre) => [...pre, field]);
+      const topFieldsConfig = [...topFields, field];
+      setTopFields(topFieldsConfig);
+      if (curFlowID) {
+        workflowsTable?.updateTopFields(curFlowID, {
+          topFieldsConfig,
+        });
+      }
     }
   };
 
   return (
-    <Flex direction={"column"} align={"stretch"}>
-      <TopForm
-        topFields={topFields}
-        metaData={metaData}
-        updateMetaData={updateMetaData}
-        updateTopField={updateTopField}
-      />
-      <AllPromptForm
-        topFields={topFields}
-        metaData={metaData}
-        updateMetaData={updateMetaData}
-        updateTopField={updateTopField}
-      />
-    </Flex>
+    <MetaBoxContext.Provider
+      value={{
+        topFields,
+        metaData,
+        updateMetaData,
+        showNodeName,
+        calcInputList,
+        updateTopField,
+      }}
+    >
+      <Flex direction={"column"} align={"stretch"}>
+        <TopForm />
+        <AllPromptForm />
+      </Flex>
+    </MetaBoxContext.Provider>
   );
 }

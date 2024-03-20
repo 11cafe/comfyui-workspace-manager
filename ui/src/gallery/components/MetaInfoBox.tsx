@@ -2,6 +2,7 @@ import { getMetadataFromUrl, MetaData } from "../utils.ts";
 import { Media } from "../../types/dbTypes.ts";
 import { useEffect, useState } from "react";
 import {
+  Checkbox,
   Flex,
   IconButton,
   Link,
@@ -13,7 +14,11 @@ import { IconDownload } from "@tabler/icons-react";
 import { formatTimestamp } from "../../utils.tsx";
 import MetaBox from "./MetaBox/MetaBox.tsx";
 
-export const MetaInfoBox = ({ media }: { media?: Media }) => {
+export type MediaWithMetaData = Media & {
+  metaData?: MetaData;
+};
+export const MetaInfoBox = ({ media }: { media?: MediaWithMetaData }) => {
+  const [showNodeName, setShowNodeName] = useState(true);
   const [mediaMetaData, setMediaMetaData] = useState<MetaData>();
   const getMetaData = async (curMedia: Media) => {
     try {
@@ -27,35 +32,59 @@ export const MetaInfoBox = ({ media }: { media?: Media }) => {
   };
   useEffect(() => {
     if (media) {
-      getMetaData(media);
+      if (media?.metaData) {
+        setMediaMetaData(media?.metaData);
+      } else {
+        getMetaData(media);
+      }
     }
   }, [media]);
 
   return (
     <Flex overflowY={"auto"} mb={4} direction={"column"} gap={2} flex={1}>
-      <SimpleGrid alignItems={"center"} columns={2} spacing={2}>
+      <SimpleGrid alignItems={"center"} columns={3} spacing={2}>
         <Flex alignItems={"center"} gap={1}>
-          <Text>{media?.localPath}</Text>
-          <Tooltip label="Donwload image from gallery">
-            <Link
-              href={`/workspace/view_media?filename=${media?.localPath}`}
-              download={media?.localPath}
-            >
-              <IconButton
-                size={"sm"}
-                icon={<IconDownload size={19} />}
-                aria-label="donwload image from gallery"
-              />
-            </Link>
-          </Tooltip>
+          {media?.localPath && (
+            <>
+              <Text>{media?.localPath}</Text>
+              <Tooltip label="Donwload image from gallery">
+                <Link
+                  href={`/workspace/view_media?filename=${media?.localPath}`}
+                  download={media?.localPath}
+                >
+                  <IconButton
+                    size={"sm"}
+                    icon={<IconDownload size={19} />}
+                    aria-label="donwload image from gallery"
+                  />
+                </Link>
+              </Tooltip>
+            </>
+          )}
         </Flex>
         <Flex gap={1} alignItems={"center"}>
-          <Text>Create Time:</Text>
-          <Text>{formatTimestamp(media?.createTime ?? 0, true)}</Text>
+          {!!media?.createTime && (
+            <>
+              <Text>Create Time:</Text>
+              <Text>{formatTimestamp(media?.createTime ?? 0, true)}</Text>
+            </>
+          )}
+        </Flex>
+        <Flex>
+          <Checkbox
+            isChecked={showNodeName}
+            onChange={(e) => setShowNodeName(e.target.checked)}
+          >
+            show node name
+          </Checkbox>
         </Flex>
       </SimpleGrid>
       {media && mediaMetaData && (
-        <MetaBox metaData={mediaMetaData} media={media} />
+        <MetaBox
+          showNodeName={showNodeName}
+          metaData={mediaMetaData}
+          media={media}
+        />
       )}
     </Flex>
   );
