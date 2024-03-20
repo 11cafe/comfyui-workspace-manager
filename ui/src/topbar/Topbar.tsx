@@ -22,14 +22,21 @@ import { TOPBAR_BUTTON_HEIGHT } from "../const";
 const ModelManagerTopbar = lazy(
   () => import("../model-manager/topbar/ModelManagerTopbar"),
 );
+const SpotlightSearch = lazy(() => import("../components/SpotlightSearch"));
 
 interface Props {
   curFlowName: string | null;
   setCurFlowName: (newName: string) => void;
 }
 export function Topbar({ curFlowName, setCurFlowName }: Props) {
-  const { isDirty, loadNewWorkflow, saveCurWorkflow, setRoute, curFlowID } =
-    useContext(WorkspaceContext);
+  const {
+    isDirty,
+    loadNewWorkflow,
+    saveCurWorkflow,
+    setRoute,
+    curFlowID,
+    route,
+  } = useContext(WorkspaceContext);
   const [positionStyle, setPositionStyle] = useState<PanelPosition>();
   const updatePanelPosition: (
     position?: PanelPosition,
@@ -165,6 +172,7 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
           size={15}
           color="#FFF"
         />
+        {route === "spotlightSearch" && <SpotlightSearch />}
       </HStack>
     </Draggable>
   );

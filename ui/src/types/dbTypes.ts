@@ -73,6 +73,7 @@ export type WorkflowVersion = {
 export enum EShortcutKeys {
   SAVE = "save",
   SAVE_AS = "saveAs",
+  openSpotlightSearch = "openSpotlightSearch",
 }
 
 export type UserSettings = {
@@ -139,3 +140,10 @@ export enum EFlowOperationType {
 export type WorkflowPrivacy = "PUBLIC" | "PRIVATE" | "UNLISTED";
 
 export const WORKSPACE_INDEXDB_NAME = "comfyui_workspace_db";
+
+export type RecentlyOpenedFile = {
+  id: string;
+  name: string;
+  type: "workflow" | "model";
+  updateTime: number;
+};
