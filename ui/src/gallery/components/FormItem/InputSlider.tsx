@@ -43,6 +43,7 @@ export const InputSlider: FC<FormItem> = (props) => {
       </Flex>
       <Flex>
         <Slider
+          maxWidth={"400px"}
           step={props?.step}
           value={Number(props.value)}
           min={props?.min ?? 0}

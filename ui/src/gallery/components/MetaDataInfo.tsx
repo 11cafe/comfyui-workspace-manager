@@ -30,7 +30,7 @@ export const MetaDataInfo: FC<MetaDataInfoProps> = ({ mediaList, media }) => {
             id: v.id,
             imageUrl: `/workspace/view_media?filename=${v.localPath}`,
           }))}
-          currentNum={mediaList?.findIndex((p) => p.id === mediaAct?.id)}
+          currentNum={mediaList?.findIndex((p) => p.id === mediaAct?.id) ?? 0}
           setMediaAct={(newMedia) =>
             setMediaAct(mediaList?.find((v) => v.id === newMedia.id))
           }

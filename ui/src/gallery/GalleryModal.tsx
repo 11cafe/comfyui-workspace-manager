@@ -43,7 +43,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
     const media = await mediaTable?.listByWorkflowID(curFlowID);
     setImages(media ?? []);
     if (media?.length === 0) {
-      app.graphToPrompt().then((prompt) => {
+      app.graphToPrompt().then((prompt: any) => {
         setMetaData({
           id: nanoid(),
           workflowJSON: "",
