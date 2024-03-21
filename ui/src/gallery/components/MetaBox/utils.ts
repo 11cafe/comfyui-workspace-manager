@@ -77,7 +77,8 @@ export type ImagePromptNodeItem = {
   inputs: {
     [key: string]: MetaValue | any;
   };
-  promptKey?: string;
+  nodeID?: string;
+  children?: string[]; // output links to other node e.g. CLIPTextEncode -> KSampler
 };
 export type InputResultItem = {
   class_type: string;
@@ -92,43 +93,42 @@ export type InputResultItem = {
 
 let toExecute: ImagePromptNodeItem[] = [];
 export type PromptNodeInputItem = {
-  classType: string;
+  classType: string; // nodeType
   inputName: string;
   inputValue: any;
-  promptKey: string;
-  path?: string[];
+  nodeID: string;
+  children: string[]; // output links to other node e.g. CLIPTextEncode.text -> KSampler.negative
 };
+const inputList: PromptNodeInputItem[] = [];
 
-function recursiveGetInputList(
-  promptNode: ImagePromptNodeItem,
-  prompt: ImagePrompt,
-  path: string[],
-) {
-  const index = toExecute.findIndex(
-    (v) => v.promptKey === promptNode.promptKey,
-  );
+function dfs(promptNode: ImagePromptNodeItem, prompt: ImagePrompt) {
+  const index = toExecute.findIndex((v) => v.nodeID === promptNode.nodeID);
   if (index == -1) {
     return [];
   }
-  toExecute = toExecute.filter((v) => v !== promptNode);
+  toExecute = toExecute.filter((v) => v.nodeID !== promptNode.nodeID);
 
-  const inputList: PromptNodeInputItem[] = [];
   Object.entries(promptNode.inputs).forEach(([inputName, value]) => {
     if (Array.isArray(value)) {
-      const list = recursiveGetInputList(prompt[value[0]], prompt, [
-        ...path,
-        inputName,
-      ]);
-      inputList.push(...list);
-      return;
+      const parentID = value[0];
+      const parentNode = prompt[parentID];
+      if (!parentNode.children) {
+        parentNode.children = [];
+      }
+      parentNode.children.push(inputName);
+      dfs(parentNode, prompt);
     }
-    inputList.push({
-      classType: promptNode.class_type,
-      inputName,
-      promptKey: promptNode.promptKey ?? "",
-      inputValue: value,
-      path: [...path, inputName],
-    });
+  });
+  Object.entries(promptNode.inputs).forEach(([inputName, value]) => {
+    if (!Array.isArray(value)) {
+      inputList.push({
+        classType: promptNode.class_type,
+        inputName,
+        inputValue: value,
+        nodeID: promptNode.nodeID!,
+        children: promptNode.children || [],
+      });
+    }
   });
   return inputList;
 }
@@ -138,13 +138,12 @@ export function calcInputListRecursive(
 ): PromptNodeInputItem[] {
   toExecute = Object.values(prompt);
   for (const key of Object.keys(prompt)) {
-    prompt[key].promptKey = key;
+    prompt[key].nodeID = key;
   }
-  const res = [];
+
   while (toExecute.length) {
-    const inputList = recursiveGetInputList(toExecute[0], prompt, []);
-    res.push(...inputList);
+    dfs(toExecute[0], prompt);
   }
-  console.log("calcInputListRecursive res", res);
-  return res;
+  console.log("calcInputListRecursive res", inputList);
+  return inputList;
 }
