@@ -9,6 +9,7 @@ import {
   HStack,
   Text,
   Spinner,
+  useColorMode,
 } from "@chakra-ui/react";
 import { IconSearch } from "@tabler/icons-react";
 import { useState, ChangeEvent, useEffect, useContext, useRef } from "react";
@@ -28,6 +29,7 @@ import { useStateRef } from "../customHooks/useStateRef";
 import { getRecentlyOpenedFileList } from "../utils/recentOpenedFilesUtils";
 
 export default function SpotlightSearch() {
+  const { colorMode } = useColorMode();
   const { loadWorkflowID, setRoute, triggerShortcut } =
     useContext(WorkspaceContext);
   const [allFileList, setAllFileList] = useState<RecentlyOpenedFile[]>([]);
@@ -101,7 +103,10 @@ export default function SpotlightSearch() {
             size="sm"
             justifyContent="start"
             px={2}
-            color="#1A202C"
+            // color="#1A202C"
+            color={
+              colorMode === "light" ? "#1A202C" : "rgba(255, 255, 255, 0.92)"
+            }
             onClick={() => {
               onOpen(result);
             }}
@@ -110,7 +115,13 @@ export default function SpotlightSearch() {
           >
             {result.name}
             {result.updateTime && (
-              <Text color={"GrayText"} ml={2} fontSize={"sm"}>
+              <Text
+                color={
+                  colorMode === "light" ? "GrayText" : "rgb(255, 255, 255, 0.6)"
+                }
+                ml={2}
+                fontSize={"sm"}
+              >
                 Updated: {formatTimestamp(result.updateTime)}
               </Text>
             )}
@@ -279,7 +290,11 @@ export default function SpotlightSearch() {
   return (
     <Modal isOpen={true} onClose={onClose} size="xl">
       <ModalContent
-        bg="rgba(255, 255, 255, 0.8)"
+        bg={
+          colorMode === "light"
+            ? "rgba(255, 255, 255, 0.8)"
+            : "rgb(45, 55, 72, 0.8)"
+        }
         backdropFilter="auto"
         backdropBlur="8px"
       >
