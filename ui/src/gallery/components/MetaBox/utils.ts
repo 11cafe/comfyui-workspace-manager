@@ -91,7 +91,6 @@ export type InputResultItem = {
   formLabel?: string;
 };
 
-let toExecute: ImagePromptNodeItem[] = [];
 export type PromptNodeInputItem = {
   classType: string; // nodeType
   inputName: string;
@@ -99,24 +98,19 @@ export type PromptNodeInputItem = {
   nodeID: string;
   children: string[]; // output links to other node e.g. CLIPTextEncode.text -> KSampler.negative
 };
-const inputList: PromptNodeInputItem[] = [];
+
+let inputList: PromptNodeInputItem[] = [];
+let visitedIDs = new Set<string>();
 
 function dfs(promptNode: ImagePromptNodeItem, prompt: ImagePrompt) {
-  const index = toExecute.findIndex((v) => v.nodeID === promptNode.nodeID);
-  if (index == -1) {
-    return [];
+  if (visitedIDs.has(promptNode.nodeID!)) {
+    return;
   }
-  toExecute = toExecute.filter((v) => v.nodeID !== promptNode.nodeID);
-
+  visitedIDs.add(promptNode.nodeID!);
   Object.entries(promptNode.inputs).forEach(([inputName, value]) => {
     if (Array.isArray(value)) {
       const parentID = value[0];
-      const parentNode = prompt[parentID];
-      if (!parentNode.children) {
-        parentNode.children = [];
-      }
-      parentNode.children.push(inputName);
-      dfs(parentNode, prompt);
+      dfs(prompt[parentID], prompt);
     }
   });
   Object.entries(promptNode.inputs).forEach(([inputName, value]) => {
@@ -136,13 +130,24 @@ function dfs(promptNode: ImagePromptNodeItem, prompt: ImagePrompt) {
 export function calcInputListRecursive(
   prompt: ImagePrompt,
 ): PromptNodeInputItem[] {
-  toExecute = Object.values(prompt);
+  inputList = []; // clear result inputlist
   for (const key of Object.keys(prompt)) {
     prompt[key].nodeID = key;
+    Object.entries(prompt[key].inputs).forEach(([inputName, value]) => {
+      if (Array.isArray(value)) {
+        const parentID = value[0];
+        const parentNode = prompt[parentID];
+        if (!parentNode.children) {
+          parentNode.children = [];
+        }
+        // record children output links
+        parentNode.children.push(inputName);
+      }
+    });
   }
 
-  while (toExecute.length) {
-    dfs(toExecute[0], prompt);
+  for (const key of Object.keys(prompt)) {
+    dfs(prompt[key], prompt);
   }
   console.log("calcInputListRecursive res", inputList);
   return inputList;

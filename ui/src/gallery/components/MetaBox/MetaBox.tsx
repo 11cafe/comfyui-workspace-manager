@@ -67,6 +67,7 @@ export default function MetaBox({
     if (!imagePrompt) return;
     console.log("imagePrompt", imagePrompt);
     const calcInput = calcInputListRecursive(imagePrompt);
+    console.log("✌️calcInput", calcInput);
     setCalcInputList(calcInput);
   }, [imagePrompt]);
 
