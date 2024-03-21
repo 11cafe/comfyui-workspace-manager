@@ -26,10 +26,14 @@ import {
   getWorkflowIdInUrlHash,
   generateUrlHashWithFlowId,
   openWorkflowInNewTab,
-  validateOrSaveAllJsonFileMyWorkflows,
 } from "./utils";
 import { Topbar } from "./topbar/Topbar";
-import { Workflow, WorkflowVersion } from "./types/dbTypes";
+import {
+  EOtherKeys,
+  EShortcutKeys,
+  Workflow,
+  WorkflowVersion,
+} from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
 import React from "react";
 const RecentFilesDrawer = React.lazy(
@@ -61,6 +65,10 @@ const usedWsEvents = [
 export default function App() {
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
   const [route, setRoute] = useState<WorkspaceRoute>("root");
+  const [triggerShortcut, setTriggerShortcut] = useState<{
+    shortcut?: EShortcutKeys | EOtherKeys;
+    stamp?: number;
+  }>({});
   const [loadingDB, setLoadingDB] = useState(true);
   const [flowID, setFlowID] = useState<string | null>(null);
   const curFlowID = useRef<string | null>(null);
@@ -540,6 +548,8 @@ export default function App() {
         route: route,
         curVersion: curVersion,
         setCurVersion: setCurVersion,
+        setTriggerShortcut: setTriggerShortcut,
+        triggerShortcut: triggerShortcut,
       }}
     >
       <div ref={workspaceContainerRef} className="workspace_manager">

@@ -14,21 +14,34 @@ import useDebounceFn from "../customHooks/useDebounceFn";
 import { deepJsonDiffCheck } from "../utils/deepJsonDiffCheck";
 
 export default function AppIsDirtyEventListener() {
-  const { isDirty, setIsDirty, setRoute, saveCurWorkflow } =
+  const { isDirty, setIsDirty, setRoute, saveCurWorkflow, setTriggerShortcut } =
     useContext(WorkspaceContext);
   const toast = useToast();
   useEffect(() => {
-    const shortcutListener = async (matchResult: string) => {
-      switch (matchResult) {
-        case EShortcutKeys.SAVE:
-          saveCurWorkflow();
-          break;
-        case EShortcutKeys.SAVE_AS:
-          setRoute("saveAsModal");
-          break;
-        case EShortcutKeys.openSpotlightSearch:
-          setRoute("spotlightSearch");
-          break;
+    saveCurWorkflow;
+    const shortcutListener = (event: KeyboardEvent) => {
+      if (document.visibilityState === "hidden") return;
+      const matchResult = matchShortcut(event);
+      if (matchResult) {
+        event.preventDefault();
+        setTriggerShortcut({ shortcut: matchResult, stamp: Date.now() });
+        switch (matchResult) {
+          case EShortcutKeys.SAVE:
+            saveCurWorkflow();
+            break;
+          case EShortcutKeys.SAVE_AS:
+            setRoute("saveAsModal");
+            break;
+          case EShortcutKeys.openSpotlightSearch:
+            setRoute("spotlightSearch");
+            break;
+        }
+      } else if (
+        // @ts-expect-error
+        event.target?.matches("input, textarea") &&
+        Object.keys(app.canvas.selected_nodes ?? {}).length
+      ) {
+        debounceOnIsDirty();
       }
     };
     const originalOnAfterChange = app.canvas.onAfterChange;
@@ -63,19 +76,11 @@ export default function AppIsDirtyEventListener() {
         debounceOnIsDirty();
       }
     });
-    document.addEventListener("keydown", async function (event) {
-      if (document.visibilityState === "hidden") return;
-      const matchResult = await matchShortcut(event);
-      if (matchResult) {
-        shortcutListener(matchResult);
-      } else if (
-        // @ts-expect-error
-        event.target?.matches("input, textarea") &&
-        Object.keys(app.canvas.selected_nodes ?? {}).length
-      ) {
-        debounceOnIsDirty();
-      }
-    });
+    document.addEventListener("keydown", shortcutListener);
+
+    return () => {
+      document.removeEventListener("keydown", shortcutListener);
+    };
   }, []);
   const autoSaveWorkflow = async () => {
     // autosave workflow if enabled

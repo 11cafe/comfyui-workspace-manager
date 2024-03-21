@@ -1,10 +1,21 @@
 import { createContext } from "react";
-import { Folder, Workflow, WorkflowVersion } from "./types/dbTypes";
+import {
+  EOtherKeys,
+  EShortcutKeys,
+  Folder,
+  Workflow,
+  WorkflowVersion,
+} from "./types/dbTypes";
 import { WorkspaceRoute } from "./types/types";
 export type JsonDiff = {
   old: Object;
   new: Object;
 } | null;
+
+type MatchingShortcut = {
+  shortcut?: EShortcutKeys | EOtherKeys;
+  stamp?: number;
+};
 
 export const WorkspaceContext = createContext<{
   curFlowID: string | null;
@@ -24,6 +35,8 @@ export const WorkspaceContext = createContext<{
   route: WorkspaceRoute;
   curVersion: WorkflowVersion | null;
   setCurVersion: (version: WorkflowVersion | null) => void;
+  setTriggerShortcut: (matchingShortcut: MatchingShortcut) => void;
+  triggerShortcut: MatchingShortcut;
 }>({
   curFlowID: null,
   loadWorkflowID: () => {},
@@ -37,6 +50,8 @@ export const WorkspaceContext = createContext<{
   curVersion: null,
   setIsDirty: () => {},
   setCurVersion: () => {},
+  setTriggerShortcut: () => {},
+  triggerShortcut: {},
 });
 
 export const RecentFilesContext = createContext<{

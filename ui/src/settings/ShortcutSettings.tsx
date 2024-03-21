@@ -44,7 +44,7 @@ export function ShortcutSettings() {
     // Avoid adding modifier keys alone
     if (
       newShortcut.length > 0 &&
-      !["Control", "Shift", "Alt"].includes(e.key)
+      !["Control", "Shift", "Alt", "Meta"].includes(e.key)
     ) {
       newShortcut += e.key.toUpperCase();
 

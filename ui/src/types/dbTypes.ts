@@ -78,6 +78,12 @@ export enum EShortcutKeys {
   openSpotlightSearch = "openSpotlightSearch",
 }
 
+export enum EOtherKeys {
+  ArrowUp = "ArrowUp",
+  ArrowDown = "ArrowDown",
+  Enter = "Enter",
+}
+
 export type UserSettings = {
   id: string;
   myWorkflowsDir: string;
