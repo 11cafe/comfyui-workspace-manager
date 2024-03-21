@@ -6,11 +6,14 @@ import {
   AccordionPanel,
   Box,
   Flex,
+  Heading,
+  Stack,
 } from "@chakra-ui/react";
 import { FormItemComponent } from "../FormItem/FormItemComponent.tsx";
 import { isInTopField } from "../MetaBox/MetaBox.tsx";
-import { Fragment, useContext, useEffect, useState } from "react";
+import { Fragment, useCallback, useContext, useEffect, useState } from "react";
 import { MetaBoxContext } from "../MetaBox/metaBoxContext.ts";
+import { PromptNodeInputItem } from "../MetaBox/utils.ts";
 
 export default function AllPromptForm() {
   const { topFields, updateTopField, calcInputList, showNodeName } =
@@ -18,62 +21,87 @@ export default function AllPromptForm() {
 
   const [defaultIndex, setDefaultIndex] = useState<number[]>([]);
 
+  const groupInputsByNodeType = useCallback(
+    (inputList: PromptNodeInputItem[]) => {
+      const groupedInputs: PromptNodeInputItem[][] = [];
+      inputList.forEach((input) => {
+        const lastGroup = groupedInputs[groupedInputs.length - 1];
+        if (
+          !lastGroup ||
+          lastGroup[0].nodeID !== input.nodeID ||
+          lastGroup[0].classType !== input.classType
+        ) {
+          groupedInputs.push([input]);
+        } else {
+          lastGroup.push(input);
+        }
+      });
+      return groupedInputs;
+    },
+    [],
+  );
+
   useEffect(() => {}, [showNodeName]);
 
   if (!showNodeName) {
     return <></>;
   }
+  const nodes = groupInputsByNodeType(calcInputList);
   return (
-    <Accordion
-      index={defaultIndex}
-      onChange={(val) => setDefaultIndex(val as number[])}
-      allowMultiple
-    >
-      {[].map((groupInput) => {
+    <Stack>
+      {nodes.map((groupInput) => {
+        if (!groupInput[0]) {
+          return null;
+        }
         return (
-          <AccordionItem
-            key={`AccordionItem${groupInput.class_type}${groupInput?.list?.[0]?.linkId}`}
-            borderWidth={1}
-            borderRadius={8}
-            my={2}
-          >
-            <AccordionButton>
-              <Box as="span" flex="1" textAlign="left">
-                {groupInput.class_type}
-              </Box>
-              <AccordionIcon />
-            </AccordionButton>
-            <AccordionPanel>
-              <Flex px={2} gap={1} direction={"column"}>
-                {groupInput.list?.map((input) => {
-                  if (
-                    isInTopField(topFields, {
-                      name: input.name,
-                      promptKey: input.linkId,
-                      classType: input.class_type,
-                    })
-                  ) {
-                    return null;
-                  }
-                  const value = prompt[input.linkId]?.inputs?.[input.name];
-                  return (
-                    <FormItemComponent
-                      key={`form${input.linkId}${input.name}`}
-                      promptKey={input?.linkId}
-                      classType={input?.class_type}
-                      value={value}
-                      name={input.name}
-                      updateTopField={updateTopField}
-                      topFields={topFields}
-                      label={input.formLabel}
-                    />
-                  );
-                })}
-              </Flex>
-            </AccordionPanel>
-          </AccordionItem>
+          <CustomAccordionPanel title={groupInput[0].classType}>
+            <Flex px={2} gap={1} direction={"column"}>
+              {groupInput.map((input) => {
+                if (
+                  isInTopField(topFields, {
+                    name: input.inputName,
+                    promptKey: input.nodeID,
+                    classType: input.classType,
+                  })
+                ) {
+                  return null;
+                }
+
+                return (
+                  <FormItemComponent
+                    key={`form${input.nodeID}${input.inputName}`}
+                    promptKey={input?.nodeID}
+                    classType={input?.classType}
+                    value={input.inputValue}
+                    name={input.inputName}
+                    updateTopField={updateTopField}
+                    topFields={topFields}
+                    label={input.inputName}
+                  />
+                );
+              })}
+            </Flex>
+          </CustomAccordionPanel>
         );
       })}
-    </Accordion>
+    </Stack>
+  );
+}
+
+// CustomAccordionPanel component
+function CustomAccordionPanel({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Box border="1px" borderColor="gray.500" borderRadius="md" p={4}>
+      <Heading size="sm" mb={2}>
+        {title}
+      </Heading>
+      <div>{children}</div>
+    </Box>
   );
 }
