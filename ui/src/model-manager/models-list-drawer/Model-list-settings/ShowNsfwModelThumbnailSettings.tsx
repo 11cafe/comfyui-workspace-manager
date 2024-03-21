@@ -1,9 +1,9 @@
 import { Checkbox } from "@chakra-ui/react";
 import { useEffect, ChangeEvent } from "react";
-import { userSettingsTable } from "../db-tables/WorkspaceDB";
-import { indexdb } from "../db-tables/indexdb";
-import { Model } from "../types/dbTypes";
-import { useStateRef } from "../customHooks/useStateRef";
+import { userSettingsTable } from "../../../db-tables/WorkspaceDB";
+import { indexdb } from "../../../db-tables/indexdb";
+import { Model } from "../../../types/dbTypes";
+import { useStateRef } from "../../../customHooks/useStateRef";
 
 interface ResponsePartial {
   id: number;
@@ -80,7 +80,7 @@ export default function ShowNsfwModelThumbnailSettings() {
 
   return (
     <Checkbox isChecked={checkedState} onChange={onShowThumbnailsChange}>
-      Show NSFW
+      Show NSFW Thumbnails
     </Checkbox>
   );
 }

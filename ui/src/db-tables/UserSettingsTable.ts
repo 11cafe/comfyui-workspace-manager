@@ -57,6 +57,8 @@ export class UserSettingsTable extends TableBase<UserSettings> {
       cloudHost: "https://www.nodecafe.org",
       overwriteCurWorkflowWhenDroppingFileToCanvas: false,
       maximumChangelogNumber: 200,
+      showFileName: false,
+      threshold: 0.6,
     };
   }
 

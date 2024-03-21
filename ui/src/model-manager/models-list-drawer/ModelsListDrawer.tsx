@@ -8,6 +8,7 @@ import {
   Input,
   Select,
   HStack,
+  Button,
 } from "@chakra-ui/react";
 import Fuse from "fuse.js/min-basic";
 import { useEffect, useState } from "react";
@@ -19,10 +20,12 @@ import InstallModelsButton from "../install-models/InstallModelsButton";
 import { type ModelsListRespItem } from "../types";
 import { useUpdateModels } from "../hooks/useUpdateModels";
 import { DRAWER_Z_INDEX } from "../../const";
-import ShowNsfwModelThumbnailSettings from "../../settings/ShowNsfwModelThumbnailSettings";
 import { indexdb } from "../../db-tables/indexdb";
 import { type Model } from "../../types/dbTypes";
 import ModelDropEventListener from "../topbar/ModelDropEventListener";
+import ModelsListSettingsModal from "./Model-list-settings/ModelsListSettingsModal";
+import { IconSettings } from "@tabler/icons-react";
+import { useModelListSettings } from "./Model-list-settings/useModelListSettings";
 interface Props {
   onClose: () => void;
 }
@@ -31,6 +34,8 @@ export default function ModelsListDrawer({ onClose }: Props) {
   const [selectedModel, setSelectedModel] = useState("checkpoints");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("name");
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [threshold] = useModelListSettings("threshold", 0.6);
   const { loading, modelTypeList, modelsList } = useUpdateModels();
   const [modelsListWithDBData, setModelsListWithDBData] = useState<
     Array<{ db?: Model } & ModelsListRespItem>
@@ -55,27 +60,36 @@ export default function ModelsListDrawer({ onClose }: Props) {
 
   // filter by model type
   useEffect(() => {
-    let res: ModelsListRespItem[] = [];
+    let res = modelsListWithDBData.filter(
+      (item) => item.model_type === selectedModel,
+    );
     if (!searchQuery.length) {
-      res = modelsList
-        .filter((item) => item.model_type === selectedModel)
-        .sort((a, b) => {
-          if (sortBy === "name") {
-            return a.model_name.localeCompare(b.model_name);
-          } else {
-            return b.date.getTime() - a.date.getTime();
-          }
-        });
+      res = res.sort((a, b) => {
+        if (sortBy === "name") {
+          return a.model_name.localeCompare(b.model_name);
+        } else {
+          return b.date.getTime() - a.date.getTime();
+        }
+      });
     } else {
-      const fuse = new Fuse(modelsListWithDBData, {
+      const fuse = new Fuse(res, {
         // getDbModels() will get the models from the indexdb
         keys: ["model_name", "db.modelName"],
+        threshold,
+        ignoreLocation: true,
       });
       const results = fuse.search(searchQuery);
       res = results.map((result) => result.item);
     }
     setCurModelList(res);
-  }, [selectedModel, modelsList, searchQuery, sortBy, modelsListWithDBData]);
+  }, [
+    selectedModel,
+    modelsList,
+    searchQuery,
+    sortBy,
+    modelsListWithDBData,
+    threshold,
+  ]);
 
   useEffect(() => {
     app.canvasEl.addEventListener("click", onClose);
@@ -107,6 +121,9 @@ export default function ModelsListDrawer({ onClose }: Props) {
             </Heading>
 
             <InstallModelsButton />
+            <Button onClick={() => setIsSettingsOpen(true)} fontSize={16}>
+              <IconSettings size={16} /> Settings
+            </Button>
           </Flex>
 
           <Flex gap={4} justifyContent={"center"} alignItems={"center"} mb={1}>
@@ -137,15 +154,12 @@ export default function ModelsListDrawer({ onClose }: Props) {
                 </Select>
               </HStack>
             )}
-            <ShowNsfwModelThumbnailSettings />
           </Flex>
-          {!searchQuery.length && (
-            <ModelsTags
-              modelTypeList={modelTypeList}
-              setSelectedModel={setSelectedModel}
-              selectedModel={selectedModel}
-            />
-          )}
+          <ModelsTags
+            modelTypeList={modelTypeList}
+            setSelectedModel={setSelectedModel}
+            selectedModel={selectedModel}
+          />
           <ModelsList list={curModelList} />
           {loading && (
             <Flex
@@ -159,6 +173,9 @@ export default function ModelsListDrawer({ onClose }: Props) {
         </Card>
         <ModelDropEventListener />
       </Box>
+      {isSettingsOpen && (
+        <ModelsListSettingsModal onClose={() => setIsSettingsOpen(false)} />
+      )}
     </Portal>
   );
 }

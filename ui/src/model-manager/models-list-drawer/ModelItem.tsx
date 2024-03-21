@@ -6,6 +6,7 @@ import { Model } from "../../types/dbTypes";
 import type { DragEvent } from "react";
 
 import { userSettingsTable } from "../../db-tables/WorkspaceDB";
+import { useModelListSettings } from "./Model-list-settings/useModelListSettings";
 
 interface ResponsePartial {
   id: number;
@@ -43,6 +44,7 @@ export function ModelItem({ data }: Props) {
   );
   const [hashing, setHashing] = useState(!data.file_hash);
   const [model, setModel] = useState<Model>();
+  const [showFileName] = useModelListSettings("showFileName", false);
 
   useEffect(() => {
     setHashing(!data.file_hash);
@@ -162,7 +164,9 @@ export function ModelItem({ data }: Props) {
         }
       >
         <Text textAlign="center" p="1" fontSize={14} noOfLines={2}>
-          {model?.modelName ?? data.model_name + data.model_extension}
+          {model?.modelName && !showFileName
+            ? model.modelName
+            : data.model_name + data.model_extension}
         </Text>
       </Tooltip>
     </Box>

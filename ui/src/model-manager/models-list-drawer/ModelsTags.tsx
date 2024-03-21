@@ -1,4 +1,6 @@
 import { Button, Wrap, WrapItem } from "@chakra-ui/react";
+import { userSettingsTable } from "../../db-tables/WorkspaceDB";
+import { useEffect } from "react";
 
 interface Props {
   selectedModel: string;
@@ -13,7 +15,16 @@ export function ModelsTags({
 }: Props) {
   const clickHanlder = (v: string) => {
     setSelectedModel(v);
+    userSettingsTable?.upsert({
+      selectedTag: v,
+    });
   };
+
+  useEffect(() => {
+    userSettingsTable?.getSetting("selectedTag").then((res) => {
+      res !== undefined && setSelectedModel(res);
+    });
+  }, [setSelectedModel]);
 
   return (
     <Wrap>

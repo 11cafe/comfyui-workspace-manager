@@ -92,6 +92,9 @@ export type UserSettings = {
   overwriteCurWorkflowWhenDroppingFileToCanvas: boolean;
   defaultFolders: Record<MODEL_TYPE, string>;
   maximumChangelogNumber: number;
+  showFileName?: boolean;
+  threshold?: number;
+  selectedTag?: string;
 };
 
 export interface PanelPosition {
