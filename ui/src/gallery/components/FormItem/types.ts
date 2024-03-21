@@ -1,5 +1,3 @@
-import { TopFieldType } from "../MetaBox/MetaBox.tsx";
-
 export enum FormItemType {
   Input = "Input",
   InputSlider = "InputSlider",
@@ -17,8 +15,6 @@ export type FormItem = {
   onChange?: (val: any) => void;
   classType: string;
   promptKey: string | number;
-  topFields: TopFieldType[];
-  updateTopField?: (field: TopFieldType) => void;
 } & {
   [key in string]: any;
 };

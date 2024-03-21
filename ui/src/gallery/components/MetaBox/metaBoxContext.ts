@@ -7,6 +7,7 @@ interface MetaBoxContextProps {
   updateTopField?: (field: TopFieldType) => void;
   calcInputList: PromptNodeInputItem[];
   showNodeName: boolean;
+  // updateInputValue: (input: PromptNodeInputItem) => void;
 }
 
 export const MetaBoxContext = createContext<MetaBoxContextProps>({
@@ -14,4 +15,5 @@ export const MetaBoxContext = createContext<MetaBoxContextProps>({
   calcInputList: [],
   showNodeName: false,
   updateTopField(): void {},
+  // updateInputValue(): void {},
 });

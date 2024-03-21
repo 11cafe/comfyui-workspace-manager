@@ -26,6 +26,7 @@ export type PromptNodeInputItem = {
   classType: string; // nodeType
   inputName: string;
   inputValue: any;
+  label?: string;
   nodeID: string;
   children: string[]; // output links to other node e.g. CLIPTextEncode.text -> KSampler.negative
 };
@@ -46,6 +47,7 @@ function dfs(promptNode: ImagePromptNodeItem, prompt: ImagePrompt) {
   });
   Object.entries(promptNode.inputs).forEach(([inputName, value]) => {
     if (!Array.isArray(value)) {
+      console.log;
       inputList.push({
         classType: promptNode.class_type,
         inputName,
@@ -62,6 +64,7 @@ export function calcInputListRecursive(
   prompt: ImagePrompt,
 ): PromptNodeInputItem[] {
   inputList = []; // clear result inputlist
+  visitedIDs = new Set<string>(); // clear visited nodes
   for (const key of Object.keys(prompt)) {
     prompt[key].nodeID = key;
     Object.entries(prompt[key].inputs).forEach(([inputName, value]) => {

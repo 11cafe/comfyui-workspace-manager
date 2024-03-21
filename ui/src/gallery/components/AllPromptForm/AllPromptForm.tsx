@@ -1,25 +1,13 @@
-import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
-  Box,
-  Flex,
-  Heading,
-  Stack,
-} from "@chakra-ui/react";
+import { Box, Flex, Heading, Stack } from "@chakra-ui/react";
 import { FormItemComponent } from "../FormItem/FormItemComponent.tsx";
 import { isInTopField } from "../MetaBox/MetaBox.tsx";
-import { Fragment, useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { MetaBoxContext } from "../MetaBox/metaBoxContext.ts";
 import { PromptNodeInputItem } from "../MetaBox/utils.ts";
 
 export default function AllPromptForm() {
   const { topFields, updateTopField, calcInputList, showNodeName } =
     useContext(MetaBoxContext);
-
-  const [defaultIndex, setDefaultIndex] = useState<number[]>([]);
 
   const groupInputsByNodeType = useCallback(
     (inputList: PromptNodeInputItem[]) => {
@@ -44,19 +32,42 @@ export default function AllPromptForm() {
   useEffect(() => {}, [showNodeName]);
 
   if (!showNodeName) {
-    return <></>;
+    return (
+      <Stack>
+        {calcInputList.map((input) => {
+          if (
+            isInTopField(topFields, {
+              name: input.inputName,
+              promptKey: input.nodeID,
+              classType: input.classType,
+            })
+          ) {
+            return null;
+          }
+          return (
+            <FormItemComponent
+              key={`form${input.nodeID}${input.inputName}`}
+              inputItem={input}
+            />
+          );
+        })}
+      </Stack>
+    );
   }
   const nodes = groupInputsByNodeType(calcInputList);
   return (
     <Stack>
-      {nodes.map((groupInput) => {
-        if (!groupInput[0]) {
+      {nodes.map((nodeInputs) => {
+        if (!nodeInputs[0]) {
           return null;
         }
         return (
-          <CustomAccordionPanel title={groupInput[0].classType}>
+          <CustomAccordionPanel
+            title={nodeInputs[0].classType}
+            key={nodeInputs[0].nodeID}
+          >
             <Flex px={2} gap={1} direction={"column"}>
-              {groupInput.map((input) => {
+              {nodeInputs.map((input) => {
                 if (
                   isInTopField(topFields, {
                     name: input.inputName,
@@ -70,13 +81,7 @@ export default function AllPromptForm() {
                 return (
                   <FormItemComponent
                     key={`form${input.nodeID}${input.inputName}`}
-                    promptKey={input?.nodeID}
-                    classType={input?.classType}
-                    value={input.inputValue}
-                    name={input.inputName}
-                    updateTopField={updateTopField}
-                    topFields={topFields}
-                    label={input.inputName}
+                    inputItem={input}
                   />
                 );
               })}
@@ -88,7 +93,6 @@ export default function AllPromptForm() {
   );
 }
 
-// CustomAccordionPanel component
 function CustomAccordionPanel({
   title,
   children,

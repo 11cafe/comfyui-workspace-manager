@@ -45,7 +45,7 @@ export const MetaInfoBox = ({ media }: { media?: MediaWithMetaData }) => {
         <Flex gap={1} alignItems={"center"}>
           {!!media?.createTime && (
             <>
-              <Text>Create Time:</Text>
+              <Text>Created:</Text>
               <Text>{formatTimestamp(media?.createTime ?? 0, true)}</Text>
             </>
           )}
