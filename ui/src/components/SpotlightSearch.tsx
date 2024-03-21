@@ -103,7 +103,6 @@ export default function SpotlightSearch() {
             size="sm"
             justifyContent="start"
             px={2}
-            // color="#1A202C"
             color={
               colorMode === "light" ? "#1A202C" : "rgba(255, 255, 255, 0.92)"
             }
