@@ -33,11 +33,12 @@ It is recommended to do git clone than downloading zip folder, because you can g
 **Workflows manager**
   - 🔁Switch between different workflows easily. 1click open workflow in multiple browser tabs.
   - 🤏**Drag and drop** to insert subworkflows into current flow.
-  - 🗂️Organize workflows with folders, tags
+  - 🗂️Organize workflows with folders, tags.
   - 📂Save and sync all your workflows in a local folder (by default under `/ComfyUI/my_workflows` customize in Settings)
     - **Save workflow by pressing the 💾 button, or ⌨Shift+S shortcut** (customize in Settings).
     - Every time you save, it will create a new record in **Version History**. You can easily revert to any version.
     - **Enable/disable autosave workflow**
+    - You can move files using OS File Explorer and it will be **two-way synced** with workspace.
   - 🕛**Version control** of workflow, create/switch versions
   - Bulk import workflows into your workspace
   - 1click download all your workflows into a .zip
@@ -56,20 +57,18 @@ Recommend using Chrome browser for the best experience. Safari doesn't work well
 
 [中文版教程](https://www.uisdc.com/workspace-manager) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Roadmap](https://github.com/orgs/11cafe/projects/1/views/1)
 
-### 🦄v2.0 beta: Two-way sync with local folder, select model install path, cloud sync workflows
 
+**✨New gallery coming soon! Inspect image metadata, search prompt, model name in all images**
+
+<img width="700" alt="Screenshot 2024-03-23 at 12 58 38 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/5bac9793-7491-4131-b850-037094d03823">
+
+**🦄v2.0 Two-way sync with local folder, select model install path, cloud sync workflows**
 - Two-way sync with selected local folder so you can move files using File Explore or Finder to sync them with workspace!
 - **Models manager support external models path like Automatic1111**! Choose models downloading folder from added external paths.
 - Add models thumbnails image by putting a image file with the same name in models folder like A1111
 - One click sharing to cloud to backup your workflows to cloud
-- models list sort by date/name
   v2.0 demo: https://youtu.be/7Hht_BMe844
-
-**Make sure you clicked these 2 buttons after updating to v2.0**
-Once you have enabled two-way sync, DO NOT disable it again. We are migrating away from browser storage and embracing two-way sync with your local disk, so that everything is persistently stored in your disk.
-
-<img width="541" alt="Screenshot 2024-03-11 at 12 24 35 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/4b0d44ba-b2e4-4077-bb8a-262829787c05">
-
+  
 **v1.7 ComfyUI model manager, view your installed models, install models from civit ai, open workflow in multiple browser tabs**
 
 <img width="700" alt="Screenshot 2024-02-02 at 5 51 13 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/86dc9007-c45c-4b7b-b74a-76ddc93c89a8">
