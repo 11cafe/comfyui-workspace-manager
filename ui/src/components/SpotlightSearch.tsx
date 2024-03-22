@@ -13,7 +13,7 @@ import {
 } from "@chakra-ui/react";
 import { IconSearch } from "@tabler/icons-react";
 import { useState, ChangeEvent, useEffect, useContext, useRef } from "react";
-import { RECENTLY_OPENED_FILE_LIST } from "../const";
+import { RECENTLY_OPENED_FILE_LIST, SHORTCUT_TRIGGER_EVENT } from "../const";
 import { indexdb } from "../db-tables/indexdb";
 import {
   EOtherKeys,
@@ -23,18 +23,15 @@ import {
 import { formatTimestamp } from "../utils";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { userSettingsTable, workflowsTable } from "../db-tables/WorkspaceDB";
-import { scanLocalFiles } from "../apis/TwowaySyncApi";
 import useDebounceFn from "../customHooks/useDebounceFn";
 import { useStateRef } from "../customHooks/useStateRef";
 import { getRecentlyOpenedFileList } from "../utils/recentOpenedFilesUtils";
 
 export default function SpotlightSearch() {
   const { colorMode } = useColorMode();
-  const { loadWorkflowID, setRoute, triggerShortcut } =
-    useContext(WorkspaceContext);
+  const { loadWorkflowID, setRoute } = useContext(WorkspaceContext);
   const [allFileList, setAllFileList] = useState<RecentlyOpenedFile[]>([]);
   const [searchKey, setSearchKey, searchKeyRef] = useStateRef("");
-  const searchResultLengthRef = useRef(0);
   const recentlyOpenedFileListRef = useRef<RecentlyOpenedFile[]>([]);
   const [renderDataSource, setRenderDataSource, renderDataSourceRef] =
     useStateRef<RecentlyOpenedFile[]>([]);
@@ -62,7 +59,6 @@ export default function SpotlightSearch() {
           .toLocaleLowerCase()
           .includes(searchKeyRef.current.toLocaleLowerCase()),
     );
-    searchResultLengthRef.current = searchResult.length;
     setRenderDataSource(searchResult);
     setSelectIndex(0);
     setLoading(false);
@@ -81,7 +77,6 @@ export default function SpotlightSearch() {
     } else {
       setLoading(false);
       cancelDebounceSearch();
-      searchResultLengthRef.current = 0;
       setRenderDataSource(recentlyOpenedFileListRef.current);
     }
   };
@@ -89,7 +84,7 @@ export default function SpotlightSearch() {
   const renderSearchResult = () => {
     if (loading) return null;
 
-    if (searchKey && searchResultLengthRef.current === 0) {
+    if (searchKey && renderDataSource.length === 0) {
       return <Text ml={2}>No matching results</Text>;
     }
 
@@ -175,36 +170,16 @@ export default function SpotlightSearch() {
     recentlyOpenedFileListRef.current = recentlyOpenedFileList;
     setRenderDataSource(recentlyOpenedFileList);
 
-    const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
-    let allFiles;
-    if (twoWaySyncEnabled) {
-      const fileList = await scanLocalFiles("", true);
-      const allFilesPromises = fileList
-        .filter((f) => f?.type === "workflow")
-        .map(async (file) => {
-          const fileInfoInDB = await workflowsTable?.get(file.id);
-
-          return {
+    const allFiles =
+      (await workflowsTable?.listAll())?.map(
+        (flow) =>
+          ({
             type: "workflow",
-            updateTime: fileInfoInDB?.updateTime ?? Date.now(),
-            id: file.id,
-            name: file.name.replace(/\.json$/, ""),
-          } as RecentlyOpenedFile;
-        });
-
-      allFiles = await Promise.all(allFilesPromises);
-    } else {
-      allFiles =
-        (await workflowsTable?.listAll())?.map(
-          (flow) =>
-            ({
-              type: "workflow",
-              updateTime: flow?.updateTime ?? Date.now(),
-              id: flow.id,
-              name: flow.name.replace(/\.json$/, ""),
-            }) as RecentlyOpenedFile,
-        ) ?? [];
-    }
+            updateTime: flow?.updateTime ?? Date.now(),
+            id: flow.id,
+            name: flow.name.replace(/\.json$/, ""),
+          }) as RecentlyOpenedFile,
+      ) ?? [];
     setAllFileList(allFiles);
     updateRecentlyOpenedFileList(allFiles, recentlyOpenedFileList);
   };
@@ -258,18 +233,8 @@ export default function SpotlightSearch() {
       keyRef.current.lastPressedKey = event.key.toUpperCase();
     };
 
-    document.addEventListener("keyup", handleKeyUp);
-    document.addEventListener("keydown", keydownListener);
-
-    return () => {
-      document.removeEventListener("keyup", handleKeyUp);
-      document.removeEventListener("keydown", keydownListener);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (triggerShortcut.shortcut) {
-      switch (triggerShortcut.shortcut) {
+    const shortcutTrigger = (event: CustomEvent) => {
+      switch (event.detail.shortcutType) {
         case EShortcutKeys.openSpotlightSearch:
           changeSelectIndex(1);
           break;
@@ -283,8 +248,18 @@ export default function SpotlightSearch() {
           onOpen(renderDataSourceRef.current[selectIndexRef.current]);
           break;
       }
-    }
-  }, [triggerShortcut]);
+    };
+
+    document.addEventListener("keyup", handleKeyUp);
+    document.addEventListener("keydown", keydownListener);
+    window.addEventListener(SHORTCUT_TRIGGER_EVENT, shortcutTrigger);
+
+    return () => {
+      document.removeEventListener("keyup", handleKeyUp);
+      document.removeEventListener("keydown", keydownListener);
+      window.removeEventListener(SHORTCUT_TRIGGER_EVENT, shortcutTrigger);
+    };
+  }, []);
 
   return (
     <Modal isOpen={true} onClose={onClose} size="xl">

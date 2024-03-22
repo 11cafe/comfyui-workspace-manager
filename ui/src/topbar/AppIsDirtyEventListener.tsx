@@ -14,7 +14,7 @@ import useDebounceFn from "../customHooks/useDebounceFn";
 import { deepJsonDiffCheck } from "../utils/deepJsonDiffCheck";
 
 export default function AppIsDirtyEventListener() {
-  const { isDirty, setIsDirty, setRoute, saveCurWorkflow, setTriggerShortcut } =
+  const { isDirty, setIsDirty, setRoute, saveCurWorkflow } =
     useContext(WorkspaceContext);
   const toast = useToast();
   useEffect(() => {
@@ -24,7 +24,6 @@ export default function AppIsDirtyEventListener() {
       const matchResult = matchShortcut(event);
       if (matchResult) {
         event.preventDefault();
-        setTriggerShortcut({ shortcut: matchResult, stamp: Date.now() });
         switch (matchResult) {
           case EShortcutKeys.SAVE:
             saveCurWorkflow();

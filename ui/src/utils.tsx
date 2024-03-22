@@ -11,6 +11,7 @@ import { app } from "/scripts/app.js";
 import {
   COMFYSPACE_TRACKING_FIELD_NAME,
   LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
+  SHORTCUT_TRIGGER_EVENT,
 } from "./const";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -289,6 +290,13 @@ export const matchShortcut = (event: KeyboardEvent) => {
       keys.length === Object.keys(pressedKeys).length &&
       keys.every((key) => pressedKeys[key])
     ) {
+      window.dispatchEvent(
+        new CustomEvent(SHORTCUT_TRIGGER_EVENT, {
+          detail: {
+            shortcutType,
+          },
+        }),
+      );
       return shortcutType as EShortcutKeys | EOtherKeys;
     }
   }

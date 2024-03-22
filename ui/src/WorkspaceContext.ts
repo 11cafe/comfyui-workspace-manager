@@ -35,8 +35,6 @@ export const WorkspaceContext = createContext<{
   route: WorkspaceRoute;
   curVersion: WorkflowVersion | null;
   setCurVersion: (version: WorkflowVersion | null) => void;
-  setTriggerShortcut: (matchingShortcut: MatchingShortcut) => void;
-  triggerShortcut: MatchingShortcut;
 }>({
   curFlowID: null,
   loadWorkflowID: () => {},
@@ -50,8 +48,6 @@ export const WorkspaceContext = createContext<{
   curVersion: null,
   setIsDirty: () => {},
   setCurVersion: () => {},
-  setTriggerShortcut: () => {},
-  triggerShortcut: {},
 });
 
 export const RecentFilesContext = createContext<{
