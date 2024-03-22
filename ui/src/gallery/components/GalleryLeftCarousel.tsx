@@ -4,6 +4,7 @@ import { Box, Flex, Grid, Image } from "@chakra-ui/react";
 import Carousel from "../../components/Carousel/Carousel.tsx";
 import { MetaInfoBox } from "./GalleryRightTopbar.tsx";
 import MediaPreview from "../../components/MediaPreview.tsx";
+import { mediaTable } from "../../db-tables/WorkspaceDB.ts";
 
 interface MetaDataInfoProps {
   media: Media | null;
@@ -53,6 +54,10 @@ export const MetaDataInfo: FC<MetaDataInfoProps> = ({ mediaList, media }) => {
                 mediaLocalPath={media.localPath}
                 size={GALLERY_IMAGE_SIZE}
                 objectFit="contain"
+                hideBrokenImage
+                onBrokenLink={() => {
+                  mediaTable?.delete(media.id);
+                }}
               />
             </Box>
           ))}

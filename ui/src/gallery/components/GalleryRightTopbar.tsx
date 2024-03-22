@@ -8,7 +8,7 @@ import {
   Text,
   Tooltip,
 } from "@chakra-ui/react";
-import { IconDownload } from "@tabler/icons-react";
+import { IconDownload, IconPin, IconPinFilled } from "@tabler/icons-react";
 import { formatTimestamp } from "../../utils.tsx";
 import MetaBox from "./MetaBox/GalleryRightMetadataForm.tsx";
 
@@ -46,6 +46,20 @@ export const MetaInfoBox = ({ media }: { media?: MediaWithMetaData }) => {
             </>
           )}
         </Flex>
+        {/* <Tooltip label="Set as cover">
+          <IconButton
+            size={"sm"}
+            variant={"ghost"}
+            icon={isCover ? <IconPinFilled size={19} /> : <IconPin size={19} />}
+            aria-label="set as cover"
+            onClick={() => {
+              workflowsTable?.updateMetaInfo(curFlowID, {
+                coverMediaPath: media.localPath,
+              });
+              setCoverPath(media.localPath);
+            }}
+          />
+        </Tooltip> */}
       </SimpleGrid>
       <MetaBox media={media ?? null} />
     </Flex>
