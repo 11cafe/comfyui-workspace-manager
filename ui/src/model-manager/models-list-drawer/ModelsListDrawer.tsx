@@ -115,13 +115,18 @@ export default function ModelsListDrawer({ onClose }: Props) {
           zIndex={DRAWER_Z_INDEX}
           overflowY={"auto"}
         >
-          <Flex justifyContent={"space-between"} alignContent={"center"} py={3}>
-            <Heading size={"md"} mr={2}>
+          <Flex alignContent={"center"} py={3}>
+            <Heading size={"md"} mr="auto">
               Models
             </Heading>
 
             <InstallModelsButton />
-            <Button onClick={() => setIsSettingsOpen(true)} fontSize={16}>
+            <Button
+              onClick={() => setIsSettingsOpen(true)}
+              fontSize={16}
+              size={"sm"}
+              ml={2}
+            >
               <IconSettings size={16} /> Settings
             </Button>
           </Flex>
