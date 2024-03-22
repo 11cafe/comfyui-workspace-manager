@@ -39,7 +39,7 @@ It is recommended to do git clone than downloading zip folder, because you can g
   - 📂Save and sync all your workflows in a local folder (by default under `/ComfyUI/my_workflows` customize in Settings)
     - **Save workflow by pressing the 💾 button, or ⌨Shift+S shortcut** (customize in Settings).
     - Every time you save, it will create a new record in **Version History**. You can easily revert to any version.
-    - **Enable/disable autosave workflow**
+    - **Enable/disable autosave workflow** (please disable autosave if you are experiencing UI lagging)
     - You can move files using OS File Explorer and it will be **two-way synced** with workspace.
   - 🕛**Version control** of workflow, create/switch versions
   - Bulk import workflows into your workspace
