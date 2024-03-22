@@ -45,7 +45,6 @@ export default function MetaBox({ media }: { media: Media | null }) {
       getMetadataFromUrl(
         `/workspace/view_media?filename=${media.localPath}`,
       ).then((data) => {
-        console.log("setMediaMetaData by fetch", data);
         setImagePrompt(data.prompt);
       });
     } else {
@@ -53,14 +52,12 @@ export default function MetaBox({ media }: { media: Media | null }) {
         .graphToPrompt(app.graph)
         .then((data: { output: any; workflow: any }) => {
           setImagePrompt(data.output);
-          console.log("setMediaMetaData by graph", data);
         });
     }
   }, [media]);
 
   useEffect(() => {
     if (!imagePrompt) return;
-    console.log("imagePrompt", imagePrompt);
     const calcInput = calcInputListRecursive(imagePrompt);
     setCalcInputList(calcInput);
   }, [imagePrompt]);

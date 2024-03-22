@@ -5,6 +5,8 @@ import { CSSProperties } from "react";
 type Props = {
   searchValue: string;
   onUpdateSearchValue: (value: string) => void;
+  placeholder?: string;
+  style?: CSSProperties;
 };
 
 const IconSearchStyle: CSSProperties = {
@@ -18,11 +20,11 @@ const IconSearchStyle: CSSProperties = {
 };
 
 export default function SearchInput(props: Props) {
-  const { searchValue, onUpdateSearchValue } = props;
+  const { searchValue, onUpdateSearchValue, style } = props;
   const isSearchValueNotEmpty = searchValue !== "";
 
   return (
-    <Box style={{ position: "relative" }} mb={2}>
+    <Box style={{ position: "relative", ...style }} mb={2}>
       <IconSearch style={IconSearchStyle} />
       {isSearchValueNotEmpty && (
         <IconButton
@@ -40,7 +42,7 @@ export default function SearchInput(props: Props) {
         />
       )}
       <Input
-        placeholder="Search"
+        placeholder={props.placeholder ?? "Search"}
         size={"sm"}
         paddingLeft={"35px"}
         paddingBlock={"5px"}
