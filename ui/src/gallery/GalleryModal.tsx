@@ -1,3 +1,5 @@
+// @ts-expect-error ComfyUI import
+import { app } from "/scripts/app.js";
 import {
   Checkbox,
   Flex,
@@ -12,13 +14,15 @@ import {
   ModalOverlay,
   Text,
 } from "@chakra-ui/react";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { mediaTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import { IconArrowLeft, IconX } from "@tabler/icons-react";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { Media } from "../types/dbTypes";
-import { MetaDataInfo } from "./components/MetaDataInfo.tsx";
-import GalleryMediaItem from "./components/GalleryMediaItem.tsx";
+import { MetaDataInfo } from "./components/GalleryLeftCarousel.tsx";
+import { MediaWithMetaData } from "./components/GalleryRightTopbar.tsx";
+import GalleryGridView from "./components/GalleryGridView.tsx";
+import { useDebounce } from "../customHooks/useDebounce.ts";
 import SearchInput from "../components/SearchInput.tsx";
 
 export default function GalleryModal({ onclose }: { onclose: () => void }) {
@@ -28,16 +32,17 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
   const [isSelecting, setIsSelecting] = useState(false);
   const [coverPath, setCoverPath] = useState("");
   const [images, setImages] = useState<Media[]>([]);
-  const [metaData, setMetaData] = useState<Media>();
+  const [metaData, setMetaData] = useState<MediaWithMetaData>();
   const [searchValue, setSearchValue] = useState("");
-  const onUpdateSearchValue = (val: string) => {
-    setSearchValue(val);
-  };
+  const debounceSearchValue = useDebounce(searchValue, 300);
 
   const loadData = async () => {
     if (curFlowID == null) return;
     const media = await mediaTable?.listByWorkflowID(curFlowID);
     setImages(media ?? []);
+    if (media?.length) {
+      setMetaData(media[0]);
+    }
   };
 
   useEffect(() => {
@@ -51,28 +56,10 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
       });
   }, []);
 
-  const calcImages = searchValue.length
-    ? images?.filter((v) =>
-        /*!v?.workflowJSON || */ v.workflowJSON?.includes(searchValue ?? ""),
-      )
-    : images;
-
   if (curFlowID == null) {
     return null;
   }
 
-  const onClickMedia = (media: Media) => {
-    if (isSelecting) {
-      if (selectedID.includes(media.id)) {
-        setSelectedID(selectedID.filter((id) => id !== media.id));
-      } else {
-        setSelectedID([...selectedID, media.id]);
-      }
-      return;
-    }
-    setMetaData(media);
-    // window.open(`/workspace/view_media?filename=${media.localPath}`);
-  };
   const isAllSelected =
     images.length > 0 && selectedID.length === images.length;
 
@@ -83,36 +70,15 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
         <ModalHeader>
           <HStack gap={2} mb={2}>
             <Heading size={"md"} mr={2}>
-              {!!metaData && (
-                <IconButton
-                  onClick={() => setMetaData(undefined)}
-                  variant={"ghost"}
-                  mr={1}
-                  aria-label={"back"}
-                  icon={<IconArrowLeft />}
-                />
-              )}
               Gallery - {workflowName}
-              {!metaData && (
-                <Flex gap={2} display={"inline-flex"} ml={2}>
-                  <SearchInput
-                    searchValue={searchValue}
-                    onUpdateSearchValue={onUpdateSearchValue}
-                  />
-                </Flex>
-              )}
             </Heading>
-            {/* <Button
-              size={"sm"}
-              colorScheme="pink"
-              onClick={() => {
-                setIsSelecting(true);
-                setSelectedID(images.map((i) => i.id));
-              }}
-            >
-              Share{" "}
-              {isSelecting && selectedID.length > 0 ? selectedID.length : ""}
-            </Button> */}
+
+            <SearchInput
+              searchValue={searchValue}
+              onUpdateSearchValue={(val) => setSearchValue(val)}
+              placeholder="Search prompt, model name, etc."
+              style={{ width: "300px" }}
+            />
           </HStack>
           {isSelecting && (
             <HStack gap={3}>
@@ -140,25 +106,10 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody overflowY={"auto"}>
-          {!metaData ? (
-            <HStack wrap={"wrap"}>
-              {calcImages.map((media) => {
-                return (
-                  <GalleryMediaItem
-                    key={media.id}
-                    selectedID={selectedID}
-                    media={media}
-                    isSelecting={isSelecting}
-                    onClickMedia={onClickMedia}
-                    onRefreshImagesList={loadData}
-                    coverPath={coverPath}
-                    setCoverPath={setCoverPath}
-                  />
-                );
-              })}
-            </HStack>
+          {debounceSearchValue.length ? (
+            <GalleryGridView searchQuery={debounceSearchValue} />
           ) : (
-            <MetaDataInfo mediaList={images} media={metaData} />
+            <MetaDataInfo mediaList={images} media={metaData ?? null} />
           )}
         </ModalBody>
       </ModalContent>

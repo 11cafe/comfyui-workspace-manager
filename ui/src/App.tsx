@@ -45,6 +45,7 @@ import { useStateRef } from "./customHooks/useStateRef";
 import { indexdb } from "./db-tables/indexdb";
 import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
 import { deepJsonDiffCheck } from "./utils/deepJsonDiffCheck";
+import { updateRecentlyOpenedFileList } from "./utils/recentOpenedFilesUtils";
 const AppIsDirtyEventListener = React.lazy(
   () => import("./topbar/AppIsDirtyEventListener"),
 );
@@ -163,6 +164,14 @@ export default function App() {
       localStorage.setItem("curFlowID", id);
       document.title = "ComfyUI - " + workflow!.name;
     }
+    if (workflow) {
+      updateRecentlyOpenedFileList({
+        id: workflow.id,
+        name: workflow.name.replace(/\.json$/, ""),
+        updateTime: workflow.updateTime,
+        type: "workflow",
+      });
+    }
   };
 
   const graphAppSetup = async () => {
@@ -184,7 +193,7 @@ export default function App() {
     if (latestWfID) {
       loadWorkflowIDImpl(latestWfID);
     }
-    await validateOrSaveAllJsonFileMyWorkflows();
+    // await validateOrSaveAllJsonFileMyWorkflows();
     const twoway = await userSettingsTable?.getSetting("twoWaySync");
     !twoway &&
       indexdb.cache.get(UPGRADE_TO_2WAY_SYNC_KEY).then(async (value) => {

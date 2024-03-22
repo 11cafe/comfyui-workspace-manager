@@ -193,13 +193,13 @@ export function json2ClipboardString(graphData: any) {
   const nodes = graphData.nodes;
   const links = new Array();
   const relative_id_map = new Map();
-  const exist_link_ids = new Array()
+  const exist_link_ids = new Array();
   for (let i = 0; i < graphData.nodes.length; ++i) {
     const node = graphData.nodes[i];
     if (node.inputs) {
       for (const input of node.inputs) {
         if (input.link) {
-          exist_link_ids.push(input.link)
+          exist_link_ids.push(input.link);
           input.link = null;
         }
       }
@@ -207,7 +207,7 @@ export function json2ClipboardString(graphData: any) {
     if (node.outputs) {
       for (const output of node.outputs) {
         if (output.links) {
-          exist_link_ids.concat(output.links)
+          exist_link_ids.concat(output.links);
           output.links = [];
         }
       }
@@ -215,7 +215,7 @@ export function json2ClipboardString(graphData: any) {
     relative_id_map.set(node.id, i);
   }
   for (const link of graphData.links) {
-    if(!exist_link_ids.includes(link[0])){
+    if (!exist_link_ids.includes(link[0])) {
       continue;
     }
     links.push([

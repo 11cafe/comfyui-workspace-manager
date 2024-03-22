@@ -26,6 +26,9 @@ export default function AppIsDirtyEventListener() {
         case EShortcutKeys.SAVE_AS:
           setRoute("saveAsModal");
           break;
+        case EShortcutKeys.openSpotlightSearch:
+          setRoute("spotlightSearch");
+          break;
       }
     };
     const originalOnAfterChange = app.canvas.onAfterChange;

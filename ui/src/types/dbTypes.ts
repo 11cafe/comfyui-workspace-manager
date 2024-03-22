@@ -1,4 +1,5 @@
 import type { MODEL_TYPE } from "../model-manager/install-models/util/modelTypes";
+import { TopFieldType } from "../gallery/components/MetaBox/GalleryRightMetadataForm.tsx";
 
 export interface SortableItem {
   name: string;
@@ -21,6 +22,7 @@ export interface Workflow extends SortableItem {
   cloudOrigin?: string;
   saveLock?: boolean;
   latestImage?: string;
+  topFieldsConfig?: TopFieldType[];
 }
 
 export interface TableBaseModel {
@@ -74,6 +76,7 @@ export type WorkflowVersion = {
 export enum EShortcutKeys {
   SAVE = "save",
   SAVE_AS = "saveAs",
+  openSpotlightSearch = "openSpotlightSearch",
 }
 
 export type UserSettings = {
@@ -140,3 +143,10 @@ export enum EFlowOperationType {
 export type WorkflowPrivacy = "PUBLIC" | "PRIVATE" | "UNLISTED";
 
 export const WORKSPACE_INDEXDB_NAME = "comfyui_workspace_db";
+
+export type RecentlyOpenedFile = {
+  id: string;
+  name: string;
+  type: "workflow" | "model";
+  updateTime: number;
+};
