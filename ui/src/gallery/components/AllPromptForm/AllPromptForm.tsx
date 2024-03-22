@@ -63,7 +63,7 @@ export default function AllPromptForm() {
         }
         return (
           <CustomAccordionPanel
-            title={nodeInputs[0].classType}
+            title={nodeInputs[0].classType + " #" + nodeInputs[0].nodeID}
             key={nodeInputs[0].nodeID}
           >
             <Flex px={2} gap={1} direction={"column"}>
