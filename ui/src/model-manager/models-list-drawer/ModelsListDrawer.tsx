@@ -32,10 +32,10 @@ interface Props {
 
 export default function ModelsListDrawer({ onClose }: Props) {
   const [selectedModel, setSelectedModel] = useState("checkpoints");
-  const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [threshold] = useModelListSettings("threshold", 0.6);
+  const [searchQuery, setSearchQuery] = useModelListSettings("searchQuery", "");
   const { loading, modelTypeList, modelsList } = useUpdateModels();
   const [modelsListWithDBData, setModelsListWithDBData] = useState<
     Array<{ db?: Model } & ModelsListRespItem>

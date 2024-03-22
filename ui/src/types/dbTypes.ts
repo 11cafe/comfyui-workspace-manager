@@ -95,6 +95,7 @@ export type UserSettings = {
   showFileName?: boolean;
   threshold?: number;
   selectedTag?: string;
+  searchQuery?: string;
 };
 
 export interface PanelPosition {
