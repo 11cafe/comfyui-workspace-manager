@@ -71,6 +71,7 @@ export default function MetaBox({ media }: { media: Media | null }) {
           ?.topFieldsConfig;
         if (topFieldsConfig) {
           setTopFields(topFieldsConfig);
+          setShowAllInputs(false);
         }
       }
     })();
