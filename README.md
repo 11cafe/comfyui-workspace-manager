@@ -9,7 +9,7 @@ welcome any feedbacks!
 
 🔴‼️ If you updated or cloned this repo between March 14-17, 2024, please update it again to latest verison, there were some bugs that may cause you lose changes in Auto Save mode.
 
-‼️ **search and install models from civitai is not working in previous versions**, because civitai changed something in their api. **Please update to the latest version** if you are seeing blank screen in Install Models dialog
+‼️ [3-23-2024]**search and install models from civitai is not working in previous versions**, because civitai changed something in their api. **Please update to the latest version** if you are seeing blank screen in Install Models dialog
 
 <img width="610" alt="Screenshot 2024-03-08 at 6 41 18 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/30455eb1-3d12-4930-bb81-28b33148fbaa">
 
