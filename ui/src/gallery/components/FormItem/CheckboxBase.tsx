@@ -1,15 +1,22 @@
 import { FC } from "react";
 import { Checkbox, Flex } from "@chakra-ui/react";
-import { FormItem } from "./types.ts";
+import { PromptNodeInputItem } from "../MetaBox/utils.ts";
 
-export const CheckboxBase: FC<FormItem> = (props) => {
+export const CheckboxBase: FC<
+  {
+    inputItem: PromptNodeInputItem;
+  } & {
+    [key in string]: any;
+  }
+> = (props) => {
+  const inputItem = props.inputItem;
   return (
     <Flex gap={2}>
       <Flex gap={1} alignItems={"center"} flexBasis={"200px"}>
-        {props.label ?? props.name}
+        {inputItem.label ?? inputItem.inputName}
       </Flex>
       <Checkbox
-        isChecked={!!props.value}
+        defaultChecked={!!inputItem.inputValue}
         onChange={(e) => {
           props?.updateMetaData?.({
             promptKey: props.promptKey,

@@ -19,11 +19,10 @@ import { mediaTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import { IconArrowLeft, IconX } from "@tabler/icons-react";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { Media } from "../types/dbTypes";
-import { MetaDataInfo } from "./components/MetaDataInfo.tsx";
+import { MetaDataInfo } from "./components/GalleryLeftCarousel.tsx";
 import GalleryMediaItem from "./components/GalleryMediaItem.tsx";
 import SearchInput from "../components/SearchInput.tsx";
-import { nanoid } from "nanoid";
-import { MediaWithMetaData } from "./components/MetaInfoBox.tsx";
+import { MediaWithMetaData } from "./components/GalleryRightTopbar.tsx";
 
 export default function GalleryModal({ onclose }: { onclose: () => void }) {
   const { curFlowID } = useContext(WorkspaceContext);
@@ -42,23 +41,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
     if (curFlowID == null) return;
     const media = await mediaTable?.listByWorkflowID(curFlowID);
     setImages(media ?? []);
-    if (media?.length === 0) {
-      app.graphToPrompt().then((prompt) => {
-        setMetaData({
-          id: nanoid(),
-          workflowJSON: "",
-          localPath: "",
-          createTime: 0,
-          format: "",
-          workflowID: "",
-          metaData: {
-            prompt: prompt.output,
-            workflow: prompt.workflow,
-          },
-        });
-        return app.graph._nodes;
-      });
-    } else if (Number(media?.length) <= 6 && media?.[0]) {
+    if (media?.length) {
       setMetaData(media[0]);
     }
   };
@@ -106,36 +89,14 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
         <ModalHeader>
           <HStack gap={2} mb={2}>
             <Heading size={"md"} mr={2}>
-              {!!metaData && (
-                <IconButton
-                  onClick={() => setMetaData(undefined)}
-                  variant={"ghost"}
-                  mr={1}
-                  aria-label={"back"}
-                  icon={<IconArrowLeft />}
-                />
-              )}
               Gallery - {workflowName}
-              {!metaData && (
-                <Flex gap={2} display={"inline-flex"} ml={2}>
-                  <SearchInput
-                    searchValue={searchValue}
-                    onUpdateSearchValue={onUpdateSearchValue}
-                  />
-                </Flex>
-              )}
+              <Flex gap={2} display={"inline-flex"} ml={2}>
+                {/* <SearchInput
+                  searchValue={searchValue}
+                  onUpdateSearchValue={onUpdateSearchValue}
+                /> */}
+              </Flex>
             </Heading>
-            {/* <Button
-              size={"sm"}
-              colorScheme="pink"
-              onClick={() => {
-                setIsSelecting(true);
-                setSelectedID(images.map((i) => i.id));
-              }}
-            >
-              Share{" "}
-              {isSelecting && selectedID.length > 0 ? selectedID.length : ""}
-            </Button> */}
           </HStack>
           {isSelecting && (
             <HStack gap={3}>
@@ -163,7 +124,7 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody overflowY={"auto"}>
-          {!metaData ? (
+          {/* {!metaData ? (
             <HStack wrap={"wrap"}>
               {calcImages.map((media) => {
                 return (
@@ -180,9 +141,9 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
                 );
               })}
             </HStack>
-          ) : (
-            <MetaDataInfo mediaList={images} media={metaData} />
-          )}
+          ) : ( */}
+          <MetaDataInfo mediaList={images} media={metaData ?? null} />
+          {/* )} */}
         </ModalBody>
       </ModalContent>
     </Modal>
