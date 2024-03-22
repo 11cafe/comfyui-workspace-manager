@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import GalleryMediaItem from "./GalleryMediaItem";
 import { HStack } from "@chakra-ui/react";
 import type { Media } from "../../types/dbTypes";
 import { mediaTable } from "../../db-tables/WorkspaceDB";
+import { GalleryContext } from "../GalleryContext";
 
 export default function GalleryGridView({
   searchQuery,
@@ -10,6 +11,8 @@ export default function GalleryGridView({
   searchQuery: string;
 }) {
   const [medias, setMedias] = useState<Media[]>([]);
+  const { setCurMedia, setShowAllImages, setMediaList } =
+    useContext(GalleryContext);
   useEffect(() => {
     if (searchQuery === "") {
       mediaTable?.listAll().then((data) => {
@@ -24,7 +27,11 @@ export default function GalleryGridView({
     }
   }, [searchQuery]);
 
-  const onClickMedia = (media: Media) => {};
+  const onClickMedia = (media: Media) => {
+    setMediaList([media].concat(medias.filter((v) => v.id !== media.id)));
+    setCurMedia(media);
+    setShowAllImages(false);
+  };
   return (
     <HStack wrap={"wrap"}>
       {medias.map((media) => {

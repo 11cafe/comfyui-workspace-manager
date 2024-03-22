@@ -33,7 +33,7 @@ export const isInTopField = (
   );
 };
 
-export default function MetaBox({ media }: { media: Media | null }) {
+export default function MetadataForm({ media }: { media: Media | null }) {
   const [calcInputList, setCalcInputList] = useState<PromptNodeInputItem[]>([]);
   const { curFlowID } = useContext(WorkspaceContext);
   const [imagePrompt, setImagePrompt] = useState<ImagePrompt>();

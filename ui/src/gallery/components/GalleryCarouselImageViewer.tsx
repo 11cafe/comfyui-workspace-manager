@@ -1,23 +1,18 @@
 import { Media } from "../../types/dbTypes.ts";
-import { FC, useEffect, useState } from "react";
-import { Box, Flex, Grid, Image } from "@chakra-ui/react";
+import { useContext } from "react";
+import { Box, Flex, Grid } from "@chakra-ui/react";
 import Carousel from "../../components/Carousel/Carousel.tsx";
-import { MetaInfoBox } from "./GalleryRightTopbar.tsx";
+import { GalleryRightCol } from "./GalleryRightCol.tsx";
 import MediaPreview from "../../components/MediaPreview.tsx";
 import { mediaTable } from "../../db-tables/WorkspaceDB.ts";
+import { GalleryContext } from "../GalleryContext.ts";
 
 interface MetaDataInfoProps {
-  media: Media | null;
   mediaList: Media[];
 }
 const GALLERY_IMAGE_SIZE = 120;
-export const MetaDataInfo: FC<MetaDataInfoProps> = ({ mediaList, media }) => {
-  const [mediaAct, setMediaAct] = useState<Media>();
-  useEffect(() => {
-    if (media) {
-      setMediaAct(media);
-    }
-  }, [media]);
+export function GalleryCarouselImageViewer({ mediaList }: MetaDataInfoProps) {
+  const { curMedia, setCurMedia } = useContext(GalleryContext);
 
   return (
     <Flex gap={3} h={"100%"}>
@@ -31,9 +26,9 @@ export const MetaDataInfo: FC<MetaDataInfoProps> = ({ mediaList, media }) => {
             id: v.id,
             imageUrl: `/workspace/view_media?filename=${v.localPath}`,
           }))}
-          currentNum={mediaList?.findIndex((p) => p.id === mediaAct?.id) ?? 0}
+          currentNum={mediaList?.findIndex((p) => p.id === curMedia?.id) ?? 0}
           setMediaAct={(newMedia) =>
-            setMediaAct(mediaList?.find((v) => v.id === newMedia.id))
+            setCurMedia(mediaList?.find((v) => v.id === newMedia.id) ?? null)
           }
         />
 
@@ -41,14 +36,14 @@ export const MetaDataInfo: FC<MetaDataInfoProps> = ({ mediaList, media }) => {
           {mediaList?.map((media) => (
             <Box
               display={"inline-block"}
-              p={2}
+              p={1}
               borderRadius={"4px"}
               key={`image-bottom-${media.id}`}
               width={`${GALLERY_IMAGE_SIZE + 3}px`}
               height={`${GALLERY_IMAGE_SIZE + 3}px`}
               cursor={"pointer"}
-              border={mediaAct?.id === media.id ? "1px solid gray" : ""}
-              onClick={() => setMediaAct(media)}
+              border={curMedia?.id === media.id ? "1px solid gray" : ""}
+              onClick={() => setCurMedia(media)}
             >
               <MediaPreview
                 mediaLocalPath={media.localPath}
@@ -63,7 +58,7 @@ export const MetaDataInfo: FC<MetaDataInfoProps> = ({ mediaList, media }) => {
           ))}
         </Flex>
       </Grid>
-      <MetaInfoBox media={mediaAct} />
+      <GalleryRightCol media={curMedia ?? undefined} />
     </Flex>
   );
-};
+}

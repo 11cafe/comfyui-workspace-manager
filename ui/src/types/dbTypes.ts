@@ -1,5 +1,5 @@
 import type { MODEL_TYPE } from "../model-manager/install-models/util/modelTypes";
-import { TopFieldType } from "../gallery/components/MetaBox/GalleryRightMetadataForm.tsx";
+import { TopFieldType } from "../gallery/components/MetaBox/MetadataForm.tsx";
 
 export interface SortableItem {
   name: string;
