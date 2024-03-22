@@ -72,7 +72,7 @@ export default function ModelsListDrawer({ onClose }: Props) {
         }
       });
     } else {
-      const fuse = new Fuse(res, {
+      const fuse = new Fuse(modelsListWithDBData, {
         // getDbModels() will get the models from the indexdb
         keys: ["model_name", "db.modelName"],
         threshold,
@@ -160,11 +160,13 @@ export default function ModelsListDrawer({ onClose }: Props) {
               </HStack>
             )}
           </Flex>
-          <ModelsTags
-            modelTypeList={modelTypeList}
-            setSelectedModel={setSelectedModel}
-            selectedModel={selectedModel}
-          />
+          {!searchQuery.length && (
+            <ModelsTags
+              modelTypeList={modelTypeList}
+              setSelectedModel={setSelectedModel}
+              selectedModel={selectedModel}
+            />
+          )}
           <ModelsList list={curModelList} />
           {loading && (
             <Flex
