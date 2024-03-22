@@ -1,8 +1,6 @@
-import { getMetadataFromUrl, MetaData } from "../utils.ts";
+import { MetaData } from "../utils.ts";
 import { Media } from "../../types/dbTypes.ts";
-import { useEffect, useState } from "react";
 import {
-  Checkbox,
   Flex,
   IconButton,
   Link,
@@ -12,14 +10,12 @@ import {
 } from "@chakra-ui/react";
 import { IconDownload } from "@tabler/icons-react";
 import { formatTimestamp } from "../../utils.tsx";
-import MetaBox from "./MetaBox/MetaBox.tsx";
+import MetaBox from "./MetaBox/GalleryRightMetadataForm.tsx";
 
 export type MediaWithMetaData = Media & {
   metaData?: MetaData;
 };
 export const MetaInfoBox = ({ media }: { media?: MediaWithMetaData }) => {
-  const [showNodeName, setShowNodeName] = useState(true);
-
   return (
     <Flex overflowY={"auto"} mb={4} direction={"column"} gap={2} flex={1}>
       <SimpleGrid alignItems={"center"} columns={3} spacing={2}>
@@ -42,7 +38,7 @@ export const MetaInfoBox = ({ media }: { media?: MediaWithMetaData }) => {
             </>
           )}
         </Flex>
-        <Flex gap={1} alignItems={"center"}>
+        <Flex gap={1} alignItems={"center"} color={"GrayText"}>
           {!!media?.createTime && (
             <>
               <Text>Created:</Text>
@@ -50,16 +46,8 @@ export const MetaInfoBox = ({ media }: { media?: MediaWithMetaData }) => {
             </>
           )}
         </Flex>
-        <Flex>
-          <Checkbox
-            isChecked={showNodeName}
-            onChange={(e) => setShowNodeName(e.target.checked)}
-          >
-            show node name
-          </Checkbox>
-        </Flex>
       </SimpleGrid>
-      <MetaBox showNodeName={showNodeName} media={media ?? null} />
+      <MetaBox media={media ?? null} />
     </Flex>
   );
 };

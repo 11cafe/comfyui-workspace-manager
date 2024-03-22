@@ -2,7 +2,7 @@ import { Media } from "../../types/dbTypes.ts";
 import { FC, useEffect, useState } from "react";
 import { Box, Flex, Grid, Image } from "@chakra-ui/react";
 import Carousel from "../../components/Carousel/Carousel.tsx";
-import { MetaInfoBox } from "./MetaInfoBox.tsx";
+import { MetaInfoBox } from "./GalleryRightTopbar.tsx";
 import MediaPreview from "../../components/MediaPreview.tsx";
 
 interface MetaDataInfoProps {

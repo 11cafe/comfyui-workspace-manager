@@ -1,6 +1,6 @@
 import { Box, Flex, Heading, Stack } from "@chakra-ui/react";
 import { FormItemComponent } from "../FormItem/FormItemComponent.tsx";
-import { isInTopField } from "../MetaBox/MetaBox.tsx";
+import { isInTopField } from "../MetaBox/GalleryRightMetadataForm.tsx";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { MetaBoxContext } from "../MetaBox/metaBoxContext.ts";
 import { PromptNodeInputItem } from "../MetaBox/utils.ts";

@@ -19,7 +19,7 @@ export const SelectBase: FC<
       <Select value={inputItem.inputValue} onChange={(e) => {}}>
         {props?.options?.map((v: string, i: number) => (
           <option
-            key={`select${inputItem.nodeID}${inputItem.inputName}`}
+            key={`select${inputItem.nodeID}${inputItem.inputName}${i}`}
             value={v}
           >
             {v}

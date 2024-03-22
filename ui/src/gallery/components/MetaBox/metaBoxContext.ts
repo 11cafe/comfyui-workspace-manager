@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { TopFieldType } from "./MetaBox.tsx";
+import { TopFieldType } from "./GalleryRightMetadataForm.tsx";
 import { PromptNodeInputItem } from "./utils.ts";
 
 interface MetaBoxContextProps {

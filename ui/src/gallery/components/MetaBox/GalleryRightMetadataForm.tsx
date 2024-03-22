@@ -1,5 +1,5 @@
 import { MetaData, getMetadataFromUrl } from "../../utils.ts";
-import { Flex } from "@chakra-ui/react";
+import { Flex, HStack, Switch } from "@chakra-ui/react";
 import { Media } from "../../../types/dbTypes.ts";
 import TopForm from "../TopForm/TopForm.tsx";
 import AllPromptForm from "../AllPromptForm/AllPromptForm.tsx";
@@ -9,7 +9,6 @@ import {
   calcInputListRecursive,
   ImagePrompt,
   PromptNodeInputItem,
-  type InputResultItem,
 } from "./utils.ts";
 import { MetaBoxContext } from "./metaBoxContext.ts";
 import { workflowsTable } from "../../../db-tables/WorkspaceDB.ts";
@@ -34,16 +33,12 @@ export const isInTopField = (
   );
 };
 
-export default function MetaBox({
-  showNodeName,
-  media,
-}: {
-  media: Media | null;
-  showNodeName: boolean;
-}) {
+export default function MetaBox({ media }: { media: Media | null }) {
   const [calcInputList, setCalcInputList] = useState<PromptNodeInputItem[]>([]);
   const { curFlowID } = useContext(WorkspaceContext);
   const [imagePrompt, setImagePrompt] = useState<ImagePrompt>();
+  const [showAllInputs, setShowAllInputs] = useState(true);
+  const [showNodeName, setShowNodeName] = useState(true);
 
   useEffect(() => {
     if (media) {
@@ -67,7 +62,6 @@ export default function MetaBox({
     if (!imagePrompt) return;
     console.log("imagePrompt", imagePrompt);
     const calcInput = calcInputListRecursive(imagePrompt);
-    console.log("😂calcInput", calcInput);
     setCalcInputList(calcInput);
   }, [imagePrompt]);
 
@@ -121,9 +115,21 @@ export default function MetaBox({
         updateTopField,
       }}
     >
-      <Flex direction={"column"} align={"stretch"}>
+      <Flex direction={"column"} align={"stretch"} gap={5}>
         <TopForm />
-        <AllPromptForm />
+        <HStack>
+          <p>Show all inputs</p>
+          <Switch
+            isChecked={showAllInputs}
+            onChange={(e) => setShowAllInputs(!showAllInputs)}
+          />
+          <p>Show node names</p>
+          <Switch
+            isChecked={showNodeName}
+            onChange={(e) => setShowNodeName(!showNodeName)}
+          />
+        </HStack>
+        {showAllInputs && <AllPromptForm />}
       </Flex>
     </MetaBoxContext.Provider>
   );

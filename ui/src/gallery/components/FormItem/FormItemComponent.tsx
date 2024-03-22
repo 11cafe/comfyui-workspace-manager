@@ -1,4 +1,4 @@
-import { FC, useContext } from "react";
+import { FC, useContext, useState } from "react";
 import { InputBase } from "./InputBase.tsx";
 import { InputSlider } from "./InputSlider.tsx";
 import { SelectBase } from "./SelectBase.tsx";
@@ -9,7 +9,7 @@ import { NoSupport } from "./NoSupport.tsx";
 import { CheckboxBase } from "./CheckboxBase.tsx";
 import { Flex, Grid, IconButton } from "@chakra-ui/react";
 import { IconPin, IconPinFilled } from "@tabler/icons-react";
-import { isInTopField } from "../MetaBox/MetaBox.tsx";
+import { isInTopField } from "../MetaBox/GalleryRightMetadataForm.tsx";
 import { PromptNodeInputItem } from "../MetaBox/utils.ts";
 import { MetaBoxContext } from "../MetaBox/metaBoxContext.ts";
 
@@ -81,6 +81,8 @@ export const FormItemComponent: FC<{ inputItem: PromptNodeInputItem }> = ({
     inputItem.classType,
     inputItem.inputName,
   );
+  const [isHovered, setIsHovered] = useState(false); // Track hover state
+
   const Com = INPUT_TYPE_COMPONENT_MAPPING[configByNodeInfo.type ?? "Input"];
   const { updateTopField, topFields } = useContext(MetaBoxContext);
   const childrenOutputLink =
@@ -93,9 +95,14 @@ export const FormItemComponent: FC<{ inputItem: PromptNodeInputItem }> = ({
   };
 
   return (
-    <Grid templateColumns={"max-content 1fr"} gap={1}>
-      <Flex>
+    <Flex
+      alignItems={"center"}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {true && (
         <IconButton
+          size={"xs"}
           onClick={() =>
             updateTopField?.({
               name: inputItem.inputName,
@@ -103,22 +110,24 @@ export const FormItemComponent: FC<{ inputItem: PromptNodeInputItem }> = ({
               class_type: inputItem.classType,
             })
           }
-          variant={"text"}
+          variant={"ghost"}
           icon={
             isInTopField(topFields, {
               name: inputItem.inputName,
               promptKey: inputItem.nodeID,
               classType: inputItem.classType,
             }) ? (
-              <IconPinFilled />
+              <IconPinFilled size={14} />
             ) : (
-              <IconPin />
+              <IconPin size={14} />
             )
           }
           aria-label={"pin"}
         />
-      </Flex>
-      <Com inputItem={inputWithLabel} {...configByNodeInfo} />
-    </Grid>
+      )}
+      <div style={{ flex: 1 }}>
+        <Com inputItem={inputWithLabel} {...configByNodeInfo} />
+      </div>
+    </Flex>
   );
 };

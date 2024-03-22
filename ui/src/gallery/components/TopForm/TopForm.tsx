@@ -23,7 +23,7 @@ export default function TopForm() {
           }
           return (
             <FormItemComponent
-              key={`formTopField${field.promptKey}`}
+              key={`formTopField${field.promptKey}${field.name}`}
               inputItem={input}
             />
           );

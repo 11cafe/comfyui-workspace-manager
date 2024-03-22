@@ -19,10 +19,10 @@ import { mediaTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import { IconArrowLeft, IconX } from "@tabler/icons-react";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { Media } from "../types/dbTypes";
-import { MetaDataInfo } from "./components/MetaDataInfo.tsx";
+import { MetaDataInfo } from "./components/GalleryLeftCarousel.tsx";
 import GalleryMediaItem from "./components/GalleryMediaItem.tsx";
 import SearchInput from "../components/SearchInput.tsx";
-import { MediaWithMetaData } from "./components/MetaInfoBox.tsx";
+import { MediaWithMetaData } from "./components/GalleryRightTopbar.tsx";
 
 export default function GalleryModal({ onclose }: { onclose: () => void }) {
   const { curFlowID } = useContext(WorkspaceContext);
@@ -89,36 +89,14 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
         <ModalHeader>
           <HStack gap={2} mb={2}>
             <Heading size={"md"} mr={2}>
-              {!!metaData && (
-                <IconButton
-                  onClick={() => setMetaData(undefined)}
-                  variant={"ghost"}
-                  mr={1}
-                  aria-label={"back"}
-                  icon={<IconArrowLeft />}
-                />
-              )}
               Gallery - {workflowName}
-              {!metaData && (
-                <Flex gap={2} display={"inline-flex"} ml={2}>
-                  <SearchInput
-                    searchValue={searchValue}
-                    onUpdateSearchValue={onUpdateSearchValue}
-                  />
-                </Flex>
-              )}
+              <Flex gap={2} display={"inline-flex"} ml={2}>
+                {/* <SearchInput
+                  searchValue={searchValue}
+                  onUpdateSearchValue={onUpdateSearchValue}
+                /> */}
+              </Flex>
             </Heading>
-            {/* <Button
-              size={"sm"}
-              colorScheme="pink"
-              onClick={() => {
-                setIsSelecting(true);
-                setSelectedID(images.map((i) => i.id));
-              }}
-            >
-              Share{" "}
-              {isSelecting && selectedID.length > 0 ? selectedID.length : ""}
-            </Button> */}
           </HStack>
           {isSelecting && (
             <HStack gap={3}>
