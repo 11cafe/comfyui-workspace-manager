@@ -163,7 +163,7 @@ export namespace TwowaySyncAPI {
       name: name,
       json: JSON.stringify(jsonObj),
     };
-    console.log("createWorkflow", input);
+
     try {
       const response = await fetch("/workspace/create_workflow_file", {
         method: "POST",

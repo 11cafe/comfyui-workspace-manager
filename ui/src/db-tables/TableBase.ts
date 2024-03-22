@@ -64,6 +64,13 @@ export class TableBase<T extends TableBaseModel> {
     return list as any[];
   }
 
+  async filter(filterFn: (obj: T) => boolean): Promise<T[]> {
+    const list = await indexdb[this.tableName]
+      .filter(filterFn as any)
+      .toArray();
+    return list as any[];
+  }
+
   public async batchQuery(ids: string[]): Promise<T[]> {
     const list = await indexdb[this.tableName].bulkGet(ids);
     return list as any[];

@@ -27,9 +27,6 @@ interface GalleryMediaItemProps {
   isSelecting: boolean;
   selectedID: string[];
   onClickMedia: (media: Media) => void;
-  onRefreshImagesList: () => void;
-  coverPath: string;
-  setCoverPath: (path: string) => void;
 }
 
 const GalleryMediaItem: React.FC<GalleryMediaItemProps> = ({
@@ -37,9 +34,6 @@ const GalleryMediaItem: React.FC<GalleryMediaItemProps> = ({
   isSelecting,
   selectedID,
   onClickMedia,
-  onRefreshImagesList,
-  coverPath,
-  setCoverPath,
 }) => {
   const IMAGE_SIZE = 180; // Define your image size
   const { curFlowID, loadFilePath } = useContext(WorkspaceContext);
@@ -47,7 +41,6 @@ const GalleryMediaItem: React.FC<GalleryMediaItemProps> = ({
   if (media.localPath == null) {
     return null;
   }
-  const isCover = coverPath != null && coverPath === media.localPath;
   if (curFlowID == null) {
     return null;
   }
@@ -65,8 +58,9 @@ const GalleryMediaItem: React.FC<GalleryMediaItemProps> = ({
         mediaLocalPath={media.localPath}
         size={IMAGE_SIZE}
         onBrokenLink={() => {
-          // setIsVisible(false);
+          mediaTable?.delete(media.id);
         }}
+        hideBrokenImage
         autoPlay={true}
         isPreview
       />
@@ -84,20 +78,6 @@ const GalleryMediaItem: React.FC<GalleryMediaItemProps> = ({
         </Text>
       </Tooltip>
       <HStack hidden={isSelecting} gap={0}>
-        <Tooltip label="Set as cover">
-          <IconButton
-            size={"sm"}
-            variant={"ghost"}
-            icon={isCover ? <IconPinFilled size={19} /> : <IconPin size={19} />}
-            aria-label="set as cover"
-            onClick={() => {
-              workflowsTable?.updateMetaInfo(curFlowID, {
-                coverMediaPath: media.localPath,
-              });
-              setCoverPath(media.localPath);
-            }}
-          />
-        </Tooltip>
         <Button
           flexGrow={1}
           onClick={() =>
@@ -146,13 +126,6 @@ const GalleryMediaItem: React.FC<GalleryMediaItemProps> = ({
               );
               if (!res) return;
               await mediaTable?.delete(media.id);
-              if (isCover) {
-                await workflowsTable?.updateMetaInfo(curFlowID, {
-                  coverMediaPath: undefined,
-                });
-                setCoverPath("");
-              }
-              onRefreshImagesList();
             }}
           />
         </Tooltip>

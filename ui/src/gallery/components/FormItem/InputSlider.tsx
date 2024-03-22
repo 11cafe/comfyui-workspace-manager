@@ -11,28 +11,29 @@ import {
   SliderThumb,
   SliderTrack,
 } from "@chakra-ui/react";
-import { FormItem } from "./types.ts";
+import { PromptNodeInputItem } from "../MetaBox/utils.ts";
 
-export const InputSlider: FC<FormItem> = (props) => {
+export const InputSlider: FC<
+  {
+    inputItem: PromptNodeInputItem;
+  } & {
+    [key in string]: any;
+  }
+> = (props) => {
+  const inputItem = props.inputItem;
   return (
     <Flex gap={1} direction={"column"}>
       <Flex gap={2}>
         <Flex gap={1} alignItems={"center"} flexBasis={"200px"}>
-          {props.label ?? props.name}
+          {inputItem.label ?? inputItem.inputName}
         </Flex>
         <NumberInput
           width={"100%"}
           step={props?.step}
-          value={props.value}
+          value={inputItem.inputValue}
           min={props?.min}
           max={props?.max}
-          onChange={(val) =>
-            props?.updateMetaData?.({
-              promptKey: props.promptKey,
-              name: props.name,
-              value: val,
-            })
-          }
+          onChange={(val) => {}}
         >
           <NumberInputField />
           <NumberInputStepper>
@@ -43,17 +44,12 @@ export const InputSlider: FC<FormItem> = (props) => {
       </Flex>
       <Flex>
         <Slider
+          maxWidth={"400px"}
           step={props?.step}
-          value={Number(props.value)}
+          value={Number(inputItem.inputValue)}
           min={props?.min ?? 0}
           max={props?.max ?? 100}
-          onChange={(val) =>
-            props?.updateMetaData?.({
-              promptKey: props.promptKey,
-              name: props.name,
-              value: val,
-            })
-          }
+          onChange={(val) => {}}
         >
           <SliderTrack>
             <SliderFilledTrack />
