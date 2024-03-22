@@ -58,7 +58,7 @@ Recommend using Chrome browser for the best experience. Safari doesn't work well
 [中文版教程](https://www.uisdc.com/workspace-manager) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Roadmap](https://github.com/orgs/11cafe/projects/1/views/1)
 
 
-**✨New gallery coming soon! Inspect image metadata, search prompt, model name in all images**
+**✨New gallery coming soon! Inspect image metadata, search image by prompt, model/lora used**
 
 <img width="700" alt="Screenshot 2024-03-23 at 12 58 38 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/5bac9793-7491-4131-b850-037094d03823">
 
