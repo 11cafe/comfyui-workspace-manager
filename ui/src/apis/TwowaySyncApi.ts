@@ -239,6 +239,7 @@ export type ScanLocalFile = {
   json: string;
   createTime: number;
   updateTime: number;
+  lastOpenedTime?: number;
 };
 export type ScanLocalFolder = {
   id: string;

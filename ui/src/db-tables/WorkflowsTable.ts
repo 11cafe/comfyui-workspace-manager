@@ -390,8 +390,9 @@ export class WorkflowsTable extends TableBase<Workflow> {
     };
   }
 
-  public async listAll(): Promise<Workflow[]> {
+  public async listAll(sortBy?: ESortTypes): Promise<Workflow[]> {
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
+    let list: Workflow[];
     if (twoWaySyncEnabled) {
       const fileList = (await scanLocalFiles("", true)).filter(
         (f) => f?.type === "workflow",
@@ -399,12 +400,20 @@ export class WorkflowsTable extends TableBase<Workflow> {
       const allFilesPromises = fileList.map(async (file) => {
         const fileInfoInDB = await indexdb.workflows.get(file.id);
         file.updateTime = fileInfoInDB?.updateTime ?? Date.now();
+        fileInfoInDB?.lastOpenedTime &&
+          (file.lastOpenedTime = fileInfoInDB?.lastOpenedTime);
         return file;
       });
-      return await Promise.all(allFilesPromises);
+      list = await Promise.all(allFilesPromises);
     } else {
-      const list = await indexdb.workflows.toArray();
-      return list;
+      list = await indexdb.workflows.toArray();
     }
+    return sortBy ? sortFileItem(list, sortBy) : list;
+  }
+
+  public async updateLastOpenedTime(id: string) {
+    await indexdb.workflows.update(id, {
+      lastOpenedTime: Date.now(),
+    });
   }
 }

@@ -13,19 +13,19 @@ import {
 } from "@chakra-ui/react";
 import { IconSearch } from "@tabler/icons-react";
 import { useState, ChangeEvent, useEffect, useContext, useRef } from "react";
-import { RECENTLY_OPENED_FILE_LIST, SHORTCUT_TRIGGER_EVENT } from "../const";
-import { indexdb } from "../db-tables/indexdb";
+import { SHORTCUT_TRIGGER_EVENT } from "../const";
 import {
   EOtherKeys,
   EShortcutKeys,
   RecentlyOpenedFile,
+  Workflow,
 } from "../types/dbTypes";
 import { formatTimestamp } from "../utils";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { userSettingsTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import useDebounceFn from "../customHooks/useDebounceFn";
 import { useStateRef } from "../customHooks/useStateRef";
-import { getRecentlyOpenedFileList } from "../utils/recentOpenedFilesUtils";
+import { ESortTypes } from "../RecentFilesDrawer/types";
 
 export default function SpotlightSearch() {
   const { colorMode } = useColorMode();
@@ -125,53 +125,9 @@ export default function SpotlightSearch() {
     );
   };
 
-  /**
-   * Update the cache based on the latest full data obtained,
-   * Avoid file name modification or file deletion in the cache.
-   */
-  const updateRecentlyOpenedFileList = async (
-    allFiles: RecentlyOpenedFile[],
-    recentlyOpenedFileList: RecentlyOpenedFile[],
-  ) => {
-    const recentlyOpenedFileMap: Map<string, RecentlyOpenedFile> = new Map();
-    const allFilesMap: Map<string, RecentlyOpenedFile> = new Map();
-
-    recentlyOpenedFileList.forEach((file) => {
-      recentlyOpenedFileMap.set(file.id, file);
-    });
-
-    allFiles.forEach((file) => {
-      allFilesMap.set(file.id, file);
-    });
-
-    recentlyOpenedFileMap.forEach((value, key) => {
-      if (allFilesMap.has(key)) {
-        recentlyOpenedFileMap.set(key, allFilesMap.get(key)!);
-      } else {
-        recentlyOpenedFileMap.delete(key);
-      }
-    });
-
-    const newRecentlyOpenedFileList = Array.from(
-      recentlyOpenedFileMap.values(),
-    );
-
-    recentlyOpenedFileListRef.current = newRecentlyOpenedFileList;
-    setRenderDataSource(newRecentlyOpenedFileList);
-
-    indexdb.cache.put({
-      id: RECENTLY_OPENED_FILE_LIST,
-      value: JSON.stringify(newRecentlyOpenedFileList),
-    });
-  };
-
   const init = async () => {
-    const recentlyOpenedFileList = await getRecentlyOpenedFileList();
-    recentlyOpenedFileListRef.current = recentlyOpenedFileList;
-    setRenderDataSource(recentlyOpenedFileList);
-
-    const allFiles =
-      (await workflowsTable?.listAll())?.map(
+    const getData = (list: Workflow[]) =>
+      list.map(
         (flow) =>
           ({
             type: "workflow",
@@ -180,8 +136,16 @@ export default function SpotlightSearch() {
             name: flow.name.replace(/\.json$/, ""),
           }) as RecentlyOpenedFile,
       ) ?? [];
-    setAllFileList(allFiles);
-    updateRecentlyOpenedFileList(allFiles, recentlyOpenedFileList);
+
+    const allFiles =
+      (await workflowsTable?.listAll(ESortTypes.RECENTLY_OPENED)) ?? [];
+
+    setAllFileList(getData(allFiles));
+
+    const recentlyOpenedFileList = getData(allFiles.slice(0, 20));
+
+    recentlyOpenedFileListRef.current = recentlyOpenedFileList;
+    setRenderDataSource(recentlyOpenedFileList);
   };
 
   const changeSelectIndex = (num: number) => {

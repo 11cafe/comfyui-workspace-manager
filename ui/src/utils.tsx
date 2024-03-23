@@ -5,13 +5,17 @@ import {
   generateFilePathAbsolute,
   saveJsonFileMyWorkflows,
 } from "./db-tables/DiskFileUtils";
-import { Folder, Workflow, EShortcutKeys, EOtherKeys } from "./types/dbTypes";
+import {
+  Workflow,
+  EShortcutKeys,
+  EOtherKeys,
+  SortableItem,
+} from "./types/dbTypes";
 // @ts-expect-error ComfyUI import
 import { app } from "/scripts/app.js";
 import {
   COMFYSPACE_TRACKING_FIELD_NAME,
   LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
-  SHORTCUT_TRIGGER_EVENT,
 } from "./const";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -168,10 +172,10 @@ export async function validateOrSaveAllJsonFileMyWorkflows(
   }
 }
 
-export const sortFileItem = (
-  items: Array<Workflow | Folder>,
+export const sortFileItem = <T extends SortableItem>(
+  items: T[],
   sortType: ESortTypes = ESortTypes.RECENTLY_MODIFIED,
-) => {
+): T[] => {
   const copyFlows = [...items];
   switch (sortType) {
     case ESortTypes.AZ:
@@ -185,6 +189,11 @@ export const sortFileItem = (
       break;
     case ESortTypes.OLDEST_MODIFIED:
       copyFlows.sort((a, b) => a.updateTime - b.updateTime);
+      break;
+    case ESortTypes.RECENTLY_OPENED:
+      copyFlows.sort(
+        (a, b) => (b.lastOpenedTime ?? 0) - (a.lastOpenedTime ?? 0),
+      );
       break;
   }
   return copyFlows;
@@ -290,13 +299,6 @@ export const matchShortcut = (event: KeyboardEvent) => {
       keys.length === Object.keys(pressedKeys).length &&
       keys.every((key) => pressedKeys[key])
     ) {
-      window.dispatchEvent(
-        new CustomEvent(SHORTCUT_TRIGGER_EVENT, {
-          detail: {
-            shortcutType,
-          },
-        }),
-      );
       return shortcutType as EShortcutKeys | EOtherKeys;
     }
   }

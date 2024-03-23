@@ -12,6 +12,7 @@ import { matchShortcut } from "../utils";
 import { EShortcutKeys } from "../types/dbTypes";
 import useDebounceFn from "../customHooks/useDebounceFn";
 import { deepJsonDiffCheck } from "../utils/deepJsonDiffCheck";
+import { SHORTCUT_TRIGGER_EVENT } from "../const";
 
 export default function AppIsDirtyEventListener() {
   const { isDirty, setIsDirty, setRoute, saveCurWorkflow } =
@@ -24,6 +25,13 @@ export default function AppIsDirtyEventListener() {
       const matchResult = matchShortcut(event);
       if (matchResult) {
         event.preventDefault();
+        window.dispatchEvent(
+          new CustomEvent(SHORTCUT_TRIGGER_EVENT, {
+            detail: {
+              shortcutType: matchResult,
+            },
+          }),
+        );
         switch (matchResult) {
           case EShortcutKeys.SAVE:
             saveCurWorkflow();
