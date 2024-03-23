@@ -1,21 +1,10 @@
 import { createContext } from "react";
-import {
-  EOtherKeys,
-  EShortcutKeys,
-  Folder,
-  Workflow,
-  WorkflowVersion,
-} from "./types/dbTypes";
+import { Folder, Workflow, WorkflowVersion } from "./types/dbTypes";
 import { WorkspaceRoute } from "./types/types";
 export type JsonDiff = {
   old: Object;
   new: Object;
 } | null;
-
-type MatchingShortcut = {
-  shortcut?: EShortcutKeys | EOtherKeys;
-  stamp?: number;
-};
 
 export const WorkspaceContext = createContext<{
   curFlowID: string | null;
