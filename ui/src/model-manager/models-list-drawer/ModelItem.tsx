@@ -47,7 +47,7 @@ export function ModelItem({ data }: Props) {
         image_url && setUrl(image_url);
 
         const newModel: Model = {
-          id: data.model_name + "@" + data.model_type,
+          id: data.model_name + data.model_extension + "@" + data.model_type,
           fileHash: data.file_hash,
           fileFolder: data.model_type,
           fileName: data.model_name + data.model_extension,

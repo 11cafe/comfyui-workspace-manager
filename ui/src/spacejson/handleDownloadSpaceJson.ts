@@ -56,7 +56,7 @@ async function fetchModelData(
     fileFolder: first?.fileFolder ?? null,
     downloadUrl: first?.civitModelVersionID
       ? getCivitModelDownloadUrl(first.civitModelVersionID)
-      : null,
+      : first?.downloadUrl ?? null,
     length: res.length,
     civitModelID: first?.civitModelID,
   };
@@ -92,7 +92,6 @@ export async function extractAndFetchFileNames(
   }).then((res) => res.json());
   console.log("repos", resp);
 
-  // Wait for all the model data fetch operations to complete
   const models = await Promise.all(modelPromises);
   return { models: models, images, nodeRepos: resp };
 }

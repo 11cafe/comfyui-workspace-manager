@@ -42,7 +42,7 @@ export default function ModelManagerTopbar() {
       async (e: { detail: ModelsListRespItemFromApi[] }) => {
         const modelsPromises = e.detail?.map(async (item) => {
           let newModel: Model = {
-            id: item.model_name + "@" + item.model_type,
+            id: item.model_name + item.model_extension + "@" + item.model_type,
             modelName: null,
             fileHash: item.file_hash ?? null,
             fileFolder: item.model_type,

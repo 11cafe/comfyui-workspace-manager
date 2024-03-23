@@ -35,6 +35,7 @@ import { getAllModelsList } from "../Api";
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
 import { downloadJsonFile } from "../utils/downloadJsonFile";
 import { workflowsTable } from "../db-tables/WorkspaceDB";
+import { indexdb } from "../db-tables/indexdb";
 
 export default function DownloadSpaceJsonDialog() {
   const { setRoute } = useContext(WorkspaceContext);
@@ -94,8 +95,16 @@ export default function DownloadSpaceJsonDialog() {
     event.preventDefault();
     const formData = new FormData(event.target);
 
-    const modelDeps: ModelFile[] =
-      deps?.models.map((model) => {
+    const modelDepsPromises: Promise<ModelFile>[] =
+      deps?.models.map(async (model) => {
+        const inputDownloadUrl = formData
+          .get(model.filename + model.nodeType)
+          ?.toString();
+        if (inputDownloadUrl) {
+          await indexdb.models.update(model.filename + "@" + model.fileFolder, {
+            downloadUrl: inputDownloadUrl,
+          });
+        }
         return {
           filename: model.filename,
           nodeType: model.nodeType,
@@ -107,6 +116,7 @@ export default function DownloadSpaceJsonDialog() {
             null,
         };
       }) ?? [];
+    const modelDeps = await Promise.all(modelDepsPromises);
     if (!validateModelDeps(modelDeps)) {
       return;
     }
@@ -141,16 +151,6 @@ export default function DownloadSpaceJsonDialog() {
     );
   };
 
-  if (!deps) {
-    return (
-      <Modal isOpen={true} onClose={() => setRoute("root")} size={"xl"}>
-        <ModalContent p={5}>
-          <Text>Loading...</Text>
-        </ModalContent>
-      </Modal>
-    );
-  }
-
   return (
     <Modal isOpen={true} onClose={() => setRoute("root")} size={"xl"}>
       <ModalContent>
@@ -168,51 +168,56 @@ export default function DownloadSpaceJsonDialog() {
             </Tooltip>
           </HStack>
           <Text color={"GrayText"}>Export one-click installable workflow</Text>
-          <form onSubmit={handleSubmit}>
-            <Stack gap={5} mt={5}>
-              <Stack>
-                <Heading size={"sm"}>Models ({deps.models.length})</Heading>
-                {deps.models.map((modelFile, index) => (
-                  <ModelDepsItem
-                    modelFile={modelFile}
-                    key={index}
-                    errors={errors}
-                  />
-                ))}
-              </Stack>
-
-              {deps.images.length > 0 && (
+          {deps == null && <Spinner size="md" color="teal.400" />}
+          {deps && (
+            <form onSubmit={handleSubmit}>
+              <Stack gap={5} mt={5}>
                 <Stack>
-                  <HStack>
-                    <Heading size={"sm"}>Images ({deps.images.length})</Heading>
-                    <Text color={"GrayText"}>Will be uploaded as url</Text>
-                  </HStack>
-                  {uploadingImage && (
-                    <span>
-                      <Spinner size="md" color="teal.400" /> Uploading
-                    </span>
-                  )}
-                  {deps.images.map((image) => (
-                    <Stack key={image.filename}>
-                      <p>{image.filename}</p>
-                      <Image
-                        width={250}
-                        src={`/workspace/view_media?filename=${image.filename}&isPreview=true&isInput=true`}
-                      />
-                    </Stack>
+                  <Heading size={"sm"}>Models ({deps.models.length})</Heading>
+                  {deps.models.map((modelFile, index) => (
+                    <ModelDepsItem
+                      modelFile={modelFile}
+                      key={index}
+                      errors={errors}
+                    />
                   ))}
                 </Stack>
-              )}
-              <Button
-                width={"fit-content"}
-                colorScheme="teal"
-                type="submit"
-                mt={4}
-              >
-                Download .space.json
-              </Button>
-            </Stack>
-          </form>
+
+                {deps.images.length > 0 && (
+                  <Stack>
+                    <HStack>
+                      <Heading size={"sm"}>
+                        Images ({deps.images.length})
+                      </Heading>
+                      <Text color={"GrayText"}>Will be uploaded as url</Text>
+                    </HStack>
+                    {uploadingImage && (
+                      <span>
+                        <Spinner size="md" color="teal.400" /> Uploading
+                      </span>
+                    )}
+                    {deps.images.map((image) => (
+                      <Stack key={image.filename}>
+                        <p>{image.filename}</p>
+                        <Image
+                          width={250}
+                          src={`/workspace/view_media?filename=${image.filename}&isPreview=true&isInput=true`}
+                        />
+                      </Stack>
+                    ))}
+                  </Stack>
+                )}
+                <Button
+                  width={"fit-content"}
+                  colorScheme="teal"
+                  type="submit"
+                  mt={4}
+                >
+                  Download .space.json
+                </Button>
+              </Stack>
+            </form>
+          )}
         </ModalBody>
       </ModalContent>
     </Modal>
