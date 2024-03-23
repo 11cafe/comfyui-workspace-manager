@@ -42,14 +42,28 @@ export default function DownloadSpaceJsonDialog() {
   const [deps, setDeps] = useState<DepsResult>();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [uploadingImage, setUploadingImage] = useState(false);
-  useEffect(() => {
-    console.log("app.graph", app.graph);
+
+  const init = useCallback(async () => {
     const graph = app.graph.serialize();
-    console.log("graph serialize", graph);
-    extractAndFetchFileNames(graph.nodes ?? []).then((deps) => {
-      setDeps(deps);
+    extractAndFetchFileNames(graph.nodes ?? []).then((depsRes) => {
+      setDeps(depsRes);
     });
   }, []);
+
+  const onRefreshModelsList = useCallback(async () => {
+    setDeps(undefined);
+    await getAllModelsList();
+
+    // very hacky way to wait for models indexdb to be updated, should be replaced with a proper event listener
+    setTimeout(() => {
+      init();
+    }, 5000);
+  }, []);
+
+  useEffect(() => {
+    init();
+  }, []);
+
   const validateURL = (url: string) => {
     const pattern = new RegExp(
       "^(https?:\\/\\/)?" +
@@ -101,7 +115,9 @@ export default function DownloadSpaceJsonDialog() {
           .get(model.filename + model.nodeType)
           ?.toString();
         if (inputDownloadUrl) {
-          await indexdb.models.update(model.filename + "@" + model.fileFolder, {
+          // because the models table is storing filename without extension as id, which should be migrated
+          const baseName = getBaseFileName(model.filename);
+          await indexdb.models.update(baseName + "@" + model.fileFolder, {
             downloadUrl: inputDownloadUrl,
           });
         }
@@ -147,7 +163,7 @@ export default function DownloadSpaceJsonDialog() {
 
     downloadJsonFile(
       JSON.stringify(graph),
-      (workflowsTable?.curWorkflow?.name ?? "unknown") + ".space",
+      (workflowsTable?.curWorkflow?.name ?? "unknown") + ".runner",
     );
   };
 
@@ -158,7 +174,7 @@ export default function DownloadSpaceJsonDialog() {
           <HStack>
             <Heading size={"md"}>Workflow Resouce Dependencies</Heading>
             <Tooltip
-              label=".space.json workflows include all resource dependecy links
+              label=".runner.json workflows include all resource dependecy links
               (models, cursom nodes, input images) and can be one-click
               installed and run in any ComfyUI with workpace-manager installed."
             >
@@ -179,6 +195,7 @@ export default function DownloadSpaceJsonDialog() {
                       modelFile={modelFile}
                       key={index}
                       errors={errors}
+                      onClickRefetchModelList={onRefreshModelsList}
                     />
                   ))}
                 </Stack>
@@ -213,7 +230,7 @@ export default function DownloadSpaceJsonDialog() {
                   type="submit"
                   mt={4}
                 >
-                  Download .space.json
+                  Download .runner.json
                 </Button>
               </Stack>
             </form>
@@ -224,12 +241,24 @@ export default function DownloadSpaceJsonDialog() {
   );
 }
 
+function getBaseFileName(filename: string) {
+  const parts = filename.split(".");
+  if (parts.length > 1) {
+    parts.pop();
+    return parts.join(".");
+  } else {
+    return filename;
+  }
+}
+
 function ModelDepsItem({
   modelFile,
   errors,
+  onClickRefetchModelList,
 }: {
   modelFile: DepsResult["models"][0];
   errors: Record<string, string>;
+  onClickRefetchModelList: () => void;
 }) {
   const inputKey = modelFile.filename + modelFile.nodeType;
 
@@ -248,7 +277,7 @@ function ModelDepsItem({
           width={"fit-content"}
           borderColor={"red"}
           borderWidth={errors[inputKey] != null ? 2 : 0}
-          onClick={async () => await getAllModelsList()}
+          onClick={onClickRefetchModelList}
         >
           Fetch model file
         </Button>

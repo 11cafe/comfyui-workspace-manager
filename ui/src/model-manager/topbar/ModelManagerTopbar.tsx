@@ -41,8 +41,13 @@ export default function ModelManagerTopbar() {
       "model_list",
       async (e: { detail: ModelsListRespItemFromApi[] }) => {
         const modelsPromises = e.detail?.map(async (item) => {
+          const existing = await indexdb.models.get(
+            item.model_name + "@" + item.model_type,
+          );
+          // avoid overwriting existing models cuz it may have downloadUrl info
+          if (existing?.fileHash) return null;
           let newModel: Model = {
-            id: item.model_name + item.model_extension + "@" + item.model_type,
+            id: item.model_name + "@" + item.model_type,
             modelName: null,
             fileHash: item.file_hash ?? null,
             fileFolder: item.model_type,
@@ -62,7 +67,9 @@ export default function ModelManagerTopbar() {
         const models = (await Promise.all(modelsPromises)).filter(
           (model) => model != null,
         );
-        indexdb.models.bulkPut(models);
+        indexdb.models.bulkPut(
+          models.filter((model) => model != null) as Model[],
+        );
       },
     );
     return () => {

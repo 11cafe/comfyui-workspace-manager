@@ -171,7 +171,7 @@ export default function DropdownTitle() {
                 icon={<IconDownload size={20} />}
                 iconSpacing={1}
               >
-                Download .space.json
+                Download .runner.json
               </MenuItem>
               <MenuItem
                 onClick={() => setRoute("saveAsModal")}
