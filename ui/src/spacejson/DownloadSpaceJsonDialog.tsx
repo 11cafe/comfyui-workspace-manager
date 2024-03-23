@@ -46,7 +46,6 @@ export default function DownloadSpaceJsonDialog() {
     const graph = app.graph.serialize();
     console.log("graph serialize", graph);
     extractAndFetchFileNames(graph.nodes ?? []).then((deps) => {
-      console.log(deps);
       setDeps(deps);
     });
   }, []);
@@ -95,7 +94,7 @@ export default function DownloadSpaceJsonDialog() {
     event.preventDefault();
     const formData = new FormData(event.target);
 
-    const modelDeps =
+    const modelDeps: ModelFile[] =
       deps?.models.map((model) => {
         return {
           filename: model.filename,
@@ -126,11 +125,13 @@ export default function DownloadSpaceJsonDialog() {
         image.url = json[image.filename];
       });
     }
+    setUploadingImage(false);
     const graph = app.graph.serialize();
     (graph.extra ||= {})[COMFYSPACE_TRACKING_FIELD_NAME] ||= {};
     graph.extra[COMFYSPACE_TRACKING_FIELD_NAME].deps = {
       models: modelDeps,
       images: imageDeps,
+      nodeRepos: deps?.nodeRepos ?? [],
     } as WorkspaceInfoDeps;
     console.log("graph", graph);
 
@@ -138,7 +139,6 @@ export default function DownloadSpaceJsonDialog() {
       JSON.stringify(graph),
       (workflowsTable?.curWorkflow?.name ?? "unknown") + ".space",
     );
-    setUploadingImage(false);
   };
 
   if (!deps) {
@@ -168,8 +168,8 @@ export default function DownloadSpaceJsonDialog() {
             </Tooltip>
           </HStack>
           <Text color={"GrayText"}>Export one-click installable workflow</Text>
-          <Stack gap={5} mt={5}>
-            <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
+            <Stack gap={5} mt={5}>
               <Stack>
                 <Heading size={"sm"}>Models ({deps.models.length})</Heading>
                 {deps.models.map((modelFile, index) => (
@@ -181,9 +181,12 @@ export default function DownloadSpaceJsonDialog() {
                 ))}
               </Stack>
 
-              {deps.models.length > 0 && (
+              {deps.images.length > 0 && (
                 <Stack>
-                  <Heading size={"sm"}>Images ({deps.images.length})</Heading>
+                  <HStack>
+                    <Heading size={"sm"}>Images ({deps.images.length})</Heading>
+                    <Text color={"GrayText"}>Will be uploaded as url</Text>
+                  </HStack>
                   {uploadingImage && (
                     <span>
                       <Spinner size="md" color="teal.400" /> Uploading
@@ -204,12 +207,12 @@ export default function DownloadSpaceJsonDialog() {
                 width={"fit-content"}
                 colorScheme="teal"
                 type="submit"
-                mt={10}
+                mt={4}
               >
                 Download .space.json
               </Button>
-            </form>
-          </Stack>
+            </Stack>
+          </form>
         </ModalBody>
       </ModalContent>
     </Modal>
@@ -262,6 +265,7 @@ function ModelDepsItem({
                   ? getCivitModelPageUrl(modelFile.civitModelID)
                   : modelFile.downloadUrl
               }
+              target="_blank"
             >
               {modelFile.filename}
             </a>

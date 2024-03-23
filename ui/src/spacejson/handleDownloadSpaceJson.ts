@@ -1,3 +1,4 @@
+import { workflowsTable } from "../db-tables/WorkspaceDB";
 import { indexdb } from "../db-tables/indexdb";
 import { getCivitModelDownloadUrl } from "../utils/civitUtils";
 
@@ -20,10 +21,15 @@ type ImageFile = {
   nodeType: string;
   url?: string;
 };
+type NodeRepo = {
+  commitHash: string;
+  repoID: string;
+};
 
 export type DepsResult = {
   models: (ModelFile & { civitModelID?: string; length: number })[];
   images: ImageFile[];
+  nodeRepos: NodeRepo[];
 };
 
 export type DepsResultModel = ModelFile & {
@@ -80,9 +86,13 @@ export async function extractAndFetchFileNames(
       });
     }
   });
+  const resp = await fetch("workspace/fetch_node_repos", {
+    method: "POST",
+    body: JSON.stringify({ nodes: nodes.map((n) => n.type) }),
+  }).then((res) => res.json());
+  console.log("repos", resp);
 
   // Wait for all the model data fetch operations to complete
   const models = await Promise.all(modelPromises);
-
-  return { models: models, images };
+  return { models: models, images, nodeRepos: resp };
 }

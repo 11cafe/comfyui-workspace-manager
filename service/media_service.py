@@ -62,10 +62,8 @@ async def view_file(request):
 
 @server.PromptServer.instance.routes.post("/workspace/upload_image")  # Handle POST requests
 async def upload_image_handler(request):
-    # Assuming JSON payload
     data = await request.json()
     image_paths = data.get("images")
-    print(f"image_paths: {image_paths}")
     if not image_paths:
         return web.Response(status=400, text="Images parameter is required and should be a list of image paths.")
 
@@ -75,7 +73,6 @@ async def upload_image_handler(request):
 
     # Iterate over image paths to add them to FormData
     for image_path in image_paths:
-        print(f"image_path: {image_path}")
         abs_path = os.path.join(folder_paths.get_input_directory(), image_path)
         
         if not os.path.exists(abs_path):

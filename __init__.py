@@ -15,6 +15,7 @@ from .service.model_manager.model_list import get_model_list
 from .service.media_service import *
 from .service.file_sync_service import *
 from .service.db_service import get_my_workflows_dir
+from .service.node_service import *
 
 WEB_DIRECTORY = "entry"
 NODE_CLASS_MAPPINGS = {}
