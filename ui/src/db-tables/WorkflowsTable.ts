@@ -15,7 +15,11 @@ import {
 import { ESortTypes, ImportWorkflow } from "../RecentFilesDrawer/types";
 import { defaultGraph } from "../defaultGraph";
 import { scanMyWorkflowsDir } from "../utils/twowaySyncUtils";
-import { TwowaySyncAPI } from "../apis/TwowaySyncApi";
+import {
+  ScanLocalFile,
+  TwowaySyncAPI,
+  scanLocalFiles,
+} from "../apis/TwowaySyncApi";
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
 
 export class WorkflowsTable extends TableBase<Workflow> {
@@ -384,5 +388,23 @@ export class WorkflowsTable extends TableBase<Workflow> {
       ...wf,
       json: JSON.stringify(data.json),
     };
+  }
+
+  public async listAll(): Promise<Workflow[]> {
+    const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
+    if (twoWaySyncEnabled) {
+      const fileList = (await scanLocalFiles("", true)).filter(
+        (f) => f?.type === "workflow",
+      ) as ScanLocalFile[];
+      const allFilesPromises = fileList.map(async (file) => {
+        const fileInfoInDB = await indexdb.workflows.get(file.id);
+        file.updateTime = fileInfoInDB?.updateTime ?? Date.now();
+        return file;
+      });
+      return await Promise.all(allFilesPromises);
+    } else {
+      const list = await indexdb.workflows.toArray();
+      return list;
+    }
   }
 }

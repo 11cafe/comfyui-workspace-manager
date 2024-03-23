@@ -9,29 +9,39 @@ import {
   HStack,
   Text,
   Spinner,
+  useColorMode,
 } from "@chakra-ui/react";
 import { IconSearch } from "@tabler/icons-react";
-import { useState, ChangeEvent, useEffect, useContext } from "react";
-import { RECENTLY_OPENED_FILE_LIST } from "../const";
+import { useState, ChangeEvent, useEffect, useContext, useRef } from "react";
+import { RECENTLY_OPENED_FILE_LIST, SHORTCUT_TRIGGER_EVENT } from "../const";
 import { indexdb } from "../db-tables/indexdb";
-import { RecentlyOpenedFile } from "../types/dbTypes";
+import {
+  EOtherKeys,
+  EShortcutKeys,
+  RecentlyOpenedFile,
+} from "../types/dbTypes";
 import { formatTimestamp } from "../utils";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { userSettingsTable, workflowsTable } from "../db-tables/WorkspaceDB";
-import { scanLocalFiles } from "../apis/TwowaySyncApi";
 import useDebounceFn from "../customHooks/useDebounceFn";
 import { useStateRef } from "../customHooks/useStateRef";
 import { getRecentlyOpenedFileList } from "../utils/recentOpenedFilesUtils";
 
 export default function SpotlightSearch() {
+  const { colorMode } = useColorMode();
   const { loadWorkflowID, setRoute } = useContext(WorkspaceContext);
-  const [recentlyOpenedFileList, setRecentlyOpenedFileList] = useState<
-    RecentlyOpenedFile[]
-  >([]);
   const [allFileList, setAllFileList] = useState<RecentlyOpenedFile[]>([]);
   const [searchKey, setSearchKey, searchKeyRef] = useStateRef("");
-  const [searchResult, setSearchResult] = useState<RecentlyOpenedFile[]>([]);
+  const recentlyOpenedFileListRef = useRef<RecentlyOpenedFile[]>([]);
+  const [renderDataSource, setRenderDataSource, renderDataSourceRef] =
+    useStateRef<RecentlyOpenedFile[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectIndex, setSelectIndex, selectIndexRef] = useStateRef(0);
+  const keyRef = useRef({
+    lastPressedKey: "",
+    spotlightSearchShortcutFirstKey: "",
+    spotlightSearchShortcutLastKey: "",
+  });
 
   const onClose = () => {
     setRoute("root");
@@ -49,55 +59,68 @@ export default function SpotlightSearch() {
           .toLocaleLowerCase()
           .includes(searchKeyRef.current.toLocaleLowerCase()),
     );
-    setSearchResult(searchResult);
+    setRenderDataSource(searchResult);
+    setSelectIndex(0);
     setLoading(false);
   };
 
-  const [debounceAutoSaveWorkflow] = useDebounceFn(handlerSearch, 300);
+  const [debounceSearch, cancelDebounceSearch] = useDebounceFn(
+    handlerSearch,
+    300,
+  );
 
   const onSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchKey(event.target.value);
     if (event.target.value) {
-      debounceAutoSaveWorkflow();
+      debounceSearch();
       !loading && setLoading(true);
     } else {
-      setSearchResult([]);
+      setLoading(false);
+      cancelDebounceSearch();
+      setRenderDataSource(recentlyOpenedFileListRef.current);
     }
   };
 
   const renderSearchResult = () => {
     if (loading) return null;
 
-    if (searchKey && searchResult.length === 0) {
+    if (searchKey && renderDataSource.length === 0) {
       return <Text ml={2}>No matching results</Text>;
     }
 
     return (
       <>
-        {(searchResult.length > 0 ? searchResult : recentlyOpenedFileList).map(
-          (result) => (
-            <Button
-              colorScheme="teal"
-              variant="ghost"
-              key={result.id}
-              size="sm"
-              justifyContent="start"
-              px={2}
-              color="#1A202C"
-              onClick={() => {
-                onOpen(result);
-              }}
-              minH="26px"
-            >
-              {result.name}
-              {result.updateTime && (
-                <Text color={"GrayText"} ml={2} fontSize={"sm"}>
-                  Updated: {formatTimestamp(result.updateTime)}
-                </Text>
-              )}
-            </Button>
-          ),
-        )}
+        {renderDataSource.map((result, index) => (
+          <Button
+            colorScheme="teal"
+            variant="ghost"
+            key={result.id}
+            size="sm"
+            justifyContent="start"
+            px={2}
+            color={
+              colorMode === "light" ? "#1A202C" : "rgba(255, 255, 255, 0.92)"
+            }
+            onClick={() => {
+              onOpen(result);
+            }}
+            minH="26px"
+            isActive={index === selectIndex}
+          >
+            {result.name}
+            {result.updateTime && (
+              <Text
+                color={
+                  colorMode === "light" ? "GrayText" : "rgb(255, 255, 255, 0.6)"
+                }
+                ml={2}
+                fontSize={"sm"}
+              >
+                Updated: {formatTimestamp(result.updateTime)}
+              </Text>
+            )}
+          </Button>
+        ))}
       </>
     );
   };
@@ -108,10 +131,8 @@ export default function SpotlightSearch() {
    */
   const updateRecentlyOpenedFileList = async (
     allFiles: RecentlyOpenedFile[],
+    recentlyOpenedFileList: RecentlyOpenedFile[],
   ) => {
-    console.log("allFiles", allFiles);
-    const recentlyOpenedFileList = await getRecentlyOpenedFileList();
-
     const recentlyOpenedFileMap: Map<string, RecentlyOpenedFile> = new Map();
     const allFilesMap: Map<string, RecentlyOpenedFile> = new Map();
 
@@ -135,7 +156,8 @@ export default function SpotlightSearch() {
       recentlyOpenedFileMap.values(),
     );
 
-    setRecentlyOpenedFileList(newRecentlyOpenedFileList);
+    recentlyOpenedFileListRef.current = newRecentlyOpenedFileList;
+    setRenderDataSource(newRecentlyOpenedFileList);
 
     indexdb.cache.put({
       id: RECENTLY_OPENED_FILE_LIST,
@@ -144,48 +166,109 @@ export default function SpotlightSearch() {
   };
 
   const init = async () => {
-    const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
-    let allFiles;
-    if (twoWaySyncEnabled) {
-      const fileList = await scanLocalFiles("", true);
-      const allFilesPromises = fileList
-        .filter((f) => f?.type === "workflow")
-        .map(async (file) => {
-          const fileInfoInDB = await workflowsTable?.get(file.id);
+    const recentlyOpenedFileList = await getRecentlyOpenedFileList();
+    recentlyOpenedFileListRef.current = recentlyOpenedFileList;
+    setRenderDataSource(recentlyOpenedFileList);
 
-          return {
+    const allFiles =
+      (await workflowsTable?.listAll())?.map(
+        (flow) =>
+          ({
             type: "workflow",
-            updateTime: fileInfoInDB?.updateTime ?? Date.now(),
-            id: file.id,
-            name: file.name.replace(/\.json$/, ""),
-          } as RecentlyOpenedFile;
-        });
-
-      allFiles = await Promise.all(allFilesPromises);
-    } else {
-      allFiles =
-        (await workflowsTable?.listAll())?.map(
-          (flow) =>
-            ({
-              type: "workflow",
-              updateTime: flow?.updateTime ?? Date.now(),
-              id: flow.id,
-              name: flow.name.replace(/\.json$/, ""),
-            }) as RecentlyOpenedFile,
-        ) ?? [];
-    }
+            updateTime: flow?.updateTime ?? Date.now(),
+            id: flow.id,
+            name: flow.name.replace(/\.json$/, ""),
+          }) as RecentlyOpenedFile,
+      ) ?? [];
     setAllFileList(allFiles);
-    updateRecentlyOpenedFileList(allFiles);
+    updateRecentlyOpenedFileList(allFiles, recentlyOpenedFileList);
+  };
+
+  const changeSelectIndex = (num: number) => {
+    setSelectIndex((preIndex) => {
+      const nextIndex = preIndex + num;
+      if (nextIndex < 0) {
+        return renderDataSourceRef.current.length - 1;
+      } else if (nextIndex > renderDataSourceRef.current.length - 1) {
+        return 0;
+      } else {
+        return nextIndex;
+      }
+    });
   };
 
   useEffect(() => {
     init();
+
+    userSettingsTable?.getSetting("shortcuts").then((res) => {
+      const openSpotlightSearch =
+        res.openSpotlightSearch ??
+        userSettingsTable?.defaultSettings.shortcuts.openSpotlightSearch;
+
+      const keys = openSpotlightSearch.split("+");
+      keyRef.current.spotlightSearchShortcutFirstKey =
+        keys[0] === "Command" ? "Meta" : keys[0];
+      keyRef.current.spotlightSearchShortcutLastKey = keys[keys.length - 1];
+    });
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      /**
+       * Determine whether to open the selected file when the button is lifted. Conditions are met:
+       * 1. The raised button is the first button among the shortcut keys that trigger focus search;
+       * 2. The last pressed key is the last key to trigger the focus search shortcut key;
+       * 3. The selected file exists;
+       */
+      if (
+        event.key === keyRef.current.spotlightSearchShortcutFirstKey &&
+        keyRef.current.lastPressedKey ===
+          keyRef.current.spotlightSearchShortcutLastKey &&
+        selectIndexRef.current > 0 &&
+        renderDataSourceRef.current[selectIndexRef.current]
+      ) {
+        onOpen(renderDataSourceRef.current[selectIndexRef.current]);
+      }
+    };
+
+    const keydownListener = (event: KeyboardEvent) => {
+      keyRef.current.lastPressedKey = event.key.toUpperCase();
+    };
+
+    const shortcutTrigger = (event: CustomEvent) => {
+      switch (event.detail.shortcutType) {
+        case EShortcutKeys.openSpotlightSearch:
+          changeSelectIndex(1);
+          break;
+        case EOtherKeys.ArrowDown:
+          changeSelectIndex(1);
+          break;
+        case EOtherKeys.ArrowUp:
+          changeSelectIndex(-1);
+          break;
+        case EOtherKeys.Enter:
+          onOpen(renderDataSourceRef.current[selectIndexRef.current]);
+          break;
+      }
+    };
+
+    document.addEventListener("keyup", handleKeyUp);
+    document.addEventListener("keydown", keydownListener);
+    window.addEventListener(SHORTCUT_TRIGGER_EVENT, shortcutTrigger);
+
+    return () => {
+      document.removeEventListener("keyup", handleKeyUp);
+      document.removeEventListener("keydown", keydownListener);
+      window.removeEventListener(SHORTCUT_TRIGGER_EVENT, shortcutTrigger);
+    };
   }, []);
 
   return (
     <Modal isOpen={true} onClose={onClose} size="xl">
       <ModalContent
-        bg="rgba(255, 255, 255, 0.8)"
+        bg={
+          colorMode === "light"
+            ? "rgba(255, 255, 255, 0.8)"
+            : "rgb(45, 55, 72, 0.8)"
+        }
         backdropFilter="auto"
         backdropBlur="8px"
       >

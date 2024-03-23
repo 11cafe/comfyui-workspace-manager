@@ -26,7 +26,6 @@ import {
   getWorkflowIdInUrlHash,
   generateUrlHashWithFlowId,
   openWorkflowInNewTab,
-  validateOrSaveAllJsonFileMyWorkflows,
 } from "./utils";
 import { Topbar } from "./topbar/Topbar";
 import { Workflow, WorkflowVersion } from "./types/dbTypes";

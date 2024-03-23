@@ -5,12 +5,13 @@ import {
   generateFilePathAbsolute,
   saveJsonFileMyWorkflows,
 } from "./db-tables/DiskFileUtils";
-import { Folder, Workflow, EShortcutKeys } from "./types/dbTypes";
+import { Folder, Workflow, EShortcutKeys, EOtherKeys } from "./types/dbTypes";
 // @ts-expect-error ComfyUI import
 import { app } from "/scripts/app.js";
 import {
   COMFYSPACE_TRACKING_FIELD_NAME,
   LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
+  SHORTCUT_TRIGGER_EVENT,
 } from "./const";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -253,12 +254,22 @@ export function insertWorkflowToCanvas(json: string, insertPos?: number[]) {
   }
 }
 
-export const matchShortcut = async (event: KeyboardEvent) => {
-  const shortcuts =
-    (await userSettingsTable?.getSetting("shortcuts")) ??
-    userSettingsTable?.defaultSettings.shortcuts;
+export const matchShortcut = (event: KeyboardEvent) => {
+  /**
+   * Where matchShortcut is used, the browser's default behavior needs to be prevented.
+   * So here you cannot get the shortcut keys by await userSettingsTable?.getSetting("shortcuts")
+   * Because the async await function will cause the browser's default behavior to fail;
+   */
+
+  const shortcuts = userSettingsTable?.shortcuts;
 
   if (!shortcuts) return false;
+
+  Object.assign(shortcuts, {
+    [EOtherKeys.ArrowDown]: "ARROWDOWN",
+    [EOtherKeys.ArrowUp]: "ARROWUP",
+    [EOtherKeys.Enter]: "ENTER",
+  });
 
   for (const shortcutType in shortcuts) {
     const shortcutString = shortcuts[shortcutType as EShortcutKeys];
@@ -279,7 +290,14 @@ export const matchShortcut = async (event: KeyboardEvent) => {
       keys.length === Object.keys(pressedKeys).length &&
       keys.every((key) => pressedKeys[key])
     ) {
-      return shortcutType;
+      window.dispatchEvent(
+        new CustomEvent(SHORTCUT_TRIGGER_EVENT, {
+          detail: {
+            shortcutType,
+          },
+        }),
+      );
+      return shortcutType as EShortcutKeys | EOtherKeys;
     }
   }
 };
