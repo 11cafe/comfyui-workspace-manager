@@ -28,12 +28,7 @@ import {
   openWorkflowInNewTab,
 } from "./utils";
 import { Topbar } from "./topbar/Topbar";
-import {
-  EOtherKeys,
-  EShortcutKeys,
-  Workflow,
-  WorkflowVersion,
-} from "./types/dbTypes";
+import { Workflow, WorkflowVersion } from "./types/dbTypes";
 import { useDialog } from "./components/AlertDialogProvider";
 import React from "react";
 const RecentFilesDrawer = React.lazy(
