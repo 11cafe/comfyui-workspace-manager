@@ -70,6 +70,7 @@ export default function ModelManagerTopbar() {
         indexdb.models.bulkPut(
           models.filter((model) => model != null) as Model[],
         );
+        window.dispatchEvent(new CustomEvent("model_list_updated"));
       },
     );
     return () => {

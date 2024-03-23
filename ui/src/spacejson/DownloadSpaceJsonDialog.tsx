@@ -53,11 +53,10 @@ export default function DownloadSpaceJsonDialog() {
   const onRefreshModelsList = useCallback(async () => {
     setDeps(undefined);
     await getAllModelsList();
-
-    // very hacky way to wait for models indexdb to be updated, should be replaced with a proper event listener
-    setTimeout(() => {
+    window.addEventListener("model_list_updated", () => {
       init();
-    }, 5000);
+      window.removeEventListener("model_list_updated", () => {});
+    });
   }, []);
 
   useEffect(() => {
