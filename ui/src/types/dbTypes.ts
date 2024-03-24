@@ -4,6 +4,7 @@ import { TopFieldType } from "../gallery/components/MetaBox/GalleryRightMetadata
 export interface SortableItem {
   name: string;
   updateTime: number;
+  lastOpenedTime?: number;
 }
 
 export interface Workflow extends SortableItem {

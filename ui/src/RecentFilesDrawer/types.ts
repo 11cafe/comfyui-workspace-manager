@@ -5,6 +5,10 @@ export const sortTypeLocalStorageKey = "CWM_WORKFLOWS_SORT_TYPE";
 
 export enum ESortTypes {
   /**
+   * Sort by last opened time, most recently modified first
+   */
+  RECENTLY_OPENED = "recentlyOpened",
+  /**
    * Sort by update time, most recently modified first
    */
   RECENTLY_MODIFIED = "newest",

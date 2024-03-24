@@ -44,7 +44,6 @@ import { useStateRef } from "./customHooks/useStateRef";
 import { indexdb } from "./db-tables/indexdb";
 import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
 import { deepJsonDiffCheck } from "./utils/deepJsonDiffCheck";
-import { updateRecentlyOpenedFileList } from "./utils/recentOpenedFilesUtils";
 const AppIsDirtyEventListener = React.lazy(
   () => import("./topbar/AppIsDirtyEventListener"),
 );
@@ -164,12 +163,7 @@ export default function App() {
       document.title = "ComfyUI - " + workflow!.name;
     }
     if (workflow) {
-      updateRecentlyOpenedFileList({
-        id: workflow.id,
-        name: workflow.name.replace(/\.json$/, ""),
-        updateTime: workflow.updateTime,
-        type: "workflow",
-      });
+      workflowsTable?.updateLastOpenedTime(workflow.id);
     }
   };
 
