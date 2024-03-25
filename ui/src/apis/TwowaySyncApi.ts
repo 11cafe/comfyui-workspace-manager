@@ -98,10 +98,10 @@ export namespace TwowaySyncAPI {
   export async function saveWorkflow(workflow: Workflow) {
     const json = workflow.json;
     const flow = JSON.parse(json);
-    flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {
-      id: workflow.id,
-    };
-
+    if (flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] == null) {
+      flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {};
+    }
+    flow.extra[COMFYSPACE_TRACKING_FIELD_NAME].id = workflow.id;
     const response = await fetch("/workspace/file/save", {
       method: "POST",
       headers: {

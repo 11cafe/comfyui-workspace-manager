@@ -45,9 +45,7 @@ interface Props {
 }
 
 export default function ShareDialog({ onClose }: Props) {
-  const [versionName, setVersionName] = useState(
-    "version " + getCurDateString(),
-  );
+  const [versionName, setVersionName] = useState("v-" + getCurDateString());
   const [localVersions, setLocalVersions] = useState<WorkflowVersion[]>([]);
   const [loading, setLoading] = useState(false);
   const [cloudHost, setCloudHost] = useState("");

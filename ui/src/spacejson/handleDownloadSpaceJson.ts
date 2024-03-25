@@ -1,6 +1,11 @@
-import { workflowsTable } from "../db-tables/WorkspaceDB";
+import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
 import { indexdb } from "../db-tables/indexdb";
-import { getCivitModelDownloadUrl } from "../utils/civitUtils";
+import {
+  getCivitModelDownloadUrl,
+  getCivitModelPageUrl,
+} from "../utils/civitUtils";
+// @ts-ignore
+import { app } from "/scripts/app.js";
 
 type LiteNode = {
   id: number;
@@ -14,6 +19,7 @@ export type ModelFile = {
   fileHash: string | null;
   fileFolder: string | null;
   downloadUrl: string | null;
+  infoUrl: string | null;
 };
 
 type ImageFile = {
@@ -58,7 +64,9 @@ async function fetchModelData(
       ? getCivitModelDownloadUrl(first.civitModelVersionID)
       : first?.downloadUrl ?? null,
     length: res.length,
-    civitModelID: first?.civitModelID,
+    infoUrl: first?.civitModelID
+      ? getCivitModelPageUrl(first.civitModelID, first.civitModelVersionID)
+      : null,
   };
   return modelFile;
 }
@@ -70,7 +78,8 @@ export async function extractAndFetchFileNames(
   let images: ImageFile[] = [];
   const modelFileExtensions = [".ckpt", ".pt", ".bin", ".pth", ".safetensors"];
   const imageFileExtensions = [".jpeg", ".jpg", ".png", ".gif"];
-
+  const curDeps: DepsResult | null =
+    app.graph.extra?.[COMFYSPACE_TRACKING_FIELD_NAME]?.deps;
   nodes.forEach((node) => {
     if (node.widgets_values && Array.isArray(node.widgets_values)) {
       node.widgets_values.forEach((value) => {
@@ -81,6 +90,15 @@ export async function extractAndFetchFileNames(
         }
         // Check if it's an image file
         if (imageFileExtensions.some((ext) => value.endsWith(ext))) {
+          if (curDeps?.images) {
+            const curImage = curDeps.images.find(
+              (image) => image.filename === value,
+            );
+            if (curImage) {
+              images.push(curImage);
+              return;
+            }
+          }
           images.push({ filename: value, nodeType: node.type });
         }
       });

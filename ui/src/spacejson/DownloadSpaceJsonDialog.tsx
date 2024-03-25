@@ -30,7 +30,10 @@ import {
   IconInfoCircle,
   IconRefresh,
 } from "@tabler/icons-react";
-import { getCivitModelPageUrl } from "../utils/civitUtils";
+import {
+  getCivitModelPageUrl,
+  getHgModelInfoUrlFromDownloadUrl,
+} from "../utils/civitUtils";
 import { getAllModelsList } from "../Api";
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
 import { downloadJsonFile } from "../utils/downloadJsonFile";
@@ -38,7 +41,7 @@ import { workflowsTable } from "../db-tables/WorkspaceDB";
 import { indexdb } from "../db-tables/indexdb";
 
 export default function DownloadSpaceJsonDialog() {
-  const { setRoute } = useContext(WorkspaceContext);
+  const { setRoute, saveCurWorkflow } = useContext(WorkspaceContext);
   const [deps, setDeps] = useState<DepsResult>();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -110,9 +113,7 @@ export default function DownloadSpaceJsonDialog() {
 
     const modelDepsPromises: Promise<ModelFile>[] =
       deps?.models.map(async (model) => {
-        const inputDownloadUrl = formData
-          .get(model.filename + model.nodeType)
-          ?.toString();
+        const inputDownloadUrl = formData.get(model.filename)?.toString();
         if (inputDownloadUrl) {
           // because the models table is storing filename without extension as id, which should be migrated
           const baseName = getBaseFileName(model.filename);
@@ -120,15 +121,18 @@ export default function DownloadSpaceJsonDialog() {
             downloadUrl: inputDownloadUrl,
           });
         }
+        const infoUrl = model.infoUrl?.length
+          ? model.infoUrl
+          : inputDownloadUrl
+            ? getHgModelInfoUrlFromDownloadUrl(inputDownloadUrl)
+            : null;
         return {
           filename: model.filename,
           nodeType: model.nodeType,
           fileHash: model.fileHash,
           fileFolder: model.fileFolder,
-          downloadUrl:
-            model.downloadUrl ??
-            formData.get(model.filename + model.nodeType)?.toString() ??
-            null,
+          downloadUrl: model.downloadUrl ?? inputDownloadUrl ?? null,
+          infoUrl: infoUrl ?? null,
         };
       }) ?? [];
     const modelDeps = await Promise.all(modelDepsPromises);
@@ -158,7 +162,8 @@ export default function DownloadSpaceJsonDialog() {
       images: imageDeps,
       nodeRepos: deps?.nodeRepos ?? [],
     } as WorkspaceInfoDeps;
-    console.log("graph", graph);
+
+    saveCurWorkflow();
 
     downloadJsonFile(
       JSON.stringify(graph),
@@ -173,7 +178,7 @@ export default function DownloadSpaceJsonDialog() {
           <HStack>
             <Heading size={"md"}>Workflow Resouce Dependencies</Heading>
             <Tooltip
-              label=".runner.json workflows include all resource dependecy links
+              label=".runner.json workflows include all resource dependecy download urls
               (models, cursom nodes, input images) and can be one-click
               installed and run in any ComfyUI with workpace-manager installed."
             >
@@ -205,7 +210,7 @@ export default function DownloadSpaceJsonDialog() {
                       <Heading size={"sm"}>
                         Images ({deps.images.length})
                       </Heading>
-                      <Text color={"GrayText"}>Will be uploaded as url</Text>
+                      <Tag colorScheme="yellow">Will be uploaded as url</Tag>
                     </HStack>
                     {uploadingImage && (
                       <span>
@@ -259,7 +264,7 @@ function ModelDepsItem({
   errors: Record<string, string>;
   onClickRefetchModelList: () => void;
 }) {
-  const inputKey = modelFile.filename + modelFile.nodeType;
+  const inputKey = modelFile.filename;
 
   if (!modelFile.fileFolder) {
     return (

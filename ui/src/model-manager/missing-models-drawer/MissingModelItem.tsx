@@ -9,6 +9,16 @@ import {
 import { IconExternalLink } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { getModelFromSearch } from "../install-models/util/getModelFromSearch";
+import { COMFYSPACE_TRACKING_FIELD_NAME } from "../../const";
+// @ts-ignore
+import { app } from "/scripts/app.js";
+import { DepsResult } from "../../spacejson/handleDownloadSpaceJson";
+
+const HF_LOGO =
+  "https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo.png";
+const CIVITAI_LOGO =
+  "https://images.crunchbase.com/image/upload/c_pad,h_170,w_170,f_auto,b_white,q_auto:eco,dpr_1/gtxrcmtsvpjjevozblfa";
+
 export interface MissingModel {
   class_type: string;
   input_name: string;
@@ -27,40 +37,26 @@ type missingModelPredict = {
 export default function MissingModelItem({ model }: Props) {
   const [suggestedUrls, setSuggestedUrls] = useState<missingModelPredict[]>([]);
   const modelName = formatSearchQuery(model.received_value);
-  const getHuggingFaceData = async () => {
-    const hfData = await fetch(
-      `https://huggingface.co/api/models?limit=3&search=${modelName}&full=true`,
-    );
-    const hfSearchResult = (await hfData.json()) as {
-      id: string;
-      modelId: string;
-      siblings?: { rfilename: string }[];
-    }[];
-    const hfUrls: missingModelPredict[] = [];
-    hfSearchResult.slice(0, 1).forEach(({ modelId, siblings }) => {
-      hfUrls.push({
-        name: modelId,
-        downloadUrl: `https://huggingface.co/${modelId}/resolve/main/`,
-        url: `https://huggingface.co/${modelId}/tree/main`,
-        icon: "https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo.png",
-      });
-    });
-    setSuggestedUrls((p) => [...p, ...hfUrls]);
-  };
-  const getCivitaiData = async () => {
-    const civitaiData = await getModelFromSearch(modelName);
-    setSuggestedUrls((p) => [
-      ...p,
-      ...civitaiData?.slice(0, 1).map((c) => ({
-        name: c.name,
-        url: "https://civitai.com/models/" + c.id,
-        icon: "https://images.crunchbase.com/image/upload/c_pad,h_170,w_170,f_auto,b_white,q_auto:eco,dpr_1/gtxrcmtsvpjjevozblfa",
-      })),
-    ]);
-  };
   useEffect(() => {
-    getHuggingFaceData();
-    getCivitaiData();
+    const modelDeps: DepsResult["models"] =
+      app.graph.extra?.[COMFYSPACE_TRACKING_FIELD_NAME]?.deps?.models;
+    if (modelDeps) {
+      const modelDep = modelDeps.find(
+        (dep) => dep.filename === model.received_value,
+      );
+      if (modelDep?.downloadUrl && modelDep?.infoUrl) {
+        setSuggestedUrls([
+          {
+            name: modelDep.filename,
+            downloadUrl: modelDep.downloadUrl,
+            url: modelDep.infoUrl,
+            icon: modelDep.downloadUrl.includes("huggingface")
+              ? HF_LOGO
+              : CIVITAI_LOGO,
+          },
+        ]);
+      }
+    }
   }, []);
 
   return (
@@ -84,21 +80,6 @@ export default function MissingModelItem({ model }: Props) {
             {name}
           </Button>
         ))}
-        <Button
-          colorScheme="blue"
-          mt={5}
-          iconSpacing={1}
-          leftIcon={<IconExternalLink size={20} />}
-          size={"sm"}
-          onClick={() => {
-            window.open(
-              `https://civitai.com/search/models?sortBy=models_v5&query=${modelName}`,
-              "_blank",
-            );
-          }}
-        >
-          Search in CivitAI
-        </Button>
       </VStack>
     </GridItem>
   );
