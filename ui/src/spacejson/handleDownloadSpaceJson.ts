@@ -89,8 +89,17 @@ export async function extractAndFetchFileNames(
   const resp = await fetch("workspace/fetch_node_repos", {
     method: "POST",
     body: JSON.stringify({ nodes: nodes.map((n) => n.type) }),
-  }).then((res) => res.json());
-  console.log("repos", resp);
+  })
+    .then((res) => {
+      if (!res.ok) {
+        return [];
+      }
+      return res.json();
+    })
+    .catch((e) => {
+      console.error("Error fetching node repos", e);
+      return [];
+    });
 
   const models = await Promise.all(modelPromises);
   return { models: models, images, nodeRepos: resp };
