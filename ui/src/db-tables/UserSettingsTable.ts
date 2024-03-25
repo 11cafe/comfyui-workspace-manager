@@ -112,6 +112,10 @@ export class UserSettingsTable extends TableBase<UserSettings> {
         ...res?.shortcuts,
       };
     });
+    // overwrite legacy comfyspace.art
+    await instance.upsert({
+      cloudHost: instance.defaultSettings.cloudHost,
+    });
     return instance;
   }
 }

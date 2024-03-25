@@ -6,4 +6,5 @@ export type WorkspaceRoute =
   | "versionHistory"
   | "saveAsModal"
   | "modelList"
-  | "spotlightSearch";
+  | "spotlightSearch"
+  | "downloadSpaceJson";

@@ -135,3 +135,5 @@ export interface ModelsListRespItem {
   preview?: string;
   date: Date;
 }
+
+export type ModelsListRespItemFromApi = ModelsListRespItem & { date: number };

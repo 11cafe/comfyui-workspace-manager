@@ -10,12 +10,12 @@ import {
 } from "@chakra-ui/react";
 import { IconDownload, IconPin, IconPinFilled } from "@tabler/icons-react";
 import { formatTimestamp } from "../../utils.tsx";
-import MetaBox from "./MetaBox/GalleryRightMetadataForm.tsx";
+import MetadataForm from "./MetaBox/MetadataForm.tsx";
 
 export type MediaWithMetaData = Media & {
   metaData?: MetaData;
 };
-export const MetaInfoBox = ({ media }: { media?: MediaWithMetaData }) => {
+export const GalleryRightCol = ({ media }: { media?: MediaWithMetaData }) => {
   return (
     <Flex overflowY={"auto"} mb={4} direction={"column"} gap={2} flex={1}>
       <SimpleGrid alignItems={"center"} columns={3} spacing={2}>
@@ -61,7 +61,7 @@ export const MetaInfoBox = ({ media }: { media?: MediaWithMetaData }) => {
           />
         </Tooltip> */}
       </SimpleGrid>
-      <MetaBox media={media ?? null} />
+      <MetadataForm media={media ?? null} />
     </Flex>
   );
 };

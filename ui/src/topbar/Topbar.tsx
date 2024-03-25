@@ -10,7 +10,14 @@ import {
   IconLock,
 } from "@tabler/icons-react";
 import DropdownTitle from "../components/DropdownTitle";
-import { lazy, useCallback, useContext, useEffect, useState } from "react";
+import {
+  Suspense,
+  lazy,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import EditFlowName from "../components/EditFlowName";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { PanelPosition } from "../types/dbTypes";
@@ -104,7 +111,9 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
             <IconTriangleInvertedFilled size={8} />
           </HStack>
         </Button>
-        <ModelManagerTopbar />
+        <Suspense fallback={<div style={{ width: "60px" }} />}>
+          <ModelManagerTopbar />
+        </Suspense>
         <Tooltip label="New workflow">
           <Button
             size={"sm"}

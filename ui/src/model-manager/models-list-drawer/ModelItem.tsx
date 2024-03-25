@@ -6,24 +6,7 @@ import { Model } from "../../types/dbTypes";
 import type { DragEvent } from "react";
 
 import { userSettingsTable } from "../../db-tables/WorkspaceDB";
-
-interface ResponsePartial {
-  id: number;
-  modelId: number;
-  name: string;
-  model: {
-    name: string;
-    type: string;
-    nsfw: boolean;
-  };
-  images: {
-    url: string;
-    nsfw: "None" | "Soft" | "Mature" | "X";
-    width: number;
-    height: number;
-    hash: string;
-  }[];
-}
+import { fetchCivitModelFromHashKey } from "../../utils/civitUtils";
 
 interface Props {
   data: ModelsListRespItem;
@@ -59,19 +42,8 @@ export function ModelItem({ data }: Props) {
     }
     if (data.file_hash != null) {
       try {
-        const url = `https://civitai.com/api/v1/model-versions/by-hash/${data.file_hash}`;
-        const resp = await fetch(url);
-        const json: ResponsePartial = await resp.json();
-        let image_url: string | undefined;
-        const showNsfwThumbnail = await userSettingsTable?.getSetting(
-          "showNsfwModelThumbnail",
-        );
-        if (showNsfwThumbnail === true) {
-          image_url = json?.images?.[0]?.url;
-        } else if (!json.model.nsfw) {
-          const sfwImage = json.images.find((i) => i.nsfw === "None");
-          image_url = sfwImage?.url;
-        }
+        const json = await fetchCivitModelFromHashKey(data.file_hash);
+        const image_url = json.imageUrl;
         image_url && setUrl(image_url);
 
         const newModel: Model = {
@@ -79,12 +51,12 @@ export function ModelItem({ data }: Props) {
           fileHash: data.file_hash,
           fileFolder: data.model_type,
           fileName: data.model_name + data.model_extension,
-          modelName: json.model.name,
-          civitModelID: String(json.modelId),
-          civitModelVersionID: String(json.id),
+          modelName: json.modelName ?? null,
+          civitModelID: json.civitModelID,
+          civitModelVersionID: json.civitModelVersionID,
           imageUrl: image_url ?? null,
         };
-        indexdb.models.put(newModel);
+        // indexdb.models.put(newModel);
         setModel(newModel);
       } catch (e) {}
     }

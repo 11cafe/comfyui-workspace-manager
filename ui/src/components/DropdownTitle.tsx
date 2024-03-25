@@ -46,6 +46,8 @@ const ShareDialog = lazy(() => import("../share/ShareDialog"));
 // @ts-ignore
 import { app } from "/scripts/app.js";
 import { TOPBAR_BUTTON_HEIGHT } from "../const";
+import DownloadSpaceJsonDialog from "../spacejson/DownloadSpaceJsonDialog";
+import { downloadJsonFile } from "../utils/downloadJsonFile";
 
 export default function DropdownTitle() {
   const {
@@ -114,23 +116,8 @@ export default function DropdownTitle() {
     }
     const graph = app.graph.serialize();
     const json = JSON.stringify(graph);
-    const blob = new Blob([json], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${curWorkflow.name}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadJsonFile(json, curWorkflow.name);
   }, [curFlowID]);
-
-  const handleDownloadSpaceJson = useCallback(async () => {
-    console.log("app.graph", app.graph);
-    const graph = app.graph.serialize();
-    console.log("graph serialize", graph);
-  }, []);
 
   return (
     <>
@@ -179,13 +166,13 @@ export default function DropdownTitle() {
               >
                 Download
               </MenuItem>
-              {/* <MenuItem
-                onClick={handleDownloadSpaceJson}
+              <MenuItem
+                onClick={() => setRoute("downloadSpaceJson")}
                 icon={<IconDownload size={20} />}
                 iconSpacing={1}
               >
-                Download .space.json
-              </MenuItem> */}
+                Download .runner.json
+              </MenuItem>
               <MenuItem
                 onClick={() => setRoute("saveAsModal")}
                 icon={<IconDeviceFloppy size={20} />}
@@ -226,6 +213,7 @@ export default function DropdownTitle() {
       {route == "versionHistory" && (
         <VersionHistoryDrawer onClose={() => setRoute("root")} />
       )}
+      {route == "downloadSpaceJson" && <DownloadSpaceJsonDialog />}
       {route === "saveAsModal" && (
         <Modal isOpen={true} onClose={handleOnCloseModal}>
           <ModalOverlay />

@@ -9,7 +9,7 @@ import { NoSupport } from "./NoSupport.tsx";
 import { CheckboxBase } from "./CheckboxBase.tsx";
 import { Flex, Grid, IconButton } from "@chakra-ui/react";
 import { IconPin, IconPinFilled } from "@tabler/icons-react";
-import { isInTopField } from "../MetaBox/GalleryRightMetadataForm.tsx";
+import { isInTopField } from "../MetaBox/MetadataForm.tsx";
 import { PromptNodeInputItem } from "../MetaBox/utils.ts";
 import { MetaBoxContext } from "../MetaBox/metaBoxContext.ts";
 

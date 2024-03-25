@@ -1,5 +1,5 @@
 import type { MODEL_TYPE } from "../model-manager/install-models/util/modelTypes";
-import { TopFieldType } from "../gallery/components/MetaBox/GalleryRightMetadataForm.tsx";
+import { TopFieldType } from "../gallery/components/MetaBox/MetadataForm.tsx";
 
 export interface SortableItem {
   name: string;
@@ -49,11 +49,12 @@ export type LocalCache = {
 export type Model = {
   id: string;
   fileName: string;
-  modelName: string;
   fileFolder: string;
-  fileHash: string;
-  civitModelID: string;
-  civitModelVersionID: string;
+  fileHash: string | null; // files are not guaranteed to finish hashing
+  modelName: string | null;
+  civitModelID?: string;
+  downloadUrl?: string;
+  civitModelVersionID?: string;
   imageUrl?: string | null;
 };
 

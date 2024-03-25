@@ -47,7 +47,6 @@ function dfs(promptNode: ImagePromptNodeItem, prompt: ImagePrompt) {
   });
   Object.entries(promptNode.inputs).forEach(([inputName, value]) => {
     if (!Array.isArray(value)) {
-      console.log;
       inputList.push({
         classType: promptNode.class_type,
         inputName,
