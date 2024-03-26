@@ -18,8 +18,8 @@ export type MediaWithMetaData = Media & {
 export const GalleryRightCol = ({ media }: { media?: MediaWithMetaData }) => {
   return (
     <Flex overflowY={"auto"} mb={4} direction={"column"} gap={2} flex={1}>
-      <SimpleGrid alignItems={"center"} columns={3} spacing={2}>
-        <Flex alignItems={"center"} gap={1}>
+      <Flex flexWrap={"wrap"} gap={3}>
+        <Flex alignItems={"center"} gap={2}>
           {media?.localPath && (
             <>
               <Text>{media?.localPath}</Text>
@@ -60,7 +60,7 @@ export const GalleryRightCol = ({ media }: { media?: MediaWithMetaData }) => {
             }}
           />
         </Tooltip> */}
-      </SimpleGrid>
+      </Flex>
       <MetadataForm media={media ?? null} />
     </Flex>
   );
