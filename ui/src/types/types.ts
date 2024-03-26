@@ -7,4 +7,5 @@ export type WorkspaceRoute =
   | "saveAsModal"
   | "modelList"
   | "spotlightSearch"
-  | "downloadSpaceJson";
+  | "downloadSpaceJson"
+  | "installModels";

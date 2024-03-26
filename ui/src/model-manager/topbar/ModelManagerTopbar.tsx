@@ -12,6 +12,7 @@ import { Model } from "../../types/dbTypes";
 import { fetchCivitModelFromHashKey } from "../../utils/civitUtils";
 import { indexdb } from "../../db-tables/indexdb";
 import type { ModelsListRespItemFromApi } from "../types";
+import InatallModelsModal from "../install-models/InstallModelsModal";
 
 const AddMissingModelsButton = lazy(
   () => import("./InstallMissingModelsButton"),
@@ -67,7 +68,9 @@ export default function ModelManagerTopbar() {
         const models = (await Promise.all(modelsPromises)).filter(
           (model) => model != null,
         );
-        indexdb.models.bulkPut(
+        // clear first so deleted models can be removed?
+        await indexdb.models.clear();
+        await indexdb.models.bulkPut(
           models.filter((model) => model != null) as Model[],
         );
         window.dispatchEvent(new CustomEvent("model_list_updated"));
@@ -96,6 +99,12 @@ export default function ModelManagerTopbar() {
       </div>
       {route === "modelList" && (
         <ModelsListDrawer onClose={() => setRoute("root")} />
+      )}
+      {route === "installModels" && (
+        <InatallModelsModal
+          modelType="Checkpoint"
+          onclose={() => setRoute("root")}
+        />
       )}
     </Stack>
   );

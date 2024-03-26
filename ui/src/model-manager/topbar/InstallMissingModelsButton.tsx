@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import MissingModelsListDrawer, {
   MissingModel,
 } from "../missing-models-drawer/MissingModelsListDrawer";
+import { COMFYSPACE_TRACKING_FIELD_NAME } from "../../const";
 interface Props {}
 
 interface NodeError {
@@ -32,17 +33,21 @@ export default function InstallMissingModelsButton({}: Props) {
     const queuePrompt = app.queuePrompt as Function;
     app.queuePrompt = async function () {
       try {
-        await queuePrompt.apply(app, [...arguments]);
+        await queuePrompt.apply(this, arguments);
       } finally {
+        const deps = app.graph.extra?.[COMFYSPACE_TRACKING_FIELD_NAME]?.deps;
+        if (!deps) {
+          return;
+        }
         const nodeErrors = (app.lastNodeErrors ?? {}) as Record<
           string,
           NodeError
         >;
         setMissingModels(
           Object.values(nodeErrors).flatMap((nodeError) =>
-            nodeError.errors
+            nodeError?.errors
               ?.filter((error) => error?.type === "value_not_in_list")
-              .map((error) => {
+              ?.map((error) => {
                 const { input_name, received_value } = error.extra_info;
                 return {
                   class_type: nodeError.class_type,

@@ -200,7 +200,9 @@ export default function InatallModelsModal({
                     >
                       {foldersList[MODEL_TYPE_TO_FOLDER_MAPPING[modelType]].map(
                         (path) => (
-                          <option value={path}>{path}</option>
+                          <option key={path} value={path}>
+                            {path}
+                          </option>
                         ),
                       )}
                     </Select>

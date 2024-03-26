@@ -115,7 +115,8 @@ export default function DropdownTitle() {
       return;
     }
     const graph = app.graph.serialize();
-    const json = JSON.stringify(graph);
+    const json = JSON.stringify(graph, null, 2);
+
     downloadJsonFile(json, curWorkflow.name);
   }, [curFlowID]);
 

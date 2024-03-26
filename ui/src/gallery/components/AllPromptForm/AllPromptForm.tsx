@@ -1,4 +1,4 @@
-import { Box, Flex, Heading, Stack } from "@chakra-ui/react";
+import { Box, Flex, Text, Stack } from "@chakra-ui/react";
 import { FormItemComponent } from "../FormItem/FormItemComponent.tsx";
 import { isInTopField } from "../MetaBox/MetadataForm.tsx";
 import { useCallback, useContext, useEffect, useState } from "react";
@@ -6,8 +6,7 @@ import { MetaBoxContext } from "../MetaBox/metaBoxContext.ts";
 import { PromptNodeInputItem } from "../MetaBox/utils.ts";
 
 export default function AllPromptForm() {
-  const { topFields, updateTopField, calcInputList, showNodeName } =
-    useContext(MetaBoxContext);
+  const { topFields, calcInputList, showNodeName } = useContext(MetaBoxContext);
 
   const groupInputsByNodeType = useCallback(
     (inputList: PromptNodeInputItem[]) => {
@@ -102,9 +101,9 @@ function CustomAccordionPanel({
 }) {
   return (
     <Box border="1px" borderColor="gray.500" borderRadius="md" p={4}>
-      <Heading size="sm" mb={2}>
+      <Text size="sm" mb={1} color={"GrayText"}>
         {title}
-      </Heading>
+      </Text>
       <div>{children}</div>
     </Box>
   );

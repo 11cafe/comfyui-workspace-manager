@@ -3,6 +3,7 @@ import { indexdb } from "../db-tables/indexdb";
 import {
   getCivitModelDownloadUrl,
   getCivitModelPageUrl,
+  getHgModelInfoUrlFromDownloadUrl,
 } from "../utils/civitUtils";
 // @ts-ignore
 import { app } from "/scripts/app.js";
@@ -33,19 +34,19 @@ type NodeRepo = {
 };
 
 export type DepsResult = {
-  models: (ModelFile & { civitModelID?: string; length: number })[];
-  images: ImageFile[];
+  models: Record<string, DepsResultModel>;
+  images: Record<string, ImageFile>;
   nodeRepos: NodeRepo[];
 };
 
 export type DepsResultModel = ModelFile & {
-  civitModelID?: string;
   length: number;
 };
 
 export type WorkspaceInfoDeps = {
-  models: ModelFile[];
-  images: ImageFile[];
+  models: Record<string, ModelFile>;
+  images: DepsResult["images"];
+  nodeRepos: DepsResult["nodeRepos"];
 };
 
 async function fetchModelData(
@@ -66,7 +67,7 @@ async function fetchModelData(
     length: res.length,
     infoUrl: first?.civitModelID
       ? getCivitModelPageUrl(first.civitModelID, first.civitModelVersionID)
-      : null,
+      : getHgModelInfoUrlFromDownloadUrl(first?.downloadUrl ?? "") ?? null,
   };
   return modelFile;
 }
@@ -75,9 +76,9 @@ export async function extractAndFetchFileNames(
   nodes: LiteNode[],
 ): Promise<DepsResult> {
   let modelPromises: Promise<DepsResultModel>[] = [];
-  let images: ImageFile[] = [];
+  let images: DepsResult["images"] = {};
   const modelFileExtensions = [".ckpt", ".pt", ".bin", ".pth", ".safetensors"];
-  const imageFileExtensions = [".jpeg", ".jpg", ".png", ".gif"];
+  const imageFileExtensions = [".jpeg", ".jpg", ".png", ".gif", ".webp"];
   const curDeps: DepsResult | null =
     app.graph.extra?.[COMFYSPACE_TRACKING_FIELD_NAME]?.deps;
   nodes.forEach((node) => {
@@ -86,20 +87,18 @@ export async function extractAndFetchFileNames(
         if (typeof value != "string") return;
         // Check if it's a model file
         if (modelFileExtensions.some((ext) => value.endsWith(ext))) {
-          modelPromises.push(fetchModelData(value, node.type));
+          if (curDeps?.models?.[value]) {
+            modelPromises.push(Promise.resolve(curDeps.models[value]));
+          } else {
+            modelPromises.push(fetchModelData(value, node.type));
+          }
         }
         // Check if it's an image file
         if (imageFileExtensions.some((ext) => value.endsWith(ext))) {
-          if (curDeps?.images) {
-            const curImage = curDeps.images.find(
-              (image) => image.filename === value,
-            );
-            if (curImage) {
-              images.push(curImage);
-              return;
-            }
-          }
-          images.push({ filename: value, nodeType: node.type });
+          images[value] = curDeps?.images?.[value] ?? {
+            filename: value,
+            nodeType: node.type,
+          };
         }
       });
     }
@@ -120,5 +119,9 @@ export async function extractAndFetchFileNames(
     });
 
   const models = await Promise.all(modelPromises);
-  return { models: models, images, nodeRepos: resp };
+  const modelsMap: Record<string, DepsResultModel> = {};
+  models.forEach((model) => {
+    modelsMap[model.filename] = model;
+  });
+  return { models: modelsMap, images, nodeRepos: resp };
 }
