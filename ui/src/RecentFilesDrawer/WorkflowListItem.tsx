@@ -9,7 +9,7 @@ import {
 } from "@chakra-ui/react";
 import { IconLock } from "@tabler/icons-react";
 import { formatTimestamp } from "../utils";
-import { memo, ChangeEvent, useContext } from "react";
+import { memo, ChangeEvent, useContext, useState } from "react";
 import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 import { Workflow } from "../types/dbTypes";
 import MediaPreview from "../components/MediaPreview";
@@ -33,7 +33,7 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
   const { curFlowID, loadWorkflowID } = useContext(WorkspaceContext);
   const isSelected = curFlowID === workflow.id;
   const hoverBgColor = colorMode === "light" ? "gray.200" : "#4A5568";
-
+  const [isHovering, setIsHovering] = useState(false);
   const basicInfoComp = (
     <Box
       flexShrink={1}
@@ -87,7 +87,13 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
   );
 
   return (
-    <HStack w={"100%"} mb={1} justify={"space-between"}>
+    <HStack
+      w={"100%"}
+      mb={1}
+      justify={"space-between"}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+    >
       {isMultiSelecting ? (
         <Checkbox
           isChecked={isChecked}
@@ -102,7 +108,7 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
       ) : (
         <>
           {basicInfoComp}
-          <WorkflowListItemActionButtons workflow={workflow} />
+          {isHovering && <WorkflowListItemActionButtons workflow={workflow} />}
         </>
       )}
     </HStack>
