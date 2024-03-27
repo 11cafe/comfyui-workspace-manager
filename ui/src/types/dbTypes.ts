@@ -90,9 +90,9 @@ export type UserSettings = {
   id: string;
   myWorkflowsDir: string;
   topBarStyle: PanelPosition;
-  modelManagerTopBarStyle: ModelManagerPosition;
   shortcuts: Record<EShortcutKeys, string>;
   autoSave?: boolean;
+  autoSaveDuration?: number; //every X seconds to save
   twoWaySync?: boolean;
   foldersOnTop?: boolean;
   showNsfwModelThumbnail?: boolean;

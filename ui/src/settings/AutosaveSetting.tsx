@@ -1,24 +1,14 @@
 import { Checkbox, Stack, useToast } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
-import { UserSettings } from "../types/dbTypes";
+import { CommonNumberSetting } from "./CommonNumberSetting";
 
-interface Props {
-  settingKey: keyof UserSettings;
-  text: string;
-  defaultChecked?: boolean;
-}
-
-export default function CommonCheckboxSettings({
-  settingKey,
-  text,
-  defaultChecked = false,
-}: Props) {
-  const [checked, setChecked] = useState(defaultChecked);
+export default function AutosaveSetting() {
+  const [checked, setChecked] = useState(false);
   const toast = useToast();
 
   const getSetting = () => {
-    userSettingsTable?.getSetting(settingKey).then((res) => {
+    userSettingsTable?.getSetting("autoSave").then((res) => {
       setChecked(!!res);
     });
   };
@@ -32,7 +22,7 @@ export default function CommonCheckboxSettings({
       <Checkbox
         isChecked={checked}
         onChange={async (e) => {
-          await userSettingsTable?.upsert({ [settingKey]: e.target.checked });
+          await userSettingsTable?.upsert({ autoSave: e.target.checked });
           getSetting();
           toast({
             title: "Setting saved",
@@ -42,8 +32,14 @@ export default function CommonCheckboxSettings({
           });
         }}
       >
-        {text}
+        Enable auto save workflow
       </Checkbox>
+      {checked && (
+        <CommonNumberSetting
+          label="Auto save duration (auto save workflow every X seconds)"
+          settingKey="autoSaveDuration"
+        />
+      )}
     </Stack>
   );
 }

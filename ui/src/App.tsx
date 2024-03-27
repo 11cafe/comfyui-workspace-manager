@@ -44,9 +44,6 @@ import { useStateRef } from "./customHooks/useStateRef";
 import { indexdb } from "./db-tables/indexdb";
 import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
 import { deepJsonDiffCheck } from "./utils/deepJsonDiffCheck";
-const AppIsDirtyEventListener = React.lazy(
-  () => import("./topbar/AppIsDirtyEventListener"),
-);
 
 const usedWsEvents = [
   // InstallProgress.tsx
@@ -91,7 +88,7 @@ export default function App() {
           isAutoSave: false,
         }),
       ]);
-      userSettingsTable?.autoSave &&
+      userSettingsTable?.settings?.autoSave &&
         toast({
           title: "Saved",
           status: "success",
@@ -115,7 +112,7 @@ export default function App() {
   };
 
   const discardUnsavedChanges = async () => {
-    if (userSettingsTable?.autoSave) {
+    if (userSettingsTable?.settings?.autoSave) {
       alert("You cannot discard unsaved changes when auto save is enabled");
       return;
     }
@@ -451,7 +448,7 @@ export default function App() {
     fileInput?.addEventListener("change", fileInputListener);
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      const autoSaveEnabled = userSettingsTable?.autoSave ?? true;
+      const autoSaveEnabled = userSettingsTable?.settings?.autoSave ?? true;
       if (workflowsTable?.curWorkflow?.saveLock) return;
       const isDirty = checkIsDirty();
 
@@ -566,7 +563,6 @@ export default function App() {
             )}
           </Box>
           <ServerEventListener />
-          <AppIsDirtyEventListener />
         </Portal>
       </div>
     </WorkspaceContext.Provider>

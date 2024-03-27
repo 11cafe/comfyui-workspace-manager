@@ -270,7 +270,7 @@ export const matchShortcut = (event: KeyboardEvent) => {
    * Because the async await function will cause the browser's default behavior to fail;
    */
 
-  const shortcuts = userSettingsTable?.shortcuts;
+  const shortcuts = userSettingsTable?.settings?.shortcuts;
 
   if (!shortcuts) return false;
 

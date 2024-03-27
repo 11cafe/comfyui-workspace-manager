@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 // @ts-expect-error
 import { app } from "/scripts/app.js";
 import { WorkspaceContext } from "../WorkspaceContext";
@@ -7,7 +7,7 @@ import {
   userSettingsTable,
   workflowsTable,
 } from "../db-tables/WorkspaceDB";
-import { Box, useToast } from "@chakra-ui/react";
+import { Tag, Tooltip, useToast } from "@chakra-ui/react";
 import { matchShortcut } from "../utils";
 import { EShortcutKeys } from "../types/dbTypes";
 import useDebounceFn from "../customHooks/useDebounceFn";
@@ -17,9 +17,12 @@ import { SHORTCUT_TRIGGER_EVENT } from "../const";
 export default function AppIsDirtyEventListener() {
   const { isDirty, setIsDirty, setRoute, saveCurWorkflow } =
     useContext(WorkspaceContext);
+  const isDirtRef = useRef(isDirty);
+  const [isOutdated, setIsOutdated] = useState(false);
   const toast = useToast();
+  const autoSaveTimer = useRef<number | null>(null);
+
   useEffect(() => {
-    saveCurWorkflow;
     const shortcutListener = (event: KeyboardEvent) => {
       if (document.visibilityState === "hidden") return;
       const matchResult = matchShortcut(event);
@@ -85,8 +88,19 @@ export default function AppIsDirtyEventListener() {
     });
     document.addEventListener("keydown", shortcutListener);
 
+    if (
+      userSettingsTable?.settings?.autoSave &&
+      userSettingsTable.settings.autoSaveDuration
+    ) {
+      autoSaveTimer.current = setInterval(() => {
+        // auto save workflow every 5s
+        autoSaveWorkflow();
+      }, userSettingsTable.settings.autoSaveDuration * 1000);
+    }
+
     return () => {
       document.removeEventListener("keydown", shortcutListener);
+      autoSaveTimer.current && clearInterval(autoSaveTimer.current);
     };
   }, []);
   const autoSaveWorkflow = async () => {
@@ -95,54 +109,48 @@ export default function AppIsDirtyEventListener() {
       return;
     }
     const graphJson = JSON.stringify(app.graph.serialize());
-    graphJson != null &&
-      (await workflowsTable?.updateFlow(workflowsTable.curWorkflow.id, {
-        json: graphJson,
-      }));
+    if (graphJson === workflowsTable?.curWorkflow.json) return;
+    await workflowsTable?.updateFlow(workflowsTable.curWorkflow.id, {
+      json: graphJson,
+    });
     changelogsTable?.create({
       workflowID: workflowsTable.curWorkflow.id,
       isAutoSave: true,
       json: graphJson,
     });
     setIsDirty(false);
-    toast({
-      position: "bottom-left",
-      duration: 1000,
-      render: () => (
-        <Box color="white" p={3}>
-          Auto saved
-        </Box>
-      ),
-    });
+    // toast({
+    //   position: "bottom-left",
+    //   duration: 1000,
+    //   render: () => (
+    //     <Box color="white" p={3}>
+    //       Auto saved
+    //     </Box>
+    //   ),
+    // });
   };
-  const [debounceAutoSaveWorkflow, _cancelDebounceAutoSaveWorkflow] =
-    useDebounceFn(autoSaveWorkflow, 1000);
+
   const onIsDirty = async () => {
     if (workflowsTable?.curWorkflow?.saveLock) return;
-    const autoSaveEnabled = await userSettingsTable?.getSetting("autoSave");
-    if (!autoSaveEnabled) {
-      !isDirty && setIsDirty(true);
-      return;
-    }
-    if (workflowsTable?.curWorkflow?.id && autoSaveEnabled) {
+    !isDirty && setIsDirty(true);
+    isDirtRef.current = true;
+
+    if (
+      userSettingsTable?.settings?.autoSave &&
+      workflowsTable?.curWorkflow?.id &&
+      !isOutdated
+    ) {
       const isLatest = await workflowsTable?.latestVersionCheck();
-      // isLast will alwasy be false when click "Load" to load a workflow
-      //   const isLatest = true;
       if (!isLatest) {
-        toast({
-          title: "Your changes cannot be saved!",
-          description:
-            "You are working on an outdated version. This workflow is changed by another tab. Please refresh to get the latest version.",
-          status: "warning",
-          isClosable: true,
-          duration: null,
-        });
-      } else {
-        debounceAutoSaveWorkflow();
+        setIsOutdated(true);
       }
     }
   };
   const [debounceOnIsDirty, _] = useDebounceFn(onIsDirty, 500);
 
-  return null;
+  return isOutdated ? (
+    <Tooltip label="This workflow was changed by another tab, so you are not working on the latest version. Please refresh page to see the latest version of this workflow.">
+      <Tag colorScheme="yellow">⚠️Outdated version</Tag>
+    </Tooltip>
+  ) : null;
 }
