@@ -149,15 +149,13 @@ export namespace TwowaySyncAPI {
     id,
   }: Workflow) {
     let jsonObj: any = JSON.parse(json);
-
-    jsonObj = {
-      ...jsonObj,
-      extra: {
-        [COMFYSPACE_TRACKING_FIELD_NAME]: {
-          id: id,
-        },
-      },
-    };
+    if (jsonObj.extra == null) {
+      jsonObj.extra = {};
+    }
+    if (jsonObj.extra[COMFYSPACE_TRACKING_FIELD_NAME] == null) {
+      jsonObj.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {};
+    }
+    jsonObj.extra[COMFYSPACE_TRACKING_FIELD_NAME].id = id; // to avoid overwriting deps
     const input: { parentFolderPath: string; name: string; json: string } = {
       parentFolderPath: sanitizeRelPath(parentFolderID ?? ""),
       name: name,
