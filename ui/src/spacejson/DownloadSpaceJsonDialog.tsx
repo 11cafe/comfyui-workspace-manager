@@ -30,7 +30,10 @@ import {
   IconInfoCircle,
   IconRefresh,
 } from "@tabler/icons-react";
-import { getCivitModelPageUrl } from "../utils/civitUtils";
+import {
+  getCivitModelPageUrl,
+  getHgModelInfoUrlFromDownloadUrl,
+} from "../utils/civitUtils";
 import { getAllModelsList } from "../Api";
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
 import { downloadJsonFile } from "../utils/downloadJsonFile";
@@ -38,7 +41,7 @@ import { workflowsTable } from "../db-tables/WorkspaceDB";
 import { indexdb } from "../db-tables/indexdb";
 
 export default function DownloadSpaceJsonDialog() {
-  const { setRoute } = useContext(WorkspaceContext);
+  const { setRoute, saveCurWorkflow } = useContext(WorkspaceContext);
   const [deps, setDeps] = useState<DepsResult>();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -108,11 +111,10 @@ export default function DownloadSpaceJsonDialog() {
     event.preventDefault();
     const formData = new FormData(event.target);
 
-    const modelDepsPromises: Promise<ModelFile>[] =
-      deps?.models.map(async (model) => {
-        const inputDownloadUrl = formData
-          .get(model.filename + model.nodeType)
-          ?.toString();
+    // validate model deps and save model urls to db
+    const saveModelUrlDBPromises: Promise<ModelFile>[] =
+      Object.values(deps?.models ?? {}).map(async (model) => {
+        const inputDownloadUrl = formData.get(model.filename)?.toString();
         if (inputDownloadUrl) {
           // because the models table is storing filename without extension as id, which should be migrated
           const baseName = getBaseFileName(model.filename);
@@ -120,51 +122,71 @@ export default function DownloadSpaceJsonDialog() {
             downloadUrl: inputDownloadUrl,
           });
         }
+        const infoUrl = model.infoUrl?.length
+          ? model.infoUrl
+          : inputDownloadUrl
+            ? getHgModelInfoUrlFromDownloadUrl(inputDownloadUrl)
+            : null;
         return {
           filename: model.filename,
           nodeType: model.nodeType,
           fileHash: model.fileHash,
           fileFolder: model.fileFolder,
-          downloadUrl:
-            model.downloadUrl ??
-            formData.get(model.filename + model.nodeType)?.toString() ??
-            null,
+          downloadUrl: model.downloadUrl ?? inputDownloadUrl ?? null,
+          infoUrl: infoUrl ?? null,
         };
       }) ?? [];
-    const modelDeps = await Promise.all(modelDepsPromises);
-    if (!validateModelDeps(modelDeps)) {
+    const modelDepsArr = await Promise.all(saveModelUrlDBPromises);
+    if (!validateModelDeps(modelDepsArr)) {
       return;
     }
     setErrors({});
+
+    // upload images
     setUploadingImage(true);
-    const imageDeps: WorkspaceInfoDeps["images"] = deps?.images ?? [];
-    if (imageDeps.length) {
+    const imageDepsToUpload = Object.values(deps?.images ?? {})
+      .filter((i) => !i.url)
+      .map((i) => i.filename);
+    const imageDeps = deps?.images ?? {};
+
+    if (imageDepsToUpload.length) {
       const uploadResp = await fetch("/workspace/upload_image", {
         method: "POST",
         body: JSON.stringify({
-          images: deps?.images.map((image) => image.filename) ?? [],
+          images: imageDepsToUpload,
         }),
       });
-      const json = await uploadResp.json();
-      imageDeps.forEach((image) => {
-        image.url = json[image.filename];
+      const json = (await uploadResp.json()) as Record<string, string>;
+      Object.keys(json).forEach((key) => {
+        if (imageDeps?.[key]) {
+          imageDeps[key].url = json[key];
+        }
       });
     }
     setUploadingImage(false);
+
+    // save deps to graph
+    const modelDeps: WorkspaceInfoDeps["models"] = {};
+    modelDepsArr.forEach((model) => {
+      modelDeps[model.filename] = model;
+    });
     const graph = app.graph.serialize();
     (graph.extra ||= {})[COMFYSPACE_TRACKING_FIELD_NAME] ||= {};
     graph.extra[COMFYSPACE_TRACKING_FIELD_NAME].deps = {
       models: modelDeps,
-      images: imageDeps,
+      images: imageDeps ?? {},
       nodeRepos: deps?.nodeRepos ?? [],
     } as WorkspaceInfoDeps;
-    console.log("graph", graph);
+
+    saveCurWorkflow();
 
     downloadJsonFile(
-      JSON.stringify(graph),
+      JSON.stringify(graph, null, 2),
       (workflowsTable?.curWorkflow?.name ?? "unknown") + ".runner",
     );
   };
+  const imageDepsArr = Object.values(deps?.images ?? {});
+  const modelDepsArr = Object.values(deps?.models ?? []);
 
   return (
     <Modal isOpen={true} onClose={() => setRoute("root")} size={"xl"}>
@@ -173,7 +195,7 @@ export default function DownloadSpaceJsonDialog() {
           <HStack>
             <Heading size={"md"}>Workflow Resouce Dependencies</Heading>
             <Tooltip
-              label=".runner.json workflows include all resource dependecy links
+              label=".runner.json workflows include all resource dependecy download urls
               (models, cursom nodes, input images) and can be one-click
               installed and run in any ComfyUI with workpace-manager installed."
             >
@@ -188,8 +210,8 @@ export default function DownloadSpaceJsonDialog() {
             <form onSubmit={handleSubmit}>
               <Stack gap={5} mt={5}>
                 <Stack>
-                  <Heading size={"sm"}>Models ({deps.models.length})</Heading>
-                  {deps.models.map((modelFile, index) => (
+                  <Heading size={"sm"}>Models ({modelDepsArr.length})</Heading>
+                  {modelDepsArr.map((modelFile, index) => (
                     <ModelDepsItem
                       modelFile={modelFile}
                       key={index}
@@ -199,20 +221,23 @@ export default function DownloadSpaceJsonDialog() {
                   ))}
                 </Stack>
 
-                {deps.images.length > 0 && (
+                {imageDepsArr.length > 0 && (
                   <Stack>
                     <HStack>
                       <Heading size={"sm"}>
-                        Images ({deps.images.length})
+                        Images ({imageDepsArr.length})
                       </Heading>
-                      <Text color={"GrayText"}>Will be uploaded as url</Text>
+                      {/* <Tag colorScheme="yellow">Will be uploaded as url</Tag> */}
+                      <p style={{ color: "GrayText" }}>
+                        Will be uploaded as url
+                      </p>
                     </HStack>
                     {uploadingImage && (
                       <span>
                         <Spinner size="md" color="teal.400" /> Uploading
                       </span>
                     )}
-                    {deps.images.map((image) => (
+                    {imageDepsArr.map((image) => (
                       <Stack key={image.filename}>
                         <p>{image.filename}</p>
                         <Image
@@ -259,7 +284,7 @@ function ModelDepsItem({
   errors: Record<string, string>;
   onClickRefetchModelList: () => void;
 }) {
-  const inputKey = modelFile.filename + modelFile.nodeType;
+  const inputKey = modelFile.filename;
 
   if (!modelFile.fileFolder) {
     return (
@@ -293,11 +318,7 @@ function ModelDepsItem({
         {modelFile.downloadUrl ? (
           <HStack>
             <a
-              href={
-                modelFile.civitModelID
-                  ? getCivitModelPageUrl(modelFile.civitModelID)
-                  : modelFile.downloadUrl
-              }
+              href={modelFile.infoUrl ?? modelFile.downloadUrl}
               target="_blank"
             >
               {modelFile.filename}

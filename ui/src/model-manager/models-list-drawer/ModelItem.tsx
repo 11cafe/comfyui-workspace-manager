@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { indexdb } from "../../db-tables/indexdb";
 import { Model } from "../../types/dbTypes";
 import type { DragEvent } from "react";
-
-import { userSettingsTable } from "../../db-tables/WorkspaceDB";
 import { fetchCivitModelFromHashKey } from "../../utils/civitUtils";
 
 interface Props {
@@ -40,7 +38,7 @@ export function ModelItem({ data }: Props) {
       setModel(model);
       model.imageUrl?.length && setUrl(model.imageUrl);
     }
-    if (data.file_hash != null) {
+    if (!model?.imageUrl && data.file_hash != null) {
       try {
         const json = await fetchCivitModelFromHashKey(data.file_hash);
         const image_url = json.imageUrl;
@@ -134,7 +132,7 @@ export function ModelItem({ data }: Props) {
         }
       >
         <Text textAlign="center" p="1" fontSize={14} noOfLines={2}>
-          {model?.modelName ?? data.model_name + data.model_extension}
+          {data.model_name + data.model_extension}
         </Text>
       </Tooltip>
     </Box>
