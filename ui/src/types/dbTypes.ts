@@ -100,6 +100,7 @@ export type UserSettings = {
   overwriteCurWorkflowWhenDroppingFileToCanvas: boolean;
   defaultFolders: Record<MODEL_TYPE, string>;
   maximumChangelogNumber: number;
+  hideCoverImage: boolean;
 };
 
 export interface PanelPosition {

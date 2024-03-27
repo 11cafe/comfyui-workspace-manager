@@ -14,6 +14,7 @@ import { RecentFilesContext, WorkspaceContext } from "../WorkspaceContext";
 import { Workflow } from "../types/dbTypes";
 import MediaPreview from "../components/MediaPreview";
 import WorkflowListItemActionButtons from "./WorkflowListItemActionButtons";
+import { userSettingsTable } from "../db-tables/WorkspaceDB";
 
 type Props = {
   workflow: Workflow;
@@ -53,16 +54,17 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
       }}
     >
       <HStack>
-        {(workflow.coverMediaPath?.length || workflow.latestImage?.length) && (
-          <MediaPreview
-            mediaLocalPath={
-              workflow.coverMediaPath ?? workflow.latestImage ?? ""
-            }
-            size={60}
-            hideBrokenImage
-            isPreview
-          />
-        )}
+        {!userSettingsTable?.settings?.hideCoverImage &&
+          (workflow.coverMediaPath?.length || workflow.latestImage?.length) && (
+            <MediaPreview
+              mediaLocalPath={
+                workflow.coverMediaPath ?? workflow.latestImage ?? ""
+              }
+              size={60}
+              hideBrokenImage
+              isPreview
+            />
+          )}
 
         <Stack textAlign={"left"} gap={0}>
           <Flex alignItems={"center"}>

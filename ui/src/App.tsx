@@ -293,11 +293,11 @@ export default function App() {
       app.graph.clear();
       return;
     }
-
     if (
       !isDirty ||
       forceLoad ||
-      (await userSettingsTable?.getSetting("autoSave"))
+      userSettingsTable?.settings?.autoSave ||
+      workflowsTable?.curWorkflow == null
     ) {
       loadWorkflowIDImpl(id, versionID);
       return;
