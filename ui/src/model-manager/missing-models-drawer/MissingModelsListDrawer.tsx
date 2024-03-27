@@ -75,7 +75,6 @@ export default function MissingModelsListDrawer({
         if (apiKey) {
           url += `?token=${apiKey}`;
         }
-        console.log("apiKey", apiKey);
       }
       installModelsApi({
         file_hash: model.fileHash ?? undefined,

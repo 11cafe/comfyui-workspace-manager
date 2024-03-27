@@ -172,7 +172,7 @@ export default function DropdownTitle() {
                 icon={<IconDownload size={20} />}
                 iconSpacing={1}
               >
-                Download .runner.json
+                Download .runner.json <Tag size={"sm"}>🧪beta</Tag>
               </MenuItem>
               <MenuItem
                 onClick={() => setRoute("saveAsModal")}
@@ -203,7 +203,7 @@ export default function DropdownTitle() {
                 alignItems={"center"}
               >
                 <HStack>
-                  <p>Share</p> <Tag size={"sm"}>🧪🧪beta</Tag>
+                  <p>Share</p> <Tag size={"sm"}>🧪beta</Tag>
                 </HStack>
               </MenuItem>
             </MenuList>
