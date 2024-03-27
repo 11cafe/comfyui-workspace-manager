@@ -37,7 +37,7 @@ interface ResponsePartial {
   };
   images: {
     url: string;
-    nsfw: "None" | "Soft" | "Mature" | "X";
+    nsfwLevel: number;
     width: number;
     height: number;
     hash: string;
@@ -61,7 +61,7 @@ export async function fetchCivitModelFromHashKey(filehash: string): Promise<{
     if (showNsfwThumbnail === true) {
       image_url = json?.images?.[0]?.url;
     } else if (!json.model.nsfw) {
-      const sfwImage = json.images.find((i) => i.nsfw === "None");
+      const sfwImage = json.images.find((i) => i.nsfwLevel == 1);
       image_url = sfwImage?.url;
     }
 

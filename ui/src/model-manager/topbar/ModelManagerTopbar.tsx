@@ -46,7 +46,7 @@ export default function ModelManagerTopbar() {
             item.model_name + "@" + item.model_type,
           );
           // avoid overwriting existing models cuz it may have downloadUrl info
-          if (existing?.fileHash) return null;
+          if (existing?.fileHash) return existing;
           let newModel: Model = {
             id: item.model_name + "@" + item.model_type,
             modelName: null,

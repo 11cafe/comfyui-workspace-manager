@@ -38,7 +38,7 @@ export function ModelItem({ data }: Props) {
       setModel(model);
       model.imageUrl?.length && setUrl(model.imageUrl);
     }
-    if (data.file_hash != null) {
+    if (!model?.imageUrl && data.file_hash != null) {
       try {
         const json = await fetchCivitModelFromHashKey(data.file_hash);
         const image_url = json.imageUrl;
