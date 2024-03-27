@@ -7,7 +7,9 @@ If you have questions or suggestions, please [join our Discord](https://discord.
 [New!] we're building a comfyui custom nodes library wiki like Pypi: https://www.nodecafe.org/
 welcome any feedbacks!
 
-🔴‼️ If you updated or cloned this repo between March 14-15, 2024, please update it again to latest verison, there were some bugs that may cause you lose changes in Auto Save mode.
+🔴‼️ If you updated or cloned this repo between March 14-17, 2024, please update it again to latest verison, there were some bugs that may cause you lose changes in Auto Save mode.
+
+‼️ [3-23-2024]**search and install models from civitai is not working in previous versions**, because civitai changed something in their api. **Please update to the latest version** if you are seeing blank screen in Install Models dialog
 
 <img width="610" alt="Screenshot 2024-03-08 at 6 41 18 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/30455eb1-3d12-4930-bb81-28b33148fbaa">
 
@@ -39,7 +41,7 @@ It is recommended to do git clone than downloading zip folder, because you can g
 - 📂Save and sync all your workflows in a local folder (by default under `/ComfyUI/my_workflows` customize in Settings)
   - **Save workflow by pressing the 💾 button, or ⌨Shift+S shortcut** (customize in Settings).
   - Every time you save, it will create a new record in **Version History**. You can easily revert to any version.
-  - **Enable/disable autosave workflow**
+  - **Enable/disable autosave workflow** (please disable autosave if you are experiencing UI lagging)
   - You can move files using OS File Explorer and it will be **two-way synced** with workspace.
 - 🕛**Version control** of workflow, create/switch versions
 - Bulk import workflows into your workspace
@@ -71,9 +73,13 @@ I would really appreciate it if someone can find a solution to insert a subworkf
 
 > > > > > > > dev
 
-**✨New gallery coming soon! Inspect image metadata, search image by prompt, model/lora used**
+**🦩v2.1 New gallery coming soon! Inspect image metadata, search image by prompt, model/lora used**
 
 <img width="700" alt="Screenshot 2024-03-23 at 12 58 38 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/5bac9793-7491-4131-b850-037094d03823">
+
+Control+P quick spotlight search (like VSCode)
+
+<img width="500" alt="Screenshot 2024-03-27 at 3 49 35 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/47c14904-180c-4c52-a644-223d0936c9fa">
 
 **🦄v2.0 Two-way sync with local folder, select model install path, cloud sync workflows**
 
@@ -121,9 +127,7 @@ Every time you save, it will create a new record in **Version History**. You can
 <img width="350" alt="Screenshot 2024-01-23 at 12 22 22 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/cc4eb504-6a65-44af-ad7f-d4a8b4ac7b9a">
 <img width="300" alt="Screenshot 2024-01-23 at 12 23 21 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/041c2da8-d8cf-46b7-b9d8-45b415e764f8">
 
-By default, We also enabled auto-saving your current workflow as a cache in case you forgot to save it manually. It will NOT affect or change your manually saved versions. You can always click **"Discard unsaved changes"** to instantly revert back to your last manually saved version.
-
-‼️**You can disable this auto-saving behabior in Settings:**
+By default, We also enabled auto-saving your current workflow as a cache in case you forgot to save it manually. It may affect UI performance, if you experience UI lagging, ‼️‼️**you can disable auto-saving in Settings:**
 
 <img width="297" alt="Screenshot 2024-01-23 at 12 37 37 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/9ca0a63e-ddae-4436-a374-6ef0276c23fb">
 <img width="402" alt="Screenshot 2024-01-22 at 2 33 00 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/061a8463-f7e6-4985-9516-8117d7a5edd5">
@@ -135,6 +139,8 @@ By default, We also enabled auto-saving your current workflow as a cache in case
 <img width="360" alt="Screenshot 2024-01-02 at 10 22 45 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/4751b096-0886-4a32-95b1-87c7ce5b3787">
 
 Other metadata (versions, gallery images) is primarily stored in your browser cache (IndexDB) and backedup in your disk under `/ComfyUI/custom_nodes/comfyui-workspace-manager/db/`. Press F12 or Inspect in right click browser menu, go to Application -> IndexedDB -> comfyui_workspace_db to see your data (workflows, version history, gallery, etc.)
+
+**If you switch browser, your will not see your previous metadata (version history, gallery images) in your new browser**
 
 <img width="607" alt="303892585-c04ca874-03f0-4569-9a40-d8453dd9b031" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/17097e17-743d-499f-8f86-0eb1193d0e46">
 
