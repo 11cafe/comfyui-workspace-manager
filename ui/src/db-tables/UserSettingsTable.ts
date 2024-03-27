@@ -1,4 +1,4 @@
-import { UserSettings } from "../types/dbTypes";
+import { EShortcutKeys, UserSettings } from "../types/dbTypes";
 import { TableBase } from "./TableBase";
 import { MODEL_TYPE_TO_FOLDER_MAPPING } from "../model-manager/install-models/util/modelTypes";
 import { fetchMyWorkflowsDir } from "../Api";
@@ -14,9 +14,14 @@ export class UserSettingsTable extends TableBase<UserSettings> {
    * So we maintain an autoSave here that is always up to date.
    */
   private _autoSave: boolean = false;
+  private _shortcuts: Record<EShortcutKeys, string> | undefined = undefined;
 
   get autoSave() {
     return this._autoSave;
+  }
+
+  get shortcuts() {
+    return this._shortcuts;
   }
   // when drag drop / load a workflow, we need to temporarly disable autoSave to avoid the workflow being saved to the wrong id
   __TEMP_OVERRIDE_ONLY_disableAutoSave() {
@@ -48,6 +53,7 @@ export class UserSettingsTable extends TableBase<UserSettings> {
       shortcuts: {
         save: "Shift+S",
         saveAs: "Control+Alt+S",
+        openSpotlightSearch: "Control+P",
       },
       defaultFolders: MODEL_TYPE_TO_FOLDER_MAPPING,
       autoSave: true,
@@ -65,6 +71,12 @@ export class UserSettingsTable extends TableBase<UserSettings> {
     const currentUserSettings: UserSettings | undefined = await this.get(
       this.DEFAULT_USER,
     );
+    if (key === "shortcuts" && currentUserSettings?.shortcuts) {
+      return {
+        ...this.defaultSettings.shortcuts,
+        ...currentUserSettings.shortcuts,
+      } as UserSettings[K];
+    }
     return currentUserSettings?.[key] ?? this.defaultSettings[key];
   }
 
@@ -82,6 +94,9 @@ export class UserSettingsTable extends TableBase<UserSettings> {
     ) {
       this._autoSave = newPairs.autoSave;
     }
+    if (Object.hasOwn(newPairs, "shortcuts")) {
+      this._shortcuts = newPairs.shortcuts;
+    }
   }
 
   static async load(): Promise<UserSettingsTable> {
@@ -90,8 +105,16 @@ export class UserSettingsTable extends TableBase<UserSettings> {
 
     instance.defaultSettings.myWorkflowsDir = myWorkflowsDir.path!;
 
-    await instance.getSetting("autoSave").then((res) => {
-      instance._autoSave = res ?? true;
+    await instance.get(instance.DEFAULT_USER).then((res) => {
+      instance._autoSave = res?.autoSave ?? true;
+      instance._shortcuts = {
+        ...instance.defaultSettings.shortcuts,
+        ...res?.shortcuts,
+      };
+    });
+    // overwrite legacy comfyspace.art
+    await instance.upsert({
+      cloudHost: instance.defaultSettings.cloudHost,
     });
     return instance;
   }

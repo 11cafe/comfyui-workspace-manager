@@ -1,22 +1,19 @@
 import { FC } from "react";
 import { Flex, Textarea } from "@chakra-ui/react";
-import { FormItem } from "./types.ts";
+import { PromptNodeInputItem } from "../MetaBox/utils.ts";
 
-export const TextareaBase: FC<FormItem> = (props) => {
+export const TextareaBase: FC<
+  {
+    inputItem: PromptNodeInputItem;
+  } & {
+    [key in string]: any;
+  }
+> = (props) => {
+  const inputItem = props.inputItem;
   return (
     <Flex gap={1} direction={"column"}>
-      <Flex>{props.label ?? props.name}</Flex>
-      <Textarea
-        value={props.value}
-        onChange={(e) =>
-          props?.updateMetaData?.({
-            promptKey: props.promptKey,
-            name: props.name,
-            value: e.target.value,
-          })
-        }
-        rows={5}
-      />
+      <Flex>{inputItem.label ?? inputItem.inputName}</Flex>
+      <Textarea value={inputItem.inputValue} onChange={(e) => {}} rows={5} />
     </Flex>
   );
 };

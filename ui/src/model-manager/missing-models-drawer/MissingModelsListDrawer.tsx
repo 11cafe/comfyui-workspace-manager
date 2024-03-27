@@ -1,18 +1,24 @@
 import {
   Box,
+  Button,
   Card,
   CardHeader,
   Flex,
   Grid,
   Heading,
   Portal,
+  useToast,
 } from "@chakra-ui/react";
-import { useEffect } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 // @ts-ignore
 import { app } from "/scripts/app.js";
-import InstallModelsButton from "../install-models/InstallModelsButton";
 import MissingModelItem from "./MissingModelItem";
 import { DRAWER_Z_INDEX } from "../../const";
+import type { ModelFile } from "../../spacejson/handleDownloadSpaceJson";
+import { getAllFoldersList } from "../../Api";
+import { installModelsApi } from "../api/modelsApi";
+import { getCivitApiKey } from "../../utils/civitUtils";
+import { WorkspaceContext } from "../../WorkspaceContext";
 
 export interface MissingModel {
   class_type: string;
@@ -35,8 +41,59 @@ export default function MissingModelsListDrawer({
       app.canvasEl.removeEventListener("click", onClose);
     };
   }, []);
+  const [selectedModelDeps, setSelectedModelDeps] = useState<ModelFile[]>([]);
+  const [foldersList, setFoldersList] = useState<Record<string, string[]>>({});
+  const { setRoute } = useContext(WorkspaceContext);
+  const loadData = useCallback(async () => {
+    const folders_list = await getAllFoldersList();
+    folders_list && setFoldersList(folders_list);
+  }, []);
+  const toast = useToast();
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const DRAWER_WIDTH = 480;
+  const onClickInstallModels = () => {
+    selectedModelDeps.forEach((model) => {
+      let url = model.downloadUrl;
+      if (!url || !model.fileFolder || !foldersList[model.fileFolder][0]) {
+        toast({
+          title: "Error",
+          description: !url
+            ? "Download URL is missing"
+            : "Model install folder path is missing",
+          status: "error",
+          duration: 4000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      if (url.includes("civitai")) {
+        const apiKey = getCivitApiKey();
+        if (apiKey) {
+          url += `?token=${apiKey}`;
+        }
+      }
+      installModelsApi({
+        file_hash: model.fileHash ?? undefined,
+        filename: model.filename,
+        save_path: foldersList[model.fileFolder][0],
+        url,
+        force_filename: true,
+      });
+    });
+    toast({
+      title:
+        "Installing...Please open Install Models modal or python terminal to view progress.",
+      description: selectedModelDeps.map((model) => model.filename).join(", "),
+      status: "info",
+      duration: 4000,
+      isClosable: true,
+    });
+    setRoute("installModels");
+  };
 
   return (
     <Portal>
@@ -56,14 +113,45 @@ export default function MissingModelsListDrawer({
           <CardHeader>
             <Flex justifyContent={"space-between"} alignContent={"center"}>
               <Heading size={"md"} mr={2}>
-                Missing Models ({missingModels.length})
+                Missing Models
               </Heading>
-              <InstallModelsButton />
+              {/* <InstallModelsButton /> */}
             </Flex>
           </CardHeader>
+          {/* <Checkbox
+            isChecked={selectedModelDeps.length == missingModels.length}
+            onChange={(e) => {
+              if (e.target.checked) {
+                setSelectedModelDeps(
+                  missingModels.map((model) => ({
+                    filename: model.received_value,
+                  })),
+                );
+              } else {
+                setSelectedModelDeps([]);
+              }
+            }}
+          >
+            Select All ({missingModels.length})
+          </Checkbox> */}
+          <Button
+            width={"fit-content"}
+            colorScheme="teal"
+            size={"sm"}
+            onClick={onClickInstallModels}
+          >
+            Install Selected ({selectedModelDeps.length})
+          </Button>
           <Grid templateColumns="1" gap={1} marginTop={2} width={"100%"}>
             {missingModels.map((model) => (
-              <MissingModelItem key={model.received_value} model={model} />
+              <MissingModelItem
+                key={model.received_value}
+                model={model}
+                setSelectedModelDeps={setSelectedModelDeps}
+                selectedModelDeps={selectedModelDeps}
+                foldersList={foldersList}
+                setFoldersList={setFoldersList}
+              />
             ))}
           </Grid>
         </Card>

@@ -1,27 +1,18 @@
-import { useState } from "react";
+import { useContext } from "react";
 import { Button } from "@chakra-ui/react";
-
-import InatallModelsModal from "./InatallModelsModal";
+import { WorkspaceContext } from "../../WorkspaceContext";
 
 export default function InstallModelsButton() {
-  const [showInstallModels, setShowInstallModels] = useState(false);
-
+  const { setRoute } = useContext(WorkspaceContext);
   return (
     <>
       <Button
         size={"sm"}
         colorScheme="teal"
-        onClick={() => setShowInstallModels(true)}
+        onClick={() => setRoute("installModels")}
       >
         Install Models
       </Button>
-
-      {showInstallModels && (
-        <InatallModelsModal
-          modelType="Checkpoint"
-          onclose={() => setShowInstallModels(false)}
-        />
-      )}
     </>
   );
 }

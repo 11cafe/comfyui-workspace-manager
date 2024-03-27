@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useContext, useState } from "react";
 import { InputBase } from "./InputBase.tsx";
 import { InputSlider } from "./InputSlider.tsx";
 import { SelectBase } from "./SelectBase.tsx";
@@ -9,7 +9,9 @@ import { NoSupport } from "./NoSupport.tsx";
 import { CheckboxBase } from "./CheckboxBase.tsx";
 import { Flex, Grid, IconButton } from "@chakra-ui/react";
 import { IconPin, IconPinFilled } from "@tabler/icons-react";
-import { isInTopField } from "../MetaBox/MetaBox.tsx";
+import { isInTopField } from "../MetaBox/MetadataForm.tsx";
+import { PromptNodeInputItem } from "../MetaBox/utils.ts";
+import { MetaBoxContext } from "../MetaBox/metaBoxContext.ts";
 
 const INPUT_TYPE_COMPONENT_MAPPING = {
   [FormItemType.Input]: InputBase,
@@ -20,14 +22,18 @@ const INPUT_TYPE_COMPONENT_MAPPING = {
   NoSupport: NoSupport,
 } as Record<FormItemType, any>;
 
-const nodesInfo = getNodesInfo();
+// @ts-expect-error
+const nodesInfo = LiteGraph.registered_node_types;
 
-function getInputConfigByInfo(props: FormItem): Partial<FormItem> {
-  const nodeData = nodesInfo[props.classType]?.nodeData;
+function getInputConfigByInfo(
+  classType: string,
+  inputName: string,
+): Partial<FormItem> {
+  const nodeData = nodesInfo[classType]?.nodeData;
   const inputsInfo = {
     ...(nodeData?.input?.required ?? {}),
     ...(nodeData?.input?.optional ?? {}),
-  }[props.name];
+  }[inputName];
 
   if (inputsInfo?.[0] === "STRING") {
     if (inputsInfo?.[1]?.multiline) {
@@ -65,40 +71,63 @@ function getInputConfigByInfo(props: FormItem): Partial<FormItem> {
       type: FormItemType.Select,
     };
   }
-  // console.log("no support", props, inputsInfo);
   return { type: FormItemType.NoSupport };
 }
 
-export const FormItemComponent: FC<FormItem> = (props) => {
-  const configByNodeInfo = getInputConfigByInfo(props);
+export const FormItemComponent: FC<{ inputItem: PromptNodeInputItem }> = ({
+  inputItem,
+}) => {
+  const configByNodeInfo = getInputConfigByInfo(
+    inputItem.classType,
+    inputItem.inputName,
+  );
+  const [isHovered, setIsHovered] = useState(false); // Track hover state
+
   const Com = INPUT_TYPE_COMPONENT_MAPPING[configByNodeInfo.type ?? "Input"];
+  const { updateTopField, topFields } = useContext(MetaBoxContext);
+  const childrenOutputLink =
+    inputItem.children[0] === "negative" || inputItem.children[0] === "positive"
+      ? `-${inputItem.children[0]}`
+      : "";
+  const inputWithLabel = {
+    ...inputItem,
+    label: inputItem.label ?? inputItem.inputName + childrenOutputLink,
+  };
+
   return (
-    <Grid templateColumns={"max-content 1fr"} gap={1}>
-      <Flex>
+    <Flex
+      alignItems={"center"}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {true && (
         <IconButton
+          size={"xs"}
           onClick={() =>
-            props?.updateTopField?.({
-              name: props.name,
-              promptKey: props.promptKey,
-              class_type: props.classType,
+            updateTopField?.({
+              name: inputItem.inputName,
+              promptKey: inputItem.nodeID,
+              class_type: inputItem.classType,
             })
           }
-          variant={"text"}
+          variant={"ghost"}
           icon={
-            isInTopField(props.topFields, {
-              name: props.name,
-              promptKey: props.promptKey,
-              classType: props.classType,
+            isInTopField(topFields, {
+              name: inputItem.inputName,
+              promptKey: inputItem.nodeID,
+              classType: inputItem.classType,
             }) ? (
-              <IconPinFilled />
+              <IconPinFilled size={14} />
             ) : (
-              <IconPin />
+              <IconPin size={14} />
             )
           }
           aria-label={"pin"}
         />
-      </Flex>
-      <Com {...props} {...configByNodeInfo} />
-    </Grid>
+      )}
+      <div style={{ flex: 1 }}>
+        <Com inputItem={inputWithLabel} {...configByNodeInfo} />
+      </div>
+    </Flex>
   );
 };

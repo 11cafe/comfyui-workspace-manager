@@ -6,6 +6,7 @@ export type InstallModelsApiInput = {
   filename: string;
   url: string;
   file_hash?: string;
+  force_filename?: boolean; // true to use filename as downloaded name, false to fetch from the response header
 };
 let cancelInstall = false;
 
@@ -26,21 +27,6 @@ export const installModelsApi = async (target: InstallModelsApiInput) => {
         detail: text,
       }),
     );
-    // **** Streaming version*****
-    // const reader = response.body.getReader();
-    // while (true) {
-    //   if (cancelInstall) {
-    //     break;
-    //   }
-    //   const { done, value } = await reader.read();
-    //   if (done) break;
-    //   const text = new TextDecoder().decode(value);
-    //   window.dispatchEvent(
-    //     new CustomEvent("model_install_message", {
-    //       detail: text,
-    //     })
-    //   );
-    // }
   } catch (error) {
     console.error("Failed to connect to the server:", error);
   }

@@ -5,7 +5,12 @@ import {
   generateFilePathAbsolute,
   saveJsonFileMyWorkflows,
 } from "./db-tables/DiskFileUtils";
-import { Folder, Workflow, EShortcutKeys } from "./types/dbTypes";
+import {
+  Workflow,
+  EShortcutKeys,
+  EOtherKeys,
+  SortableItem,
+} from "./types/dbTypes";
 // @ts-expect-error ComfyUI import
 import { app } from "/scripts/app.js";
 import {
@@ -167,10 +172,10 @@ export async function validateOrSaveAllJsonFileMyWorkflows(
   }
 }
 
-export const sortFileItem = (
-  items: Array<Workflow | Folder>,
+export const sortFileItem = <T extends SortableItem>(
+  items: T[],
   sortType: ESortTypes = ESortTypes.RECENTLY_MODIFIED,
-) => {
+): T[] => {
   const copyFlows = [...items];
   switch (sortType) {
     case ESortTypes.AZ:
@@ -185,6 +190,11 @@ export const sortFileItem = (
     case ESortTypes.OLDEST_MODIFIED:
       copyFlows.sort((a, b) => a.updateTime - b.updateTime);
       break;
+    case ESortTypes.RECENTLY_OPENED:
+      copyFlows.sort(
+        (a, b) => (b.lastOpenedTime ?? 0) - (a.lastOpenedTime ?? 0),
+      );
+      break;
   }
   return copyFlows;
 };
@@ -193,13 +203,13 @@ export function json2ClipboardString(graphData: any) {
   const nodes = graphData.nodes;
   const links = new Array();
   const relative_id_map = new Map();
-  const exist_link_ids = new Array()
+  const exist_link_ids = new Array();
   for (let i = 0; i < graphData.nodes.length; ++i) {
     const node = graphData.nodes[i];
     if (node.inputs) {
       for (const input of node.inputs) {
         if (input.link) {
-          exist_link_ids.push(input.link)
+          exist_link_ids.push(input.link);
           input.link = null;
         }
       }
@@ -207,7 +217,7 @@ export function json2ClipboardString(graphData: any) {
     if (node.outputs) {
       for (const output of node.outputs) {
         if (output.links) {
-          exist_link_ids.concat(output.links)
+          exist_link_ids.concat(output.links);
           output.links = [];
         }
       }
@@ -215,7 +225,7 @@ export function json2ClipboardString(graphData: any) {
     relative_id_map.set(node.id, i);
   }
   for (const link of graphData.links) {
-    if(!exist_link_ids.includes(link[0])){
+    if (!exist_link_ids.includes(link[0])) {
       continue;
     }
     links.push([
@@ -253,12 +263,22 @@ export function insertWorkflowToCanvas(json: string, insertPos?: number[]) {
   }
 }
 
-export const matchShortcut = async (event: KeyboardEvent) => {
-  const shortcuts =
-    (await userSettingsTable?.getSetting("shortcuts")) ??
-    userSettingsTable?.defaultSettings.shortcuts;
+export const matchShortcut = (event: KeyboardEvent) => {
+  /**
+   * Where matchShortcut is used, the browser's default behavior needs to be prevented.
+   * So here you cannot get the shortcut keys by await userSettingsTable?.getSetting("shortcuts")
+   * Because the async await function will cause the browser's default behavior to fail;
+   */
+
+  const shortcuts = userSettingsTable?.shortcuts;
 
   if (!shortcuts) return false;
+
+  Object.assign(shortcuts, {
+    [EOtherKeys.ArrowDown]: "ARROWDOWN",
+    [EOtherKeys.ArrowUp]: "ARROWUP",
+    [EOtherKeys.Enter]: "ENTER",
+  });
 
   for (const shortcutType in shortcuts) {
     const shortcutString = shortcuts[shortcutType as EShortcutKeys];
@@ -279,7 +299,7 @@ export const matchShortcut = async (event: KeyboardEvent) => {
       keys.length === Object.keys(pressedKeys).length &&
       keys.every((key) => pressedKeys[key])
     ) {
-      return shortcutType;
+      return shortcutType as EShortcutKeys | EOtherKeys;
     }
   }
 };

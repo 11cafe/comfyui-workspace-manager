@@ -10,7 +10,14 @@ import {
   IconLock,
 } from "@tabler/icons-react";
 import DropdownTitle from "../components/DropdownTitle";
-import { lazy, useCallback, useContext, useEffect, useState } from "react";
+import {
+  Suspense,
+  lazy,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import EditFlowName from "../components/EditFlowName";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { PanelPosition } from "../types/dbTypes";
@@ -22,14 +29,21 @@ import { TOPBAR_BUTTON_HEIGHT } from "../const";
 const ModelManagerTopbar = lazy(
   () => import("../model-manager/topbar/ModelManagerTopbar"),
 );
+const SpotlightSearch = lazy(() => import("../components/SpotlightSearch"));
 
 interface Props {
   curFlowName: string | null;
   setCurFlowName: (newName: string) => void;
 }
 export function Topbar({ curFlowName, setCurFlowName }: Props) {
-  const { isDirty, loadNewWorkflow, saveCurWorkflow, setRoute, curFlowID } =
-    useContext(WorkspaceContext);
+  const {
+    isDirty,
+    loadNewWorkflow,
+    saveCurWorkflow,
+    setRoute,
+    curFlowID,
+    route,
+  } = useContext(WorkspaceContext);
   const [positionStyle, setPositionStyle] = useState<PanelPosition>();
   const updatePanelPosition: (
     position?: PanelPosition,
@@ -97,7 +111,9 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
             <IconTriangleInvertedFilled size={8} />
           </HStack>
         </Button>
-        <ModelManagerTopbar />
+        <Suspense fallback={<div style={{ width: "60px" }} />}>
+          <ModelManagerTopbar />
+        </Suspense>
         <Tooltip label="New workflow">
           <Button
             size={"sm"}
@@ -165,6 +181,7 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
           size={15}
           color="#FFF"
         />
+        {route === "spotlightSearch" && <SpotlightSearch />}
       </HStack>
     </Draggable>
   );

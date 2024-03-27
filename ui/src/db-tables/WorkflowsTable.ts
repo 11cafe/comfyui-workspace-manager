@@ -15,7 +15,11 @@ import {
 import { ESortTypes, ImportWorkflow } from "../RecentFilesDrawer/types";
 import { defaultGraph } from "../defaultGraph";
 import { scanMyWorkflowsDir } from "../utils/twowaySyncUtils";
-import { TwowaySyncAPI } from "../apis/TwowaySyncApi";
+import {
+  ScanLocalFile,
+  TwowaySyncAPI,
+  scanLocalFiles,
+} from "../apis/TwowaySyncApi";
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
 
 export class WorkflowsTable extends TableBase<Workflow> {
@@ -154,6 +158,13 @@ export class WorkflowsTable extends TableBase<Workflow> {
     _change: Partial<Workflow>,
   ): Promise<Workflow | null> {
     throw new Error("Method not allowed.");
+  }
+
+  public async updateTopFields(
+    id: string,
+    change: Pick<Partial<Workflow>, "topFieldsConfig">,
+  ): Promise<Workflow | null> {
+    return this._update(id, change);
   }
 
   public async updateMetaInfo(
@@ -377,5 +388,32 @@ export class WorkflowsTable extends TableBase<Workflow> {
       ...wf,
       json: JSON.stringify(data.json),
     };
+  }
+
+  public async listAll(sortBy?: ESortTypes): Promise<Workflow[]> {
+    const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
+    let list: Workflow[];
+    if (twoWaySyncEnabled) {
+      const fileList = (await scanLocalFiles("", true)).filter(
+        (f) => f?.type === "workflow",
+      ) as ScanLocalFile[];
+      const allFilesPromises = fileList.map(async (file) => {
+        const fileInfoInDB = await indexdb.workflows.get(file.id);
+        file.updateTime = fileInfoInDB?.updateTime ?? Date.now();
+        fileInfoInDB?.lastOpenedTime &&
+          (file.lastOpenedTime = fileInfoInDB?.lastOpenedTime);
+        return file;
+      });
+      list = await Promise.all(allFilesPromises);
+    } else {
+      list = await indexdb.workflows.toArray();
+    }
+    return sortBy ? sortFileItem(list, sortBy) : list;
+  }
+
+  public async updateLastOpenedTime(id: string) {
+    await indexdb.workflows.update(id, {
+      lastOpenedTime: Date.now(),
+    });
   }
 }

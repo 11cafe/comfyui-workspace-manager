@@ -1,30 +1,12 @@
 import { Checkbox } from "@chakra-ui/react";
-import { useEffect, ChangeEvent } from "react";
+import { useEffect, ChangeEvent, useState } from "react";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { indexdb } from "../db-tables/indexdb";
 import { Model } from "../types/dbTypes";
-import { useStateRef } from "../customHooks/useStateRef";
-
-interface ResponsePartial {
-  id: number;
-  modelId: number;
-  name: string;
-  model: {
-    name: string;
-    type: string;
-    nsfw: boolean;
-  };
-  images: {
-    url: string;
-    nsfw: "None" | "Soft" | "Mature" | "X";
-    width: number;
-    height: number;
-    hash: string;
-  }[];
-}
+import { fetchCivitModelFromHashKey } from "../utils/civitUtils";
 
 export default function ShowNsfwModelThumbnailSettings() {
-  const [checkedState, setChecked, checked] = useStateRef(false);
+  const [checkedState, setChecked] = useState(false);
 
   const updateShowThumbnail = () => {
     userSettingsTable?.getSetting("showNsfwModelThumbnail").then((res) => {
@@ -59,23 +41,13 @@ export default function ShowNsfwModelThumbnailSettings() {
   };
   const getThumbnail = async (model: Model) => {
     try {
-      const url = `https://civitai.com/api/v1/model-versions/by-hash/${model.fileHash}`;
-      const resp = await fetch(url);
-      const json: ResponsePartial = await resp.json();
-      let image_url: string | undefined;
-      if (checked.current) {
-        image_url = json?.images?.[0]?.url;
-      } else if (!json.model.nsfw) {
-        const sfwImage = json.images.find((i) => i.nsfw === "None");
-        image_url = sfwImage?.url;
-      }
-
+      if (model.fileHash == null) return;
+      const json = await fetchCivitModelFromHashKey(model.fileHash);
+      const imageUrl = json.imageUrl;
       indexdb.models.update(model.id, {
-        imageUrl: image_url ?? null,
+        imageUrl: imageUrl ?? null,
       });
-    } catch (e) {
-      /* ignore */
-    }
+    } catch (e) {}
   };
 
   return (

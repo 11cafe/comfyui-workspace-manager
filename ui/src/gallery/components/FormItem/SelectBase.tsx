@@ -1,26 +1,25 @@
 import { FC } from "react";
 import { Flex, Select } from "@chakra-ui/react";
 import { FormItem } from "./types.ts";
+import { PromptNodeInputItem } from "../MetaBox/utils.ts";
 
-export const SelectBase: FC<FormItem> = (props) => {
+export const SelectBase: FC<
+  {
+    inputItem: PromptNodeInputItem;
+  } & {
+    [key in string]: any;
+  }
+> = (props) => {
+  const { inputItem } = props;
   return (
     <Flex gap={2}>
       <Flex gap={1} alignItems={"center"} flexBasis={"200px"}>
-        {props.label ?? props.name}
+        {inputItem.label ?? inputItem.inputName}
       </Flex>
-      <Select
-        value={props.value}
-        onChange={(e) =>
-          props?.updateMetaData?.({
-            promptKey: props.promptKey,
-            name: props.name,
-            value: e.target.value,
-          })
-        }
-      >
+      <Select value={inputItem.inputValue} onChange={(e) => {}}>
         {props?.options?.map((v: string, i: number) => (
           <option
-            key={`select${props.promptKey}${props.classType}${props.name}${i}`}
+            key={`select${inputItem.nodeID}${inputItem.inputName}${i}`}
             value={v}
           >
             {v}

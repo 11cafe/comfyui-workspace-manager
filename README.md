@@ -30,25 +30,29 @@ and restart your ComfyUI.
 It is recommended to do git clone than downloading zip folder, because you can get latest updates by `git pull`!
 
 ## Features
+
 **Workflows manager**
-  - 🔁Switch between different workflows easily. 1click open workflow in multiple browser tabs.
-  - 🤏**Drag and drop** to insert subworkflows into current flow.
-  - 🗂️Organize workflows with folders, tags.
-  - 📂Save and sync all your workflows in a local folder (by default under `/ComfyUI/my_workflows` customize in Settings)
-    - **Save workflow by pressing the 💾 button, or ⌨Shift+S shortcut** (customize in Settings).
-    - Every time you save, it will create a new record in **Version History**. You can easily revert to any version.
-    - **Enable/disable autosave workflow**
-    - You can move files using OS File Explorer and it will be **two-way synced** with workspace.
-  - 🕛**Version control** of workflow, create/switch versions
-  - Bulk import workflows into your workspace
-  - 1click download all your workflows into a .zip
+
+- 🔁Switch between different workflows easily. 1click open workflow in multiple browser tabs.
+- 🤏**Drag and drop** to insert subworkflows into current flow.
+- 🗂️Organize workflows with folders, tags.
+- 📂Save and sync all your workflows in a local folder (by default under `/ComfyUI/my_workflows` customize in Settings)
+  - **Save workflow by pressing the 💾 button, or ⌨Shift+S shortcut** (customize in Settings).
+  - Every time you save, it will create a new record in **Version History**. You can easily revert to any version.
+  - **Enable/disable autosave workflow**
+  - You can move files using OS File Explorer and it will be **two-way synced** with workspace.
+- 🕛**Version control** of workflow, create/switch versions
+- Bulk import workflows into your workspace
+- 1click download all your workflows into a .zip
 
 **🔮Models manager**:
-  - 1click install models from civitai to `models/` subfolder of the matching model type
-  - Browse installed models with thumbnail image
-  - drag and drop to insert "load model_type" node into workflow
+
+- 1click install models from civitai to `models/` subfolder of the matching model type
+- Browse installed models with thumbnail image
+- drag and drop to insert "load model_type" node into workflow
 
 **🖼️Image Gallery**: Every image/video you generate will be saved in the gallery of the current workflow. You can set any image in the gallery as the cover photo of the workflow
+
 - Dark/light mode
 - cloud sync & backup workspace so you will never lose your data (Upcoming!)
 - [beta!]One-click share workflow
@@ -57,18 +61,28 @@ Recommend using Chrome browser for the best experience. Safari doesn't work well
 
 [中文版教程](https://www.uisdc.com/workspace-manager) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Roadmap](https://github.com/orgs/11cafe/projects/1/views/1)
 
+# <<<<<<< HEAD
+
+🚧🔴 Drag and drop to insert subworkflow is not working. I have debugged for many hours but just can't make it work perfectly. If anyone is interested here is the code:
+https://github.com/11cafe/comfyui-workspace-manager/blob/d2d2f0c1f1ace35236e73fa5074e9feb83342773/ui/src/utils.tsx#L192
+I would really appreciate it if someone can find a solution to insert a subworkflow to current canvas given the json object.
+
+### 🦄v2.0 beta: Two-way sync with local folder, select model install path, cloud sync workflows
+
+> > > > > > > dev
 
 **✨New gallery coming soon! Inspect image metadata, search image by prompt, model/lora used**
 
 <img width="700" alt="Screenshot 2024-03-23 at 12 58 38 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/5bac9793-7491-4131-b850-037094d03823">
 
 **🦄v2.0 Two-way sync with local folder, select model install path, cloud sync workflows**
+
 - Two-way sync with selected local folder so you can move files using File Explore or Finder to sync them with workspace!
 - **Models manager support external models path like Automatic1111**! Choose models downloading folder from added external paths.
 - Add models thumbnails image by putting a image file with the same name in models folder like A1111
 - One click sharing to cloud to backup your workflows to cloud
   v2.0 demo: https://youtu.be/7Hht_BMe844
-  
+
 **v1.7 ComfyUI model manager, view your installed models, install models from civit ai, open workflow in multiple browser tabs**
 
 <img width="700" alt="Screenshot 2024-02-02 at 5 51 13 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/86dc9007-c45c-4b7b-b74a-76ddc93c89a8">

@@ -1,98 +1,110 @@
-import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
-  Box,
-  Flex,
-} from "@chakra-ui/react";
+import { Box, Flex, Text, Stack } from "@chakra-ui/react";
 import { FormItemComponent } from "../FormItem/FormItemComponent.tsx";
-import { MetaData } from "../../utils.ts";
-import { FormItem } from "../FormItem/types.ts";
-import { isInTopField, TopFieldType } from "../MetaBox/MetaBox.tsx";
-import { useEffect, useState } from "react";
+import { isInTopField } from "../MetaBox/MetadataForm.tsx";
+import { useCallback, useContext, useEffect, useState } from "react";
+import { MetaBoxContext } from "../MetaBox/metaBoxContext.ts";
+import { PromptNodeInputItem } from "../MetaBox/utils.ts";
 
-export default function AllPromptForm({
-  metaData,
-  updateMetaData,
-  topFields,
-  updateTopField,
-}: {
-  metaData: MetaData;
-  topFields: TopFieldType[];
-  updateMetaData: FormItem["updateMetaData"];
-  updateTopField?: (field: TopFieldType) => void;
-}) {
-  const prompt = metaData.prompt;
-  const [defaultIndex, setDefaultIndex] = useState<number[]>([]);
-  useEffect(() => {
-    setDefaultIndex(Object.keys(prompt).map((_, i) => i));
-  }, [prompt]);
+export default function AllPromptForm() {
+  const { topFields, calcInputList, showNodeName } = useContext(MetaBoxContext);
+
+  const groupInputsByNodeType = useCallback(
+    (inputList: PromptNodeInputItem[]) => {
+      const groupedInputs: PromptNodeInputItem[][] = [];
+      inputList.forEach((input) => {
+        const lastGroup = groupedInputs[groupedInputs.length - 1];
+        if (
+          !lastGroup ||
+          lastGroup[0].nodeID !== input.nodeID ||
+          lastGroup[0].classType !== input.classType
+        ) {
+          groupedInputs.push([input]);
+        } else {
+          lastGroup.push(input);
+        }
+      });
+      return groupedInputs;
+    },
+    [],
+  );
+
+  useEffect(() => {}, [showNodeName]);
+
+  if (!showNodeName) {
+    return (
+      <Stack>
+        {calcInputList.map((input) => {
+          if (
+            isInTopField(topFields, {
+              name: input.inputName,
+              promptKey: input.nodeID,
+              classType: input.classType,
+            })
+          ) {
+            return null;
+          }
+          return (
+            <FormItemComponent
+              key={`form${input.nodeID}${input.inputName}`}
+              inputItem={input}
+            />
+          );
+        })}
+      </Stack>
+    );
+  }
+  const nodes = groupInputsByNodeType(calcInputList);
   return (
-    <Accordion
-      index={defaultIndex}
-      onChange={(val) => setDefaultIndex(val as number[])}
-      allowMultiple
-    >
-      {Object.keys(prompt).map((promptKey) => {
-        const promptElement = prompt[promptKey];
-        const promptInputs = promptElement.inputs;
-        const inputsKeyList = Object.keys(promptInputs).filter(
-          (v) =>
-            !Array.isArray(promptInputs[v]) &&
-            !isInTopField(topFields, {
-              name: v,
-              promptKey: promptKey,
-              classType: promptElement.class_type,
-            }),
-        );
-        if (inputsKeyList.length === 0) return null;
+    <Stack>
+      {nodes.map((nodeInputs) => {
+        if (!nodeInputs[0]) {
+          return null;
+        }
         return (
-          <AccordionItem
-            key={`AccordionItem${promptKey}`}
-            borderWidth={1}
-            borderRadius={8}
-            my={2}
+          <CustomAccordionPanel
+            title={nodeInputs[0].classType + " #" + nodeInputs[0].nodeID}
+            key={nodeInputs[0].nodeID}
           >
-            <AccordionButton>
-              <Box as="span" flex="1" textAlign="left">
-                {promptElement.class_type}
-              </Box>
-              <AccordionIcon />
-            </AccordionButton>
-            <AccordionPanel>
-              <Flex px={2} gap={1} direction={"column"}>
-                {inputsKeyList?.map((inputsKey) => {
-                  const value = promptInputs[inputsKey];
-                  if (
-                    isInTopField(topFields, {
-                      name: inputsKey,
-                      promptKey,
-                      classType: promptElement.class_type,
-                    })
-                  ) {
-                    return null;
-                  }
-                  return (
-                    <FormItemComponent
-                      key={`form${inputsKey}`}
-                      promptKey={promptKey}
-                      classType={promptElement?.class_type}
-                      value={value}
-                      name={inputsKey}
-                      updateMetaData={updateMetaData}
-                      updateTopField={updateTopField}
-                      topFields={topFields}
-                      metaData={metaData}
-                    />
-                  );
-                })}
-              </Flex>
-            </AccordionPanel>
-          </AccordionItem>
+            <Flex px={2} gap={1} direction={"column"}>
+              {nodeInputs.map((input) => {
+                if (
+                  isInTopField(topFields, {
+                    name: input.inputName,
+                    promptKey: input.nodeID,
+                    classType: input.classType,
+                  })
+                ) {
+                  return null;
+                }
+
+                return (
+                  <FormItemComponent
+                    key={`form${input.nodeID}${input.inputName}`}
+                    inputItem={input}
+                  />
+                );
+              })}
+            </Flex>
+          </CustomAccordionPanel>
         );
       })}
-    </Accordion>
+    </Stack>
+  );
+}
+
+function CustomAccordionPanel({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Box border="1px" borderColor="gray.500" borderRadius="md" p={4}>
+      <Text size="sm" mb={1} color={"GrayText"}>
+        {title}
+      </Text>
+      <div>{children}</div>
+    </Box>
   );
 }

@@ -26,7 +26,6 @@ import {
   getWorkflowIdInUrlHash,
   generateUrlHashWithFlowId,
   openWorkflowInNewTab,
-  validateOrSaveAllJsonFileMyWorkflows,
 } from "./utils";
 import { Topbar } from "./topbar/Topbar";
 import { Workflow, WorkflowVersion } from "./types/dbTypes";
@@ -163,6 +162,9 @@ export default function App() {
       localStorage.setItem("curFlowID", id);
       document.title = "ComfyUI - " + workflow!.name;
     }
+    if (workflow) {
+      workflowsTable?.updateLastOpenedTime(workflow.id);
+    }
   };
 
   const graphAppSetup = async () => {
@@ -184,7 +186,7 @@ export default function App() {
     if (latestWfID) {
       loadWorkflowIDImpl(latestWfID);
     }
-    await validateOrSaveAllJsonFileMyWorkflows();
+    // await validateOrSaveAllJsonFileMyWorkflows();
     const twoway = await userSettingsTable?.getSetting("twoWaySync");
     !twoway &&
       indexdb.cache.get(UPGRADE_TO_2WAY_SYNC_KEY).then(async (value) => {

@@ -1,23 +1,20 @@
 import { FC } from "react";
 import { Flex, Input } from "@chakra-ui/react";
-import { FormItem } from "./types.ts";
+import { PromptNodeInputItem } from "../MetaBox/utils.ts";
 
-export const InputBase: FC<FormItem> = (props) => {
+export const InputBase: FC<
+  {
+    inputItem: PromptNodeInputItem;
+  } & {
+    [key in string]: any;
+  }
+> = ({ inputItem }) => {
   return (
     <Flex gap={2}>
       <Flex gap={1} alignItems={"center"} flexBasis={"200px"}>
-        {props.label ?? props.name}
+        {inputItem.label ?? inputItem.inputName}
       </Flex>
-      <Input
-        value={props.value}
-        onChange={(e) =>
-          props?.updateMetaData?.({
-            promptKey: props.promptKey,
-            name: props.name,
-            value: e.target.value,
-          })
-        }
-      />
+      <Input value={inputItem.inputValue} onChange={(e) => {}} />
     </Flex>
   );
 };

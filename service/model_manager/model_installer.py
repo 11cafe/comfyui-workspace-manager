@@ -95,6 +95,7 @@ def download_worker():
                 save_path=task["save_path"],
                 file_name=task["filename"],
                 file_hash=task.get("file_hash"),
+                force_filename=task.get("force_filename", False),
             )
             # calculate newly downloaded models' hash
             start_populate_file_hash_dict()
@@ -148,7 +149,7 @@ async def cancel_installation(request):
     return web.Response(text=f"Canceled download to {save_path} ...")
 
 
-def download_url_with_agent(url, save_path, file_name, file_hash):
+def download_url_with_agent(url, save_path, file_name, file_hash, force_filename=False):
     print("download_url_with_agent", url, save_path)
     global cancel_path
 
@@ -166,7 +167,7 @@ def download_url_with_agent(url, save_path, file_name, file_hash):
             file_size = int(response.headers.get("content-length", 0))
             print(f"File size: {file_size} bytes")
             content_disposition = response.headers.get("Content-Disposition")
-            if content_disposition:
+            if not force_filename and content_disposition:
                 file_name = content_disposition.split("filename=")[1].strip('"')
             file_path = os.path.join(get_model_dir(save_path), file_name)
             if file_hash is not None:

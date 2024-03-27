@@ -12,7 +12,6 @@ import {
   Box,
   Flex,
   Tooltip,
-  Switch,
 } from "@chakra-ui/react";
 import { useEffect, useState, useRef, useCallback, useContext } from "react";
 import {
@@ -315,7 +314,12 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
                     type="radio"
                     onChange={(type) => onSort(type as ESortTypes)}
                   >
-                    {Object.values(ESortTypes).map((sortType, index) => (
+                    {[
+                      ESortTypes.RECENTLY_MODIFIED,
+                      ESortTypes.OLDEST_MODIFIED,
+                      ESortTypes.AZ,
+                      ESortTypes.ZA,
+                    ].map((sortType, index) => (
                       <MenuItemOption key={index} value={sortType}>
                         {sortType}
                       </MenuItemOption>

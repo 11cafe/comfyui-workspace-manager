@@ -21,10 +21,15 @@ export function ShortcutSettings() {
       title: "Save as current workflow",
       key: EShortcutKeys.SAVE_AS,
     },
+    {
+      title: "Open spotlight search",
+      key: EShortcutKeys.openSpotlightSearch,
+    },
   ]);
   const [shortcut, setShortcut] = useState<Record<EShortcutKeys, string>>({
     save: "",
     saveAs: "",
+    openSpotlightSearch: "",
   });
   const [focusedKey, setFocusedKey] = useState<EShortcutKeys>();
 
@@ -39,7 +44,7 @@ export function ShortcutSettings() {
     // Avoid adding modifier keys alone
     if (
       newShortcut.length > 0 &&
-      !["Control", "Shift", "Alt"].includes(e.key)
+      !["Control", "Shift", "Alt", "Meta"].includes(e.key)
     ) {
       newShortcut += e.key.toUpperCase();
 

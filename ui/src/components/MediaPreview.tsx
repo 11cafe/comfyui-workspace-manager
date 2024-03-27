@@ -9,6 +9,7 @@ type Props = {
   onBrokenLink?: () => void;
   hideBrokenImage?: boolean;
   isPreview?: boolean;
+  objectFit?: "cover" | "contain";
 };
 export default function MediaPreview({
   mediaLocalPath,
@@ -16,6 +17,7 @@ export default function MediaPreview({
   isPreview,
   autoPlay,
   hideBrokenImage,
+  objectFit,
   onBrokenLink,
 }: Props) {
   const [isVisible, setIsVisible] = useState(true);
@@ -28,11 +30,13 @@ export default function MediaPreview({
             ? `/workspace/preview_media?filename=${mediaLocalPath}`
             : `/workspace/view_media?filename=${mediaLocalPath}`,
         );
-        if (!response.ok) throw new Error("Media not found");
-        setIsVisible(true);
+        if (response.status == 404) {
+          setIsVisible(false);
+          onBrokenLink?.();
+          return;
+        }
       } catch (error) {
-        setIsVisible(false);
-        onBrokenLink?.();
+        console.error("Error checking media exists", error);
       }
     };
 
@@ -44,7 +48,7 @@ export default function MediaPreview({
     <Image
       borderRadius={3}
       boxSize={`${size}px`}
-      objectFit="cover"
+      objectFit={objectFit ?? "cover"}
       src={`/workspace/view_media?filename=${mediaLocalPath}`}
       alt="workflow image renamed or moved from output folder"
     />

@@ -1,8 +1,10 @@
 import type { MODEL_TYPE } from "../model-manager/install-models/util/modelTypes";
+import { TopFieldType } from "../gallery/components/MetaBox/MetadataForm.tsx";
 
 export interface SortableItem {
   name: string;
   updateTime: number;
+  lastOpenedTime?: number;
 }
 
 export interface Workflow extends SortableItem {
@@ -21,6 +23,7 @@ export interface Workflow extends SortableItem {
   cloudOrigin?: string;
   saveLock?: boolean;
   latestImage?: string;
+  topFieldsConfig?: TopFieldType[];
 }
 
 export interface TableBaseModel {
@@ -46,11 +49,12 @@ export type LocalCache = {
 export type Model = {
   id: string;
   fileName: string;
-  modelName: string;
   fileFolder: string;
-  fileHash: string;
-  civitModelID: string;
-  civitModelVersionID: string;
+  fileHash: string | null; // files are not guaranteed to finish hashing
+  modelName: string | null;
+  civitModelID?: string;
+  downloadUrl?: string;
+  civitModelVersionID?: string;
   imageUrl?: string | null;
 };
 
@@ -73,6 +77,13 @@ export type WorkflowVersion = {
 export enum EShortcutKeys {
   SAVE = "save",
   SAVE_AS = "saveAs",
+  openSpotlightSearch = "openSpotlightSearch",
+}
+
+export enum EOtherKeys {
+  ArrowUp = "ArrowUp",
+  ArrowDown = "ArrowDown",
+  Enter = "Enter",
 }
 
 export type UserSettings = {
@@ -139,3 +150,10 @@ export enum EFlowOperationType {
 export type WorkflowPrivacy = "PUBLIC" | "PRIVATE" | "UNLISTED";
 
 export const WORKSPACE_INDEXDB_NAME = "comfyui_workspace_db";
+
+export type RecentlyOpenedFile = {
+  id: string;
+  name: string;
+  type: "workflow" | "model";
+  updateTime: number;
+};
