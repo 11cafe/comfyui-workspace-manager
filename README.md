@@ -60,9 +60,13 @@ Recommend using Chrome browser for the best experience. Safari doesn't work well
 [中文版教程](https://www.uisdc.com/workspace-manager) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Roadmap](https://github.com/orgs/11cafe/projects/1/views/1)
 
 
-**✨New gallery coming soon! Inspect image metadata, search image by prompt, model/lora used**
+**🦩v2.1 New gallery coming soon! Inspect image metadata, search image by prompt, model/lora used**
 
 <img width="700" alt="Screenshot 2024-03-23 at 12 58 38 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/5bac9793-7491-4131-b850-037094d03823">
+
+Control+P quick spotlight search (like VSCode)
+
+<img width="500" alt="Screenshot 2024-03-27 at 3 49 35 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/47c14904-180c-4c52-a644-223d0936c9fa">
 
 **🦄v2.0 Two-way sync with local folder, select model install path, cloud sync workflows**
 - Two-way sync with selected local folder so you can move files using File Explore or Finder to sync them with workspace!
