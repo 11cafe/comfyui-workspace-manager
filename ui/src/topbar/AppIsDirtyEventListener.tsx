@@ -19,8 +19,12 @@ export default function AppIsDirtyEventListener() {
     useContext(WorkspaceContext);
   const isDirtRef = useRef(isDirty);
   const [isOutdated, setIsOutdated] = useState(false);
-  const toast = useToast();
+  // const toast = useToast();
   const autoSaveTimer = useRef<number | null>(null);
+
+  useEffect(() => {
+    isDirtRef.current = isDirty;
+  }, [isDirty]);
 
   useEffect(() => {
     const shortcutListener = (event: KeyboardEvent) => {
@@ -64,16 +68,7 @@ export default function AppIsDirtyEventListener() {
     const originalOnConfigure = app.graph.onConfigure;
     app.graph.onConfigure = function () {
       originalOnConfigure?.apply(this, arguments);
-      // delay check diff json cuz it takes time for graph.serialize() to settle up and return the correct json
-      setTimeout(() => {
-        const deepCheck = deepJsonDiffCheck(
-          app.graph.serialize(),
-          JSON.parse(workflowsTable?.curWorkflow?.json ?? "{}"),
-        );
-        if (!deepCheck) {
-          debounceOnIsDirty();
-        }
-      }, 1000);
+      debounceOnIsDirty();
     };
 
     document.addEventListener("click", (e) => {
@@ -119,21 +114,26 @@ export default function AppIsDirtyEventListener() {
       json: graphJson,
     });
     setIsDirty(false);
+
     // toast({
     //   position: "bottom-left",
     //   duration: 1000,
-    //   render: () => (
-    //     <Box color="white" p={3}>
-    //       Auto saved
-    //     </Box>
-    //   ),
+    //   title: "Auto saved",
     // });
   };
 
   const onIsDirty = async () => {
     if (workflowsTable?.curWorkflow?.saveLock) return;
-    !isDirty && setIsDirty(true);
-    isDirtRef.current = true;
+    if (isDirtRef.current) return;
+    console.log("isDirty");
+    const deepCheck = deepJsonDiffCheck(
+      app.graph.serialize(),
+      JSON.parse(workflowsTable?.curWorkflow?.json ?? "{}"),
+    );
+    if (deepCheck) {
+      return;
+    }
+    setIsDirty(true);
 
     if (
       userSettingsTable?.settings?.autoSave &&
