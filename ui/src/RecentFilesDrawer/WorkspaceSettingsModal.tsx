@@ -52,6 +52,10 @@ export default function WorkspaceSettingsModal({
         and has no limit.`}
                   settingKey="maximumChangelogNumber"
                 />
+                <CommonCheckboxSettings
+                  settingKey="hideCoverImage"
+                  text="Hide thumbnail image in workflow list"
+                />
               </VStack>
             </HStack>
           </ModalBody>

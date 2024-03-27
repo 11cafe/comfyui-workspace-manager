@@ -35,7 +35,7 @@ export default function CommonCheckboxSettings({
           await userSettingsTable?.upsert({ [settingKey]: e.target.checked });
           getSetting();
           toast({
-            title: "Setting saved",
+            title: "Setting saved. Please refresh to see the changes.",
             status: "success",
             duration: 3000,
             isClosable: true,
