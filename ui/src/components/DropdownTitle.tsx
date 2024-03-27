@@ -149,7 +149,7 @@ export default function DropdownTitle() {
               >
                 Save
               </MenuItem>
-              {!userSettingsTable?.autoSave && (
+              {!userSettingsTable?.settings?.autoSave && (
                 <Tooltip label="Revert workflow to your last saved version. You will lose all changes made since your last save.">
                   <MenuItem
                     onClick={discardUnsavedChanges}

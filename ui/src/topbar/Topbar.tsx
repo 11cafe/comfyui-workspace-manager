@@ -26,6 +26,7 @@ import { SharedTopbarButton } from "../share/SharedTopbarButton";
 import VersionNameTopbar from "./VersionNameTopbar";
 import { userSettingsTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import { TOPBAR_BUTTON_HEIGHT } from "../const";
+const AppIsDirtyEventListener = lazy(() => import("./AppIsDirtyEventListener"));
 const ModelManagerTopbar = lazy(
   () => import("../model-manager/topbar/ModelManagerTopbar"),
 );
@@ -174,6 +175,7 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
         )}
         <SharedTopbarButton />
         <VersionNameTopbar />
+        <AppIsDirtyEventListener />
         <IconGripVertical
           id="dragPanelIcon"
           className="dragPanelIcon"

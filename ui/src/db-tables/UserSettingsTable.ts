@@ -1,4 +1,4 @@
-import { EShortcutKeys, UserSettings } from "../types/dbTypes";
+import type { UserSettings } from "../types/dbTypes";
 import { TableBase } from "./TableBase";
 import { MODEL_TYPE_TO_FOLDER_MAPPING } from "../model-manager/install-models/util/modelTypes";
 import { fetchMyWorkflowsDir } from "../Api";
@@ -14,27 +14,14 @@ export class UserSettingsTable extends TableBase<UserSettings> {
    * So we maintain an autoSave here that is always up to date.
    */
   private _autoSave: boolean = false;
-  private _shortcuts: Record<EShortcutKeys, string> | undefined = undefined;
+  private _settings: UserSettings | undefined = undefined;
+
+  get settings() {
+    return this._settings;
+  }
 
   get autoSave() {
     return this._autoSave;
-  }
-
-  get shortcuts() {
-    return this._shortcuts;
-  }
-  // when drag drop / load a workflow, we need to temporarly disable autoSave to avoid the workflow being saved to the wrong id
-  __TEMP_OVERRIDE_ONLY_disableAutoSave() {
-    if (!this._autoSave) {
-      return;
-    }
-    this._autoSave = false;
-    setTimeout(async () => {
-      this._autoSave =
-        (await this.getSetting("autoSave")) ??
-        this.defaultSettings.autoSave ??
-        true;
-    }, 3000);
   }
 
   constructor() {
@@ -45,10 +32,6 @@ export class UserSettingsTable extends TableBase<UserSettings> {
         top: 0,
         left: 0,
       },
-      modelManagerTopBarStyle: {
-        top: 0,
-        right: 0,
-      },
       myWorkflowsDir: "",
       shortcuts: {
         save: "Shift+S",
@@ -57,6 +40,7 @@ export class UserSettingsTable extends TableBase<UserSettings> {
       },
       defaultFolders: MODEL_TYPE_TO_FOLDER_MAPPING,
       autoSave: true,
+      autoSaveDuration: 5,
       twoWaySync: false,
       foldersOnTop: false,
       cloudHost: "https://www.nodecafe.org",
@@ -88,15 +72,10 @@ export class UserSettingsTable extends TableBase<UserSettings> {
       ...newPairs,
     };
     await this.put(newSettings);
-    if (
-      Object.hasOwn(newPairs, "autoSave") &&
-      newPairs.autoSave !== undefined
-    ) {
-      this._autoSave = newPairs.autoSave;
-    }
-    if (Object.hasOwn(newPairs, "shortcuts")) {
-      this._shortcuts = newPairs.shortcuts;
-    }
+    this._settings = {
+      ...this.defaultSettings,
+      ...newSettings,
+    };
   }
 
   static async load(): Promise<UserSettingsTable> {
@@ -107,9 +86,9 @@ export class UserSettingsTable extends TableBase<UserSettings> {
 
     await instance.get(instance.DEFAULT_USER).then((res) => {
       instance._autoSave = res?.autoSave ?? true;
-      instance._shortcuts = {
-        ...instance.defaultSettings.shortcuts,
-        ...res?.shortcuts,
+      instance._settings = {
+        ...instance.defaultSettings,
+        ...res,
       };
     });
     // overwrite legacy comfyspace.art
