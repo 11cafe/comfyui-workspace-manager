@@ -21,17 +21,18 @@ export function GalleryCarouselImageViewer({ mediaList }: MetaDataInfoProps) {
         flex={1}
         gap={2}
       >
-        <Carousel
-          media={mediaList.map((v) => ({
-            id: v.id,
-            imageUrl: `/workspace/view_media?filename=${v.localPath}`,
-          }))}
-          currentNum={mediaList?.findIndex((p) => p.id === curMedia?.id) ?? 0}
-          setMediaAct={(newMedia) =>
-            setCurMedia(mediaList?.find((v) => v.id === newMedia.id) ?? null)
-          }
-        />
-
+        <div style={{ height: "56vh" }}>
+          <Carousel
+            media={mediaList.map((v) => ({
+              id: v.id,
+              imageUrl: `/workspace/view_media?filename=${v.localPath}`,
+            }))}
+            currentNum={mediaList?.findIndex((p) => p.id === curMedia?.id) ?? 0}
+            setMediaAct={(newMedia) =>
+              setCurMedia(mediaList?.find((v) => v.id === newMedia.id) ?? null)
+            }
+          />
+        </div>
         <Flex wrap={"wrap"}>
           {mediaList?.map((media) => (
             <Box
