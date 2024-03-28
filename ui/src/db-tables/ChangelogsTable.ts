@@ -3,7 +3,7 @@ import { Table, userSettingsTable } from "./WorkspaceDB";
 import { Changelog } from "../types/dbTypes";
 import { TableBase } from "./TableBase";
 import { indexdb } from "./indexdb";
-const LIMIT = 150;
+const LIMIT = 80;
 export class ChangelogsTable extends TableBase<Changelog> {
   static readonly TABLE_NAME: Table = "changelogs";
   constructor() {
@@ -44,9 +44,9 @@ export class ChangelogsTable extends TableBase<Changelog> {
       createTime: Date.now(),
       isAutoSave: input.isAutoSave,
     };
-    this.deleteLogsExceedLimit(input.workflowID);
+    await this.deleteLogsExceedLimit(input.workflowID);
     await indexdb.changelogs.add(change);
-    await this.saveDiskDB();
+    // this.saveDiskDB(); // its not that important to save to disk for changelog table
     return change;
   }
   async deleteLogsExceedLimit(workflowID: string) {
@@ -55,12 +55,10 @@ export class ChangelogsTable extends TableBase<Changelog> {
       .equals(workflowID)
       .reverse()
       .sortBy("createTime");
-    const limit =
-      (await userSettingsTable?.getSetting("maximumChangelogNumber")) ?? LIMIT;
+    const limit = userSettingsTable?.settings?.maximumChangelogNumber ?? LIMIT;
     if (all.length > limit) {
       const toDelete = all.slice(limit);
       await indexdb.changelogs.bulkDelete(toDelete.map((c) => c.id));
-      await this.saveDiskDB();
     }
   }
 }
