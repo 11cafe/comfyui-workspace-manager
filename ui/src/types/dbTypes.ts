@@ -101,6 +101,7 @@ export type UserSettings = {
   defaultFolders: Record<MODEL_TYPE, string>;
   maximumChangelogNumber: number;
   hideCoverImage: boolean;
+  disableUnsavedWarning: boolean;
 };
 
 export interface PanelPosition {

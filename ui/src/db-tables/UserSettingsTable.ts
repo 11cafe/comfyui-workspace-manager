@@ -47,6 +47,7 @@ export class UserSettingsTable extends TableBase<UserSettings> {
       overwriteCurWorkflowWhenDroppingFileToCanvas: false,
       maximumChangelogNumber: 100,
       hideCoverImage: false,
+      disableUnsavedWarning: false,
     };
   }
 
