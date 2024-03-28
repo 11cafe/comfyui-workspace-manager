@@ -274,12 +274,6 @@ export const matchShortcut = (event: KeyboardEvent) => {
 
   if (!shortcuts) return false;
 
-  Object.assign(shortcuts, {
-    [EOtherKeys.ArrowDown]: "ARROWDOWN",
-    [EOtherKeys.ArrowUp]: "ARROWUP",
-    [EOtherKeys.Enter]: "ENTER",
-  });
-
   for (const shortcutType in shortcuts) {
     const shortcutString = shortcuts[shortcutType as EShortcutKeys];
     const keys = shortcutString.split("+");
@@ -299,7 +293,7 @@ export const matchShortcut = (event: KeyboardEvent) => {
       keys.length === Object.keys(pressedKeys).length &&
       keys.every((key) => pressedKeys[key])
     ) {
-      return shortcutType as EShortcutKeys | EOtherKeys;
+      return shortcutType as EShortcutKeys;
     }
   }
 };
