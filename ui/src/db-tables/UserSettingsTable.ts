@@ -40,7 +40,7 @@ export class UserSettingsTable extends TableBase<UserSettings> {
       },
       defaultFolders: MODEL_TYPE_TO_FOLDER_MAPPING,
       autoSave: true,
-      autoSaveDuration: 5,
+      autoSaveDuration: 3,
       twoWaySync: false,
       foldersOnTop: false,
       cloudHost: "https://www.nodecafe.org",
