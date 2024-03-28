@@ -7,7 +7,7 @@ If you have questions or suggestions, please [join our Discord](https://discord.
 [New!] we're building a comfyui custom nodes library wiki like Pypi: https://www.nodecafe.org/
 welcome any feedbacks!
 
-🔴‼️ If you updated or cloned this repo between March 14-17, 2024, please update it again to latest verison, there were some bugs that may cause you lose changes in Auto Save mode.
+🔴‼️ If you updated or cloned this repo around March 27, 2024, please update it again to latest verison, there were some bugs recently around auto save, key bindings not working, please see closed issues.
 
 ‼️ [3-23-2024]**search and install models from civitai is not working in previous versions**, because civitai changed something in their api. **Please update to the latest version** if you are seeing blank screen in Install Models dialog
 
