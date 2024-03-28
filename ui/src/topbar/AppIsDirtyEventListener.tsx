@@ -142,7 +142,7 @@ export default function AppIsDirtyEventListener() {
       }
     }
   };
-  const [debounceOnIsDirty, _] = useDebounceFn(onIsDirty, 500);
+  const [debounceOnIsDirty, _] = useDebounceFn(onIsDirty, 900);
 
   return isOutdated ? (
     <Tooltip label="This workflow was changed by another tab, so you are not working on the latest version. Please refresh page to see the latest version of this workflow.">
