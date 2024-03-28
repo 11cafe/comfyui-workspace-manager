@@ -194,22 +194,25 @@ export default function SpotlightSearch() {
     };
 
     const keydownListener = (event: KeyboardEvent) => {
-      keyRef.current.lastPressedKey = event.key.toUpperCase();
+      const key = event.key.toUpperCase();
+      keyRef.current.lastPressedKey = key;
+      switch (key) {
+        case "ARROWDOWN":
+          changeSelectIndex(1);
+          break;
+        case "ARROWUP":
+          changeSelectIndex(-1);
+          break;
+        case "ENTER":
+          onOpen(renderDataSourceRef.current[selectIndexRef.current]);
+          break;
+      }
     };
 
     const shortcutTrigger = (event: CustomEvent) => {
       switch (event.detail.shortcutType) {
         case EShortcutKeys.openSpotlightSearch:
           changeSelectIndex(1);
-          break;
-        case EOtherKeys.ArrowDown:
-          changeSelectIndex(1);
-          break;
-        case EOtherKeys.ArrowUp:
-          changeSelectIndex(-1);
-          break;
-        case EOtherKeys.Enter:
-          onOpen(renderDataSourceRef.current[selectIndexRef.current]);
           break;
       }
     };
