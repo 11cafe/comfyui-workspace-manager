@@ -23,6 +23,10 @@ export default function AppIsDirtyEventListener() {
   const autoSaveTimer = useRef<number | null>(null);
 
   useEffect(() => {
+    isDirtRef.current = isDirty;
+  }, [isDirty]);
+
+  useEffect(() => {
     const shortcutListener = (event: KeyboardEvent) => {
       if (document.visibilityState === "hidden") return;
       const matchResult = matchShortcut(event);
@@ -105,11 +109,14 @@ export default function AppIsDirtyEventListener() {
   }, []);
   const autoSaveWorkflow = async () => {
     // autosave workflow if enabled
-    if (!workflowsTable?.curWorkflow?.id) {
+    if (
+      workflowsTable?.curWorkflow?.saveLock ||
+      !workflowsTable?.curWorkflow?.id ||
+      !isDirtRef.current
+    ) {
       return;
     }
     const graphJson = JSON.stringify(app.graph.serialize());
-    if (graphJson === workflowsTable?.curWorkflow.json) return;
     await workflowsTable?.updateFlow(workflowsTable.curWorkflow.id, {
       json: graphJson,
     });
@@ -119,22 +126,11 @@ export default function AppIsDirtyEventListener() {
       json: graphJson,
     });
     setIsDirty(false);
-    // toast({
-    //   position: "bottom-left",
-    //   duration: 1000,
-    //   render: () => (
-    //     <Box color="white" p={3}>
-    //       Auto saved
-    //     </Box>
-    //   ),
-    // });
   };
 
   const onIsDirty = async () => {
-    if (workflowsTable?.curWorkflow?.saveLock) return;
-    !isDirty && setIsDirty(true);
-    isDirtRef.current = true;
-
+    if (workflowsTable?.curWorkflow?.saveLock || isDirtRef.current) return;
+    setIsDirty(true);
     if (
       userSettingsTable?.settings?.autoSave &&
       workflowsTable?.curWorkflow?.id &&
