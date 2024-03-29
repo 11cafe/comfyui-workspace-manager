@@ -44,6 +44,7 @@ import { useStateRef } from "./customHooks/useStateRef";
 import { indexdb } from "./db-tables/indexdb";
 import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
 import { deepJsonDiffCheck } from "./utils/deepJsonDiffCheck";
+import { OPEN_TAB_EVENT } from "./topbar/multipleTabs/TabDataManager";
 
 const usedWsEvents = [
   // InstallProgress.tsx
@@ -181,7 +182,9 @@ export default function App() {
       latestWfID = localStorage.getItem("curFlowID");
     }
     if (latestWfID) {
-      loadWorkflowIDImpl(latestWfID);
+      setTimeout(() => {
+        loadWorkflowIDImpl(latestWfID!);
+      }, 200);
     }
     // await validateOrSaveAllJsonFileMyWorkflows();
     const twoway = await userSettingsTable?.getSetting("twoWaySync");
@@ -280,6 +283,18 @@ export default function App() {
     }
     setRoute("root");
     isDirty && setIsDirty(false);
+
+    document.dispatchEvent(
+      new CustomEvent(OPEN_TAB_EVENT, {
+        detail: {
+          tabInfo: {
+            id: flow.id,
+            name: flow.name,
+            json: version ? version.json : flow.json,
+          },
+        },
+      }),
+    );
   };
 
   const loadWorkflowID = async (
