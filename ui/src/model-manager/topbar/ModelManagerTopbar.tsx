@@ -84,18 +84,17 @@ export default function ModelManagerTopbar() {
 
   return (
     <Stack style={{ position: "relative" }}>
-      <DarkMode>
-        <Button
-          size={"sm"}
-          backgroundColor={"#434554"}
-          aria-label="My models"
-          onClick={() => setRoute("modelList")}
-          px={1}
-          height={TOPBAR_BUTTON_HEIGHT + "px"}
-        >
-          Models
-        </Button>
-      </DarkMode>
+      <Button
+        size={"sm"}
+        // backgroundColor={"#434554"}
+        colorScheme="blue"
+        aria-label="My models"
+        onClick={() => setRoute("modelList")}
+        px={1}
+        height={TOPBAR_BUTTON_HEIGHT + "px"}
+      >
+        Models
+      </Button>
       <div style={{ position: "absolute", top: "38px", left: "0px" }}>
         <Suspense>
           <AddMissingModelsButton />
