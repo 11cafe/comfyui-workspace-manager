@@ -10,48 +10,23 @@ import os
 import urllib.request
 import json
 from .model_preview import preview_file
-import fcntl
 
 # The path to the file where file_hash_dict will be saved
 FILE_HASH_DICT_FOLDER_PATH = os.path.join(os.path.dirname(__file__), "../../hash")
 FILE_HASH_DICT_PATH = os.path.join(FILE_HASH_DICT_FOLDER_PATH, "file_hash_dict")
 if not os.path.exists(FILE_HASH_DICT_FOLDER_PATH):
     os.makedirs(FILE_HASH_DICT_FOLDER_PATH)
+
 file_list = []
 file_list_lock = threading.Lock()
 
 # Add a global variable to track if populate_file_hash_dict is done
 is_populating = False
 
-def open_shelve(path, flag='c', protocol=None, writeback=False):
-    """
-    Attempts to open a shelve database with recovery from a locked state.
-    """
-    try:
-        return shelve.open(path, flag, protocol, writeback)
-    except Exception as e:
-        print(f"Error opening shelve: {e}. Attempting recovery...")
-        unlock_shelve_file(path)
-        return shelve.open(path, flag, protocol, writeback)
-
-def unlock_shelve_file(filepath):
-    """
-    Attempts to unlock a shelve file. This is a last-resort and should be used
-    with caution to avoid data corruption.
-    """
-    try:
-        with open(filepath, 'r+') as file:
-            fcntl.flock(file, fcntl.LOCK_UN)
-        print(f"Shelve file {filepath} unlocked successfully.")
-    except Exception as e:
-        print(f"Failed to unlock shelve file {filepath}: {e}")
-
-# Use shelve to store file_hash_dict
-file_hash_dict = open_shelve(FILE_HASH_DICT_PATH)
 
 def save_file_hash(file_path, file_hash):
-    global file_hash_dict
-    file_hash_dict[file_path] = file_hash
+    with shelve.open(FILE_HASH_DICT_PATH) as file_hash_dict:
+        file_hash_dict[file_path] = file_hash
 
 
 def compute_hash(file_path):
@@ -67,10 +42,10 @@ def compute_hash(file_path):
 def process_file(folder, file):
     file_path = folder_paths.get_full_path(folder, file)
     # check if the file hash is already calculated
-    if file_path in file_hash_dict:
-        file_hash = file_hash_dict[file_path]
-    else:
-        file_hash = None  # placeholder for hash
+    file_hash = None
+    with shelve.open(FILE_HASH_DICT_PATH) as file_hash_dict:
+        if file_path in file_hash_dict:
+            file_hash = file_hash_dict[file_path]
     [model_name, model_extension] = os.path.splitext(file)
     return {
         "model_name": model_name,
@@ -106,7 +81,8 @@ def populate_file_hash_dict():
                     file["model_type"], file["model_name"] + file["model_extension"]
                 )
                 file_hash = compute_hash(file_path)
-                file_hash_dict[file_path] = file_hash
+                with shelve.open(FILE_HASH_DICT_PATH) as file_hash_dict:
+                    file_hash_dict[file_path] = file_hash
                 with file_list_lock:
                     file["file_hash"] = file_hash
                     send_ws("model_list", file_list)  # update the list with the new hash
