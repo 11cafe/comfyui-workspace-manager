@@ -32,7 +32,7 @@ type ImageFile = {
 };
 type NodeRepo = {
   commitHash: string;
-  repoID: string;
+  gitRepo: string;
 };
 
 export type DepsResult = {
@@ -114,10 +114,13 @@ export async function extractAndFetchFileNames(
       }
     },
   );
-  const resp = await fetch("workspace/fetch_node_repos", {
-    method: "POST",
-    body: JSON.stringify({ nodes: nodes.map((n) => n.type) }),
-  })
+  const reposMapping: Record<string, NodeRepo> = await fetch(
+    "workspace/fetch_node_repos",
+    {
+      method: "POST",
+      body: JSON.stringify({ nodes: nodes.map((n) => n.type) }),
+    },
+  )
     .then((res) => {
       if (!res.ok) {
         return [];
@@ -132,7 +135,14 @@ export async function extractAndFetchFileNames(
   const models = await Promise.all(modelPromises);
   const modelsMap: Record<string, DepsResultModel> = {};
   models.forEach((model) => {
+    // if (model.nodeType) {
+    //   model.gitRepo = reposMapping[model.nodeType];
+    // }
     modelsMap[model.filename] = model;
   });
-  return { models: modelsMap, images, nodeRepos: resp };
+  const nodeRepos: Record<string, NodeRepo> = {};
+  Object.values(reposMapping).forEach((repo) => {
+    nodeRepos[repo.gitRepo] = repo;
+  });
+  return { models: modelsMap, images, nodeRepos: Object.values(nodeRepos) };
 }

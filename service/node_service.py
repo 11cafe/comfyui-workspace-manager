@@ -172,7 +172,7 @@ def get_git_repo(node_type: str):
         git_repo = git_repo[:-4]
     username = git_repo.split("/")[-2]
     repo_name = git_repo.split("/")[-1]
-    return {"repoID": f"{username}/{repo_name}", "commitHash": commit_hash}
+    return {"gitRepo": f"{username}/{repo_name}", "commitHash": commit_hash}
 
 @server.PromptServer.instance.routes.post("/workspace/fetch_node_repos")  # Handle POST requests
 async def fetch_node_repos(request):
@@ -180,14 +180,13 @@ async def fetch_node_repos(request):
     nodetypes = data.get("nodes")
     if not nodetypes:
         return web.Response(status=400, text="NodeTypes parameter is required and should be a list of node types.")
-    repos = {}
+    repos_mapping = {}
     for nodetype in nodetypes:
         try:
             repo = get_git_repo(nodetype)
             if repo:
-                repos[repo.get('repoID')] = repo
+                repos_mapping[nodetype] = repo
         except Exception as e:
             print(f"Error fetching repo for {nodetype}: {e}")
-    result = list(repos.values())
-    return web.Response(text=json.dumps(result), content_type='application/json')
+    return web.Response(text=json.dumps(repos_mapping), content_type='application/json')
 
