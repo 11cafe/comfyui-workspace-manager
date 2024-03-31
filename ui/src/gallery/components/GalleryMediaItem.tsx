@@ -11,13 +11,8 @@ import {
 } from "@chakra-ui/react";
 import { formatTimestamp } from "../../utils";
 import { Media } from "../../types/dbTypes";
-import {
-  IconDownload,
-  IconPin,
-  IconPinFilled,
-  IconTrash,
-} from "@tabler/icons-react";
-import { mediaTable, workflowsTable } from "../../db-tables/WorkspaceDB";
+import { IconDownload, IconTrash } from "@tabler/icons-react";
+import { mediaTable } from "../../db-tables/WorkspaceDB";
 import { WorkspaceContext } from "../../WorkspaceContext";
 import { useDialog } from "../../components/AlertDialogProvider";
 import MediaPreview from "../../components/MediaPreview";
