@@ -50,7 +50,6 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   const [currentRenderingData, setCurrentRenderingData] = useState<
     Array<Folder | Workflow>
   >([]);
-  const aloneFlowsAndFoldersRef = useRef<Array<Folder | Workflow>>([]);
   const allFlowsRef = useRef<Array<Workflow>>([]);
   const { loadWorkflowID, curFlowID } = useContext(WorkspaceContext);
   const [selectedTag, setSelectedTag] = useState<string>();
@@ -67,39 +66,33 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
     (window.localStorage.getItem(sortTypeLocalStorageKey) as ESortTypes) ??
       ESortTypes.RECENTLY_MODIFIED,
   );
+  const isFilter = !!selectedTag || !!debounceSearchValue.length;
 
   const loadLatestWorkflows = async () => {
-    aloneFlowsAndFoldersRef.current =
-      (await workflowsTable?.listFolderContent()) ?? [];
-    allFlowsRef.current = (await workflowsTable?.listAll()) ?? [];
-    filterFlows();
+    const curFolderContent = (await workflowsTable?.listFolderContent()) ?? [];
+    setCurrentRenderingData(
+      sortFileItem(curFolderContent, sortTypeRef.current),
+    );
     setRefreshFolderStamp(Date.now());
+    allFlowsRef.current = (await workflowsTable?.listAll()) ?? [];
   };
 
-  const isFilter = !!selectedTag || !!debounceSearchValue;
-
   const filterFlows = () => {
-    if (isFilter) {
-      const filterResult = allFlowsRef.current.filter((flow) => {
-        let tagFlag = true;
-        let keywordFlag = true;
-        if (selectedTag) {
-          tagFlag = !!flow.tags?.includes(selectedTag);
-        }
-        if (debounceSearchValue) {
-          keywordFlag = !!flow.name
-            .toLocaleLowerCase()
-            .includes(debounceSearchValue.toLocaleLowerCase());
-        }
+    const filterResult = allFlowsRef.current.filter((flow) => {
+      let tagFlag = true;
+      let keywordFlag = true;
+      if (selectedTag) {
+        tagFlag = !!flow.tags?.includes(selectedTag);
+      }
+      if (debounceSearchValue) {
+        keywordFlag = !!flow.name
+          .toLocaleLowerCase()
+          .includes(debounceSearchValue.toLocaleLowerCase());
+      }
 
-        return tagFlag && keywordFlag;
-      });
-      setCurrentRenderingData(sortFileItem(filterResult, sortTypeRef.current));
-    } else {
-      setCurrentRenderingData(
-        sortFileItem(aloneFlowsAndFoldersRef.current, sortTypeRef.current),
-      );
-    }
+      return tagFlag && keywordFlag;
+    });
+    setCurrentRenderingData(sortFileItem(filterResult, sortTypeRef.current));
   };
 
   const onSort = (type: ESortTypes) => {
@@ -110,7 +103,11 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   };
 
   useEffect(() => {
-    filterFlows();
+    if (isFilter) {
+      filterFlows();
+    } else {
+      loadLatestWorkflows();
+    }
   }, [debounceSearchValue, selectedTag]);
 
   const onDelete = useCallback(
@@ -125,7 +122,6 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   );
 
   useEffect(() => {
-    loadLatestWorkflows();
     const handleDrop = async (e: { canvasX: number; canvasY: number }) => {
       if (draggingWorkflowID.current) {
         const flow = await workflowsTable?.get(draggingWorkflowID.current);

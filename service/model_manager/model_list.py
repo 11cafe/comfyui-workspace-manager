@@ -10,21 +10,44 @@ import os
 import urllib.request
 import json
 from .model_preview import preview_file
+import fcntl
 
 # The path to the file where file_hash_dict will be saved
 FILE_HASH_DICT_FOLDER_PATH = os.path.join(os.path.dirname(__file__), "../../hash")
 FILE_HASH_DICT_PATH = os.path.join(FILE_HASH_DICT_FOLDER_PATH, "file_hash_dict")
 if not os.path.exists(FILE_HASH_DICT_FOLDER_PATH):
     os.makedirs(FILE_HASH_DICT_FOLDER_PATH)
-# Use shelve to store file_hash_dict
-file_hash_dict = shelve.open(FILE_HASH_DICT_PATH)
-
 file_list = []
 file_list_lock = threading.Lock()
 
 # Add a global variable to track if populate_file_hash_dict is done
 is_populating = False
 
+def open_shelve(path, flag='c', protocol=None, writeback=False):
+    """
+    Attempts to open a shelve database with recovery from a locked state.
+    """
+    try:
+        return shelve.open(path, flag, protocol, writeback)
+    except Exception as e:
+        print(f"Error opening shelve: {e}. Attempting recovery...")
+        unlock_shelve_file(path)
+        return shelve.open(path, flag, protocol, writeback)
+
+def unlock_shelve_file(filepath):
+    """
+    Attempts to unlock a shelve file. This is a last-resort and should be used
+    with caution to avoid data corruption.
+    """
+    try:
+        with open(filepath, 'r+') as file:
+            fcntl.flock(file, fcntl.LOCK_UN)
+        print(f"Shelve file {filepath} unlocked successfully.")
+    except Exception as e:
+        print(f"Failed to unlock shelve file {filepath}: {e}")
+
+# Use shelve to store file_hash_dict
+file_hash_dict = open_shelve(FILE_HASH_DICT_PATH)
 
 def save_file_hash(file_path, file_hash):
     global file_hash_dict

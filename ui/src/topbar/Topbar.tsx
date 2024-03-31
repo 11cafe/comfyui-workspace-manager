@@ -103,6 +103,7 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
         <Button
           size={"sm"}
           aria-label="workspace folder"
+          height={TOPBAR_BUTTON_HEIGHT + "px"}
           // backgroundColor={colorMode === "dark" ? "#333547" : undefined}
           onClick={() => setRoute("recentFlows")}
           px={2}
@@ -123,8 +124,7 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
             aria-label="new workflow"
             height={TOPBAR_BUTTON_HEIGHT + "px"}
             onClick={() => loadNewWorkflow()}
-            px={2}
-            py={2}
+            px={1}
           >
             <HStack gap={0}>
               <IconPlus size={16} color={"white"} />

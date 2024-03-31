@@ -16,11 +16,13 @@ type LiteNode = {
 
 export type ModelFile = {
   filename: string;
-  nodeType: string;
-  fileHash: string | null;
   fileFolder: string | null;
+  fileHash: string | null;
   downloadUrl: string | null;
+  // optional info
   infoUrl: string | null;
+  nodeType?: string;
+  inputName?: string;
 };
 
 type ImageFile = {
@@ -30,7 +32,7 @@ type ImageFile = {
 };
 type NodeRepo = {
   commitHash: string;
-  repoID: string;
+  gitRepo: string;
 };
 
 export type DepsResult = {
@@ -52,6 +54,7 @@ export type WorkspaceInfoDeps = {
 async function fetchModelData(
   filename: string,
   nodeType: string,
+  inputName: string,
 ): Promise<DepsResultModel> {
   const res =
     (await indexdb.models.where("fileName").equals(filename).toArray()) ?? [];
@@ -64,6 +67,7 @@ async function fetchModelData(
     downloadUrl: first?.civitModelVersionID
       ? getCivitModelDownloadUrl(first.civitModelVersionID)
       : first?.downloadUrl ?? null,
+    inputName: inputName,
     length: res.length,
     infoUrl: first?.civitModelID
       ? getCivitModelPageUrl(first.civitModelID, first.civitModelVersionID)
@@ -81,32 +85,42 @@ export async function extractAndFetchFileNames(
   const imageFileExtensions = [".jpeg", ".jpg", ".png", ".gif", ".webp"];
   const curDeps: DepsResult | null =
     app.graph.extra?.[COMFYSPACE_TRACKING_FIELD_NAME]?.deps;
-  nodes.forEach((node) => {
-    if (node.widgets_values && Array.isArray(node.widgets_values)) {
-      node.widgets_values.forEach((value) => {
-        if (typeof value != "string") return;
-        // Check if it's a model file
-        if (modelFileExtensions.some((ext) => value.endsWith(ext))) {
-          if (curDeps?.models?.[value]) {
-            modelPromises.push(Promise.resolve(curDeps.models[value]));
-          } else {
-            modelPromises.push(fetchModelData(value, node.type));
+  const prompt = await app.graphToPrompt();
+  const promptNodes = Object.values(prompt.output) as any;
+  promptNodes.forEach(
+    (node: { class_type: string; inputs?: Record<string, any> }) => {
+      if (node.inputs) {
+        Object.keys(node.inputs).forEach((inputName) => {
+          const value = node.inputs?.[inputName];
+          if (typeof value != "string") return;
+          // Check if it's a model file
+          if (modelFileExtensions.some((ext) => value.endsWith(ext))) {
+            if (curDeps?.models?.[value]) {
+              modelPromises.push(Promise.resolve(curDeps.models[value]));
+            } else {
+              modelPromises.push(
+                fetchModelData(value, node.class_type, inputName),
+              );
+            }
           }
-        }
-        // Check if it's an image file
-        if (imageFileExtensions.some((ext) => value.endsWith(ext))) {
-          images[value] = curDeps?.images?.[value] ?? {
-            filename: value,
-            nodeType: node.type,
-          };
-        }
-      });
-    }
-  });
-  const resp = await fetch("workspace/fetch_node_repos", {
-    method: "POST",
-    body: JSON.stringify({ nodes: nodes.map((n) => n.type) }),
-  })
+          // Check if it's an image file
+          if (imageFileExtensions.some((ext) => value.endsWith(ext))) {
+            images[value] = curDeps?.images?.[value] ?? {
+              filename: value,
+              nodeType: node.class_type,
+            };
+          }
+        });
+      }
+    },
+  );
+  const reposMapping: Record<string, NodeRepo> = await fetch(
+    "workspace/fetch_node_repos",
+    {
+      method: "POST",
+      body: JSON.stringify({ nodes: nodes.map((n) => n.type) }),
+    },
+  )
     .then((res) => {
       if (!res.ok) {
         return [];
@@ -121,7 +135,14 @@ export async function extractAndFetchFileNames(
   const models = await Promise.all(modelPromises);
   const modelsMap: Record<string, DepsResultModel> = {};
   models.forEach((model) => {
+    // if (model.nodeType) {
+    //   model.gitRepo = reposMapping[model.nodeType];
+    // }
     modelsMap[model.filename] = model;
   });
-  return { models: modelsMap, images, nodeRepos: resp };
+  const nodeRepos: Record<string, NodeRepo> = {};
+  Object.values(reposMapping).forEach((repo) => {
+    nodeRepos[repo.gitRepo] = repo;
+  });
+  return { models: modelsMap, images, nodeRepos: Object.values(nodeRepos) };
 }

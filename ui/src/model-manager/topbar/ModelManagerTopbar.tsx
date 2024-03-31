@@ -1,4 +1,4 @@
-import { Button, Stack } from "@chakra-ui/react";
+import { Button, DarkMode, Stack } from "@chakra-ui/react";
 import { lazy, useEffect, DragEvent, useContext, Suspense } from "react";
 import ModelsListDrawer from "../models-list-drawer/ModelsListDrawer";
 // @ts-ignore
@@ -13,6 +13,7 @@ import { fetchCivitModelFromHashKey } from "../../utils/civitUtils";
 import { indexdb } from "../../db-tables/indexdb";
 import type { ModelsListRespItemFromApi } from "../types";
 import InatallModelsModal from "../install-models/InstallModelsModal";
+import { TOPBAR_BUTTON_HEIGHT } from "../../const";
 
 const AddMissingModelsButton = lazy(
   () => import("./InstallMissingModelsButton"),
@@ -85,10 +86,12 @@ export default function ModelManagerTopbar() {
     <Stack style={{ position: "relative" }}>
       <Button
         size={"sm"}
+        // backgroundColor={"#434554"}
         colorScheme="blue"
         aria-label="My models"
         onClick={() => setRoute("modelList")}
         px={1}
+        height={TOPBAR_BUTTON_HEIGHT + "px"}
       >
         Models
       </Button>
