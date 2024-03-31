@@ -30,10 +30,7 @@ import {
   IconInfoCircle,
   IconRefresh,
 } from "@tabler/icons-react";
-import {
-  getCivitModelPageUrl,
-  getHgModelInfoUrlFromDownloadUrl,
-} from "../utils/civitUtils";
+import { getHgModelInfoUrlFromDownloadUrl } from "../utils/civitUtils";
 import { getAllModelsList } from "../Api";
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
 import { downloadJsonFile } from "../utils/downloadJsonFile";
@@ -134,6 +131,7 @@ export default function DownloadSpaceJsonDialog() {
           fileFolder: model.fileFolder,
           downloadUrl: model.downloadUrl ?? inputDownloadUrl ?? null,
           infoUrl: infoUrl ?? null,
+          inputName: model.inputName,
         };
       }) ?? [];
     const modelDepsArr = await Promise.all(saveModelUrlDBPromises);
@@ -179,7 +177,7 @@ export default function DownloadSpaceJsonDialog() {
     } as WorkspaceInfoDeps;
 
     saveCurWorkflow();
-
+    console.log("json", graph);
     downloadJsonFile(
       JSON.stringify(graph, null, 2),
       (workflowsTable?.curWorkflow?.name ?? "unknown") + ".runner",

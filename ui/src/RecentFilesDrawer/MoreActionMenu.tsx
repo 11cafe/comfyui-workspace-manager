@@ -57,10 +57,14 @@ export default function MoreActionMenu({ workflow }: Props) {
       method: "POST",
       body,
     });
-    Array.from(files).forEach((file) => {
+    Array.from(files).forEach(async (file) => {
+      const localPath = `workspace_manager/${file.name}`;
       mediaTable?.create({
         workflowID: workflow.id,
-        localPath: `workspace_manager/${file.name}`,
+        localPath: localPath,
+      });
+      workflowsTable?.updateMetaInfo(workflow.id, {
+        coverMediaPath: localPath,
       });
     });
   };

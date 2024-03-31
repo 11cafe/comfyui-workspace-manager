@@ -20,7 +20,6 @@ import { IconX } from "@tabler/icons-react";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { Media } from "../types/dbTypes";
 import { GalleryCarouselImageViewer } from "./components/GalleryCarouselImageViewer.tsx";
-import { MediaWithMetaData } from "./components/GalleryRightCol.tsx";
 import GalleryGridView from "./components/GalleryGridView.tsx";
 import { useDebounce } from "../customHooks/useDebounce.ts";
 import SearchInput from "../components/SearchInput.tsx";
@@ -31,7 +30,6 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
   const [workflowName, setWorkflowName] = useState("");
   const [selectedID, setSelectedID] = useState<string[]>([]);
   const [isSelecting, setIsSelecting] = useState(false);
-  const [coverPath, setCoverPath] = useState("");
   const [images, setImages] = useState<Media[]>([]);
   const [curMedia, setCurMedia] = useState<Media | null>();
   const [searchValue, setSearchValue] = useState("");
@@ -53,7 +51,6 @@ export default function GalleryModal({ onclose }: { onclose: () => void }) {
       workflowsTable?.get(curFlowID).then((flow) => {
         if (flow) {
           setWorkflowName(flow.name);
-          flow?.coverMediaPath && setCoverPath(flow?.coverMediaPath);
         }
       });
   }, []);
