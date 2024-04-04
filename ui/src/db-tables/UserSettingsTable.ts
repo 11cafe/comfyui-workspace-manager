@@ -39,7 +39,7 @@ export class UserSettingsTable extends TableBase<UserSettings> {
         openSpotlightSearch: "Control+P",
       },
       defaultFolders: MODEL_TYPE_TO_FOLDER_MAPPING,
-      autoSave: true,
+      autoSave: false,
       autoSaveDuration: 3,
       twoWaySync: false,
       foldersOnTop: false,
@@ -87,7 +87,7 @@ export class UserSettingsTable extends TableBase<UserSettings> {
     instance.defaultSettings.myWorkflowsDir = myWorkflowsDir.path!;
 
     await instance.get(instance.DEFAULT_USER).then((res) => {
-      instance._autoSave = res?.autoSave ?? true;
+      instance._autoSave = res?.autoSave ?? false;
       instance._settings = {
         ...instance.defaultSettings,
         ...res,
