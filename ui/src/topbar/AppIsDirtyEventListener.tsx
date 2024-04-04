@@ -31,7 +31,9 @@ export default function AppIsDirtyEventListener() {
       if (document.visibilityState === "hidden") return;
       const matchResult = matchShortcut(event);
       if (matchResult) {
-        event.preventDefault();
+        if (matchResult === EShortcutKeys.openSpotlightSearch) {
+          event.preventDefault();
+        }
         window.dispatchEvent(
           new CustomEvent(SHORTCUT_TRIGGER_EVENT, {
             detail: {
