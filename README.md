@@ -7,8 +7,6 @@ If you have questions or suggestions, please [join our Discord](https://discord.
 [New!] we're building a comfyui custom nodes library wiki like Pypi: https://www.nodecafe.org/
 welcome any feedbacks!
 
-🔴‼️ If you updated or cloned this repo around March 27, 2024, please update it again to latest verison, there were some bugs recently around auto save, key bindings not working, please see closed issues.
-
 ‼️ [3-23-2024]**search and install models from civitai is not working in previous versions**, because civitai changed something in their api. **Please update to the latest version** if you are seeing blank screen in Install Models dialog
 
 <img width="610" alt="Screenshot 2024-03-08 at 6 41 18 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/30455eb1-3d12-4930-bb81-28b33148fbaa">
@@ -26,6 +24,11 @@ Like any other custom node installation, in your ComfyUI root folder run command
 ```
 cd custom_nodes && git clone https://github.com/11cafe/comfyui-workspace-manager.git
 ```
+
+‼️ Please choose Auto Save or not first. **Auto save will be DISABLED by default from next version.** Be careful with Auto Save mode as it is constantly overwriting/saving your workflow, which can lead to unwanted overwriting of your precious work if not using carefully. If you disabled Auto Save, make sure you don't forget to Shift+S to save your workflows.
+<img width="432" alt="Screenshot 2024-04-05 at 12 33 13 AM-min" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/dccf967c-8323-4b74-848c-662968e5fc2d">
+
+
 
 ## Features
 
