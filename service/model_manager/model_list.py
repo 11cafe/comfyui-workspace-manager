@@ -18,7 +18,7 @@ if not os.path.exists(FILE_HASH_DICT_FOLDER_PATH):
     os.makedirs(FILE_HASH_DICT_FOLDER_PATH)
 
 # Early open shelve for better performance
-with shelve.open(FILE_HASH_DICT_PATH) as file_hash_dict:
+with shelve.open(FILE_HASH_DICT_PATH) as file_hash_dict_early_open:
     print(f"Workspace manager - Openning file hash dict")
 
 file_list = []
