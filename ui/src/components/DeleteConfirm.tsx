@@ -40,7 +40,7 @@ export default function DeleteConfirm(props: Props) {
                 <IconButton
                   aria-label="Delete confirm"
                   size={"sm"}
-                  icon={<IconTrash color="#F56565" />}
+                  icon={<IconTrash color="#F56565" size={"20px"} />}
                   isDisabled={isDisabled}
                   variant={variant}
                 />

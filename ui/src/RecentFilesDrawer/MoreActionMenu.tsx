@@ -11,6 +11,7 @@ import {
 import {
   IconCopy,
   IconDotsVertical,
+  IconExternalLink,
   IconLock,
   IconLockOpen,
   IconUpload,
@@ -19,6 +20,7 @@ import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import { Workflow } from "../types/dbTypes";
 import { mediaTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
+import { openWorkflowInNewTab } from "../utils";
 
 type Props = {
   workflow: Workflow;
@@ -71,7 +73,7 @@ export default function MoreActionMenu({ workflow }: Props) {
 
   return (
     <>
-      <Menu isLazy closeOnSelect={false}>
+      <Menu isLazy closeOnSelect={false} placement="right" gutter={0}>
         <MenuButton
           border={0}
           as={IconButton}
@@ -88,6 +90,12 @@ export default function MoreActionMenu({ workflow }: Props) {
             }
           >
             Duplicate
+          </MenuItem>
+          <MenuItem
+            icon={<IconExternalLink size={20} />}
+            onClick={() => openWorkflowInNewTab(workflow.id)}
+          >
+            Open in new tab
           </MenuItem>
           {/* <AddTagToWorkflowPopover workflow={workflow} /> */}
           <Tooltip

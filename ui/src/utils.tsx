@@ -103,6 +103,7 @@ export function formatTimestamp(
   unixTimestamp: number,
   showHourMinue: boolean = true,
   showSec: boolean = false,
+  splitChar: string = "-",
 ) {
   // Create a new Date object from the UNIX timestamp
   const date = new Date(unixTimestamp);
@@ -115,7 +116,7 @@ export function formatTimestamp(
   const minutes = String(date.getMinutes()).padStart(2, "0");
   const seconds = String(date.getSeconds()).padStart(2, "0");
   // Format the date and time string
-  const res = `${month}-${day}-${year}`;
+  const res = `${month}${splitChar}${day}${splitChar}${year}`;
   if (showHourMinue) {
     return res + ` ${hours}:${minutes}`;
   }
