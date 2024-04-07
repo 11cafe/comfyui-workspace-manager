@@ -174,9 +174,10 @@ def dedupe_workflow_ids():
             file_path = os.path.join(root, file)
             check_and_update_workflow_id(file_path, seen_ids)
 
-
-dedupe_workflow_ids()
-
+@server.PromptServer.instance.routes.get('/workspace/deduplicate_workflow_ids')
+async def deduplicate_workflow_ids(request):
+    dedupe_workflow_ids()
+    return web.json_response(text="success", content_type='application/json')
 
 @server.PromptServer.instance.routes.post('/workspace/get_workflow_file')
 async def get_workflow_file(request):

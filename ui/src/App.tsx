@@ -183,6 +183,7 @@ export default function App() {
     if (latestWfID) {
       loadWorkflowIDImpl(latestWfID);
     }
+    fetch("/workspace/deduplicate_workflow_ids");
     // await validateOrSaveAllJsonFileMyWorkflows();
     const twoway = await userSettingsTable?.getSetting("twoWaySync");
     !twoway &&
