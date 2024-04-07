@@ -89,7 +89,7 @@ export default function MoreActionMenu({ workflow }: Props) {
           >
             Duplicate
           </MenuItem>
-          <AddTagToWorkflowPopover workflow={workflow} />
+          {/* <AddTagToWorkflowPopover workflow={workflow} /> */}
           <Tooltip
             hasArrow
             label={

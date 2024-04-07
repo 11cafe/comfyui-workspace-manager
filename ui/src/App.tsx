@@ -45,14 +45,6 @@ import { indexdb } from "./db-tables/indexdb";
 import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
 import { deepJsonDiffCheck } from "./utils/deepJsonDiffCheck";
 
-const usedWsEvents = [
-  // InstallProgress.tsx
-  "download_progress",
-  "download_error",
-  // useUpdateModels.ts
-  "model_list",
-];
-
 export default function App() {
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
   const [route, setRoute] = useState<WorkspaceRoute>("root");
@@ -165,7 +157,6 @@ export default function App() {
   };
 
   const graphAppSetup = async () => {
-    subsribeToWsToStopWarning();
     localStorage.removeItem("workspace");
     localStorage.removeItem("comfyspace");
     try {
@@ -183,7 +174,7 @@ export default function App() {
     if (latestWfID) {
       loadWorkflowIDImpl(latestWfID);
     }
-    // await validateOrSaveAllJsonFileMyWorkflows();
+    fetch("/workspace/deduplicate_workflow_ids");
     const twoway = await userSettingsTable?.getSetting("twoWaySync");
     !twoway &&
       indexdb.cache.get(UPGRADE_TO_2WAY_SYNC_KEY).then(async (value) => {
@@ -226,12 +217,6 @@ export default function App() {
           );
         }
       });
-  };
-
-  const subsribeToWsToStopWarning = () => {
-    usedWsEvents.forEach((event) => {
-      api.addEventListener(event, () => null);
-    });
   };
 
   const checkIsDirty = () => {
@@ -325,24 +310,22 @@ export default function App() {
         },
       },
     ];
-    if (workflowsTable?.curWorkflow?.lastSavedJson != null) {
-      buttons.push({
-        label: "Discard",
-        colorScheme: "red",
-        onClick: async () => {
-          newIDToLoad && loadWorkflowIDImpl(newIDToLoad);
-        },
-      });
-    } else {
-      buttons.push({
-        label: "Delete",
-        colorScheme: "red",
-        onClick: async () => {
-          await deleteCurWorkflow();
-          newIDToLoad && loadWorkflowIDImpl(newIDToLoad);
-        },
-      });
-    }
+    buttons.push({
+      label: "Discard",
+      colorScheme: "red",
+      onClick: async () => {
+        newIDToLoad && loadWorkflowIDImpl(newIDToLoad);
+      },
+    });
+    // buttons.push({
+    //   label: "Delete",
+    //   colorScheme: "red",
+    //   onClick: async () => {
+    //     await deleteCurWorkflow();
+    //     newIDToLoad && loadWorkflowIDImpl(newIDToLoad);
+    //   },
+    // });
+
     showDialog(
       `Please save or discard your changes to "${workflowsTable?.curWorkflow?.name}" before leaving, or your changes will be lost.`,
       buttons,
@@ -388,7 +371,6 @@ export default function App() {
     }
     const flow = await workflowsTable?.createFlow({
       json: workflow.json,
-      lastSavedJson: workflow.lastSavedJson,
       name: newFlowName || workflow.name,
       parentFolderID: workflow.parentFolderID,
       tags: workflow.tags,

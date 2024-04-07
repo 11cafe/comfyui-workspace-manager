@@ -95,7 +95,6 @@ export default function DropdownTitle() {
     const graph = JSON.stringify(app.graph.serialize());
     const flow = await workflowsTable?.createFlow({
       json: graph,
-      lastSavedJson: graph,
       name: newFlowName,
       parentFolderID: workflow?.parentFolderID,
     });
