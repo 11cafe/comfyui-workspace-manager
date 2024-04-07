@@ -45,14 +45,6 @@ import { indexdb } from "./db-tables/indexdb";
 import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
 import { deepJsonDiffCheck } from "./utils/deepJsonDiffCheck";
 
-const usedWsEvents = [
-  // InstallProgress.tsx
-  "download_progress",
-  "download_error",
-  // useUpdateModels.ts
-  "model_list",
-];
-
 export default function App() {
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
   const [route, setRoute] = useState<WorkspaceRoute>("root");
@@ -165,7 +157,6 @@ export default function App() {
   };
 
   const graphAppSetup = async () => {
-    subsribeToWsToStopWarning();
     localStorage.removeItem("workspace");
     localStorage.removeItem("comfyspace");
     try {
@@ -184,7 +175,6 @@ export default function App() {
       loadWorkflowIDImpl(latestWfID);
     }
     fetch("/workspace/deduplicate_workflow_ids");
-    // await validateOrSaveAllJsonFileMyWorkflows();
     const twoway = await userSettingsTable?.getSetting("twoWaySync");
     !twoway &&
       indexdb.cache.get(UPGRADE_TO_2WAY_SYNC_KEY).then(async (value) => {
@@ -227,12 +217,6 @@ export default function App() {
           );
         }
       });
-  };
-
-  const subsribeToWsToStopWarning = () => {
-    usedWsEvents.forEach((event) => {
-      api.addEventListener(event, () => null);
-    });
   };
 
   const checkIsDirty = () => {
