@@ -94,7 +94,6 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
       mb={1}
       justify={"space-between"}
       onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
     >
       {isMultiSelecting ? (
         <Checkbox
