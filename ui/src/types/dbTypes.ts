@@ -13,11 +13,10 @@ export interface Workflow extends SortableItem {
   lastSavedJson?: string; // TODO will be deprecated
   name: string;
   createTime: number;
-  filePath?: string;
+  filePath?: string; // TODO will be deprecated
   privacy?: WorkflowPrivacy;
   tags?: string[];
   parentFolderID?: string | null; //TODO remove undefined, use null only
-  mediaIDs?: string[]; // TODO will be deprecated
   coverMediaPath?: string;
   cloudID?: string; // TODO will be deprecated
   cloudOrigin?: string;
