@@ -42,7 +42,6 @@ export async function scanMyWorkflowsDir(
       const newWorkflow: Workflow = {
         ...existingWorkflow,
         id: file.id,
-        lastSavedJson: file.json ?? "{}",
         json: file.json ?? "{}",
         name: fileName.replace(/\.json$/, ""),
         parentFolderID: parentRelPath,

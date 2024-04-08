@@ -25,7 +25,11 @@ export class TableBase<T extends TableBaseModel> {
         console.error("TableBaseModel should have id or name");
       }
     });
-    saveDB(this.tableName, JSON.stringify(backup));
+    try {
+      saveDB(this.tableName, JSON.stringify(backup));
+    } catch (e) {
+      console.error("error saving disk db", e);
+    }
   }
 
   public async add(
@@ -55,7 +59,7 @@ export class TableBase<T extends TableBaseModel> {
   }
   public async update(id: string, changes: Partial<T>): Promise<T | null> {
     await indexdb[this.tableName].update(id, changes);
-    await this.saveDiskDB();
+    this.saveDiskDB();
     return (await this.get(id)) ?? null;
   }
 
@@ -102,7 +106,7 @@ export class TableBase<T extends TableBaseModel> {
 
   public async delete(id: string) {
     await indexdb[this.tableName].delete(id);
-    await this.saveDiskDB();
+    this.saveDiskDB();
   }
   public async listByIndex(index: keyof T, value: string): Promise<T[]> {
     const list = await indexdb[this.tableName]
