@@ -168,7 +168,10 @@ def download_url_with_agent(url, save_path, file_name, file_hash, force_filename
             print(f"File size: {file_size} bytes")
             content_disposition = response.headers.get("Content-Disposition")
             if not force_filename and content_disposition:
-                file_name = content_disposition.split("filename=")[1].strip('"')
+                pattern = re.compile(r'filename="([^"]+)"')
+                match = pattern.search(content_disposition)
+                if match:
+                    file_name = match.group(1)
             file_path = os.path.join(get_model_dir(save_path), file_name)
             if file_hash is not None:
                 save_file_hash(file_path, file_hash)
