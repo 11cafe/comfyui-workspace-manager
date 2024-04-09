@@ -128,20 +128,7 @@ export default function SelectMyWorkflowsDir() {
     const newPath =
       manualEntry ?? `${isWindows ? "" : slash}${dirPathList.join(slash)}`;
 
-    showDialog("Do you want to copy all workflows to new directory?", [
-      {
-        label: "Yes",
-        onClick: () => {
-          saveDirectory(newPath, true, !!manualEntry);
-        },
-      },
-      {
-        label: "No",
-        onClick: () => {
-          saveDirectory(newPath, false, !!manualEntry);
-        },
-      },
-    ]);
+    saveDirectory(newPath, false, !!manualEntry);
   };
 
   const onReset = async () => {
