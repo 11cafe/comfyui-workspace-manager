@@ -6,6 +6,7 @@ import {
   Flex,
   HStack,
   Heading,
+  IconButton,
   Image,
   Input,
   Modal,
@@ -28,12 +29,10 @@ import { app } from "/scripts/app.js";
 import {
   IconExternalLink,
   IconInfoCircle,
+  IconPencil,
   IconRefresh,
 } from "@tabler/icons-react";
-import {
-  getCivitModelPageUrl,
-  getHgModelInfoUrlFromDownloadUrl,
-} from "../utils/civitUtils";
+import { getHgModelInfoUrlFromDownloadUrl } from "../utils/civitUtils";
 import { getAllModelsList } from "../Api";
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
 import { downloadJsonFile } from "../utils/downloadJsonFile";
@@ -81,7 +80,7 @@ export default function DownloadSpaceJsonDialog() {
   const validateModelDeps = useCallback((modelDeps: ModelFile[]) => {
     let isValid = true;
     modelDeps.forEach((model) => {
-      const key = model.filename + model.nodeType;
+      const key = model.filename;
       if (!model.downloadUrl) {
         setErrors((prev) => ({
           ...prev,
@@ -110,12 +109,11 @@ export default function DownloadSpaceJsonDialog() {
   const handleSubmit = async (event: any) => {
     event.preventDefault();
     const formData = new FormData(event.target);
-
     // validate model deps and save model urls to db
     const saveModelUrlDBPromises: Promise<ModelFile>[] =
       Object.values(deps?.models ?? {}).map(async (model) => {
         const inputDownloadUrl = formData.get(model.filename)?.toString();
-        if (inputDownloadUrl) {
+        if (inputDownloadUrl?.length) {
           // because the models table is storing filename without extension as id, which should be migrated
           const baseName = getBaseFileName(model.filename);
           await indexdb.models.update(baseName + "@" + model.fileFolder, {
@@ -132,8 +130,9 @@ export default function DownloadSpaceJsonDialog() {
           nodeType: model.nodeType,
           fileHash: model.fileHash,
           fileFolder: model.fileFolder,
-          downloadUrl: model.downloadUrl ?? inputDownloadUrl ?? null,
+          downloadUrl: inputDownloadUrl ?? model.downloadUrl ?? null,
           infoUrl: infoUrl ?? null,
+          inputName: model.inputName,
         };
       }) ?? [];
     const modelDepsArr = await Promise.all(saveModelUrlDBPromises);
@@ -179,7 +178,7 @@ export default function DownloadSpaceJsonDialog() {
     } as WorkspaceInfoDeps;
 
     saveCurWorkflow();
-
+    console.log("json", graph);
     downloadJsonFile(
       JSON.stringify(graph, null, 2),
       (workflowsTable?.curWorkflow?.name ?? "unknown") + ".runner",
@@ -285,6 +284,7 @@ function ModelDepsItem({
   onClickRefetchModelList: () => void;
 }) {
   const inputKey = modelFile.filename;
+  const [isEditing, setIsEditing] = useState(!modelFile.downloadUrl);
 
   if (!modelFile.fileFolder) {
     return (
@@ -324,26 +324,37 @@ function ModelDepsItem({
               {modelFile.filename}
             </a>
             <IconExternalLink size={18} />
+            <IconButton
+              ml={3}
+              aria-label="edit"
+              icon={<IconPencil size={18} />}
+              size={"xs"}
+              onClick={() => setIsEditing(!isEditing)}
+            />
           </HStack>
         ) : (
           <Stack>
             <span>
               {modelFile.filename} <span>❓</span>
             </span>
-            <Tooltip
-              label={"Model download link, supports Huggingface and Civitai"}
-            >
-              <Input
-                name={inputKey}
-                size={"sm"}
-                isInvalid={errors[inputKey] != null}
-                placeholder={"https://civitai.com/api/download/models/324524"}
-              />
-            </Tooltip>
-            <Text color={"red.400"}>{errors[inputKey]}</Text>
           </Stack>
         )}
       </Flex>
+
+      <Stack style={{ display: isEditing ? "block" : "none" }}>
+        <Tooltip
+          label={"Model download link, supports Huggingface and Civitai"}
+        >
+          <Input
+            name={inputKey}
+            defaultValue={modelFile.downloadUrl ?? ""}
+            size={"sm"}
+            isInvalid={errors[inputKey] != null}
+            placeholder={"https://civitai.com/api/download/models/324524"}
+          />
+        </Tooltip>
+      </Stack>
+      <Text color={"red.400"}>{errors[inputKey]}</Text>
     </Stack>
   );
 }

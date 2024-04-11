@@ -11,6 +11,7 @@ import {
 import {
   IconCopy,
   IconDotsVertical,
+  IconExternalLink,
   IconLock,
   IconLockOpen,
   IconUpload,
@@ -19,6 +20,7 @@ import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import { Workflow } from "../types/dbTypes";
 import { mediaTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
+import { openWorkflowInNewTab } from "../utils";
 
 type Props = {
   workflow: Workflow;
@@ -57,17 +59,21 @@ export default function MoreActionMenu({ workflow }: Props) {
       method: "POST",
       body,
     });
-    Array.from(files).forEach((file) => {
+    Array.from(files).forEach(async (file) => {
+      const localPath = `workspace_manager/${file.name}`;
       mediaTable?.create({
         workflowID: workflow.id,
-        localPath: `workspace_manager/${file.name}`,
+        localPath: localPath,
+      });
+      workflowsTable?.updateMetaInfo(workflow.id, {
+        coverMediaPath: localPath,
       });
     });
   };
 
   return (
     <>
-      <Menu isLazy closeOnSelect={false}>
+      <Menu isLazy closeOnSelect={false} placement="right" gutter={0}>
         <MenuButton
           border={0}
           as={IconButton}
@@ -85,7 +91,13 @@ export default function MoreActionMenu({ workflow }: Props) {
           >
             Duplicate
           </MenuItem>
-          <AddTagToWorkflowPopover workflow={workflow} />
+          <MenuItem
+            icon={<IconExternalLink size={20} />}
+            onClick={() => openWorkflowInNewTab(workflow.id)}
+          >
+            Open in new tab
+          </MenuItem>
+          {/* <AddTagToWorkflowPopover workflow={workflow} /> */}
           <Tooltip
             hasArrow
             label={

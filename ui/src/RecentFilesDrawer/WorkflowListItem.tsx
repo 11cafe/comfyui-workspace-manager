@@ -5,7 +5,6 @@ import {
   Text,
   Checkbox,
   Flex,
-  Stack,
 } from "@chakra-ui/react";
 import { IconLock } from "@tabler/icons-react";
 import { formatTimestamp } from "../utils";
@@ -45,7 +44,7 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
       onDragStart={() => setDraggingFile?.(workflow)}
       borderRadius={6}
       px={1}
-      py={"3px"}
+      py={"5px"}
       onClick={() => {
         !isMultiSelecting && loadWorkflowID(workflow.id);
       }}
@@ -53,7 +52,7 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
         bg: hoverBgColor,
       }}
     >
-      <HStack>
+      <HStack flexGrow={1}>
         {!userSettingsTable?.settings?.hideCoverImage &&
           (workflow.coverMediaPath?.length || workflow.latestImage?.length) && (
             <MediaPreview
@@ -66,24 +65,21 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
             />
           )}
 
-        <Stack textAlign={"left"} gap={0}>
+        <HStack
+          textAlign={"left"}
+          gap={0}
+          justifyContent={"space-between"}
+          flexGrow={1}
+        >
           <Flex alignItems={"center"}>
-            <Text
-              fontWeight={"500"}
-              noOfLines={2}
-              style={{ display: "inline-block" }}
-            >
+            <Text fontWeight={"500"} noOfLines={2} wordBreak={"break-all"}>
               {workflow.name ?? "untitled"}
             </Text>
             {workflow.saveLock && (
               <IconLock size={18} style={{ display: "inline-block" }} />
             )}
           </Flex>
-
-          <Text color={"GrayText"} ml={2} fontSize={"sm"}>
-            Updated: {formatTimestamp(workflow.updateTime)}
-          </Text>
-        </Stack>
+        </HStack>
       </HStack>
     </Box>
   );
@@ -91,8 +87,9 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
   return (
     <HStack
       w={"100%"}
-      mb={1}
       justify={"space-between"}
+      borderBottom={"1px solid"}
+      borderColor={colorMode == "dark" ? "gray.900" : "gray.200"}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
@@ -110,7 +107,15 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
       ) : (
         <>
           {basicInfoComp}
-          {isHovering && <WorkflowListItemActionButtons workflow={workflow} />}
+          <div style={{ width: "80px" }}>
+            {isHovering ? (
+              <WorkflowListItemActionButtons workflow={workflow} />
+            ) : (
+              <Text color={"GrayText"} ml={"2px"} fontSize={"sm"}>
+                {formatTimestamp(workflow.updateTime, false, false, "/")}
+              </Text>
+            )}
+          </div>
         </>
       )}
     </HStack>

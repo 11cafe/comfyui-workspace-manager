@@ -345,7 +345,8 @@ export class WorkflowsTable extends TableBase<Workflow> {
   ): Promise<(Workflow | Folder)[]> {
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
     if (twoWaySyncEnabled) {
-      return await scanMyWorkflowsDir(folderID ?? null);
+      const items = await scanMyWorkflowsDir(folderID ?? null);
+      return sortFileItem(items, sortBy ?? ESortTypes.RECENTLY_MODIFIED);
     }
     const workflows =
       (await this.listAll().then((list) =>

@@ -133,6 +133,52 @@ def read_workflow_file(path, id):
             return {"error": "Workflow ID doesn't match"}
     return {"error": "No workspace_info.id found in the file"}
 
+
+def check_and_update_workflow_id(file_path, seen_ids):
+    with open(file_path, "r", encoding="utf-8") as f:
+        json_data = json.load(f)
+        if (
+            "extra" in json_data
+            and "workspace_info" in json_data["extra"]
+            and "id" in json_data["extra"]["workspace_info"]
+        ):
+            workflow_id = json_data["extra"]["workspace_info"]["id"]
+            create_time, update_time = getFileCreateTime(file_path)
+            if workflow_id in seen_ids:
+                if create_time > seen_ids[workflow_id]["time"]:
+                    # Update the current file
+                    json_data["extra"]["workspace_info"]["id"] = str(uuid.uuid4())
+                    with open(file_path, "w", encoding="utf-8") as f:
+                        json.dump(json_data, f)
+                else:
+                    # Update the previously seen file
+                    old_file_path = seen_ids[workflow_id]["path"]
+                    with open(old_file_path, "r", encoding="utf-8") as f:
+                        old_json_data = json.load(f)
+                    old_json_data["extra"]["workspace_info"]["id"] = str(uuid.uuid4())
+                    with open(old_file_path, "w", encoding="utf-8") as f:
+                        json.dump(old_json_data, f)
+            seen_ids[workflow_id] = {
+                "time": create_time,
+                "path": file_path,
+            }
+
+
+def dedupe_workflow_ids():
+    abs_path = get_my_workflows_dir()
+    seen_ids = {}
+    for root, dirs, files in os.walk(abs_path):
+        for file in files:
+            if not file.endswith(".json"):
+                continue
+            file_path = os.path.join(root, file)
+            check_and_update_workflow_id(file_path, seen_ids)
+
+@server.PromptServer.instance.routes.get('/workspace/deduplicate_workflow_ids')
+async def deduplicate_workflow_ids(request):
+    await asyncio.to_thread(dedupe_workflow_ids)
+    return web.json_response(text="success", content_type='application/json')
+
 @server.PromptServer.instance.routes.post('/workspace/get_workflow_file')
 async def get_workflow_file(request):
     reqJson = await request.json()
