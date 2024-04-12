@@ -18,22 +18,24 @@ class TabDataManager {
     this.notifyChanges();
   }
 
-  updateTabData(id: string, updateInput: TabUpdateInput) {
-    const tabIndex = this.tabs.findIndex((tab) => tab.id === id);
-    if (tabIndex !== -1) {
-      this.tabs[tabIndex] = { ...this.tabs[tabIndex], ...updateInput };
+  updateTabData(index: number, updateInput: TabUpdateInput) {
+    if (this.tabs[index]) {
+      this.tabs[index] = { ...this.tabs[index], ...updateInput };
       this.notifyChanges();
     }
   }
 
   addTabData(newTab: TabData) {
     const existingIndex = this.tabs.findIndex((tab) => tab.id === newTab.id);
+    // TODO: 新增和替换前，都需要在this.tabs中更新一下当前flow的json和isDirty
     if (existingIndex !== -1) {
       this.activeIndex = existingIndex;
+      // TODO: 根据activeIndex更新画布数据
     } else {
       const insertIndex = this.activeIndex + 1;
       this.tabs.splice(insertIndex, 0, newTab);
       this.activeIndex = insertIndex;
+      // TODO: 根据activeIndex更新画布数据
     }
     this.notifyChanges();
   }
@@ -43,7 +45,7 @@ class TabDataManager {
 
     if (this.tabs.length === 1) {
       this.tabs = [];
-      this.notifyChanges();
+      this.notifyChanges('clearCanvas');
       return;
     }
 
@@ -51,6 +53,7 @@ class TabDataManager {
 
     if (index === this.activeIndex) {
       this.activeIndex = Math.min(this.tabs.length - 1, this.activeIndex);
+      // TODO: 根据activeIndex更新画布数据
     } else if (index < this.activeIndex) {
       this.activeIndex--;
     }
@@ -58,12 +61,12 @@ class TabDataManager {
     this.notifyChanges();
   }
 
-  private notifyChanges() {
-    console.log("Tab data or active index changed");
+  private notifyChanges(otherAction?: string) {
     const event = new CustomEvent(RE_RENDER_MULTIPLE_TABS_EVENT, {
       detail: {
         tabs: this.tabs,
         activeIndex: this.activeIndex,
+        otherAction
       },
     });
     document.dispatchEvent(event);
