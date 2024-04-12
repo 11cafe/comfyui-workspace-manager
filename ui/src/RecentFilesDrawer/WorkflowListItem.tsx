@@ -65,21 +65,21 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
             />
           )}
 
-        <HStack
+        <Box
           textAlign={"left"}
           gap={0}
           justifyContent={"space-between"}
           flexGrow={1}
         >
           <Flex alignItems={"center"}>
-            <Text fontWeight={"500"} noOfLines={2} wordBreak={"break-all"}>
+            <Text fontWeight={"500"} noOfLines={1} wordBreak={"break-all"}>
               {workflow.name ?? "untitled"}
             </Text>
             {workflow.saveLock && (
               <IconLock size={18} style={{ display: "inline-block" }} />
             )}
           </Flex>
-        </HStack>
+        </Box>
       </HStack>
     </Box>
   );
