@@ -328,7 +328,16 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
               searchValue={searchValue}
               onUpdateSearchValue={onUpdateSearchValue}
             />
-            <Flex overflowY={"auto"} overflowX={"hidden"} direction="column">
+            <Flex
+              overflowY={"auto"}
+              overflowX={"hidden"}
+              direction="column"
+              style={{
+                overflowY: "scroll",
+                scrollbarWidth: "none", // For Firefox
+                msOverflowStyle: "none", // For Internet Explorer and Edge
+              }}
+            >
               <ItemsList items={currentRenderingData} />
             </Flex>
           </Flex>
