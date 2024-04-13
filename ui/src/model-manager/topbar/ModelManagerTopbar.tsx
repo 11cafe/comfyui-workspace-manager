@@ -86,7 +86,8 @@ export default function ModelManagerTopbar() {
     <Stack style={{ position: "relative" }}>
       <Button
         size={"sm"}
-        // backgroundColor={"#434554"}
+        backgroundColor={"#434554"}
+        color={"white"}
         colorScheme="blue"
         aria-label="My models"
         onClick={() => setRoute("modelList")}

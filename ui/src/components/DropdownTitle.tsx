@@ -166,13 +166,6 @@ export default function DropdownTitle() {
                 Download
               </MenuItem>
               <MenuItem
-                onClick={() => setRoute("downloadSpaceJson")}
-                icon={<IconDownload size={20} />}
-                iconSpacing={1}
-              >
-                Download .runner.json <Tag size={"sm"}>🧪beta</Tag>
-              </MenuItem>
-              <MenuItem
                 onClick={() => setRoute("saveAsModal")}
                 icon={<IconDeviceFloppy size={20} />}
                 iconSpacing={1}
@@ -193,6 +186,13 @@ export default function DropdownTitle() {
                 iconSpacing={1}
               >
                 Versions History
+              </MenuItem>
+              <MenuItem
+                onClick={() => setRoute("downloadSpaceJson")}
+                icon={<IconDownload size={20} />}
+                iconSpacing={1}
+              >
+                Save workflow dependency🧪
               </MenuItem>
               <MenuItem
                 onClick={() => setIsShareOpen(true)}

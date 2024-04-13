@@ -4,6 +4,7 @@ import { CivitiModel } from "../model-manager/types";
 
 interface ImageLike {
   nsfw?: "None" | "Soft" | "Mature" | "X";
+  nsfwLevel?: number;
 }
 export function findSfwImage<T extends ImageLike>(
   images?: T[],
@@ -12,7 +13,9 @@ export function findSfwImage<T extends ImageLike>(
   if (!images || images.length === 0) {
     return;
   }
-  let sfw = images.find((image) => image.nsfw === "None");
+  let sfw = images.find(
+    (image) => image.nsfw === "None" || image.nsfwLevel === 1,
+  );
 
   if (fallback) {
     sfw = sfw ?? images[0];
@@ -29,9 +32,11 @@ export function findSfwImageFromModel(
   if (!model) {
     return;
   }
-  if (isCivitModel(model)) {
+  if (model.images) {
+    const imageurl = `https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/${findSfwImage(model.images, fallback)?.url}/width=${IMAGE_SIZE}/`;
+    return imageurl;
+  } else if (isCivitModel(model)) {
     return findSfwImage(model.modelVersions?.at(0)?.images, fallback)?.url;
-  } else {
-    return `https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/${findSfwImage(model.images, fallback)?.url}/width=${IMAGE_SIZE}/`;
   }
+  return undefined;
 }
