@@ -162,6 +162,7 @@ export interface Image {
   name: string;
   url: string;
   nsfw: "None" | "Soft" | "Mature" | "X";
+  nsfwLevel?: number;
   width: number;
   height: number;
   hash: string;
