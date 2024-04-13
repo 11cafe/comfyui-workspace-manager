@@ -179,10 +179,10 @@ export default function DownloadSpaceJsonDialog() {
 
     saveCurWorkflow();
     console.log("json", graph);
-    downloadJsonFile(
-      JSON.stringify(graph, null, 2),
-      (workflowsTable?.curWorkflow?.name ?? "unknown") + ".runner",
-    );
+    // downloadJsonFile(
+    //   JSON.stringify(graph, null, 2),
+    //   (workflowsTable?.curWorkflow?.name ?? "unknown") + ".runner",
+    // );
   };
   const imageDepsArr = Object.values(deps?.images ?? {});
   const modelDepsArr = Object.values(deps?.models ?? []);
@@ -253,7 +253,7 @@ export default function DownloadSpaceJsonDialog() {
                   type="submit"
                   mt={4}
                 >
-                  Download .runner.json
+                  Save
                 </Button>
               </Stack>
             </form>
