@@ -38,7 +38,7 @@ const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
 import { IconExternalLink } from "@tabler/icons-react";
 import { DRAWER_Z_INDEX, UPGRADE_TO_2WAY_SYNC_KEY } from "./const";
 import ServerEventListener from "./model-manager/hooks/ServerEventListener";
-import { v4 } from "uuid";
+import { nanoid } from "nanoid";
 import { WorkspaceRoute } from "./types/types";
 import { useStateRef } from "./customHooks/useStateRef";
 import { indexdb } from "./db-tables/indexdb";
@@ -417,7 +417,7 @@ export default function App() {
     const fileInputListener = async () => {
       if (fileInput && fileInput.files && fileInput.files.length > 0) {
         const newFlow: Workflow = {
-          id: v4(),
+          id: nanoid(),
           name: fileInput.files[0].name,
           json: JSON.stringify(defaultGraph),
           updateTime: Date.now(),
@@ -472,7 +472,7 @@ export default function App() {
         )) ?? false;
       if (!overwriteFlow && fileName) {
         const newFlow: Workflow = {
-          id: v4(),
+          id: nanoid(),
           name: fileName,
           json: JSON.stringify(defaultGraph),
           updateTime: Date.now(),
