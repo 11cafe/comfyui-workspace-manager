@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from "uuid";
+import { nanoid } from "nanoid";
 import { Table, userSettingsTable } from "./WorkspaceDB";
 import { Changelog } from "../types/dbTypes";
 import { TableBase } from "./TableBase";
@@ -38,7 +38,7 @@ export class ChangelogsTable extends TableBase<Changelog> {
     }
 
     const change: Changelog = {
-      id: uuidv4(),
+      id: nanoid(),
       json: input.json,
       workflowID: input.workflowID,
       createTime: Date.now(),

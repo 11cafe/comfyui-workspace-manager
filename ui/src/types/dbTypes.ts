@@ -150,6 +150,12 @@ export enum EFlowOperationType {
 
 export type WorkflowPrivacy = "PUBLIC" | "PRIVATE" | "UNLISTED";
 
+export enum EWorkflowPrivacy {
+  PRIVATE = "PRIVATE",
+  PUBLIC = "PUBLIC",
+  UNLISTED = "UNLISTED",
+}
+
 export const WORKSPACE_INDEXDB_NAME = "comfyui_workspace_db";
 
 export type RecentlyOpenedFile = {
