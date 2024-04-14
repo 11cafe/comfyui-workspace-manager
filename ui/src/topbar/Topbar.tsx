@@ -31,11 +31,7 @@ const ModelManagerTopbar = lazy(
 );
 const SpotlightSearch = lazy(() => import("../components/SpotlightSearch"));
 
-interface Props {
-  curFlowName: string | null;
-  setCurFlowName: (newName: string) => void;
-}
-export function Topbar({ curFlowName, setCurFlowName }: Props) {
+export function Topbar() {
   const {
     isDirty,
     loadNewWorkflow,
@@ -148,7 +144,9 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
           <Tooltip label="Save workflow">
             <IconButton
               // style={{ width: 26 }}
-              onClick={saveCurWorkflow}
+              onClick={() => {
+                saveCurWorkflow();
+              }}
               icon={<IconDeviceFloppy size={23} color="white" />}
               size={"xs"}
               paddingY={4}

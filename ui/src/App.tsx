@@ -44,10 +44,12 @@ import { useStateRef } from "./customHooks/useStateRef";
 import { indexdb } from "./db-tables/indexdb";
 import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
 import { deepJsonDiffCheck } from "./utils/deepJsonDiffCheck";
-import { OPEN_TAB_EVENT } from "./topbar/multipleTabs/TabDataManager";
+import {
+  OPEN_TAB_EVENT,
+  tabDataManager,
+} from "./topbar/multipleTabs/TabDataManager";
 
 export default function App() {
-  const [curFlowName, setCurFlowName] = useState<string | null>(null);
   const [route, setRoute] = useState<WorkspaceRoute>("root");
   const [loadingDB, setLoadingDB] = useState(true);
   const [flowID, setFlowID] = useState<string | null>(null);
@@ -60,8 +62,9 @@ export default function App() {
   const developmentEnvLoadFirst = useRef(false);
   const toast = useToast();
   const [curVersion, setCurVersion] = useStateRef<WorkflowVersion | null>(null);
-  const saveCurWorkflow = useCallback(async () => {
-    if (curFlowID.current) {
+  const saveCurWorkflow = useCallback(async (id?: string) => {
+    const flowId = id || curFlowID.current;
+    if (flowId) {
       if (workflowsTable?.curWorkflow?.saveLock) {
         toast({
           title: "The workflow is locked and cannot be saved",
@@ -70,13 +73,14 @@ export default function App() {
         });
         return;
       }
+      setIsDirty(false);
       const graphJson = JSON.stringify(app.graph.serialize());
       await Promise.all([
-        workflowsTable?.updateFlow(curFlowID.current, {
+        workflowsTable?.updateFlow(flowId, {
           json: graphJson,
         }),
         changelogsTable?.create({
-          workflowID: curFlowID.current,
+          workflowID: flowId,
           json: graphJson,
           isAutoSave: false,
         }),
@@ -88,9 +92,9 @@ export default function App() {
           duration: 1000,
           isClosable: true,
         });
-      setIsDirty(false);
     }
   }, []);
+
   const deleteCurWorkflow = async () => {
     if (curFlowID.current) {
       const userInput = confirm(
@@ -137,7 +141,6 @@ export default function App() {
     workflowsTable?.updateCurWorkflow(workflow);
     curFlowID.current = id;
     setFlowID(id);
-    setCurFlowName(workflow?.name ?? "");
     if (id == null) {
       document.title = "ComfyUI";
       window.location.hash = "";
@@ -253,19 +256,18 @@ export default function App() {
       ? await workflowVersionsTable?.get(versionID)
       : null;
 
-    app.ui.dialog.close();
-    if (version) {
-      setCurVersion(version);
-      setCurFlowIDAndName({
-        ...flow,
-        json: version.json,
-      });
-      app.loadGraphData(JSON.parse(version.json));
-    } else {
-      setCurFlowIDAndName(flow);
-      setCurVersion(null);
-      app.loadGraphData(JSON.parse(flow.json));
+    setCurVersion(version ?? null);
+
+    const tabIndex = tabDataManager.tabs.findIndex((tab) => tab.id === id);
+    if (tabIndex !== -1) {
+      tabDataManager.changeActiveTab(tabIndex);
+      if (version) {
+        tabDataManager.updateTabData(tabIndex, { json: version.json });
+      }
+      return;
     }
+
+    app.ui.dialog.close();
     setRoute("root");
     isDirty && setIsDirty(false);
 
@@ -285,7 +287,6 @@ export default function App() {
   const loadWorkflowID = async (
     id: string | null,
     versionID?: string | null,
-    forceLoad: boolean = false,
   ) => {
     // No current workflow, id is null when you deleted current workflow
     if (id === null) {
@@ -293,18 +294,10 @@ export default function App() {
       app.graph.clear();
       return;
     }
-    if (
-      !isDirty ||
-      forceLoad ||
-      userSettingsTable?.settings?.autoSave ||
-      workflowsTable?.curWorkflow == null
-    ) {
-      loadWorkflowIDImpl(id, versionID);
-      return;
-    }
-    // prompt when auto save disabled and dirty
-    showSaveOrDiscardCurWorkflowDialog(id);
+
+    loadWorkflowIDImpl(id, versionID);
   };
+
   const showSaveOrDiscardCurWorkflowDialog = async (newIDToLoad?: string) => {
     const buttons = [
       newIDToLoad
@@ -527,6 +520,7 @@ export default function App() {
         route: route,
         curVersion: curVersion,
         setCurVersion: setCurVersion,
+        setCurFlowIDAndName: setCurFlowIDAndName,
       }}
     >
       <div ref={workspaceContainerRef} className="workspace_manager">
@@ -541,7 +535,7 @@ export default function App() {
             zIndex={DRAWER_Z_INDEX}
             draggable={false}
           >
-            <Topbar curFlowName={curFlowName} setCurFlowName={setCurFlowName} />
+            <Topbar />
             {loadChild && route === "recentFlows" && (
               <Suspense>
                 <RecentFilesDrawer

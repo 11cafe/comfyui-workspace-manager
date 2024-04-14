@@ -19,18 +19,14 @@ import {
 import { useContext, ChangeEvent, useState } from "react";
 import { workflowsTable } from "../db-tables/WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
+import { tabDataManager } from "../topbar/multipleTabs/TabDataManager";
 
 type Props = {
   displayName: string;
-  updateFlowName: (newName: string) => void;
-  isDirty: boolean;
+  isActive: boolean;
 };
 
-export default function EditFlowName({
-  displayName,
-  updateFlowName,
-  isDirty,
-}: Props) {
+export default function EditFlowName({ displayName, isActive }: Props) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { curFlowID } = useContext(WorkspaceContext);
   const [editName, setEditName] = useState(displayName);
@@ -63,7 +59,10 @@ export default function EditFlowName({
         await workflowsTable?.updateName(curFlowID, {
           name: trimEditName,
         });
-        updateFlowName(trimEditName);
+        tabDataManager.updateTabData(tabDataManager.activeIndex, {
+          name: trimEditName,
+        });
+
         onCloseModal();
       }
     }
@@ -79,17 +78,14 @@ export default function EditFlowName({
       <Tooltip label={displayName} placement="bottom">
         <Text
           as="div"
-          color="white"
-          onClick={startEdit}
-          maxW={200}
-          fontWeight={500}
+          color={isActive ? "white" : "#9d9d9d"}
+          onDoubleClick={startEdit}
+          maxW="114px"
+          marginRight="4px"
           whiteSpace="nowrap"
           overflow="hidden"
           textOverflow="ellipsis"
         >
-          <div style={{ width: 8, display: "inline-block" }}>
-            <Text as="span">{isDirty && "* "}</Text>
-          </div>
           {displayName}
         </Text>
       </Tooltip>

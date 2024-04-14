@@ -1,6 +1,7 @@
 export const RE_RENDER_MULTIPLE_TABS_EVENT = "RE_RENDER_MULTIPLE_TABS_EVENT";
 export const OPEN_TAB_EVENT = "OPEN_TAB_EVENT";
-
+// @ts-ignore
+import { app } from "/scripts/app.js";
 export type TabData = {
   id: string;
   name: string;
@@ -12,32 +13,56 @@ type TabUpdateInput = Partial<Omit<TabData, "id">>;
 class TabDataManager {
   tabs: TabData[] = [];
   activeIndex: number = 0;
+  activeTab: TabData | null = null;
 
-  setActiveIndex(index: number) {
+  changeActiveTab(index: number, needLoadNewFlow: boolean = true) {
+    this.saveCurTabJson();
     this.activeIndex = index;
-    this.notifyChanges();
+    this.activeTab = this.tabs[index];
+    this.notifyChanges(needLoadNewFlow ? "loadNewFlow" : "");
   }
 
   updateTabData(index: number, updateInput: TabUpdateInput) {
     if (this.tabs[index]) {
       this.tabs[index] = { ...this.tabs[index], ...updateInput };
-      this.notifyChanges();
+      this.activeTab = this.tabs[index];
+      this.notifyChanges(updateInput.json ? "loadNewFlow" : "");
     }
   }
 
+  private saveCurTabJson() {
+    const graphJson = JSON.stringify(app.graph.serialize());
+    this.tabs[this.activeIndex].json = graphJson;
+  }
+
   addTabData(newTab: TabData) {
+    const currentFlowIsDirty = this.activeTab?.isDirty;
     const existingIndex = this.tabs.findIndex((tab) => tab.id === newTab.id);
-    // TODO: 新增和替换前，都需要在this.tabs中更新一下当前flow的json和isDirty
-    if (existingIndex !== -1) {
-      this.activeIndex = existingIndex;
-      // TODO: 根据activeIndex更新画布数据
+
+    if (this.tabs.length === 0) {
+      this.tabs.push(newTab);
+      this.activeTab = newTab;
     } else {
-      const insertIndex = this.activeIndex + 1;
-      this.tabs.splice(insertIndex, 0, newTab);
-      this.activeIndex = insertIndex;
-      // TODO: 根据activeIndex更新画布数据
+      let nextActiveIndex = -1;
+
+      if (existingIndex !== -1) {
+        nextActiveIndex = existingIndex;
+      } else if (currentFlowIsDirty) {
+        nextActiveIndex = this.activeIndex + 1;
+        this.tabs.splice(nextActiveIndex, 0, newTab);
+      }
+
+      if (nextActiveIndex >= 0) {
+        this.saveCurTabJson();
+        this.activeIndex = nextActiveIndex;
+        this.activeTab = this.tabs[nextActiveIndex];
+      } else {
+        this.updateTabData(this.activeIndex, newTab);
+        return;
+      }
     }
-    this.notifyChanges();
+
+    this.notifyChanges("loadNewFlow");
   }
 
   deleteTabData(index: number) {
@@ -45,7 +70,9 @@ class TabDataManager {
 
     if (this.tabs.length === 1) {
       this.tabs = [];
-      this.notifyChanges('clearCanvas');
+      this.activeIndex = 0;
+      this.activeTab = null;
+      this.notifyChanges("clearCanvas");
       return;
     }
 
@@ -53,12 +80,12 @@ class TabDataManager {
 
     if (index === this.activeIndex) {
       this.activeIndex = Math.min(this.tabs.length - 1, this.activeIndex);
-      // TODO: 根据activeIndex更新画布数据
     } else if (index < this.activeIndex) {
       this.activeIndex--;
     }
+    this.activeTab = this.tabs[this.activeIndex];
 
-    this.notifyChanges();
+    this.notifyChanges("loadNewFlow");
   }
 
   private notifyChanges(otherAction?: string) {
@@ -66,12 +93,12 @@ class TabDataManager {
       detail: {
         tabs: this.tabs,
         activeIndex: this.activeIndex,
-        otherAction
+        activeTab: this.activeTab,
+        otherAction,
       },
     });
     document.dispatchEvent(event);
   }
 }
 
-// Exporting a single instance
 export const tabDataManager = new TabDataManager();

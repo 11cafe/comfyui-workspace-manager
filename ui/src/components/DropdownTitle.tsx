@@ -99,7 +99,7 @@ export default function DropdownTitle() {
       parentFolderID: workflow?.parentFolderID,
     });
 
-    flow && (await loadWorkflowID(flow.id, null, true));
+    flow && (await loadWorkflowID(flow.id, null));
     handleOnCloseModal();
   };
 
@@ -140,7 +140,9 @@ export default function DropdownTitle() {
           <Menu isOpen={true}>
             <MenuList minWidth={150} zIndex={1000}>
               <MenuItem
-                onClick={saveCurWorkflow}
+                onClick={() => {
+                  saveCurWorkflow();
+                }}
                 icon={<IconDeviceFloppy size={20} />}
                 iconSpacing={1}
                 command={saveShortcut.save}
