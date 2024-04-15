@@ -59,9 +59,9 @@ export default function App() {
   const developmentEnvLoadFirst = useRef(false);
   const toast = useToast();
   const [curVersion, setCurVersion] = useStateRef<WorkflowVersion | null>(null);
-  const saveCurWorkflow = useCallback(async () => {
+  const saveCurWorkflow = useCallback(async (force = false) => {
     if (curFlowID.current) {
-      if (workflowsTable?.curWorkflow?.saveLock) {
+      if (!force && workflowsTable?.curWorkflow?.saveLock) {
         toast({
           title: "The workflow is locked and cannot be saved",
           status: "warning",
@@ -90,18 +90,6 @@ export default function App() {
       setIsDirty(false);
     }
   }, []);
-  const deleteCurWorkflow = async () => {
-    if (curFlowID.current) {
-      const userInput = confirm(
-        "Are you sure you want to delete this workflow?",
-      );
-      if (userInput) {
-        // User clicked OK
-        await workflowsTable?.delete(curFlowID.current);
-        setCurFlowIDAndName(null);
-      }
-    }
-  };
 
   const discardUnsavedChanges = async () => {
     if (userSettingsTable?.settings?.autoSave) {
@@ -317,15 +305,6 @@ export default function App() {
         newIDToLoad && loadWorkflowIDImpl(newIDToLoad);
       },
     });
-    // buttons.push({
-    //   label: "Delete",
-    //   colorScheme: "red",
-    //   onClick: async () => {
-    //     await deleteCurWorkflow();
-    //     newIDToLoad && loadWorkflowIDImpl(newIDToLoad);
-    //   },
-    // });
-
     showDialog(
       `Please save or discard your changes to "${workflowsTable?.curWorkflow?.name}" before leaving, or your changes will be lost.`,
       buttons,
