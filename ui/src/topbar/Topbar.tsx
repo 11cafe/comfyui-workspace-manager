@@ -126,9 +126,7 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
             onClick={() => loadNewWorkflow()}
             px={1}
           >
-            <HStack gap={0}>
-              <IconPlus size={16} color={"white"} />
-            </HStack>
+            <IconPlus size={16} color={"white"} />
           </Button>
         </Tooltip>
         <EditFlowName
