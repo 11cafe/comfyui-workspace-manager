@@ -95,19 +95,6 @@ export default function App() {
     }
   }, []);
 
-  const deleteCurWorkflow = async () => {
-    if (curFlowID.current) {
-      const userInput = confirm(
-        "Are you sure you want to delete this workflow?",
-      );
-      if (userInput) {
-        // User clicked OK
-        await workflowsTable?.delete(curFlowID.current);
-        setCurFlowIDAndName(null);
-      }
-    }
-  };
-
   const discardUnsavedChanges = async () => {
     if (userSettingsTable?.settings?.autoSave) {
       alert("You cannot discard unsaved changes when auto save is enabled");
@@ -325,15 +312,6 @@ export default function App() {
         newIDToLoad && loadWorkflowIDImpl(newIDToLoad);
       },
     });
-    // buttons.push({
-    //   label: "Delete",
-    //   colorScheme: "red",
-    //   onClick: async () => {
-    //     await deleteCurWorkflow();
-    //     newIDToLoad && loadWorkflowIDImpl(newIDToLoad);
-    //   },
-    // });
-
     showDialog(
       `Please save or discard your changes to "${workflowsTable?.curWorkflow?.name}" before leaving, or your changes will be lost.`,
       buttons,

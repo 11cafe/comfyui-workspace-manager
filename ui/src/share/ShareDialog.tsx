@@ -222,6 +222,7 @@ export default function ShareDialog({ onClose }: Props) {
             {cloudWorkflowID && (
               <HStack spacing={2} color="teal.400">
                 <Link
+                  wordBreak={"break-all"}
                   href={cloudHost + "/workflow/" + cloudWorkflowID}
                   isExternal
                 >
@@ -233,9 +234,8 @@ export default function ShareDialog({ onClose }: Props) {
                 </Link>
 
                 <Button
-                  width={"180px"}
                   size={"sm"}
-                  leftIcon={<IconCopy />}
+                  leftIcon={<IconCopy size={18} />}
                   onClick={() => {
                     copyTextToClipboard(
                       cloudHost +
