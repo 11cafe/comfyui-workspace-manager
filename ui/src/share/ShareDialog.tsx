@@ -279,7 +279,7 @@ export default function ShareDialog({ onClose }: Props) {
                 </Button>
               </HStack>
             )}
-            <Text>Choose a version to share:</Text>
+            {/* <Text>Choose a version to share:</Text> */}
             <RadioGroup
               gap={4}
               onChange={(val) => {
@@ -289,7 +289,7 @@ export default function ShareDialog({ onClose }: Props) {
             >
               <Stack>
                 <HStack mb={5} alignItems={"center"}>
-                  <Radio key={"new_version"} value="new_version" />
+                  {/* <Radio key={"new_version"} value="new_version" /> */}
                   <Input
                     value={versionName}
                     width={"60%"}
@@ -301,11 +301,11 @@ export default function ShareDialog({ onClose }: Props) {
                     }}
                   />
                   <Flex color="green">
-                    <Badge colorScheme="purple">New version</Badge>
+                    <Badge colorScheme="purple">Version Name</Badge>
                   </Flex>
                 </HStack>
 
-                {localVersions.slice(0, 4).map((ver) => {
+                {/* {localVersions.slice(0, 4).map((ver) => {
                   return (
                     <ShareDialogWorkflowVersionRadio
                       key={ver.id}
@@ -314,7 +314,7 @@ export default function ShareDialog({ onClose }: Props) {
                       cloudWorkflowID={cloudWorkflowID ?? null}
                     />
                   );
-                })}
+                })} */}
               </Stack>
             </RadioGroup>
             <Stack borderRadius={6} borderWidth={"1px"} p={2}>
