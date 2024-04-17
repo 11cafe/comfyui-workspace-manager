@@ -126,9 +126,7 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
             onClick={() => loadNewWorkflow()}
             px={1}
           >
-            <HStack gap={0}>
-              <IconPlus size={16} color={"white"} />
-            </HStack>
+            <IconPlus size={16} color={"white"} />
           </Button>
         </Tooltip>
         <EditFlowName
@@ -161,8 +159,7 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
         {curFlowID && isDirty ? (
           <Tooltip label="Save workflow">
             <IconButton
-              // style={{ width: 26 }}
-              onClick={saveCurWorkflow}
+              onClick={() => saveCurWorkflow()}
               icon={<IconDeviceFloppy size={23} color="white" />}
               size={"xs"}
               paddingY={4}
