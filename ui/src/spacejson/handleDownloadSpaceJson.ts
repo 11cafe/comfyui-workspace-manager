@@ -95,13 +95,13 @@ export async function extractAndFetchFileNames(
           if (typeof value != "string") return;
           // Check if it's a model file
           if (modelFileExtensions.some((ext) => value.endsWith(ext))) {
-            // if (curDeps?.models?.[value]) {
-            // modelPromises.push(Promise.resolve(curDeps.models[value]));
-            // } else {
-            modelPromises.push(
-              fetchModelData(value, node.class_type, inputName),
-            );
-            // }
+            if (curDeps?.models?.[value]) {
+              modelPromises.push(Promise.resolve(curDeps.models[value]));
+            } else {
+              modelPromises.push(
+                fetchModelData(value, node.class_type, inputName),
+              );
+            }
           }
           // Check if it's an image file
           if (imageFileExtensions.some((ext) => value.endsWith(ext))) {

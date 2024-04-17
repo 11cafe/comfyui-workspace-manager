@@ -153,8 +153,12 @@ export default forwardRef<HTMLFormElement>(
         });
 
       await saveCurWorkflow();
+      window.dispatchEvent(
+        new CustomEvent("workspace_info_deps_updated", {
+          detail: graph,
+        }),
+      );
       console.log("graph", graph);
-      setRoute("share");
     };
 
     const validateModelDeps = useCallback((modelDeps: ModelFile[]) => {
@@ -194,7 +198,7 @@ export default forwardRef<HTMLFormElement>(
 
     return (
       <form onSubmit={handleSubmit} ref={ref}>
-        <Stack gap={5} mt={5}>
+        <Stack gap={5}>
           <Stack>
             <Heading size={"sm"}>Models ({modelDepsArr.length})</Heading>
             {modelDepsArr.map((modelFile, index) => (

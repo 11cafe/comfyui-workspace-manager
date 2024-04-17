@@ -194,7 +194,7 @@ export default function DropdownTitle() {
                 Save runnable workflow🧪
               </MenuItem> */}
               <MenuItem
-                onClick={() => setRoute("downloadSpaceJson")}
+                onClick={() => setRoute("share")}
                 icon={<IconShare2 size={20} />}
                 iconSpacing={1}
                 alignItems={"center"}

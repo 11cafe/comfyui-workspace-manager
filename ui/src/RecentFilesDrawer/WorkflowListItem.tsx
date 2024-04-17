@@ -111,7 +111,7 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
             {isHovering ? (
               <WorkflowListItemActionButtons workflow={workflow} />
             ) : (
-              <Text color={"GrayText"} ml={"2px"} fontSize={"sm"}>
+              <Text color={"GrayText"} fontSize={"sm"}>
                 {formatTimestamp(workflow.updateTime, false, false, "/")}
               </Text>
             )}
