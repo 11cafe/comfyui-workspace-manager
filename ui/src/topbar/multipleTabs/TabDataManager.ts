@@ -88,6 +88,24 @@ class TabDataManager {
     this.notifyChanges("loadNewFlow");
   }
 
+  batchDeleteTabData(ids: string[]) {
+    if (this.tabs.length > 0) {
+      this.tabs = this.tabs.filter(tab => !ids.includes(tab.id));
+      if (this.tabs.length === 0) {
+        this.activeIndex = 0;
+        this.activeTab = null;
+        this.notifyChanges("clearCanvas");
+        return;
+      } else if (this.activeTab && ids.includes(this.activeTab.id)) {
+        this.activeIndex = this.tabs.length - 1;
+        this.activeTab = this.tabs[this.activeIndex];
+        this.notifyChanges("loadNewFlow");
+        return;
+      }
+      this.notifyChanges();
+    }
+  }
+
   private notifyChanges(otherAction?: string) {
     const event = new CustomEvent(RE_RENDER_MULTIPLE_TABS_EVENT, {
       detail: {

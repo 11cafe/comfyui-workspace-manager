@@ -219,12 +219,12 @@ export default function SpotlightSearch() {
 
     document.addEventListener("keyup", handleKeyUp);
     document.addEventListener("keydown", keydownListener);
-    window.addEventListener(SHORTCUT_TRIGGER_EVENT, shortcutTrigger);
+    document.addEventListener(SHORTCUT_TRIGGER_EVENT, shortcutTrigger);
 
     return () => {
       document.removeEventListener("keyup", handleKeyUp);
       document.removeEventListener("keydown", keydownListener);
-      window.removeEventListener(SHORTCUT_TRIGGER_EVENT, shortcutTrigger);
+      document.removeEventListener(SHORTCUT_TRIGGER_EVENT, shortcutTrigger);
     };
   }, []);
 

@@ -11,7 +11,7 @@ export const WorkspaceContext = createContext<{
   onDuplicateWorkflow?: (flowID: string, newFlowName?: string) => void;
   loadWorkflowID: (id: string | null, versionID?: string | null) => void;
   setIsDirty: (dirty: boolean) => void;
-  saveCurWorkflow: (id?: string) => Promise<void>;
+  saveCurWorkflow: (saveCurWorkflow?: string) => Promise<void>;
   discardUnsavedChanges: () => Promise<void>;
   isDirty: boolean;
   loadNewWorkflow: (input?: { json: string; name?: string }) => void;

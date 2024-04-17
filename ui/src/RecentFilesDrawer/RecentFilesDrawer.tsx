@@ -40,6 +40,7 @@ import MyTagsRow from "./MyTagsRow";
 import ImportFlowsFileInput from "./ImportFlowsFileInput";
 import ItemsList from "./ItemsList";
 import { DRAWER_Z_INDEX } from "../const";
+import { tabDataManager } from "../topbar/multipleTabs/TabDataManager";
 
 type Props = {
   onClose: () => void;
@@ -51,7 +52,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
     Array<Folder | Workflow>
   >([]);
   const allFlowsRef = useRef<Array<Workflow>>([]);
-  const { loadWorkflowID, curFlowID } = useContext(WorkspaceContext);
+  const { loadWorkflowID } = useContext(WorkspaceContext);
   const [selectedTag, setSelectedTag] = useState<string>();
   const [multipleState, setMultipleState] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
@@ -115,6 +116,7 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
       await workflowsTable?.deleteFlow(id);
       if (workflowsTable?.curWorkflow?.id === id) {
         await loadWorkflowID?.(null);
+        tabDataManager?.deleteTabData(tabDataManager.activeIndex);
       }
       await loadLatestWorkflows();
     },
@@ -155,12 +157,6 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   const batchOperationCallback = (type: string, value: unknown) => {
     switch (type) {
       case "batchDelete":
-        curFlowID &&
-          workflowsTable?.get(curFlowID).then((res) => {
-            if (!res) {
-              loadWorkflowID?.(null);
-            }
-          });
         loadLatestWorkflows();
         setMultipleState(false);
         setSelectedKeys([]);

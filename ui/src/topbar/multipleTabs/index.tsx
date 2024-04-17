@@ -36,12 +36,20 @@ export default function MultipleTabs() {
             label: "Save",
             colorScheme: "teal",
             onClick: async () => {
-              tabDataManager.changeActiveTab(index, false);
-              app.loadGraphData(JSON.parse(deleteTabInfo.json));
-              setTimeout(async () => {
-                await saveCurWorkflow(deleteTabInfo.id);
+              const deleteFlow = await workflowsTable?.get(deleteTabInfo.id);
+              if (deleteFlow) {
+                tabDataManager.changeActiveTab(index, false);
+                /**
+                 * Get the deleted flow information and update updateCurWorkflow,
+                 * Because workflowsTable.curWorkflow.id needs to be used when saving
+                 */
+                workflowsTable?.updateCurWorkflow({
+                  ...deleteFlow,
+                  json: deleteTabInfo.json,
+                });
+                await saveCurWorkflow(deleteTabInfo.json);
                 tabDataManager.deleteTabData(index);
-              }, 10);
+              }
             },
           },
           {

@@ -53,7 +53,6 @@ export default function App() {
   const [route, setRoute] = useState<WorkspaceRoute>("root");
   const [loadingDB, setLoadingDB] = useState(true);
   const [flowID, setFlowID] = useState<string | null>(null);
-  const curFlowID = useRef<string | null>(null);
 
   const [isDirty, setIsDirty] = useState(false);
   const workspaceContainerRef = useRef(null);
@@ -62,8 +61,8 @@ export default function App() {
   const developmentEnvLoadFirst = useRef(false);
   const toast = useToast();
   const [curVersion, setCurVersion] = useStateRef<WorkflowVersion | null>(null);
-  const saveCurWorkflow = useCallback(async (id?: string) => {
-    const flowId = id || curFlowID.current;
+  const saveCurWorkflow = useCallback(async (newGraphJson?: string) => {
+    const flowId = workflowsTable?.curWorkflow?.id;
     if (flowId) {
       if (workflowsTable?.curWorkflow?.saveLock) {
         toast({
@@ -74,7 +73,7 @@ export default function App() {
         return;
       }
       setIsDirty(false);
-      const graphJson = JSON.stringify(app.graph.serialize());
+      const graphJson = newGraphJson || JSON.stringify(app.graph.serialize());
       await Promise.all([
         workflowsTable?.updateFlow(flowId, {
           json: graphJson,
@@ -126,7 +125,6 @@ export default function App() {
     // curID null is when you deleted current workflow
     const id = workflow?.id ?? null;
     workflowsTable?.updateCurWorkflow(workflow);
-    curFlowID.current = id;
     setFlowID(id);
     if (id == null) {
       document.title = "ComfyUI";
@@ -163,9 +161,7 @@ export default function App() {
       latestWfID = localStorage.getItem("curFlowID");
     }
     if (latestWfID) {
-      setTimeout(() => {
-        loadWorkflowIDImpl(latestWfID!);
-      }, 200);
+      loadWorkflowIDImpl(latestWfID!, null, true);
     }
     fetch("/workspace/deduplicate_workflow_ids");
     const twoway = await userSettingsTable?.getSetting("twoWaySync");
@@ -213,7 +209,7 @@ export default function App() {
   };
 
   const checkIsDirty = () => {
-    if (curFlowID.current == null) return false;
+    if (workflowsTable?.curWorkflow?.id == null) return false;
     const curflow = workflowsTable?.curWorkflow;
     if (curflow == null) return false;
     if (curflow.json == null) return true;
@@ -228,7 +224,11 @@ export default function App() {
     return !equal;
   };
 
-  const loadWorkflowIDImpl = async (id: string, versionID?: string | null) => {
+  const loadWorkflowIDImpl = async (
+    id: string,
+    versionID?: string | null,
+    isInit?: boolean,
+  ) => {
     if (app.graph == null) {
       return;
     }
@@ -258,17 +258,35 @@ export default function App() {
     setRoute("root");
     isDirty && setIsDirty(false);
 
-    document.dispatchEvent(
-      new CustomEvent(OPEN_TAB_EVENT, {
-        detail: {
-          tabInfo: {
-            id: flow.id,
-            name: flow.name,
-            json: version ? version.json : flow.json,
+    const newTabInfo = {
+      id: flow.id,
+      name: flow.name,
+      json: version ? version.json : flow.json,
+      isDirty: false,
+    };
+
+    /**
+     * During initialization,
+     * because the event listener of OPEN_TAB_EVENT has not been registered yet,
+     * the newly added tab will be invalid,
+     * so the tab is added manually during initialization.
+     */
+    if (isInit) {
+      tabDataManager.addTabData(newTabInfo);
+      app.loadGraphData(JSON.parse(newTabInfo.json));
+      setCurFlowIDAndName({
+        ...flow,
+        json: newTabInfo.json,
+      });
+    } else {
+      document.dispatchEvent(
+        new CustomEvent(OPEN_TAB_EVENT, {
+          detail: {
+            tabInfo: newTabInfo,
           },
-        },
-      }),
-    );
+        }),
+      );
+    }
   };
 
   const loadWorkflowID = async (
@@ -365,13 +383,13 @@ export default function App() {
   };
 
   const onExecutedCreateMedia = useCallback((image: any) => {
-    if (curFlowID.current == null) return;
+    if (workflowsTable?.curWorkflow?.id == null) return;
     let path = image.filename;
     if (image.subfolder != null && image.subfolder !== "") {
       path = image.subfolder + "/" + path;
     }
     mediaTable?.create({
-      workflowID: curFlowID.current,
+      workflowID: workflowsTable?.curWorkflow?.id,
       localPath: path,
     });
   }, []);
