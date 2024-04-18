@@ -15,7 +15,7 @@ export const WorkspaceContext = createContext<{
     forceLoad?: boolean,
   ) => void;
   setIsDirty: (dirty: boolean) => void;
-  saveCurWorkflow: () => void;
+  saveCurWorkflow: (force?: boolean) => Promise<void>;
   discardUnsavedChanges: () => Promise<void>;
   isDirty: boolean;
   loadNewWorkflow: (input?: { json: string; name?: string }) => void;
@@ -27,7 +27,7 @@ export const WorkspaceContext = createContext<{
 }>({
   curFlowID: null,
   loadWorkflowID: () => {},
-  saveCurWorkflow: () => {},
+  saveCurWorkflow: async () => {},
   discardUnsavedChanges: async () => {},
   isDirty: false,
   loadNewWorkflow: () => {},

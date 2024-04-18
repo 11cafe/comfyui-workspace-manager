@@ -258,22 +258,18 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
             />
             <HStack mb={2} mt={2} p={0} justifyContent="space-between">
               <HStack>
-                {allFlowsRef.current.length > 0 ? (
-                  <MultipleSelectionOperation
-                    multipleState={multipleState}
-                    changeMultipleState={(state) => {
-                      setMultipleState(state);
-                      !state && setSelectedKeys([]);
-                    }}
-                    selectedKeys={selectedKeys}
-                    isSelectedAll={
-                      selectedKeys.length === allFlowsRef.current.length
-                    }
-                    batchOperationCallback={batchOperationCallback}
-                  />
-                ) : (
-                  <Box />
-                )}
+                <MultipleSelectionOperation
+                  multipleState={multipleState}
+                  changeMultipleState={(state) => {
+                    setMultipleState(state);
+                    !state && setSelectedKeys([]);
+                  }}
+                  selectedKeys={selectedKeys}
+                  isSelectedAll={
+                    selectedKeys.length === allFlowsRef.current.length
+                  }
+                  batchOperationCallback={batchOperationCallback}
+                />
                 {!multipleState && (
                   <Tooltip hasArrow label="New folder" placement="bottom-start">
                     <IconButton

@@ -1,7 +1,7 @@
 import { userSettingsTable, workflowsTable } from "./WorkspaceDB";
 import { EFlowOperationType, Folder } from "../types/dbTypes";
 import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
-import { v4 as uuidv4 } from "uuid";
+import { nanoid } from "nanoid";
 import { TableBase } from "./TableBase";
 import { indexdb } from "./indexdb";
 import { TwowayFolderSyncAPI } from "../apis/TwowaySyncFolderApi";
@@ -33,7 +33,7 @@ export class FoldersTable extends TableBase<Folder> {
       parentFolderID: input.parentFolderID ?? "",
     });
     const folder: Folder = {
-      id: twoWaySyncEnabled ? rel : uuidv4(),
+      id: twoWaySyncEnabled ? rel : nanoid(),
       name: uniqueName,
       parentFolderID: input.parentFolderID ?? null,
       updateTime: Date.now(),

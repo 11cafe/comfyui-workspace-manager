@@ -67,7 +67,6 @@ export default function DropdownTitle() {
     save: "",
     saveAs: "",
   });
-  const [isShareOpen, setIsShareOpen] = useState(false);
 
   useEffect(() => {
     if (curFlowID) {
@@ -140,7 +139,7 @@ export default function DropdownTitle() {
           <Menu isOpen={true}>
             <MenuList minWidth={150} zIndex={1000}>
               <MenuItem
-                onClick={saveCurWorkflow}
+                onClick={() => saveCurWorkflow()}
                 icon={<IconDeviceFloppy size={20} />}
                 iconSpacing={1}
                 command={saveShortcut.save}
@@ -187,15 +186,15 @@ export default function DropdownTitle() {
               >
                 Versions History
               </MenuItem>
-              <MenuItem
+              {/* <MenuItem
                 onClick={() => setRoute("downloadSpaceJson")}
                 icon={<IconDownload size={20} />}
                 iconSpacing={1}
               >
-                Save workflow dependency🧪
-              </MenuItem>
+                Save runnable workflow🧪
+              </MenuItem> */}
               <MenuItem
-                onClick={() => setIsShareOpen(true)}
+                onClick={() => setRoute("share")}
                 icon={<IconShare2 size={20} />}
                 iconSpacing={1}
                 alignItems={"center"}
@@ -208,7 +207,7 @@ export default function DropdownTitle() {
           </Menu>
         }
       />
-      {isShareOpen && <ShareDialog onClose={() => setIsShareOpen(false)} />}
+      {route === "share" && <ShareDialog onClose={() => setRoute("root")} />}
       {route == "versionHistory" && (
         <VersionHistoryDrawer onClose={() => setRoute("root")} />
       )}

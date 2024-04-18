@@ -107,15 +107,15 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
       ) : (
         <>
           {basicInfoComp}
-          <div style={{ width: "80px" }}>
+          <Box width={"fit-content"}>
             {isHovering ? (
               <WorkflowListItemActionButtons workflow={workflow} />
             ) : (
-              <Text color={"GrayText"} ml={"2px"} fontSize={"sm"}>
+              <Text color={"GrayText"} fontSize={"sm"}>
                 {formatTimestamp(workflow.updateTime, false, false, "/")}
               </Text>
             )}
-          </div>
+          </Box>
         </>
       )}
     </HStack>

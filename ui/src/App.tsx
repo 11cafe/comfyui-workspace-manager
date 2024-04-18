@@ -38,7 +38,7 @@ const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
 import { IconExternalLink } from "@tabler/icons-react";
 import { DRAWER_Z_INDEX, UPGRADE_TO_2WAY_SYNC_KEY } from "./const";
 import ServerEventListener from "./model-manager/hooks/ServerEventListener";
-import { v4 } from "uuid";
+import { nanoid } from "nanoid";
 import { WorkspaceRoute } from "./types/types";
 import { useStateRef } from "./customHooks/useStateRef";
 import { indexdb } from "./db-tables/indexdb";
@@ -59,9 +59,9 @@ export default function App() {
   const developmentEnvLoadFirst = useRef(false);
   const toast = useToast();
   const [curVersion, setCurVersion] = useStateRef<WorkflowVersion | null>(null);
-  const saveCurWorkflow = useCallback(async () => {
+  const saveCurWorkflow = useCallback(async (force = false) => {
     if (curFlowID.current) {
-      if (workflowsTable?.curWorkflow?.saveLock) {
+      if (!force && workflowsTable?.curWorkflow?.saveLock) {
         toast({
           title: "The workflow is locked and cannot be saved",
           status: "warning",
@@ -90,18 +90,6 @@ export default function App() {
       setIsDirty(false);
     }
   }, []);
-  const deleteCurWorkflow = async () => {
-    if (curFlowID.current) {
-      const userInput = confirm(
-        "Are you sure you want to delete this workflow?",
-      );
-      if (userInput) {
-        // User clicked OK
-        await workflowsTable?.delete(curFlowID.current);
-        setCurFlowIDAndName(null);
-      }
-    }
-  };
 
   const discardUnsavedChanges = async () => {
     if (userSettingsTable?.settings?.autoSave) {
@@ -317,15 +305,6 @@ export default function App() {
         newIDToLoad && loadWorkflowIDImpl(newIDToLoad);
       },
     });
-    // buttons.push({
-    //   label: "Delete",
-    //   colorScheme: "red",
-    //   onClick: async () => {
-    //     await deleteCurWorkflow();
-    //     newIDToLoad && loadWorkflowIDImpl(newIDToLoad);
-    //   },
-    // });
-
     showDialog(
       `Please save or discard your changes to "${workflowsTable?.curWorkflow?.name}" before leaving, or your changes will be lost.`,
       buttons,
@@ -417,7 +396,7 @@ export default function App() {
     const fileInputListener = async () => {
       if (fileInput && fileInput.files && fileInput.files.length > 0) {
         const newFlow: Workflow = {
-          id: v4(),
+          id: nanoid(),
           name: fileInput.files[0].name,
           json: JSON.stringify(defaultGraph),
           updateTime: Date.now(),
@@ -472,7 +451,7 @@ export default function App() {
         )) ?? false;
       if (!overwriteFlow && fileName) {
         const newFlow: Workflow = {
-          id: v4(),
+          id: nanoid(),
           name: fileName,
           json: JSON.stringify(defaultGraph),
           updateTime: Date.now(),
