@@ -80,6 +80,7 @@ export default function EditFlowName({ displayName, isActive }: Props) {
           whiteSpace="nowrap"
           overflow="hidden"
           textOverflow="ellipsis"
+          userSelect="none"
         >
           {displayName}
         </Text>

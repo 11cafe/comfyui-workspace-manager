@@ -89,11 +89,14 @@ export default function MultipleTabs() {
           });
           setIsDirty(detail.activeTab.isDirty);
           curVersion && setCurVersion(null);
-          document
-            .getElementById(
-              `workspace-multiple-tabs-item-${detail.activeTab.id}`,
-            )
-            ?.scrollIntoView({ behavior: "smooth" });
+          // Avoid scrolling when the corresponding element has not yet been rendered.
+          setTimeout(() => {
+            document
+              .getElementById(
+                `workspace-multiple-tabs-item-${detail.activeTab.id}`,
+              )
+              ?.scrollIntoView({ behavior: "smooth" });
+          }, 0);
           break;
       }
     };
