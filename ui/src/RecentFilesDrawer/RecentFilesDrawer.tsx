@@ -40,7 +40,6 @@ import MyTagsRow from "./MyTagsRow";
 import ImportFlowsFileInput from "./ImportFlowsFileInput";
 import ItemsList from "./ItemsList";
 import { DRAWER_Z_INDEX } from "../const";
-import { tabDataManager } from "../topbar/multipleTabs/TabDataManager";
 
 type Props = {
   onClose: () => void;
@@ -52,7 +51,6 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
     Array<Folder | Workflow>
   >([]);
   const allFlowsRef = useRef<Array<Workflow>>([]);
-  const { loadWorkflowID } = useContext(WorkspaceContext);
   const [selectedTag, setSelectedTag] = useState<string>();
   const [multipleState, setMultipleState] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
@@ -114,10 +112,6 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   const onDelete = useCallback(
     async (id: string) => {
       await workflowsTable?.deleteFlow(id);
-      if (workflowsTable?.curWorkflow?.id === id) {
-        await loadWorkflowID?.(null);
-        tabDataManager?.deleteTabData(tabDataManager.activeIndex);
-      }
       await loadLatestWorkflows();
     },
     [selectedTag, debounceSearchValue],

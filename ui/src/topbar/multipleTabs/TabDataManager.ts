@@ -96,12 +96,21 @@ class TabDataManager {
         this.activeTab = null;
         this.notifyChanges("clearCanvas");
         return;
-      } else if (this.activeTab && ids.includes(this.activeTab.id)) {
-        this.activeIndex = this.tabs.length - 1;
-        this.activeTab = this.tabs[this.activeIndex];
-        this.notifyChanges("loadNewFlow");
-        return;
+      } else {
+        const activeIndex = this.tabs.findIndex(tab => tab.id === this.activeTab?.id);
+        if (activeIndex === -1) {
+          this.activeIndex = this.tabs.length - 1;
+          this.activeTab = this.tabs[this.activeIndex];
+          this.notifyChanges("loadNewFlow");
+          return;
+        } else if (activeIndex !== this.activeIndex) {
+          this.activeIndex = activeIndex;
+          this.activeTab = this.tabs[activeIndex];
+          this.notifyChanges();
+          return;
+        }
       }
+
       this.notifyChanges();
     }
   }

@@ -21,6 +21,7 @@ import {
   scanLocalFiles,
 } from "../apis/TwowaySyncApi";
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
+import { tabDataManager } from "../topbar/multipleTabs/TabDataManager";
 
 export class WorkflowsTable extends TableBase<Workflow> {
   static readonly TABLE_NAME = "workflows";
@@ -219,6 +220,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
       before &&
         (await TwowaySyncAPI.renameWorkflow(before, change.name + ".json"));
     }
+    tabDataManager.updateTabData(tabDataManager.activeIndex, change);
     return await this.updateMetaInfo(id, change as any);
   }
   public async updateFlow(id: string, input: Pick<Workflow, "json">) {
@@ -318,6 +320,12 @@ export class WorkflowsTable extends TableBase<Workflow> {
         deleteJsonFileMyWorkflows({ ...workflow });
       }
     }
+    
+    const tabIndex = tabDataManager.tabs.findIndex((tab) => tab.id === id);
+    if (tabIndex !== -1) {
+      tabDataManager?.deleteTabData(tabIndex);
+    }
+
     //add to IndexDB
     await indexdb.workflows.delete(id);
     this.saveDiskDB();
@@ -336,6 +344,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
       }
     }
     await indexdb.workflows.bulkDelete(ids);
+    tabDataManager.batchDeleteTabData(ids);
     this.saveDiskDB();
   }
 

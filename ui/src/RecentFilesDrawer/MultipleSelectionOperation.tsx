@@ -4,7 +4,6 @@ import DeleteConfirm from "../components/DeleteConfirm";
 import { ChangeEvent } from "react";
 import { workflowsTable } from "../db-tables/WorkspaceDB";
 import { downloadWorkflowsZip } from "../utils/downloadWorkflowsZip";
-import { tabDataManager } from "../topbar/multipleTabs/TabDataManager";
 
 type Props = {
   multipleState: boolean;
@@ -58,7 +57,6 @@ export default function MultipleSelectionOperation(props: Props) {
               onDelete={async () => {
                 await workflowsTable?.batchDeleteFlow(selectedKeys);
                 batchOperationCallback("batchDelete");
-                tabDataManager.batchDeleteTabData(selectedKeys);
               }}
             />
           </Tooltip>

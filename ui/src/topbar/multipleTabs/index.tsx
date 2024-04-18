@@ -19,6 +19,7 @@ export default function MultipleTabs() {
   const {
     setCurFlowIDAndName,
     isDirty,
+    setIsDirty,
     setCurVersion,
     curVersion,
     loadWorkflowID,
@@ -87,6 +88,7 @@ export default function MultipleTabs() {
                 json: detail.activeTab.json,
               });
           });
+          setIsDirty(detail.activeTab.isDirty);
           curVersion && setCurVersion(null);
           break;
       }

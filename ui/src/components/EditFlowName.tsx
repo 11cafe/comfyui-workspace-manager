@@ -19,7 +19,6 @@ import {
 import { useContext, ChangeEvent, useState } from "react";
 import { workflowsTable } from "../db-tables/WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
-import { tabDataManager } from "../topbar/multipleTabs/TabDataManager";
 
 type Props = {
   displayName: string;
@@ -59,10 +58,6 @@ export default function EditFlowName({ displayName, isActive }: Props) {
         await workflowsTable?.updateName(curFlowID, {
           name: trimEditName,
         });
-        tabDataManager.updateTabData(tabDataManager.activeIndex, {
-          name: trimEditName,
-        });
-
         onCloseModal();
       }
     }
