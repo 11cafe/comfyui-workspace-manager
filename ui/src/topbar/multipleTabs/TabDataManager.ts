@@ -8,7 +8,7 @@ export type TabData = {
   json: string;
   isDirty: boolean;
 };
-type TabUpdateInput = Partial<Omit<TabData, "id">>;
+type TabUpdateInput = Partial<TabData>;
 
 class TabDataManager {
   tabs: TabData[] = [];

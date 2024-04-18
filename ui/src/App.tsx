@@ -428,7 +428,12 @@ export default function App() {
           createTime: Date.now(),
         };
         setCurFlowIDAndName(newFlow);
-        await workflowsTable?.createFlow(newFlow);
+        const res = await workflowsTable?.createFlow(newFlow);
+        res &&
+          tabDataManager.updateTabData(tabDataManager.activeIndex, {
+            id: res.id,
+            name: res.name,
+          });
       }
     };
     fileInput?.addEventListener("change", fileInputListener);
@@ -483,7 +488,12 @@ export default function App() {
           createTime: Date.now(),
         };
         setCurFlowIDAndName(newFlow);
-        await workflowsTable?.createFlow(newFlow);
+        const res = await workflowsTable?.createFlow(newFlow);
+        res &&
+          tabDataManager.updateTabData(tabDataManager.activeIndex, {
+            id: res.id,
+            name: res.name,
+          });
       }
     };
     app.canvasEl.addEventListener("drop", handleDrop);
