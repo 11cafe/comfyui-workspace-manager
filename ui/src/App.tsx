@@ -72,7 +72,7 @@ export default function App() {
         });
         return;
       }
-      setIsDirty(false);
+      !newGraphJson && setIsDirty(false);
       const graphJson = newGraphJson || JSON.stringify(app.graph.serialize());
       await Promise.all([
         workflowsTable?.updateFlow(flowId, {

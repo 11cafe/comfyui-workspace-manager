@@ -39,7 +39,6 @@ export default function MultipleTabs() {
             onClick: async () => {
               const deleteFlow = await workflowsTable?.get(deleteTabInfo.id);
               if (deleteFlow) {
-                tabDataManager.changeActiveTab(index, false);
                 /**
                  * Get the deleted flow information and update updateCurWorkflow,
                  * Because workflowsTable.curWorkflow.id needs to be used when saving
@@ -90,6 +89,11 @@ export default function MultipleTabs() {
           });
           setIsDirty(detail.activeTab.isDirty);
           curVersion && setCurVersion(null);
+          document
+            .getElementById(
+              `workspace-multiple-tabs-item-${detail.activeTab.id}`,
+            )
+            ?.scrollIntoView({ behavior: "smooth" });
           break;
       }
     };
@@ -123,6 +127,7 @@ export default function MultipleTabs() {
           <Box
             key={`${id}-${name}`}
             className="workspace-multiple-tabs-item"
+            id={`workspace-multiple-tabs-item-${id}`}
             cursor="pointer"
             border="1px"
             borderColor="#64646459"

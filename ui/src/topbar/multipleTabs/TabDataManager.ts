@@ -78,14 +78,14 @@ class TabDataManager {
 
     this.tabs.splice(index, 1);
 
-    if (index === this.activeIndex) {
-      this.activeIndex = Math.min(this.tabs.length - 1, this.activeIndex);
-    } else if (index < this.activeIndex) {
-      this.activeIndex--;
+    if (index <= this.activeIndex) {
+      const isDeleteActiveTab = index === this.activeIndex;
+      this.activeIndex = isDeleteActiveTab ? Math.min(this.tabs.length - 1, this.activeIndex) : this.activeIndex - 1;
+      this.activeTab = this.tabs[this.activeIndex];
+      this.notifyChanges(isDeleteActiveTab ? "loadNewFlow" : '');
+      return;
     }
-    this.activeTab = this.tabs[this.activeIndex];
-
-    this.notifyChanges("loadNewFlow");
+    this.notifyChanges('');
   }
 
   batchDeleteTabData(ids: string[]) {
