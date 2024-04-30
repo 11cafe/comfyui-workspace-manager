@@ -89,7 +89,7 @@ export default memo(function WorkflowListItem({ workflow }: Props) {
       w={"100%"}
       justify={"space-between"}
       borderBottom={"1px solid"}
-      borderColor={colorMode == "dark" ? "gray.900" : "gray.200"}
+      borderColor={colorMode == "dark" ? "gray.700" : "gray.200"}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
