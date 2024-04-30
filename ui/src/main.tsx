@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
 import ReactDOM from "react-dom/client";
-import { ColorModeScript } from "@chakra-ui/react";
+import { ColorModeScript, type StyleFunctionProps } from "@chakra-ui/react";
 import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import { AlertDialogProvider } from "./components/AlertDialogProvider.tsx";
 import CSSReset from "./MyCSSReset.tsx";
@@ -36,6 +36,15 @@ const zIndices = {
 
 const theme = extendTheme({
   zIndices,
+  components: {
+    Card: {
+      baseStyle: (props: StyleFunctionProps) => ({
+        container: {
+          backgroundColor: props.colorMode === "dark" ? "#171B21" : "#F6F8FA",
+        },
+      }),
+    },
+  },
 });
 
 ReactDOM.createRoot(topbar).render(
