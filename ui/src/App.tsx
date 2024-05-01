@@ -44,13 +44,15 @@ import { useStateRef } from "./customHooks/useStateRef";
 import { indexdb } from "./db-tables/indexdb";
 import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
 import { deepJsonDiffCheck } from "./utils/deepJsonDiffCheck";
+import {
+  OPEN_TAB_EVENT,
+  tabDataManager,
+} from "./topbar/multipleTabs/TabDataManager";
 
 export default function App() {
-  const [curFlowName, setCurFlowName] = useState<string | null>(null);
   const [route, setRoute] = useState<WorkspaceRoute>("root");
   const [loadingDB, setLoadingDB] = useState(true);
   const [flowID, setFlowID] = useState<string | null>(null);
-  const curFlowID = useRef<string | null>(null);
 
   const [isDirty, setIsDirty] = useState(false);
   const workspaceContainerRef = useRef(null);
@@ -59,9 +61,10 @@ export default function App() {
   const developmentEnvLoadFirst = useRef(false);
   const toast = useToast();
   const [curVersion, setCurVersion] = useStateRef<WorkflowVersion | null>(null);
-  const saveCurWorkflow = useCallback(async (force = false) => {
-    if (curFlowID.current) {
-      if (!force && workflowsTable?.curWorkflow?.saveLock) {
+  const saveCurWorkflow = useCallback(async (newGraphJson?: string) => {
+    const flowId = workflowsTable?.curWorkflow?.id;
+    if (flowId) {
+      if (workflowsTable?.curWorkflow?.saveLock) {
         toast({
           title: "The workflow is locked and cannot be saved",
           status: "warning",
@@ -69,13 +72,14 @@ export default function App() {
         });
         return;
       }
-      const graphJson = JSON.stringify(app.graph.serialize());
+      !newGraphJson && setIsDirty(false);
+      const graphJson = newGraphJson || JSON.stringify(app.graph.serialize());
       await Promise.all([
-        workflowsTable?.updateFlow(curFlowID.current, {
+        workflowsTable?.updateFlow(flowId, {
           json: graphJson,
         }),
         changelogsTable?.create({
-          workflowID: curFlowID.current,
+          workflowID: flowId,
           json: graphJson,
           isAutoSave: false,
         }),
@@ -87,7 +91,6 @@ export default function App() {
           duration: 1000,
           isClosable: true,
         });
-      setIsDirty(false);
     }
   }, []);
 
@@ -122,9 +125,7 @@ export default function App() {
     // curID null is when you deleted current workflow
     const id = workflow?.id ?? null;
     workflowsTable?.updateCurWorkflow(workflow);
-    curFlowID.current = id;
     setFlowID(id);
-    setCurFlowName(workflow?.name ?? "");
     if (id == null) {
       document.title = "ComfyUI";
       window.location.hash = "";
@@ -160,7 +161,7 @@ export default function App() {
       latestWfID = localStorage.getItem("curFlowID");
     }
     if (latestWfID) {
-      loadWorkflowIDImpl(latestWfID);
+      loadWorkflowIDImpl(latestWfID!, null, true);
     }
     fetch("/workspace/deduplicate_workflow_ids");
     const twoway = await userSettingsTable?.getSetting("twoWaySync");
@@ -208,7 +209,7 @@ export default function App() {
   };
 
   const checkIsDirty = () => {
-    if (curFlowID.current == null) return false;
+    if (workflowsTable?.curWorkflow?.id == null) return false;
     const curflow = workflowsTable?.curWorkflow;
     if (curflow == null) return false;
     if (curflow.json == null) return true;
@@ -223,7 +224,11 @@ export default function App() {
     return !equal;
   };
 
-  const loadWorkflowIDImpl = async (id: string, versionID?: string | null) => {
+  const loadWorkflowIDImpl = async (
+    id: string,
+    versionID?: string | null,
+    isInit?: boolean,
+  ) => {
     if (app.graph == null) {
       return;
     }
@@ -238,27 +243,55 @@ export default function App() {
       ? await workflowVersionsTable?.get(versionID)
       : null;
 
-    app.ui.dialog.close();
-    if (version) {
-      setCurVersion(version);
-      setCurFlowIDAndName({
-        ...flow,
-        json: version.json,
-      });
-      app.loadGraphData(JSON.parse(version.json));
-    } else {
-      setCurFlowIDAndName(flow);
-      setCurVersion(null);
-      app.loadGraphData(JSON.parse(flow.json));
+    setCurVersion(version ?? null);
+
+    const tabIndex = tabDataManager.tabs.findIndex((tab) => tab.id === id);
+    if (tabIndex !== -1) {
+      tabDataManager.changeActiveTab(tabIndex);
+      if (version) {
+        tabDataManager.updateTabData(tabIndex, { json: version.json });
+      }
+      return;
     }
+
+    app.ui.dialog.close();
     setRoute("root");
     isDirty && setIsDirty(false);
+
+    const newTabInfo = {
+      id: flow.id,
+      name: flow.name,
+      json: version ? version.json : flow.json,
+      isDirty: false,
+    };
+
+    /**
+     * During initialization,
+     * because the event listener of OPEN_TAB_EVENT has not been registered yet,
+     * the newly added tab will be invalid,
+     * so the tab is added manually during initialization.
+     */
+    if (isInit) {
+      tabDataManager.addTabData(newTabInfo);
+      app.loadGraphData(JSON.parse(newTabInfo.json));
+      setCurFlowIDAndName({
+        ...flow,
+        json: newTabInfo.json,
+      });
+    } else {
+      document.dispatchEvent(
+        new CustomEvent(OPEN_TAB_EVENT, {
+          detail: {
+            tabInfo: newTabInfo,
+          },
+        }),
+      );
+    }
   };
 
   const loadWorkflowID = async (
     id: string | null,
     versionID?: string | null,
-    forceLoad: boolean = false,
   ) => {
     // No current workflow, id is null when you deleted current workflow
     if (id === null) {
@@ -266,18 +299,10 @@ export default function App() {
       app.graph.clear();
       return;
     }
-    if (
-      !isDirty ||
-      forceLoad ||
-      userSettingsTable?.settings?.autoSave ||
-      workflowsTable?.curWorkflow == null
-    ) {
-      loadWorkflowIDImpl(id, versionID);
-      return;
-    }
-    // prompt when auto save disabled and dirty
-    showSaveOrDiscardCurWorkflowDialog(id);
+
+    loadWorkflowIDImpl(id, versionID);
   };
+
   const showSaveOrDiscardCurWorkflowDialog = async (newIDToLoad?: string) => {
     const buttons = [
       newIDToLoad
@@ -358,13 +383,13 @@ export default function App() {
   };
 
   const onExecutedCreateMedia = useCallback((image: any) => {
-    if (curFlowID.current == null) return;
+    if (workflowsTable?.curWorkflow?.id == null) return;
     let path = image.filename;
     if (image.subfolder != null && image.subfolder !== "") {
       path = image.subfolder + "/" + path;
     }
     mediaTable?.create({
-      workflowID: curFlowID.current,
+      workflowID: workflowsTable?.curWorkflow?.id,
       localPath: path,
     });
   }, []);
@@ -403,7 +428,12 @@ export default function App() {
           createTime: Date.now(),
         };
         setCurFlowIDAndName(newFlow);
-        await workflowsTable?.createFlow(newFlow);
+        const res = await workflowsTable?.createFlow(newFlow);
+        res &&
+          tabDataManager.updateTabData(tabDataManager.activeIndex, {
+            id: res.id,
+            name: res.name,
+          });
       }
     };
     fileInput?.addEventListener("change", fileInputListener);
@@ -458,7 +488,12 @@ export default function App() {
           createTime: Date.now(),
         };
         setCurFlowIDAndName(newFlow);
-        await workflowsTable?.createFlow(newFlow);
+        const res = await workflowsTable?.createFlow(newFlow);
+        res &&
+          tabDataManager.updateTabData(tabDataManager.activeIndex, {
+            id: res.id,
+            name: res.name,
+          });
       }
     };
     app.canvasEl.addEventListener("drop", handleDrop);
@@ -491,6 +526,7 @@ export default function App() {
         route: route,
         curVersion: curVersion,
         setCurVersion: setCurVersion,
+        setCurFlowIDAndName: setCurFlowIDAndName,
       }}
     >
       <div ref={workspaceContainerRef} className="workspace_manager">
@@ -505,7 +541,7 @@ export default function App() {
             zIndex={DRAWER_Z_INDEX}
             draggable={false}
           >
-            <Topbar curFlowName={curFlowName} setCurFlowName={setCurFlowName} />
+            <Topbar />
             {loadChild && route === "recentFlows" && (
               <Suspense>
                 <RecentFilesDrawer

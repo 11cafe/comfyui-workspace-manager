@@ -9,13 +9,9 @@ export type JsonDiff = {
 export const WorkspaceContext = createContext<{
   curFlowID: string | null;
   onDuplicateWorkflow?: (flowID: string, newFlowName?: string) => void;
-  loadWorkflowID: (
-    id: string | null,
-    versionID?: string | null,
-    forceLoad?: boolean,
-  ) => void;
+  loadWorkflowID: (id: string | null, versionID?: string | null) => void;
   setIsDirty: (dirty: boolean) => void;
-  saveCurWorkflow: (force?: boolean) => Promise<void>;
+  saveCurWorkflow: (saveCurWorkflow?: string) => Promise<void>;
   discardUnsavedChanges: () => Promise<void>;
   isDirty: boolean;
   loadNewWorkflow: (input?: { json: string; name?: string }) => void;
@@ -24,6 +20,7 @@ export const WorkspaceContext = createContext<{
   route: WorkspaceRoute;
   curVersion: WorkflowVersion | null;
   setCurVersion: (version: WorkflowVersion | null) => void;
+  setCurFlowIDAndName: (workflow: Workflow) => void;
 }>({
   curFlowID: null,
   loadWorkflowID: () => {},
@@ -37,6 +34,7 @@ export const WorkspaceContext = createContext<{
   curVersion: null,
   setIsDirty: () => {},
   setCurVersion: () => {},
+  setCurFlowIDAndName: () => {},
 });
 
 export const RecentFilesContext = createContext<{

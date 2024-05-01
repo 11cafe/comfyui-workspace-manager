@@ -7,7 +7,6 @@ import {
   IconPhoto,
   IconPlus,
   IconTriangleInvertedFilled,
-  IconLock,
 } from "@tabler/icons-react";
 import DropdownTitle from "../components/DropdownTitle";
 import {
@@ -18,25 +17,21 @@ import {
   useEffect,
   useState,
 } from "react";
-import EditFlowName from "../components/EditFlowName";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { PanelPosition } from "../types/dbTypes";
 import "./Topbar.css";
 import { SharedTopbarButton } from "../share/SharedTopbarButton";
 import VersionNameTopbar from "./VersionNameTopbar";
-import { userSettingsTable, workflowsTable } from "../db-tables/WorkspaceDB";
+import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { TOPBAR_BUTTON_HEIGHT } from "../const";
 const AppIsDirtyEventListener = lazy(() => import("./AppIsDirtyEventListener"));
+import MultipleTabs from "./multipleTabs";
 const ModelManagerTopbar = lazy(
   () => import("../model-manager/topbar/ModelManagerTopbar"),
 );
 const SpotlightSearch = lazy(() => import("../components/SpotlightSearch"));
 
-interface Props {
-  curFlowName: string | null;
-  setCurFlowName: (newName: string) => void;
-}
-export function Topbar({ curFlowName, setCurFlowName }: Props) {
+export function Topbar() {
   const {
     isDirty,
     loadNewWorkflow,
@@ -129,19 +124,6 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
             <IconPlus size={16} color={"white"} />
           </Button>
         </Tooltip>
-        <EditFlowName
-          isDirty={isDirty}
-          displayName={curFlowName ?? ""}
-          updateFlowName={(newName) => {
-            setCurFlowName(newName);
-            requestAnimationFrame(() => {
-              updatePanelPosition();
-            });
-          }}
-        />
-        {workflowsTable?.curWorkflow?.saveLock && (
-          <IconLock color="#FFF" size={20} />
-        )}
         {curFlowID && (
           <HStack gap={"4px"}>
             <Tooltip label="Open gallery">
@@ -170,6 +152,7 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
         ) : (
           <div style={{ width: 1 }} />
         )}
+        <MultipleTabs />
         <SharedTopbarButton />
         <VersionNameTopbar />
         <AppIsDirtyEventListener />

@@ -51,7 +51,6 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
     Array<Folder | Workflow>
   >([]);
   const allFlowsRef = useRef<Array<Workflow>>([]);
-  const { loadWorkflowID, curFlowID } = useContext(WorkspaceContext);
   const [selectedTag, setSelectedTag] = useState<string>();
   const [multipleState, setMultipleState] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
@@ -113,9 +112,6 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   const onDelete = useCallback(
     async (id: string) => {
       await workflowsTable?.deleteFlow(id);
-      if (workflowsTable?.curWorkflow?.id === id) {
-        await loadWorkflowID?.(null);
-      }
       await loadLatestWorkflows();
     },
     [selectedTag, debounceSearchValue],
@@ -155,12 +151,6 @@ export default function RecentFilesDrawer({ onClose, onClickNewFlow }: Props) {
   const batchOperationCallback = (type: string, value: unknown) => {
     switch (type) {
       case "batchDelete":
-        curFlowID &&
-          workflowsTable?.get(curFlowID).then((res) => {
-            if (!res) {
-              loadWorkflowID?.(null);
-            }
-          });
         loadLatestWorkflows();
         setMultipleState(false);
         setSelectedKeys([]);

@@ -1,0 +1,25 @@
+.workspace-multiple-tabs::-webkit-scrollbar {
+  background-color: transparent;
+  width: 2px;
+  height: 2px;
+}
+
+.workspace-multiple-tabs::-webkit-scrollbar-thumb {
+  border-radius: 1em;
+  background-color: rgba(130, 129, 129, 0.3);
+}
+
+.workspace-multiple-tabs
+  .workspace-multiple-tabs-item-action:hover
+  .workspace-multiple-tabs-item-dirty {
+  display: none !important;
+}
+
+.workspace-multiple-tabs-item-action:hover
+  .workspace-multiple-tabs-item-dirty-close {
+  display: flex !important;
+}
+
+.workspace-multiple-tabs-item:hover .workspace-multiple-tabs-item-close {
+  display: flex !important;
+}
