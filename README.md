@@ -8,6 +8,7 @@ If you have questions or suggestions, please [join our Discord](https://discord.
 welcome any feedbacks!
 
 ‼️ [3-23-2024]**search and install models from civitai is not working in previous versions**, because civitai changed something in their api. **Please update to the latest version** if you are seeing blank screen in Install Models dialog
+[5-7-2024] author (me) is job hunting in Beijing 🥲 so recently maybe too busy to update this plugin. I will come back to updating this plugin as soon as I finish job hunting 🥲🫠
 
 <img width="610" alt="Screenshot 2024-03-08 at 6 41 18 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/30455eb1-3d12-4930-bb81-28b33148fbaa">
 
