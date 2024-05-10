@@ -16,6 +16,7 @@ import CommonCheckboxSettings from "../settings/CommonCheckboxSettings";
 import SelectMyWorkflowsDir from "../settings/SelectMyWorkflowsDir";
 import { CommonNumberSetting } from "../settings/CommonNumberSetting";
 import AutosaveSetting from "../settings/AutosaveSetting";
+import CloudHostSetting from "../settings/CloudHostSetting";
 
 export default function WorkspaceSettingsModal({
   onClose,
@@ -56,6 +57,7 @@ export default function WorkspaceSettingsModal({
                   settingKey="hideCoverImage"
                   text="Hide thumbnail image in workflow list"
                 />
+                <CloudHostSetting />
               </VStack>
             </HStack>
           </ModalBody>
