@@ -136,7 +136,11 @@ def read_workflow_file(path, id):
 
 def check_and_update_workflow_id(file_path, seen_ids):
     with open(file_path, "r", encoding="utf-8") as f:
-        json_data = json.load(f)
+        try:
+                json_data = json.load(f)
+        except json.JSONDecodeError as e:
+            print(f"Error reading JSON from {file_path}: {e}")
+            return
         if (
             "extra" in json_data
             and "workspace_info" in json_data["extra"]
@@ -172,7 +176,10 @@ def dedupe_workflow_ids():
             if not file.endswith(".json"):
                 continue
             file_path = os.path.join(root, file)
-            check_and_update_workflow_id(file_path, seen_ids)
+            try:
+                check_and_update_workflow_id(file_path, seen_ids)
+            except Exception as e:
+                print(f"Error while processing file {file_path}: {e}")
 
 @server.PromptServer.instance.routes.get('/workspace/deduplicate_workflow_ids')
 async def deduplicate_workflow_ids(request):
