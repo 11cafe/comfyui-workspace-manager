@@ -400,37 +400,6 @@ export default function App() {
     graphAppSetup();
     setLoadChild(true);
 
-    const fileInput = document.getElementById(
-      "comfy-file-input",
-    ) as HTMLInputElement;
-    const fileInputListener = async () => {
-      if (fileInput && fileInput.files && fileInput.files.length > 0) {
-        const newFlow: Workflow = {
-          id: nanoid(),
-          name: fileInput.files[0].name,
-          json: JSON.stringify(defaultGraph),
-          updateTime: Date.now(),
-          createTime: Date.now(),
-        };
-        setCurFlowIDAndName(newFlow);
-        await workflowsTable?.createFlow(newFlow);
-      }
-    };
-    fileInput?.addEventListener("change", fileInputListener);
-
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      const autoSaveEnabled = userSettingsTable?.settings?.autoSave ?? true;
-      if (workflowsTable?.curWorkflow?.saveLock) return;
-      const isDirty = checkIsDirty();
-
-      if (!autoSaveEnabled && isDirty) {
-        e.preventDefault(); // For modern browsers
-        e.returnValue = "You have unsaved changes!"; // For older browsers
-        showSaveOrDiscardCurWorkflowDialog();
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
     const handleExecuted = (e: any) => {
       e.detail?.output?.images?.forEach(
         (im: { filename: string; subfolder: string; type: string }) => {
@@ -449,35 +418,8 @@ export default function App() {
     };
     api.addEventListener("executed", handleExecuted);
 
-    const handleDrop = async (event: DragEvent) => {
-      const fileName = event.dataTransfer?.files[0]?.name;
-      const n = app.dragOverNode;
-      if (n && n.onDragDrop) {
-        return;
-      }
-      const overwriteFlow =
-        (await userSettingsTable?.getSetting(
-          "overwriteCurWorkflowWhenDroppingFileToCanvas",
-        )) ?? false;
-      if (!overwriteFlow && fileName) {
-        const newFlow: Workflow = {
-          id: nanoid(),
-          name: fileName,
-          json: JSON.stringify(defaultGraph),
-          updateTime: Date.now(),
-          createTime: Date.now(),
-        };
-        setCurFlowIDAndName(newFlow);
-        await workflowsTable?.createFlow(newFlow);
-      }
-    };
-    app.canvasEl.addEventListener("drop", handleDrop);
-
     return () => {
-      window.removeEventListener("change", fileInputListener);
-      window.removeEventListener("beforeunload", handleBeforeUnload);
       window.removeEventListener("executed", handleExecuted);
-      app.canvasEl.removeEventListener("drop", handleDrop);
     };
   }, []);
 
@@ -501,6 +443,7 @@ export default function App() {
         route: route,
         curVersion: curVersion,
         setCurVersion: setCurVersion,
+        setCurFlowIDAndName: setCurFlowIDAndName,
       }}
     >
       <div ref={workspaceContainerRef} className="workspace_manager">

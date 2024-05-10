@@ -24,6 +24,7 @@ export const WorkspaceContext = createContext<{
   route: WorkspaceRoute;
   curVersion: WorkflowVersion | null;
   setCurVersion: (version: WorkflowVersion | null) => void;
+  setCurFlowIDAndName: (workflow: Workflow | null) => void;
 }>({
   curFlowID: null,
   loadWorkflowID: () => {},
@@ -37,6 +38,7 @@ export const WorkspaceContext = createContext<{
   curVersion: null,
   setIsDirty: () => {},
   setCurVersion: () => {},
+  setCurFlowIDAndName: () => {},
 });
 
 export const RecentFilesContext = createContext<{

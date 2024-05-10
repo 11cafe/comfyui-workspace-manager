@@ -11,15 +11,21 @@ import { Tag, Tooltip, useToast } from "@chakra-ui/react";
 import { matchShortcut } from "../utils";
 import { EShortcutKeys } from "../types/dbTypes";
 import useDebounceFn from "../customHooks/useDebounceFn";
-import { deepJsonDiffCheck } from "../utils/deepJsonDiffCheck";
-import { SHORTCUT_TRIGGER_EVENT } from "../const";
+import {
+  COMFYSPACE_TRACKING_FIELD_NAME,
+  SHORTCUT_TRIGGER_EVENT,
+} from "../const";
 
 export default function AppIsDirtyEventListener() {
-  const { isDirty, setIsDirty, setRoute, saveCurWorkflow } =
-    useContext(WorkspaceContext);
+  const {
+    isDirty,
+    setIsDirty,
+    setRoute,
+    saveCurWorkflow,
+    setCurFlowIDAndName,
+  } = useContext(WorkspaceContext);
   const isDirtRef = useRef(isDirty);
   const [isOutdated, setIsOutdated] = useState(false);
-  const toast = useToast();
   const autoSaveTimer = useRef<number | null>(null);
 
   useEffect(() => {
@@ -72,14 +78,11 @@ export default function AppIsDirtyEventListener() {
       originalOnConfigure?.apply(this, arguments);
       // delay check diff json cuz it takes time for graph.serialize() to settle up and return the correct json
       setTimeout(() => {
-        const deepCheck = deepJsonDiffCheck(
-          app.graph.serialize(),
-          JSON.parse(workflowsTable?.curWorkflow?.json ?? "{}"),
-        );
-        if (!deepCheck) {
-          debounceOnIsDirty();
+        const id = app.graph.extra?.[COMFYSPACE_TRACKING_FIELD_NAME]?.id;
+        if (id && id != workflowsTable?.curWorkflow?.id) {
+          setCurFlowIDAndName(null);
         }
-      }, 1000);
+      }, 500);
     };
 
     document.addEventListener("click", (e) => {
