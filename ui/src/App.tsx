@@ -36,7 +36,11 @@ const RecentFilesDrawer = React.lazy(
 );
 const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
 import { IconExternalLink } from "@tabler/icons-react";
-import { DRAWER_Z_INDEX, UPGRADE_TO_2WAY_SYNC_KEY } from "./const";
+import {
+  COMFYSPACE_TRACKING_FIELD_NAME,
+  DRAWER_Z_INDEX,
+  UPGRADE_TO_2WAY_SYNC_KEY,
+} from "./const";
 import ServerEventListener from "./model-manager/hooks/ServerEventListener";
 import { nanoid } from "nanoid";
 import { WorkspaceRoute } from "./types/types";
@@ -154,13 +158,19 @@ export default function App() {
     }
     setLoadingDB(false);
 
-    let latestWfID = null;
-    latestWfID = getWorkflowIdInUrlHash();
-    if (latestWfID == null) {
-      latestWfID = localStorage.getItem("curFlowID");
-    }
-    if (latestWfID) {
-      loadWorkflowIDImpl(latestWfID);
+    const urlWorkflowID = getWorkflowIdInUrlHash();
+    if (urlWorkflowID == null) {
+      const latestWf = localStorage.getItem("workflow");
+      if (latestWf) {
+        const workflow = JSON.parse(latestWf);
+        const id = workflow.extra?.[COMFYSPACE_TRACKING_FIELD_NAME]?.id;
+        if (id) {
+          const flow = await workflowsTable?.get(id);
+          flow && setCurFlowIDAndName(flow);
+        }
+      }
+    } else {
+      loadWorkflowIDImpl(urlWorkflowID);
     }
     fetch("/workspace/deduplicate_workflow_ids");
     const twoway = await userSettingsTable?.getSetting("twoWaySync");
