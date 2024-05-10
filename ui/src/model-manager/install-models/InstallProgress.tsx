@@ -1,5 +1,4 @@
 // @ts-ignore
-import { api } from "/scripts/api.js";
 import {
   Button,
   HStack,
@@ -11,6 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { cancelDownload } from "../../Api";
+import { api } from "../../utils/comfyapp";
 
 type Queue = { save_path: string; progress: number };
 

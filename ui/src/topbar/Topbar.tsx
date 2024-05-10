@@ -5,7 +5,6 @@ import {
   IconFolder,
   IconGripVertical,
   IconPhoto,
-  IconPlus,
   IconTriangleInvertedFilled,
   IconLock,
 } from "@tabler/icons-react";
@@ -22,10 +21,10 @@ import EditFlowName from "../components/EditFlowName";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { PanelPosition } from "../types/dbTypes";
 import "./Topbar.css";
-import { SharedTopbarButton } from "../share/SharedTopbarButton";
 import VersionNameTopbar from "./VersionNameTopbar";
 import { userSettingsTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import { TOPBAR_BUTTON_HEIGHT } from "../const";
+import TopbarNewWorkflowButton from "./TopbarNewWorkflowButton";
 const AppIsDirtyEventListener = lazy(() => import("./AppIsDirtyEventListener"));
 const ModelManagerTopbar = lazy(
   () => import("../model-manager/topbar/ModelManagerTopbar"),
@@ -37,14 +36,8 @@ interface Props {
   setCurFlowName: (newName: string) => void;
 }
 export function Topbar({ curFlowName, setCurFlowName }: Props) {
-  const {
-    isDirty,
-    loadNewWorkflow,
-    saveCurWorkflow,
-    setRoute,
-    curFlowID,
-    route,
-  } = useContext(WorkspaceContext);
+  const { isDirty, saveCurWorkflow, setRoute, curFlowID, route } =
+    useContext(WorkspaceContext);
   const [positionStyle, setPositionStyle] = useState<PanelPosition>();
   const updatePanelPosition: (
     position?: PanelPosition,
@@ -116,19 +109,7 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
         <Suspense fallback={<div style={{ width: "60px" }} />}>
           <ModelManagerTopbar />
         </Suspense>
-        <Tooltip label="New workflow">
-          <Button
-            size={"sm"}
-            variant={"outline"}
-            colorScheme="teal"
-            aria-label="new workflow"
-            height={TOPBAR_BUTTON_HEIGHT + "px"}
-            onClick={() => loadNewWorkflow()}
-            px={1}
-          >
-            <IconPlus size={16} color={"white"} />
-          </Button>
-        </Tooltip>
+        <TopbarNewWorkflowButton />
         <EditFlowName
           isDirty={isDirty}
           displayName={curFlowName ?? ""}
@@ -170,7 +151,6 @@ export function Topbar({ curFlowName, setCurFlowName }: Props) {
         ) : (
           <div style={{ width: 1 }} />
         )}
-        <SharedTopbarButton />
         <VersionNameTopbar />
         <AppIsDirtyEventListener />
         <IconGripVertical

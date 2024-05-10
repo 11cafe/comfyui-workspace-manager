@@ -48,6 +48,7 @@ import { app } from "/scripts/app.js";
 import { TOPBAR_BUTTON_HEIGHT } from "../const";
 import DownloadSpaceJsonDialog from "../spacejson/DownloadSpaceJsonDialog";
 import { downloadJsonFile } from "../utils/downloadJsonFile";
+import { SharedTopbarButton } from "../share/SharedTopbarButton";
 
 export default function DropdownTitle() {
   const {
@@ -201,6 +202,7 @@ export default function DropdownTitle() {
               >
                 <HStack>
                   <p>Share</p> <Tag size={"sm"}>🧪beta</Tag>
+                  <SharedTopbarButton />
                 </HStack>
               </MenuItem>
             </MenuList>

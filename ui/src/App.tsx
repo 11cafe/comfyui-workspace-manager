@@ -1,11 +1,4 @@
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  DragEvent,
-} from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 // @ts-ignore
 import { app } from "/scripts/app.js";
 // @ts-ignore
@@ -42,12 +35,10 @@ import {
   UPGRADE_TO_2WAY_SYNC_KEY,
 } from "./const";
 import ServerEventListener from "./model-manager/hooks/ServerEventListener";
-import { nanoid } from "nanoid";
 import { WorkspaceRoute } from "./types/types";
 import { useStateRef } from "./customHooks/useStateRef";
 import { indexdb } from "./db-tables/indexdb";
 import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
-import { deepJsonDiffCheck } from "./utils/deepJsonDiffCheck";
 
 export default function App() {
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
@@ -64,7 +55,8 @@ export default function App() {
   const toast = useToast();
   const [curVersion, setCurVersion] = useStateRef<WorkflowVersion | null>(null);
   const saveCurWorkflow = useCallback(async (force = false) => {
-    if (curFlowID.current) {
+    const curWorkflow = workflowsTable?.curWorkflow;
+    if (curWorkflow) {
       if (!force && workflowsTable?.curWorkflow?.saveLock) {
         toast({
           title: "The workflow is locked and cannot be saved",
@@ -75,11 +67,11 @@ export default function App() {
       }
       const graphJson = JSON.stringify(app.graph.serialize());
       await Promise.all([
-        workflowsTable?.updateFlow(curFlowID.current, {
+        workflowsTable?.updateFlow(curWorkflow.id, {
           json: graphJson,
         }),
         changelogsTable?.create({
-          workflowID: curFlowID.current,
+          workflowID: curWorkflow.id,
           json: graphJson,
           isAutoSave: false,
         }),
@@ -167,6 +159,9 @@ export default function App() {
         if (id) {
           const flow = await workflowsTable?.get(id);
           flow && setCurFlowIDAndName(flow);
+          if (flow && flow.json != latestWf) {
+            setIsDirty(true);
+          }
         }
       }
     } else {
@@ -215,22 +210,6 @@ export default function App() {
           );
         }
       });
-  };
-
-  const checkIsDirty = () => {
-    if (curFlowID.current == null) return false;
-    const curflow = workflowsTable?.curWorkflow;
-    if (curflow == null) return false;
-    if (curflow.json == null) return true;
-    const graphJson = app.graph.serialize() ?? {};
-    let lastSaved = {};
-    try {
-      lastSaved = curflow?.json ? JSON.parse(curflow?.json) : {};
-    } catch (e) {
-      console.error("error parsing json", e);
-    }
-    const equal = deepJsonDiffCheck(graphJson, lastSaved);
-    return !equal;
   };
 
   const loadWorkflowIDImpl = async (id: string, versionID?: string | null) => {
@@ -400,37 +379,6 @@ export default function App() {
     graphAppSetup();
     setLoadChild(true);
 
-    const fileInput = document.getElementById(
-      "comfy-file-input",
-    ) as HTMLInputElement;
-    const fileInputListener = async () => {
-      if (fileInput && fileInput.files && fileInput.files.length > 0) {
-        const newFlow: Workflow = {
-          id: nanoid(),
-          name: fileInput.files[0].name,
-          json: JSON.stringify(defaultGraph),
-          updateTime: Date.now(),
-          createTime: Date.now(),
-        };
-        setCurFlowIDAndName(newFlow);
-        await workflowsTable?.createFlow(newFlow);
-      }
-    };
-    fileInput?.addEventListener("change", fileInputListener);
-
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      const autoSaveEnabled = userSettingsTable?.settings?.autoSave ?? true;
-      if (workflowsTable?.curWorkflow?.saveLock) return;
-      const isDirty = checkIsDirty();
-
-      if (!autoSaveEnabled && isDirty) {
-        e.preventDefault(); // For modern browsers
-        e.returnValue = "You have unsaved changes!"; // For older browsers
-        showSaveOrDiscardCurWorkflowDialog();
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
     const handleExecuted = (e: any) => {
       e.detail?.output?.images?.forEach(
         (im: { filename: string; subfolder: string; type: string }) => {
@@ -449,35 +397,8 @@ export default function App() {
     };
     api.addEventListener("executed", handleExecuted);
 
-    const handleDrop = async (event: DragEvent) => {
-      const fileName = event.dataTransfer?.files[0]?.name;
-      const n = app.dragOverNode;
-      if (n && n.onDragDrop) {
-        return;
-      }
-      const overwriteFlow =
-        (await userSettingsTable?.getSetting(
-          "overwriteCurWorkflowWhenDroppingFileToCanvas",
-        )) ?? false;
-      if (!overwriteFlow && fileName) {
-        const newFlow: Workflow = {
-          id: nanoid(),
-          name: fileName,
-          json: JSON.stringify(defaultGraph),
-          updateTime: Date.now(),
-          createTime: Date.now(),
-        };
-        setCurFlowIDAndName(newFlow);
-        await workflowsTable?.createFlow(newFlow);
-      }
-    };
-    app.canvasEl.addEventListener("drop", handleDrop);
-
     return () => {
-      window.removeEventListener("change", fileInputListener);
-      window.removeEventListener("beforeunload", handleBeforeUnload);
       window.removeEventListener("executed", handleExecuted);
-      app.canvasEl.removeEventListener("drop", handleDrop);
     };
   }, []);
 
@@ -501,6 +422,7 @@ export default function App() {
         route: route,
         curVersion: curVersion,
         setCurVersion: setCurVersion,
+        setCurFlowIDAndName: setCurFlowIDAndName,
       }}
     >
       <div ref={workspaceContainerRef} className="workspace_manager">
