@@ -1,11 +1,4 @@
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  DragEvent,
-} from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 // @ts-ignore
 import { app } from "/scripts/app.js";
 // @ts-ignore
@@ -42,12 +35,10 @@ import {
   UPGRADE_TO_2WAY_SYNC_KEY,
 } from "./const";
 import ServerEventListener from "./model-manager/hooks/ServerEventListener";
-import { nanoid } from "nanoid";
 import { WorkspaceRoute } from "./types/types";
 import { useStateRef } from "./customHooks/useStateRef";
 import { indexdb } from "./db-tables/indexdb";
 import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
-import { deepJsonDiffCheck } from "./utils/deepJsonDiffCheck";
 
 export default function App() {
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
@@ -64,7 +55,8 @@ export default function App() {
   const toast = useToast();
   const [curVersion, setCurVersion] = useStateRef<WorkflowVersion | null>(null);
   const saveCurWorkflow = useCallback(async (force = false) => {
-    if (curFlowID.current) {
+    const curWorkflow = workflowsTable?.curWorkflow;
+    if (curWorkflow) {
       if (!force && workflowsTable?.curWorkflow?.saveLock) {
         toast({
           title: "The workflow is locked and cannot be saved",
@@ -75,11 +67,11 @@ export default function App() {
       }
       const graphJson = JSON.stringify(app.graph.serialize());
       await Promise.all([
-        workflowsTable?.updateFlow(curFlowID.current, {
+        workflowsTable?.updateFlow(curWorkflow.id, {
           json: graphJson,
         }),
         changelogsTable?.create({
-          workflowID: curFlowID.current,
+          workflowID: curWorkflow.id,
           json: graphJson,
           isAutoSave: false,
         }),
@@ -167,6 +159,9 @@ export default function App() {
         if (id) {
           const flow = await workflowsTable?.get(id);
           flow && setCurFlowIDAndName(flow);
+          if (flow && flow.json != latestWf) {
+            setIsDirty(true);
+          }
         }
       }
     } else {
@@ -215,22 +210,6 @@ export default function App() {
           );
         }
       });
-  };
-
-  const checkIsDirty = () => {
-    if (curFlowID.current == null) return false;
-    const curflow = workflowsTable?.curWorkflow;
-    if (curflow == null) return false;
-    if (curflow.json == null) return true;
-    const graphJson = app.graph.serialize() ?? {};
-    let lastSaved = {};
-    try {
-      lastSaved = curflow?.json ? JSON.parse(curflow?.json) : {};
-    } catch (e) {
-      console.error("error parsing json", e);
-    }
-    const equal = deepJsonDiffCheck(graphJson, lastSaved);
-    return !equal;
   };
 
   const loadWorkflowIDImpl = async (id: string, versionID?: string | null) => {
