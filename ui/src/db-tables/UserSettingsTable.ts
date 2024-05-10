@@ -93,10 +93,12 @@ export class UserSettingsTable extends TableBase<UserSettings> {
         ...res,
       };
     });
-    // overwrite legacy comfyspace.art
-    await instance.upsert({
-      cloudHost: instance.defaultSettings.cloudHost,
-    });
+    if (instance.defaultSettings.cloudHost.includes("comfyspace.art")) {
+      // overwrite legacy comfyspace.art
+      await instance.upsert({
+        cloudHost: instance.defaultSettings.cloudHost,
+      });
+    }
     return instance;
   }
 }

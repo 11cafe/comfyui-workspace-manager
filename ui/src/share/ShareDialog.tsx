@@ -50,7 +50,7 @@ export default function ShareDialog({ onClose }: Props) {
   const [versionName, setVersionName] = useState("v" + getCurDateString());
   const [localVersions, setLocalVersions] = useState<WorkflowVersion[]>([]);
   const [loading, setLoading] = useState(false);
-  const [cloudHost, setCloudHost] = useState("");
+  const cloudHost = userSettingsTable?.settings?.cloudHost;
   const [privacy, setPrivacy] = useState<WorkflowPrivacy>("PRIVATE");
   const [selectedVersion, setSelectedVersion] = useState<
     string | "new_version"
@@ -63,7 +63,7 @@ export default function ShareDialog({ onClose }: Props) {
   const handleShareWorkflowSuccess = async (event: MessageEvent) => {
     const detail = event.data;
     if (
-      event.origin !== cloudHostRef.current ||
+      // event.origin !== cloudHostRef.current ||
       detail.type !== "share_workflow_success"
     ) {
       return;
@@ -118,7 +118,6 @@ export default function ShareDialog({ onClose }: Props) {
         ? await userSettingsTable?.getSetting("cloudHost")
         : "http://localhost:3000";
     if (host) {
-      setCloudHost(host);
       cloudHostRef.current = host;
     }
     if (workflow?.cloudID && workflow.cloudOrigin) {
@@ -230,6 +229,11 @@ export default function ShareDialog({ onClose }: Props) {
               {loading ? "Sharing" : "Share"}
             </Button>
           </Flex>
+          {cloudHost && (
+            <Text fontSize={16} color={"GrayText"} fontWeight={400}>
+              Share to {new URL(cloudHost).host}
+            </Text>
+          )}
         </ModalHeader>
         <ModalBody pb={10}>
           <Stack gap={5}>
