@@ -11,8 +11,8 @@ export default function TopbarNewWorkflowButton() {
     useContext(WorkspaceContext);
   const saveNewWorkflow = async () => {
     const graph = JSON.stringify(app.graph.serialize());
-    const workflowName =
-      prompt("Enter workflow name", "Untitled") ?? "Untitled";
+    const workflowName = prompt("Enter workflow name", "Untitled");
+    if (!workflowName) return;
     const flow = await workflowsTable?.createFlow({
       json: graph,
       name: workflowName,
