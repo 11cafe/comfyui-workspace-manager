@@ -21,24 +21,8 @@ const AddMissingModelsButton = lazy(
 
 export default function ModelManagerTopbar() {
   const { setRoute, route } = useContext(WorkspaceContext);
-  const handleModelDrop = async (
-    e: DragEvent<HTMLCanvasElement> & { canvasX: number; canvasY: number },
-  ) => {
-    const eventName = e.dataTransfer.getData("eventName");
-    if (eventName !== "WorkspaceManagerAddNode") {
-      return;
-    }
-    const modelRelativePath = e.dataTransfer.getData("modelRelativePath");
-    const nodeType = e.dataTransfer.getData("nodeType");
-    // @ts-ignore
-    const node = LiteGraph.createNode(nodeType);
-    node.pos = [e.canvasX, e.canvasY];
-    node.configure({ widgets_values: [modelRelativePath] });
-    app.graph.add(node);
-  };
 
   useEffect(() => {
-    app.canvasEl.addEventListener("drop", handleModelDrop);
     api.addEventListener(
       "model_list",
       async (e: { detail: ModelsListRespItemFromApi[] }) => {
@@ -77,9 +61,6 @@ export default function ModelManagerTopbar() {
         window.dispatchEvent(new CustomEvent("model_list_updated"));
       },
     );
-    return () => {
-      app.canvasEl.removeEventListener("drop", handleModelDrop);
-    };
   }, []);
 
   return (
