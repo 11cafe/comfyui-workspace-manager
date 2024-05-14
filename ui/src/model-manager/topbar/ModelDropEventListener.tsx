@@ -1,6 +1,5 @@
 import { useEffect, DragEvent } from "react";
-// @ts-ignore
-import { app } from "/scripts/app.js";
+import { app } from "../../utils/comfyapp";
 
 export default function ModelDropEventListener() {
   const handleModelDrop = async (

@@ -1,8 +1,7 @@
 import { IconLink, IconLock, IconWorld } from "@tabler/icons-react";
 import { CustomSelectorOption } from "../components/CustomSelector";
 import { Workflow, WorkflowPrivacy } from "../types/dbTypes";
-// @ts-expect-error
-import { app } from "/scripts/app.js";
+import { app } from "../utils/comfyapp";
 
 export function generateRandomKey(length: number) {
   // Generate a random array of bytes

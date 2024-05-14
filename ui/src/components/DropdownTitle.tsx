@@ -43,12 +43,11 @@ import { Workflow } from "../types/dbTypes";
 import CreateVersionDialog from "./CreateVersionDialog";
 import HoverMenu from "./HoverMenu";
 const ShareDialog = lazy(() => import("../share/ShareDialog"));
-// @ts-ignore
-import { app } from "/scripts/app.js";
 import { TOPBAR_BUTTON_HEIGHT } from "../const";
 import DownloadSpaceJsonDialog from "../spacejson/DownloadSpaceJsonDialog";
 import { downloadJsonFile } from "../utils/downloadJsonFile";
 import { SharedTopbarButton } from "../share/SharedTopbarButton";
+import { app } from "../utils/comfyapp";
 
 export default function DropdownTitle() {
   const {

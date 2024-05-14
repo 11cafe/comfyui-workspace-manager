@@ -27,10 +27,9 @@ import {
 import { useContext, useEffect, useState } from "react";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { formatTimestamp } from "../utils";
-// @ts-ignore
-import { app } from "/scripts/app.js";
 import { Changelog, WorkflowVersion } from "../types/dbTypes";
 import DeleteConfirm from "./DeleteConfirm";
+import { app } from "../utils/comfyapp";
 
 export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
   const toast = useToast();
