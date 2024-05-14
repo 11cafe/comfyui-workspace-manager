@@ -26,13 +26,12 @@ import {
   WorkspaceInfoDeps,
   extractAndFetchFileNames,
 } from "./handleDownloadSpaceJson";
-// @ts-ignore
-import { app } from "/scripts/app.js";
 import { IconExternalLink, IconPencil, IconRefresh } from "@tabler/icons-react";
 import { getHgModelInfoUrlFromDownloadUrl } from "../utils/civitUtils";
 import { getAllModelsList } from "../Api";
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
 import { indexdb } from "../db-tables/indexdb";
+import { app } from "../utils/comfyapp";
 
 export default forwardRef<HTMLFormElement>(
   function ResourceDepsForm(_props, ref) {

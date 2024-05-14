@@ -1,8 +1,5 @@
-// @ts-expect-error ComfyUI import
-import { app } from "/scripts/app.js";
 import {
   Checkbox,
-  Flex,
   Heading,
   HStack,
   IconButton,
