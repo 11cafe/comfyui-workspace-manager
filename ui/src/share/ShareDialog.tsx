@@ -29,8 +29,6 @@ import {
 } from "../db-tables/WorkspaceDB";
 // @ts-ignore
 import { api } from "/scripts/api.js";
-// @ts-ignore
-import { app } from "/scripts/app.js";
 import {
   PrivacyLabel,
   fetchCloudWorkflowPrivacy,
@@ -41,6 +39,7 @@ import {
 
 import ShareDialogWorkflowVersionRadio from "./ShareDialogWorkflowVersionRadio";
 import ResourceDepsForm from "../spacejson/ResourceDepsForm";
+import { app } from "../utils/comfyapp";
 
 interface Props {
   onClose: () => void;

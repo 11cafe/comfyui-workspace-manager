@@ -11,8 +11,6 @@ import {
   Text,
   Tooltip,
 } from "@chakra-ui/react";
-// @ts-ignore
-import { app } from "/scripts/app.js";
 import { IconInfoCircle } from "@tabler/icons-react";
 import ResourceDepsForm from "./ResourceDepsForm";
 

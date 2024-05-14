@@ -12,13 +12,12 @@ import {
 import { IconExternalLink } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../../const";
-// @ts-ignore
-import { app } from "/scripts/app.js";
 import type {
   DepsResult,
   ModelFile,
 } from "../../spacejson/handleDownloadSpaceJson";
 import { indexdb } from "../../db-tables/indexdb";
+import { app } from "../../utils/comfyapp";
 
 const HF_LOGO =
   "https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo.png";

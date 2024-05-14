@@ -1,6 +1,4 @@
 import { useContext, useEffect, useRef, useState } from "react";
-// @ts-expect-error
-import { app } from "/scripts/app.js";
 import { WorkspaceContext } from "../WorkspaceContext";
 import {
   changelogsTable,
@@ -15,6 +13,7 @@ import {
   COMFYSPACE_TRACKING_FIELD_NAME,
   SHORTCUT_TRIGGER_EVENT,
 } from "../const";
+import { app } from "../utils/comfyapp";
 
 export default function AppIsDirtyEventListener() {
   const {
@@ -63,10 +62,7 @@ export default function AppIsDirtyEventListener() {
         event.target?.matches("input, textarea") &&
         Object.keys(app.canvas.selected_nodes ?? {}).length
       ) {
-        const graph = app.graph.serialize();
-        if (JSON.stringify(graph) !== workflowsTable?.curWorkflow?.json) {
-          debounceOnIsDirty();
-        }
+        debounceOnIsDirty();
       }
     };
 
@@ -89,10 +85,7 @@ export default function AppIsDirtyEventListener() {
         app.canvas.node_capturing_input != null ||
         app.canvas.node_widget != null
       ) {
-        const graph = app.graph.serialize();
-        if (JSON.stringify(graph) !== workflowsTable?.curWorkflow?.json) {
-          debounceOnIsDirty();
-        }
+        debounceOnIsDirty();
       }
     });
     document.addEventListener("keydown", keydownListener);
@@ -135,6 +128,10 @@ export default function AppIsDirtyEventListener() {
 
   const onIsDirty = async () => {
     if (workflowsTable?.curWorkflow?.saveLock || isDirtRef.current) return;
+    const graph = app.graph.serialize();
+    if (JSON.stringify(graph) === workflowsTable?.curWorkflow?.json) {
+      return;
+    }
     setIsDirty(true);
     if (
       userSettingsTable?.settings?.autoSave &&

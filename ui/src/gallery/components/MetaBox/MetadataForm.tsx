@@ -13,8 +13,7 @@ import {
 import { MetaBoxContext } from "./metaBoxContext.ts";
 import { workflowsTable } from "../../../db-tables/WorkspaceDB.ts";
 import { WorkspaceContext } from "../../../WorkspaceContext.ts";
-// @ts-ignore
-import { app } from "/scripts/app.js";
+import { app } from "../../../utils/comfyapp.ts";
 export type TopFieldType = {
   promptKey: string | number;
   class_type?: string;

@@ -1,8 +1,4 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
-// @ts-ignore
-import { app } from "/scripts/app.js";
-// @ts-ignore
-import { api } from "/scripts/api.js";
 import { Box, Portal, useToast } from "@chakra-ui/react";
 import {
   loadDBs,
@@ -39,6 +35,7 @@ import { WorkspaceRoute } from "./types/types";
 import { useStateRef } from "./customHooks/useStateRef";
 import { indexdb } from "./db-tables/indexdb";
 import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
+import { api, app } from "./utils/comfyapp";
 
 export default function App() {
   const [curFlowName, setCurFlowName] = useState<string | null>(null);

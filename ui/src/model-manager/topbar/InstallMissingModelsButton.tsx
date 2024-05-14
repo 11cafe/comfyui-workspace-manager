@@ -1,13 +1,12 @@
 import { Button } from "@chakra-ui/react";
 // @ts-ignore
-import { app } from "/scripts/app.js";
-// @ts-ignore
 import { api } from "/scripts/api.js";
 import { useEffect, useState } from "react";
 import MissingModelsListDrawer, {
   MissingModel,
 } from "../missing-models-drawer/MissingModelsListDrawer";
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../../const";
+import { app } from "../../utils/comfyapp";
 interface Props {}
 
 interface NodeError {

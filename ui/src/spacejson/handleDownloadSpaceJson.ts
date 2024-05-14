@@ -5,8 +5,7 @@ import {
   getCivitModelPageUrl,
   getHgModelInfoUrlFromDownloadUrl,
 } from "../utils/civitUtils";
-// @ts-ignore
-import { app } from "/scripts/app.js";
+import { app } from "../utils/comfyapp";
 
 type LiteNode = {
   id: number;

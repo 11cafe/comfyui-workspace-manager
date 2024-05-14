@@ -14,8 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { workflowVersionsTable } from "../db-tables/WorkspaceDB";
 import { useState, ChangeEvent } from "react";
-// @ts-ignore
-import { app } from "/scripts/app.js";
+import { app } from "../utils/comfyapp";
 
 interface Props {
   workflowId: string;

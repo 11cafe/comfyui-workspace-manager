@@ -5,18 +5,12 @@ import {
   generateFilePathAbsolute,
   saveJsonFileMyWorkflows,
 } from "./db-tables/DiskFileUtils";
-import {
-  Workflow,
-  EShortcutKeys,
-  EOtherKeys,
-  SortableItem,
-} from "./types/dbTypes";
-// @ts-expect-error ComfyUI import
-import { app } from "/scripts/app.js";
+import { Workflow, EShortcutKeys, SortableItem } from "./types/dbTypes";
 import {
   COMFYSPACE_TRACKING_FIELD_NAME,
   LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
 } from "./const";
+import { app } from "./utils/comfyapp";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let LiteGraph: any, LGraph: any, LGraphCanvas: any;
