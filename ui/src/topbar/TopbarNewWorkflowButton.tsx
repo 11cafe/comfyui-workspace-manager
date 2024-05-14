@@ -20,7 +20,7 @@ export default function TopbarNewWorkflowButton() {
     flow && setCurFlowIDAndName(flow);
   };
   return (
-    <Tooltip label="New workflow">
+    <Tooltip label={curFlowID ? "New workflow" : "Save workflow"}>
       <Button
         size={"sm"}
         variant={"outline"}
