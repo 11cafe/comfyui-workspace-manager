@@ -11,4 +11,3 @@ Repository = "https://github.com/11cafe/comfyui-workspace-manager"
 PublisherId = ""
 DisplayName = "comfyui-workspace-manager"
 Icon = ""
-Models = [{location = "/checkpoints/model.safetensor", model_url = "https://example.com/model.zip"}]
