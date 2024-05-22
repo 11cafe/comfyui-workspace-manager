@@ -1,0 +1,13 @@
+[project]
+name = "comfyui-workspace-manager"
+description = "A ComfyUI custom node for project management to centralize the management of all your workflows in one place. Seamlessly switch between workflows, create and update them within a single workspace, like Google Docs."
+version = "1.0.0"
+license = "LICENSE"
+
+[project.urls]
+Repository = "https://github.com/11cafe/comfyui-workspace-manager"
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "comfyui-workspace-manager"
+Icon = ""
