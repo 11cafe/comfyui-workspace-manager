@@ -4,8 +4,7 @@ A ComfyUI workflow and model manager extension to **organize and manage all your
 
 If you have questions or suggestions, please [join our Discord](https://discord.gg/HHvfEurv2Z)!
 
-[New!] we're building a comfyui custom nodes library wiki like Pypi: https://www.nodecafe.org/
-welcome any feedbacks!
+[New!] We provide team workspace now! If you need to share workflows, backup workflow versions for enterprise and teams, please contact me about our team/enterprise product at weixuanfu01@gmail.com or join discord and DM me @briefpeach 
 
 ‼️ [3-23-2024]**search and install models from civitai is not working in previous versions**, because civitai changed something in their api. **Please update to the latest version** if you are seeing blank screen in Install Models dialog
 
