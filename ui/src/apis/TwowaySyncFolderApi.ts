@@ -1,3 +1,4 @@
+import { fetchApi } from "../Api";
 import { Folder } from "../types/dbTypes";
 import { sanitizeRelPath } from "../utils/OsPathUtils";
 
@@ -13,7 +14,7 @@ export namespace TwowayFolderSyncAPI {
   }
 
   export async function createFolder(folder: Folder) {
-    await fetch("/workspace/folder/create", {
+    await fetchApi("/workspace/folder/create", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -27,7 +28,7 @@ export namespace TwowayFolderSyncAPI {
     folderToBeMoved: string,
     newParentPath: string,
   ) {
-    const resp = await fetch("/workspace/folder/move", {
+    const resp = await fetchApi("/workspace/folder/move", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -45,7 +46,7 @@ export namespace TwowayFolderSyncAPI {
   }
   export async function deleteFolder(relPath: string) {
     try {
-      const response = await fetch("/workspace/folder/delete", {
+      const response = await fetchApi("/workspace/folder/delete", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -65,7 +66,7 @@ export namespace TwowayFolderSyncAPI {
     folderRelPath: string,
   ): Promise<number | null> {
     try {
-      const response = await fetch("/workspace/file/count_files", {
+      const response = await fetchApi("/workspace/file/count_files", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -90,7 +91,7 @@ export namespace TwowayFolderSyncAPI {
     newName: string,
   ): Promise<void> {
     try {
-      const response = await fetch("/workspace/folder/rename", {
+      const response = await fetchApi("/workspace/folder/rename", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

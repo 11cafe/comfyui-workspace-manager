@@ -21,6 +21,7 @@ import { Workflow } from "../types/dbTypes";
 import { mediaTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { openWorkflowInNewTab } from "../utils";
+import { fetchApi } from "../Api";
 
 type Props = {
   workflow: Workflow;
@@ -55,7 +56,7 @@ export default function MoreActionMenu({ workflow }: Props) {
       body.append(`images[${index}]`, file, file.name);
     });
     body.append("subfolder", "workspace_manager");
-    await fetch("/workspace/images/save", {
+    await fetchApi("/workspace/images/save", {
       method: "POST",
       body,
     });

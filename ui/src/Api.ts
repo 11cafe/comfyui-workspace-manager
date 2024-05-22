@@ -1,10 +1,22 @@
 import { Table } from "./db-tables/WorkspaceDB";
 import type { ModelsListRespItem } from "./model-manager/types";
+import { api } from "./utils/comfyapp";
+
+export function fetchApi(
+  route: string,
+  options?: RequestInit,
+): Promise<Response> {
+  if (api == null) {
+    console.error("api is null!");
+    throw new Error("api is null!");
+  }
+  return api.fetchApi(route, options);
+}
 
 export async function getDB(table: Table): Promise<string | undefined> {
   console.warn("[workspace deprecated] getDB is deprecated", table);
   try {
-    const response = await fetch(`/workspace/get_db?table=${table}`);
+    const response = await fetchApi(`/workspace/get_db?table=${table}`);
     if (!response.ok) {
       return undefined;
     }
@@ -18,7 +30,7 @@ export async function getDB(table: Table): Promise<string | undefined> {
 
 export async function saveDB(table: Table, jsonData: string) {
   try {
-    const response = await fetch("/workspace/save_db", {
+    const response = await fetchApi("/workspace/save_db", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -34,7 +46,7 @@ export async function saveDB(table: Table, jsonData: string) {
 
 export async function updateFile(file_path: string, jsonData: string) {
   try {
-    const response = await fetch("/workspace/update_file", {
+    const response = await fetchApi("/workspace/update_file", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -54,7 +66,7 @@ export async function updateFile(file_path: string, jsonData: string) {
 
 export async function deleteFile(file_path: string, deleteEmptyFolder = false) {
   try {
-    const response = await fetch("/workspace/delete_file", {
+    const response = await fetchApi("/workspace/delete_file", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -73,7 +85,7 @@ export async function deleteFile(file_path: string, deleteEmptyFolder = false) {
 
 export async function listBackup(dir: string) {
   try {
-    const response = await fetch("/workspace/list_backup", {
+    const response = await fetchApi("/workspace/list_backup", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -91,7 +103,7 @@ export async function listBackup(dir: string) {
 
 export async function getSystemDir(root?: string) {
   try {
-    const response = await fetch("/workspace/get_system_dir", {
+    const response = await fetchApi("/workspace/get_system_dir", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -109,7 +121,7 @@ export async function getSystemDir(root?: string) {
 
 export async function openWorkflowsFolder() {
   try {
-    const response = await fetch("/workspace/open_workflow_file_browser", {
+    const response = await fetchApi("/workspace/open_workflow_file_browser", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -123,7 +135,7 @@ export async function openWorkflowsFolder() {
 }
 
 export async function fetchMyWorkflowsDir() {
-  const resp = await fetch("/workspace/get_my_workflows_dir");
+  const resp = await fetchApi("/workspace/get_my_workflows_dir");
   const res = (await resp.json()) as {
     path?: string;
     error?: string;
@@ -137,7 +149,7 @@ export async function fetchMyWorkflowsDir() {
 
 export async function getAllModelsList() {
   try {
-    const response = await fetch("/model_manager/get_model_list", {
+    const response = await fetchApi("/model_manager/get_model_list", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -152,7 +164,7 @@ export async function getAllModelsList() {
 
 export async function getAllFoldersList() {
   try {
-    const response = await fetch("/model_manager/get_folder_list", {
+    const response = await fetchApi("/model_manager/get_folder_list", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -167,7 +179,7 @@ export async function getAllFoldersList() {
 
 export async function deleteLocalDiskFolder(folderPath: string) {
   try {
-    const response = await fetch("/workspace/delete_folder", {
+    const response = await fetchApi("/workspace/delete_folder", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -185,7 +197,7 @@ export async function deleteLocalDiskFolder(folderPath: string) {
 
 export async function cancelDownload(savePath: string) {
   try {
-    const response = await fetch("/model_manager/cancel_installation", {
+    const response = await fetchApi("/model_manager/cancel_installation", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -206,7 +218,7 @@ export async function copyFlowsToNewDirectory(
   dstDir: string,
 ) {
   try {
-    const response = await fetch("/workspace/copy_json_files", {
+    const response = await fetchApi("/workspace/copy_json_files", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
