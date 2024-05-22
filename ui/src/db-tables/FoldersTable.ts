@@ -1,6 +1,5 @@
 import { userSettingsTable, workflowsTable } from "./WorkspaceDB";
 import { EFlowOperationType, Folder } from "../types/dbTypes";
-import { validateOrSaveAllJsonFileMyWorkflows } from "../utils";
 import { nanoid } from "nanoid";
 import { TableBase } from "./TableBase";
 import { indexdb } from "./indexdb";
@@ -84,11 +83,6 @@ export class FoldersTable extends TableBase<Folder> {
     }
     await indexdb.folders.update(id, input);
     this.saveDiskDB();
-
-    // folder moved or renamed - move all workflows to the right directory(not required when folded state changes)
-    if (nameChanged || parentFolderChanged) {
-      validateOrSaveAllJsonFileMyWorkflows(true);
-    }
     return newRecord;
   }
   public async deleteFolder(

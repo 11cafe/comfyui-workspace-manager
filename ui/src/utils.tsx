@@ -1,15 +1,6 @@
-import { deleteFile, updateFile } from "./Api";
 import { ESortTypes } from "./RecentFilesDrawer/types";
-import { workflowsTable, userSettingsTable } from "./db-tables/WorkspaceDB";
-import {
-  generateFilePathAbsolute,
-  saveJsonFileMyWorkflows,
-} from "./db-tables/DiskFileUtils";
+import { userSettingsTable } from "./db-tables/WorkspaceDB";
 import { Workflow, EShortcutKeys, SortableItem } from "./types/dbTypes";
-import {
-  COMFYSPACE_TRACKING_FIELD_NAME,
-  LEGACY_COMFYSPACE_TRACKING_FIELD_NAME,
-} from "./const";
 import { app } from "./utils/comfyapp";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -149,22 +140,6 @@ export function sortFlows(
   }
 
   return copyFlows;
-}
-export async function validateOrSaveAllJsonFileMyWorkflows(
-  deleteEmptyFolder = false,
-) {
-  const twoWaySync = await userSettingsTable?.getSetting("twoWaySync");
-  if (twoWaySync) return; // disable this function in two way sync mode
-  const flowList = (await workflowsTable?.listAll()) ?? [];
-  for (const workflow of flowList) {
-    const fullPath = await generateFilePathAbsolute(workflow);
-    if (workflow.filePath != fullPath) {
-      // file path changed
-      workflow.filePath != null &&
-        (await deleteFile(workflow.filePath, deleteEmptyFolder));
-      await saveJsonFileMyWorkflows(workflow);
-    }
-  }
 }
 
 export const sortFileItem = <T extends SortableItem>(
@@ -335,21 +310,3 @@ export const openWorkflowInNewTab = (workflowID: string) => {
   const newHash = generateUrlHashWithFlowId(workflowID);
   window.open(`${window.location.origin}/#${newHash}`);
 };
-
-export async function rewriteAllLocalFiles() {
-  const flowList = (await workflowsTable?.listAll()) ?? [];
-  for (const workflow of flowList) {
-    try {
-      const fullPath = await generateFilePathAbsolute(workflow);
-      const flow = JSON.parse(workflow.json);
-      flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {
-        id: workflow.id,
-        name: workflow.name,
-      };
-      delete flow.extra[LEGACY_COMFYSPACE_TRACKING_FIELD_NAME];
-      fullPath && (await updateFile(fullPath, JSON.stringify(flow)));
-    } catch (error) {
-      console.error(error);
-    }
-  }
-}

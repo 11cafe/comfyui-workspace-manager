@@ -28,7 +28,7 @@ import {
 } from "./handleDownloadSpaceJson";
 import { IconExternalLink, IconPencil, IconRefresh } from "@tabler/icons-react";
 import { getHgModelInfoUrlFromDownloadUrl } from "../utils/civitUtils";
-import { getAllModelsList } from "../Api";
+import { fetchApi, getAllModelsList } from "../Api";
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
 import { indexdb } from "../db-tables/indexdb";
 import { app } from "../utils/comfyapp";
@@ -118,7 +118,7 @@ export default forwardRef<HTMLFormElement>(
       const imageDeps = deps?.images ?? {};
 
       if (imageDepsToUpload.length) {
-        const uploadResp = await fetch("/workspace/upload_image", {
+        const uploadResp = await fetchApi("/workspace/upload_image", {
           method: "POST",
           body: JSON.stringify({
             images: imageDepsToUpload,
