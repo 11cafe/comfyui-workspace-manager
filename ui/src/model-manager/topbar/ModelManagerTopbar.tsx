@@ -1,8 +1,6 @@
 import { Button, DarkMode, Stack } from "@chakra-ui/react";
-import { lazy, useEffect, DragEvent, useContext, Suspense } from "react";
+import { lazy, useEffect, useContext, Suspense } from "react";
 import ModelsListDrawer from "../models-list-drawer/ModelsListDrawer";
-// @ts-ignore
-import { app } from "/scripts/app.js";
 import "./index.css";
 import { WorkspaceContext } from "../../WorkspaceContext";
 // @ts-ignore

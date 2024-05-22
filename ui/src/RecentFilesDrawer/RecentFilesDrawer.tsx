@@ -30,8 +30,6 @@ import RecentFilesDrawerMenu from "./RecentFilesDrawerMenu";
 import { insertWorkflowToCanvas, sortFileItem } from "../utils";
 import MultipleSelectionOperation from "./MultipleSelectionOperation";
 import { ESortTypes, sortTypeLocalStorageKey } from "./types";
-// @ts-expect-error ComfyUI import
-import { app } from "/scripts/app.js";
 import { useDebounce } from "../customHooks/useDebounce";
 import SearchInput from "../components/SearchInput";
 import { openWorkflowsFolder } from "../Api";
@@ -40,6 +38,7 @@ import MyTagsRow from "./MyTagsRow";
 import ImportFlowsFileInput from "./ImportFlowsFileInput";
 import ItemsList from "./ItemsList";
 import { DRAWER_Z_INDEX } from "../const";
+import { app } from "../utils/comfyapp";
 
 type Props = {
   onClose: () => void;

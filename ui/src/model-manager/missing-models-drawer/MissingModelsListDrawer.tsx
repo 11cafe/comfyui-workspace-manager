@@ -10,8 +10,6 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { useCallback, useContext, useEffect, useState } from "react";
-// @ts-ignore
-import { app } from "/scripts/app.js";
 import MissingModelItem from "./MissingModelItem";
 import { DRAWER_Z_INDEX } from "../../const";
 import type { ModelFile } from "../../spacejson/handleDownloadSpaceJson";
@@ -19,6 +17,7 @@ import { getAllFoldersList } from "../../Api";
 import { installModelsApi } from "../api/modelsApi";
 import { getCivitApiKey } from "../../utils/civitUtils";
 import { WorkspaceContext } from "../../WorkspaceContext";
+import { app } from "../../utils/comfyapp";
 
 export interface MissingModel {
   class_type: string;
