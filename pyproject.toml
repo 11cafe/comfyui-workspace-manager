@@ -8,6 +8,6 @@ license = "LICENSE"
 Repository = "https://github.com/11cafe/comfyui-workspace-manager"
 
 [tool.comfy]
-PublisherId = ""
+PublisherId = "weixuan11"
 DisplayName = "comfyui-workspace-manager"
 Icon = ""
