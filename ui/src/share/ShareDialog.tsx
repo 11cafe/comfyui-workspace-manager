@@ -40,6 +40,7 @@ import {
 import ShareDialogWorkflowVersionRadio from "./ShareDialogWorkflowVersionRadio";
 import ResourceDepsForm from "../spacejson/ResourceDepsForm";
 import { app } from "../utils/comfyapp";
+import { useStateRef } from "../customHooks/useStateRef";
 
 interface Props {
   onClose: () => void;
@@ -50,7 +51,8 @@ export default function ShareDialog({ onClose }: Props) {
   const [localVersions, setLocalVersions] = useState<WorkflowVersion[]>([]);
   const [loading, setLoading] = useState(false);
   const cloudHost = userSettingsTable?.settings?.cloudHost;
-  const [privacy, setPrivacy] = useState<WorkflowPrivacy>("PRIVATE");
+  const [privacy, setPrivacy, privacyRef] =
+    useStateRef<WorkflowPrivacy>("PRIVATE");
   const [selectedVersion, setSelectedVersion] = useState<
     string | "new_version"
   >("new_version");
@@ -78,7 +80,7 @@ export default function ShareDialog({ onClose }: Props) {
       (await workflowsTable?.updateMetaInfo(localID, {
         cloudID: cloudID,
         cloudOrigin: event.origin,
-        privacy: privacy,
+        privacy: privacyRef.current,
       }));
     localVerID &&
       cloudVersionID &&
@@ -194,7 +196,7 @@ export default function ShareDialog({ onClose }: Props) {
             workflow: curWorkflow,
             version: version,
             nodeDefs: nodeDefs,
-            privacy: privacy,
+            privacy: privacyRef.current,
           },
           host,
         );
