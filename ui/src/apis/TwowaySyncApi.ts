@@ -1,3 +1,4 @@
+import { fetchApi } from "../Api";
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
 import { indexdb } from "../db-tables/indexdb";
 import { Workflow } from "../types/dbTypes";
@@ -13,7 +14,7 @@ export namespace TwowaySyncAPI {
     newParentFolderRelPath: string,
   ) {
     try {
-      const response = await fetch("/workspace/file/move", {
+      const response = await fetchApi("/workspace/file/move", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -39,7 +40,7 @@ export namespace TwowaySyncAPI {
     parentFolderID: string | null,
   ): Promise<string | null> {
     try {
-      const response = await fetch("/workspace/file/gen_unique_name", {
+      const response = await fetchApi("/workspace/file/gen_unique_name", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -65,7 +66,7 @@ export namespace TwowaySyncAPI {
     newName: string,
   ) {
     try {
-      const response = await fetch("/workspace/file/rename", {
+      const response = await fetchApi("/workspace/file/rename", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -102,7 +103,7 @@ export namespace TwowaySyncAPI {
       flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {};
     }
     flow.extra[COMFYSPACE_TRACKING_FIELD_NAME].id = workflow.id;
-    const response = await fetch("/workspace/file/save", {
+    const response = await fetchApi("/workspace/file/save", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -125,7 +126,7 @@ export namespace TwowaySyncAPI {
   }
   export async function deleteWorkflow(workflow: Workflow) {
     try {
-      const response = await fetch("/workspace/delete_file", {
+      const response = await fetchApi("/workspace/delete_file", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -163,7 +164,7 @@ export namespace TwowaySyncAPI {
     };
 
     try {
-      const response = await fetch("/workspace/create_workflow_file", {
+      const response = await fetchApi("/workspace/create_workflow_file", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -200,7 +201,7 @@ export namespace TwowaySyncAPI {
   }> {
     const relPath = joinRelPath(parentFolderID ?? "", name + ".json");
     try {
-      const response = await fetch("/workspace/get_workflow_file", {
+      const response = await fetchApi("/workspace/get_workflow_file", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -251,17 +252,20 @@ export async function scanLocalFiles(
   metaInfoOnly = false,
 ): Promise<Array<ScanLocalFile | ScanLocalFolder>> {
   try {
-    const response = await fetch("/workspace/file/scan_my_workflows_folder", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const response = await fetchApi(
+      "/workspace/file/scan_my_workflows_folder",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          path: sanitizeRelPath(path),
+          recursive,
+          metaInfoOnly,
+        }),
       },
-      body: JSON.stringify({
-        path: sanitizeRelPath(path),
-        recursive,
-        metaInfoOnly,
-      }),
-    });
+    );
     const result = await response.json();
     return result;
   } catch (error) {

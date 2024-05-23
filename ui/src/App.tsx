@@ -36,6 +36,7 @@ import { useStateRef } from "./customHooks/useStateRef";
 import { indexdb } from "./db-tables/indexdb";
 import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
 import { api, app } from "./utils/comfyapp";
+import { fetchApi } from "./Api";
 
 export default function App() {
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
@@ -164,7 +165,7 @@ export default function App() {
     } else {
       loadWorkflowIDImpl(urlWorkflowID);
     }
-    fetch("/workspace/deduplicate_workflow_ids");
+    fetchApi("/workspace/deduplicate_workflow_ids");
     const twoway = await userSettingsTable?.getSetting("twoWaySync");
     !twoway &&
       indexdb.cache.get(UPGRADE_TO_2WAY_SYNC_KEY).then(async (value) => {
