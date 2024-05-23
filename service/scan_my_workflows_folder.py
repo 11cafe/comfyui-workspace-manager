@@ -3,7 +3,8 @@ from aiohttp import web
 import asyncio
 import json
 import os
-import glob
+import traceback
+import logging
 from threading import Lock
 import server
 import uuid
@@ -41,7 +42,7 @@ def folder_handle(path, recursive, metaInfoOnly, fileList=None):
                 if recursive:
                     folder_handle(item_path, recursive, metaInfoOnly, fileList)
         except Exception as e:
-            print(f"Error scanning item {item}: {e}")
+            logging.error(f"Error scan workflow {item_path}: {e}, {traceback.format_exc()}")
     return fileList
 
 def file_handle(name, fileList, file_path, metaInfoOnly):
