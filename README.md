@@ -26,7 +26,7 @@ Like any other custom node installation, in your ComfyUI root folder run command
 cd custom_nodes && git clone https://github.com/11cafe/comfyui-workspace-manager.git
 ```
 
-‼️ Please choose Auto Save or not first. **Auto save will be DISABLED by default from next version.** Be careful with Auto Save mode as it is constantly overwriting/saving your workflow, which can lead to unwanted overwriting of your precious work if not using carefully. If you disabled Auto Save, make sure you don't forget to Shift+S to save your workflows.
+‼️ Be careful with Auto Save mode as it is constantly overwriting/saving your workflow, which can lead to unwanted overwriting of your precious work if not using carefully. If you disabled Auto Save, make sure you don't forget to Shift+S to save your workflows.
 
 <img width="432" alt="Screenshot 2024-04-05 at 12 33 13 AM-min" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/dccf967c-8323-4b74-848c-662968e5fc2d">
 
