@@ -9,7 +9,7 @@ export async function getModelFromSearch(
     queries: [
       {
         q: q,
-        indexUid: "models_v8",
+        indexUid: "models_v9",
         facets: [
           "category.name",
           "checkpointType",
