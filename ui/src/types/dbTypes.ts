@@ -10,10 +10,8 @@ export interface SortableItem {
 export interface Workflow extends SortableItem {
   id: string;
   json: string;
-  lastSavedJson?: string; // TODO will be deprecated
   name: string;
   createTime: number;
-  filePath?: string; // TODO will be deprecated
   privacy?: WorkflowPrivacy;
   tags?: string[];
   parentFolderID?: string | null; //TODO remove undefined, use null only
@@ -131,7 +129,6 @@ export type Media = {
   workflowJSON?: string;
   createTime: number;
   localPath: string;
-  format: string;
 };
 
 /**
