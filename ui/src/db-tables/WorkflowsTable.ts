@@ -47,11 +47,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
   }
 
   /**
-   * Check whether the currently opened workflow is the latest version and is consistent with the DB.
-   * Through updateTime comparison, if it is inconsistent, it means that a newer version already exists in the DB.
-   * If the automatic save function is turned on at this time, the latest version in the DB will be overwritten.
-   * Therefore, the user needs to confirm whether to continue to enable automatic saving.
-   * @returns boolean
+   * Check whether the currently opened workflow is the latest version and is consistent with the DB
    */
   public async latestVersionCheck() {
     if (this._curWorkflow) {
