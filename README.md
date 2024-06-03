@@ -25,7 +25,7 @@ cd custom_nodes && git clone https://github.com/11cafe/comfyui-workspace-manager
 ```
 
 
-Make sure you upgraded to V2, you should see an **unicorn🦄** here instead of ☕️ (V1)
+Please upgrade to V2 asap, you should see an **unicorn🦄** here instead of ☕️ (V1). I will stop supporting V1 soon.
 
 <img width="136" alt="Screenshot 2024-05-31 at 5 39 58 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/f52a83f2-4679-4a40-95ed-e75584516ec5">
 
