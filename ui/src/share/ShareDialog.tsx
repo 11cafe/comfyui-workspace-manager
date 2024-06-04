@@ -47,7 +47,9 @@ interface Props {
 }
 
 export default function ShareDialog({ onClose }: Props) {
-  const [versionName, setVersionName] = useState("v" + getCurDateString());
+  const [versionName, setVersionName, versionNameRef] = useStateRef(
+    "v" + getCurDateString(),
+  );
   const [localVersions, setLocalVersions] = useState<WorkflowVersion[]>([]);
   const [loading, setLoading] = useState(false);
   const cloudHost = userSettingsTable?.settings?.cloudHost;
@@ -159,7 +161,7 @@ export default function ShareDialog({ onClose }: Props) {
       if (selectedVersion === "new_version") {
         version = await workflowVersionsTable?.add({
           workflowID: workflow!.id,
-          name: versionName,
+          name: versionNameRef.current,
           createTime: Date.now(),
           json: jsonToShare ?? JSON.stringify(app.graph.serialize()),
         });
