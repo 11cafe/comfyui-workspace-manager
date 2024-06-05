@@ -10,7 +10,6 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  Radio,
   RadioGroup,
   Stack,
   Switch,
@@ -19,14 +18,10 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { WorkflowPrivacy, WorkflowVersion } from "../types/dbTypes";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import CustomSelector from "../components/CustomSelector";
 import { IconCopy, IconExternalLink } from "@tabler/icons-react";
-import {
-  userSettingsTable,
-  workflowVersionsTable,
-  workflowsTable,
-} from "../db-tables/WorkspaceDB";
+import { userSettingsTable, workflowsTable } from "../db-tables/WorkspaceDB";
 // @ts-ignore
 import { api } from "/scripts/api.js";
 import {
@@ -45,6 +40,7 @@ import { WorkspaceContext } from "../WorkspaceContext";
 import {
   DepsResult,
   WorkspaceInfoDeps,
+  extractAndFetchFileNames,
 } from "../spacejson/handleDownloadSpaceJson";
 import { fetchApi } from "../Api";
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
@@ -67,7 +63,6 @@ export default function ShareDialog({ onClose }: Props) {
   const [selectedVersion, setSelectedVersion] = useState<
     string | "new_version"
   >("new_version");
-  const cloudHostRef = useRef("");
   const workflow = workflowsTable?.curWorkflow;
   const toast = useToast();
   const [enableDeps, setEnableDeps] = useState(true);
@@ -93,13 +88,17 @@ export default function ShareDialog({ onClose }: Props) {
 
     loadData();
     window.open(
-      cloudHostRef.current + "/workflow/" + cloudID + "/" + cloudVersionID,
+      cloudHost + "/workflow/" + cloudID + "/" + cloudVersionID,
       "_blank",
     );
     setLoading(false);
   };
   useEffect(() => {
     loadData();
+    const graph = app.graph.serialize();
+    extractAndFetchFileNames(graph.nodes ?? []).then((depsRes) => {
+      setDeps(depsRes);
+    });
     window.addEventListener("message", handleShareWorkflowSuccess);
     return () => {
       window.removeEventListener("message", handleShareWorkflowSuccess);
@@ -107,13 +106,6 @@ export default function ShareDialog({ onClose }: Props) {
   }, []);
 
   const loadData = async () => {
-    const host =
-      import.meta.env.MODE === "production"
-        ? await userSettingsTable?.getSetting("cloudHost")
-        : "http://localhost:3000";
-    if (host) {
-      cloudHostRef.current = host;
-    }
     if (workflow?.cloudID && workflow.cloudOrigin) {
       fetchCloudWorkflowPrivacy(workflow).then((privacy) => {
         setPrivacy(privacy);
@@ -181,28 +173,29 @@ export default function ShareDialog({ onClose }: Props) {
   };
 
   const onShare = async () => {
-    // upload images
-    setUploadingImage(true);
-    const imageDepsToUpload = Object.values(deps?.images ?? {})
-      .filter((i) => !i.url)
-      .map((i) => i.filename);
     const imageDeps = deps?.images ?? {};
-
-    if (imageDepsToUpload.length) {
-      const uploadResp = await fetchApi("/workspace/upload_image", {
-        method: "POST",
-        body: JSON.stringify({
-          images: imageDepsToUpload,
-        }),
-      });
-      const json = (await uploadResp.json()) as Record<string, string>;
-      Object.keys(json).forEach((key) => {
-        if (imageDeps?.[key]) {
-          imageDeps[key].url = json[key];
-        }
-      });
+    if (enableDeps) {
+      // upload images
+      setUploadingImage(true);
+      const imageDepsToUpload = Object.values(deps?.images ?? {})
+        .filter((i) => !i.url)
+        .map((i) => i.filename);
+      if (imageDepsToUpload.length) {
+        const uploadResp = await fetchApi("/workspace/upload_image", {
+          method: "POST",
+          body: JSON.stringify({
+            images: imageDepsToUpload,
+          }),
+        });
+        const json = (await uploadResp.json()) as Record<string, string>;
+        Object.keys(json).forEach((key) => {
+          if (imageDeps?.[key]) {
+            imageDeps[key].url = json[key];
+          }
+        });
+      }
+      setUploadingImage(false);
     }
-    setUploadingImage(false);
 
     const graph = app.graph.serialize();
     (graph.extra ||= {})[COMFYSPACE_TRACKING_FIELD_NAME] ||= {};
@@ -320,25 +313,29 @@ export default function ShareDialog({ onClose }: Props) {
                 </HStack>
               </Stack>
             </RadioGroup>
-            <Stack borderRadius={6} borderWidth={"1px"} p={2}>
-              <Switch
-                isChecked={enableDeps}
-                onChange={() => setEnableDeps(!enableDeps)}
-                fontWeight={"600"}
-              >
-                Share input images
-              </Switch>
+            {Object.keys(deps?.images ?? {}).length > 0 && (
+              <Stack borderRadius={6} borderWidth={"1px"} p={2}>
+                <Switch
+                  isChecked={enableDeps}
+                  onChange={() => setEnableDeps(!enableDeps)}
+                  fontWeight={"600"}
+                >
+                  Share input images
+                </Switch>
 
-              <span style={{ color: "GrayText" }}>
-                If enabled your input images will be uploaded and shared to{" "}
-                {cloudHost}
-              </span>
-              <ResourceDepsForm
-                deps={deps ?? null}
-                setDeps={setDeps}
-                uploadingImage={uploadingImage}
-              />
-            </Stack>
+                <span style={{ color: "GrayText" }}>
+                  If enabled your input images will be uploaded and shared to{" "}
+                  {cloudHost}
+                </span>
+                {enableDeps && (
+                  <ResourceDepsForm
+                    deps={deps ?? null}
+                    setDeps={setDeps}
+                    uploadingImage={uploadingImage}
+                  />
+                )}
+              </Stack>
+            )}
           </Stack>
         </ModalBody>
       </ModalContent>

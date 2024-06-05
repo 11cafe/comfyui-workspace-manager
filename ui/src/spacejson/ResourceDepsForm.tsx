@@ -17,16 +17,7 @@ export default function ResourceDepsForm({
   setDeps: (deps: DepsResult) => void;
   uploadingImage: boolean;
 }) {
-  const init = useCallback(async () => {
-    const graph = app.graph.serialize();
-    extractAndFetchFileNames(graph.nodes ?? []).then((depsRes) => {
-      setDeps(depsRes);
-    });
-  }, []);
-
-  useEffect(() => {
-    init();
-  }, []);
+  useEffect(() => {}, []);
 
   const imageDepsArr = Object.values(deps?.images ?? {});
   if (!deps) {
