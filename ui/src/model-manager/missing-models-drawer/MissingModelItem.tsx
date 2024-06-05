@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../../const";
 import type {
   DepsResult,
-  ModelFile,
+  ModelDep,
 } from "../../spacejson/handleDownloadSpaceJson";
 import { indexdb } from "../../db-tables/indexdb";
 import { app } from "../../utils/comfyapp";
@@ -32,8 +32,8 @@ export interface MissingModel {
 
 interface Props {
   model: MissingModel;
-  setSelectedModelDeps: (deps: ModelFile[]) => void;
-  selectedModelDeps: ModelFile[];
+  setSelectedModelDeps: (deps: ModelDep[]) => void;
+  selectedModelDeps: ModelDep[];
   foldersList: Record<string, string[]>;
   setFoldersList: (folders: Record<string, string[]>) => void;
 }
@@ -46,7 +46,7 @@ export default function MissingModelItem({
   setFoldersList,
 }: Props) {
   const [suggestedModel, setSuggestedModel] = useState<
-    ModelFile | { existingModel: string }
+    ModelDep | { existingModel: string }
   >();
   const modelDeps: DepsResult["models"] =
     app.graph.extra?.[COMFYSPACE_TRACKING_FIELD_NAME]?.deps?.models;
@@ -76,7 +76,7 @@ export default function MissingModelItem({
 
   const selectedModelNames = selectedModelDeps.map((dep) => dep.filename);
   function isExistingModel(
-    model: ModelFile | { existingModel: string },
+    model: ModelDep | { existingModel: string },
   ): model is { existingModel: string } {
     return (model as { existingModel: string }).existingModel != null;
   }
