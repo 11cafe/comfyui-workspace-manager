@@ -4,7 +4,7 @@ A ComfyUI workflow and model manager extension to **organize and manage all your
 
 If you have questions or suggestions, please [join our Discord](https://discord.gg/HHvfEurv2Z)!
 
-[6-14-2024] ✨✨We have launched a new version of our website, www.nodecafe.co your previously shared workflows should still appear in the new webiste, but if you are missing some of your shared workflows in the new nodecafe.co, please DM me via Discoard @briefPeach or wechat wxkkk23333
+[6-14-2024] ✨We have launched a new version of our website, nodecafe. your previously shared workflows should still appear in the new webiste, but if you are missing some of your shared workflows in the new nodecafe.co, please DM me via Discoard @briefPeach or wechat wxkkk23333
 
 [New!] We provide 👭**team workspace** now! If you need to **share workflows, backup workflow versions for enterprise and teams**, please contact me about our team/enterprise product at weixuanfu01@gmail.com or join discord and DM me @briefpeach 
 
