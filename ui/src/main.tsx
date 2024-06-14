@@ -35,6 +35,10 @@ const zIndices = {
 };
 
 const theme = extendTheme({
+  config: {
+    initialColorMode: "dark",
+    useSystemColorMode: false,
+  },
   zIndices,
   components: {
     Card: {

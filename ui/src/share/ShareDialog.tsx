@@ -53,7 +53,7 @@ export default function ShareDialog({ onClose }: Props) {
   const [versionName, setVersionName, versionNameRef] = useStateRef(
     "v" + getCurDateString(),
   );
-  const { saveCurWorkflow, setRoute } = useContext(WorkspaceContext);
+  const { saveCurWorkflow } = useContext(WorkspaceContext);
   const [deps, setDeps] = useState<DepsResult>();
   const [uploadingImage, setUploadingImage] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -127,7 +127,24 @@ export default function ShareDialog({ onClose }: Props) {
         console.error("Failed to copy text: ", err);
       });
   };
-  const pushToCloud = async (jsonToShare?: string) => {
+  const pushToCloud = async (imageDeps?: DepsResult["images"]) => {
+    const graph = app.graph.serialize();
+    (graph.extra ||= {})[COMFYSPACE_TRACKING_FIELD_NAME] ||= {};
+    graph.extra[COMFYSPACE_TRACKING_FIELD_NAME].deps = {
+      models: deps?.models ?? {},
+      images: imageDeps ?? {},
+      nodeRepos: deps?.nodeRepos ?? [],
+    } as WorkspaceInfoDeps;
+
+    await saveCurWorkflow();
+
+    const apiPrompt = await app
+      .graphToPrompt(app.graph)
+      .then((data: { output: any; workflow: any }) => {
+        graph.extra[COMFYSPACE_TRACKING_FIELD_NAME].apiPrompt = data.output;
+        return data.output;
+      });
+    const jsonToShare = JSON.stringify(graph);
     setLoading(true);
     const secretKey = generateRandomKey(32);
     const host =
@@ -141,6 +158,7 @@ export default function ShareDialog({ onClose }: Props) {
       workflowID: workflow!.id,
       name: versionNameRef.current,
       createTime: Date.now(),
+      api_prompt: JSON.stringify(apiPrompt),
       json: jsonToShare ?? JSON.stringify(app.graph.serialize()),
     };
     const protocol = window.location.protocol;
@@ -178,7 +196,7 @@ export default function ShareDialog({ onClose }: Props) {
       // upload images
       setUploadingImage(true);
       const imageDepsToUpload = Object.values(deps?.images ?? {})
-        .filter((i) => !i.url)
+        // .filter((i) => !i.url)
         .map((i) => i.filename);
       if (imageDepsToUpload.length) {
         const uploadResp = await fetchApi("/workspace/upload_image", {
@@ -197,22 +215,7 @@ export default function ShareDialog({ onClose }: Props) {
       setUploadingImage(false);
     }
 
-    const graph = app.graph.serialize();
-    (graph.extra ||= {})[COMFYSPACE_TRACKING_FIELD_NAME] ||= {};
-    graph.extra[COMFYSPACE_TRACKING_FIELD_NAME].deps = {
-      models: deps?.models ?? {},
-      images: imageDeps ?? {},
-      nodeRepos: deps?.nodeRepos ?? [],
-    } as WorkspaceInfoDeps;
-    await app
-      .graphToPrompt(app.graph)
-      .then((data: { output: any; workflow: any }) => {
-        graph.extra[COMFYSPACE_TRACKING_FIELD_NAME].apiPrompt = data.output;
-      });
-
-    await saveCurWorkflow();
-
-    pushToCloud(JSON.stringify(graph));
+    pushToCloud(imageDeps);
   };
 
   const cloudWorkflowID = workflowsTable?.curWorkflow?.cloudID;
@@ -286,7 +289,6 @@ export default function ShareDialog({ onClose }: Props) {
                 </Button>
               </HStack>
             )}
-            {/* <Text>Choose a version to share:</Text> */}
             <RadioGroup
               gap={4}
               onChange={(val) => {
@@ -296,7 +298,6 @@ export default function ShareDialog({ onClose }: Props) {
             >
               <Stack>
                 <HStack mb={5} alignItems={"center"}>
-                  {/* <Radio key={"new_version"} value="new_version" /> */}
                   <Input
                     value={versionName}
                     width={"60%"}

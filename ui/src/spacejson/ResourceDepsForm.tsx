@@ -1,24 +1,14 @@
-import { useCallback, useEffect } from "react";
-
 import { HStack, Heading, Image, Spinner, Stack } from "@chakra-ui/react";
-import {
-  DepsResult,
-  extractAndFetchFileNames,
-} from "./handleDownloadSpaceJson";
-
-import { app } from "../utils/comfyapp";
+import { DepsResult } from "./handleDownloadSpaceJson";
 
 export default function ResourceDepsForm({
   deps,
-  setDeps,
   uploadingImage,
 }: {
   deps: DepsResult | null;
   setDeps: (deps: DepsResult) => void;
   uploadingImage: boolean;
 }) {
-  useEffect(() => {}, []);
-
   const imageDepsArr = Object.values(deps?.images ?? {});
   if (!deps) {
     return <Spinner size="md" color="teal.400" />;
