@@ -13,7 +13,10 @@ from .service.media_service import *
 from .service.file_sync_service import *
 from .service.db_service import get_my_workflows_dir
 from .service.node_service import *
-from send2trash import send2trash
+try:
+    from send2trash import send2trash
+except ImportError:
+    send2trash = None
 
 WEB_DIRECTORY = "entry"
 NODE_CLASS_MAPPINGS = {}
@@ -120,8 +123,13 @@ async def delete_file(request):
         full_path = os.path.join(my_workflows_dir, file_path)
 
         if os.path.exists(full_path):
-            send2trash(full_path)
-            "File deleted successfully"
+            if send2trash:
+                send2trash(full_path)
+            else:
+                os.remove(full_path)
+                print("❌⛔️send2trash is not available. Deleting file permanently. Please `pip install send2trash`")
+
+            return "File deleted successfully"
         else:
             return "File not found"
 

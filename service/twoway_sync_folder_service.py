@@ -3,9 +3,12 @@ import shutil
 from aiohttp import web
 import os
 from pathlib import Path
-from send2trash import send2trash
 import server
 from .db_service import get_my_workflows_dir
+try:
+    from send2trash import send2trash
+except ImportError:
+    send2trash = None
 
 @server.PromptServer.instance.routes.post('/workspace/folder/create')
 async def create_folder(request):
@@ -32,7 +35,11 @@ def delete_folder_sync(reqJson):
     folder_path = reqJson.get('path')
     folder_path = os.path.join(get_my_workflows_dir(), folder_path)
     try:
-        send2trash(folder_path)
+        if send2trash:
+            send2trash(folder_path)
+        else:
+            shutil.rmtree(folder_path)
+            print("❌⛔️send2trash is not available. Deleting file permanently. Please `pip install send2trash`")
         return {"success": True}
     except Exception as e:
         return {"success": False, "error": str(e)}
