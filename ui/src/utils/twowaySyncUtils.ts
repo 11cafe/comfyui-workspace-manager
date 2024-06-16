@@ -4,7 +4,7 @@ import {
   ScanLocalFolder,
   scanLocalFiles,
 } from "../apis/TwowaySyncApi";
-import { isFolder } from "../db-tables/WorkspaceDB";
+import { isFolder, workflowsTable } from "../db-tables/WorkspaceDB";
 import { indexdb } from "../db-tables/indexdb";
 import { Folder, Workflow } from "../types/dbTypes";
 import { sortFileItem } from "../utils";
@@ -34,27 +34,33 @@ export async function scanMyWorkflowsDir(
       return folder;
     } else {
       // is workflow
+      // const existingWorkflow = (await indexdb.workflows
+      //   ?.get(file.id)
+      //   .catch((err) => {
+      //     console.error("Error getting workflow from indexdb", err);
+      //     return null;
+      //   })) ?? {
+      //   createTime: Date.now(),
+      //   updateTime: Date.now(),
+      // };
 
-      const existingWorkflow = (await indexdb.workflows
-        ?.get(file.id)
-        .catch((err) => {
-          console.error("Error getting workflow from indexdb", err);
-          return null;
-        })) ?? {
-        createTime: Date.now(),
-        updateTime: Date.now(),
-      };
+      if (workflowsTable) {
+        workflowsTable.workflowIDPathMap[file.id] = relPath;
+      }
 
       const newWorkflow: Workflow = {
-        ...existingWorkflow,
+        // ...existingWorkflow,
         id: file.id,
         json: file.json ?? "{}",
+        cloudID: file.cloudID,
+        coverMediaPath: file.coverMediaPath,
+        saveLock: file.saveLock,
         name: fileName.replace(/\.json$/, ""),
         parentFolderID: parentRelPath,
         createTime: file.createTime,
         // setting updateTime will result latestVersionChcek() always fail if in
         // workflow.get() not pull updateTime from file
-        // updateTime: file.updateTime,
+        updateTime: file.updateTime,
       };
       return newWorkflow;
     }
