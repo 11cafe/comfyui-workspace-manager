@@ -61,12 +61,8 @@ export class WorkflowsTable extends TableBase<Workflow> {
     return true;
   }
 
-  public async listByIndex(
-    index: keyof Workflow,
-    value: string,
-  ): Promise<Workflow[]> {
-    console.error("listByIndex not implemented for workflows table");
-    return [];
+  public async listByIndex(): Promise<Workflow[]> {
+    throw new Error("Method not allowed.");
   }
 
   async generateUniqueName(name?: string, parentFolderID?: string) {
@@ -134,18 +130,8 @@ export class WorkflowsTable extends TableBase<Workflow> {
   }
 
   // disallow TableBase.update()
-  async update(
-    _id: string,
-    _change: Partial<Workflow>,
-  ): Promise<Workflow | null> {
+  async update(): Promise<Workflow | null> {
     throw new Error("Method not allowed.");
-  }
-
-  public async updateTopFields(
-    id: string,
-    change: Pick<Partial<Workflow>, "topFieldsConfig">,
-  ): Promise<Workflow | null> {
-    return this._update(id, change);
   }
 
   public async updateMetaInfo(
@@ -177,13 +163,14 @@ export class WorkflowsTable extends TableBase<Workflow> {
 
   async updateFolder(id: string, change: Pick<Workflow, "parentFolderID">) {
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
-    const oldWorkflow = await this.get(id);
-    const newWorkflow = await this.updateMetaInfo(id, change as any);
-    if (!newWorkflow || !oldWorkflow) {
-      return;
-    }
+
     if (twoWaySyncEnabled) {
-      await TwowaySyncAPI.moveWorkflow(oldWorkflow, change.parentFolderID!);
+      const relPath = this.workflowIDPathMap[id];
+      if (!relPath) {
+        alert("Error: workflow not found. Cannot move workflow.");
+        return;
+      }
+      await TwowaySyncAPI.moveWorkflow(relPath, change.parentFolderID!);
     }
   }
   public async genLastManualSavedJson(id: string) {
@@ -191,11 +178,27 @@ export class WorkflowsTable extends TableBase<Workflow> {
     return changelog?.json;
   }
   public async updateName(id: string, change: Pick<Workflow, "name">) {
-    const before = await this.get(id);
+    const path = this.workflowIDPathMap[id];
+    if (!path) {
+      alert("Error: workflow not found. Cannot rename workflow.");
+      return;
+    }
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
     if (twoWaySyncEnabled) {
-      before &&
-        (await TwowaySyncAPI.renameWorkflow(before, change.name + ".json"));
+      const success = await TwowaySyncAPI.renameWorkflow(
+        {
+          relPath: path,
+          id: id,
+        },
+        change.name + ".json",
+      );
+      if (success) {
+        this.workflowIDPathMap[id] =
+          `${path.split("/").slice(0, -1).join("/")}/${change.name}.json`
+            .split("/")
+            .filter((part) => part !== "")
+            .join("/");
+      }
     }
     return await this.updateMetaInfo(id, change as any);
   }

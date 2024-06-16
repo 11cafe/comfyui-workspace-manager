@@ -10,7 +10,7 @@ import {
 
 export namespace TwowaySyncAPI {
   export async function moveWorkflow(
-    workflow: Workflow,
+    curRelPath: string,
     newParentFolderRelPath: string,
   ) {
     try {
@@ -20,7 +20,7 @@ export namespace TwowaySyncAPI {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          path: getWorkflowRelPath(workflow),
+          path: curRelPath,
           newParentPath: newParentFolderRelPath,
         }),
       });
@@ -62,7 +62,7 @@ export namespace TwowaySyncAPI {
   }
 
   export async function renameWorkflow(
-    { parentFolderID, name }: Pick<Workflow, "name" | "parentFolderID">,
+    { relPath, id }: { relPath: string; id: string },
     newName: string,
   ) {
     try {
@@ -72,7 +72,7 @@ export namespace TwowaySyncAPI {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          path: joinRelPath(parentFolderID ?? "", name + ".json"),
+          path: relPath,
           newName: newName,
         }),
       });
