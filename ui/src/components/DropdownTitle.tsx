@@ -44,7 +44,6 @@ import CreateVersionDialog from "./CreateVersionDialog";
 import HoverMenu from "./HoverMenu";
 const ShareDialog = lazy(() => import("../share/ShareDialog"));
 import { TOPBAR_BUTTON_HEIGHT } from "../const";
-import DownloadSpaceJsonDialog from "../spacejson/DownloadSpaceJsonDialog";
 import { downloadJsonFile } from "../utils/downloadJsonFile";
 import { SharedTopbarButton } from "../share/SharedTopbarButton";
 import { app } from "../utils/comfyapp";
@@ -186,13 +185,6 @@ export default function DropdownTitle() {
               >
                 Versions History
               </MenuItem>
-              {/* <MenuItem
-                onClick={() => setRoute("downloadSpaceJson")}
-                icon={<IconDownload size={20} />}
-                iconSpacing={1}
-              >
-                Save runnable workflow🧪
-              </MenuItem> */}
               <MenuItem
                 onClick={() => setRoute("share")}
                 icon={<IconShare2 size={20} />}
@@ -212,7 +204,6 @@ export default function DropdownTitle() {
       {route == "versionHistory" && (
         <VersionHistoryDrawer onClose={() => setRoute("root")} />
       )}
-      {route == "downloadSpaceJson" && <DownloadSpaceJsonDialog />}
       {route === "saveAsModal" && (
         <Modal isOpen={true} onClose={handleOnCloseModal}>
           <ModalOverlay />

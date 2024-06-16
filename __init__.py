@@ -5,17 +5,18 @@ import folder_paths
 import shutil
 import os
 import sys
-import subprocess  # don't remove this
-from urllib.parse import urlparse
+import subprocess 
 import subprocess
 import os
 import json
-from .service.model_manager.model_installer import download_url_with_wget
-from .service.model_manager.model_list import get_model_list
 from .service.media_service import *
 from .service.file_sync_service import *
 from .service.db_service import get_my_workflows_dir
 from .service.node_service import *
+try:
+    from send2trash import send2trash
+except ImportError:
+    send2trash = None
 
 WEB_DIRECTORY = "entry"
 NODE_CLASS_MAPPINGS = {}
@@ -112,31 +113,28 @@ async def update_file(request):
     await asyncio.to_thread(write_json_to_file, json_str)
     return web.Response(text="File updated successfully")
 
-
 @server.PromptServer.instance.routes.post("/workspace/delete_file")
 async def delete_file(request):
     data = await request.json()
     file_path = data['file_path']
-    delete_empty_folder = data['deleteEmptyFolder']
 
-    def sync_delete_file(file_path, delete_empty_folder):
+    def sync_delete_file(file_path):
         my_workflows_dir = get_my_workflows_dir()
         full_path = os.path.join(my_workflows_dir, file_path)
 
         if os.path.exists(full_path):
-            os.remove(full_path)
-            directory = os.path.dirname(full_path)
-            if delete_empty_folder and not os.listdir(directory):
-                # If the directory is empty, remove the directory
-                os.rmdir(directory)
-                return "File and empty directory deleted successfully"
+            if send2trash:
+                send2trash(full_path)
             else:
-                return "File deleted successfully"
+                os.remove(full_path)
+                print("❌⛔️send2trash is not available. Deleting file permanently. Please `pip install send2trash`")
+
+            return "File deleted successfully"
         else:
             return "File not found"
 
     # Run the synchronous file operation in a separate thread
-    response_text = await asyncio.to_thread(sync_delete_file, file_path, delete_empty_folder)
+    response_text = await asyncio.to_thread(sync_delete_file, file_path)
     
     if response_text == "File not found":
         return web.Response(text=response_text, status=404)

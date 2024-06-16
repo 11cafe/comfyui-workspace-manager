@@ -4,7 +4,7 @@ import {
   ScanLocalFolder,
   scanLocalFiles,
 } from "../apis/TwowaySyncApi";
-import { isFolder, userSettingsTable } from "../db-tables/WorkspaceDB";
+import { isFolder } from "../db-tables/WorkspaceDB";
 import { indexdb } from "../db-tables/indexdb";
 import { Folder, Workflow } from "../types/dbTypes";
 import { sortFileItem } from "../utils";
@@ -34,7 +34,13 @@ export async function scanMyWorkflowsDir(
       return folder;
     } else {
       // is workflow
-      const existingWorkflow = (await indexdb.workflows?.get(file.id)) ?? {
+
+      const existingWorkflow = (await indexdb.workflows
+        ?.get(file.id)
+        .catch((err) => {
+          console.error("Error getting workflow from indexdb", err);
+          return null;
+        })) ?? {
         createTime: Date.now(),
         updateTime: Date.now(),
       };

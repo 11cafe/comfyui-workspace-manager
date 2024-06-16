@@ -2,7 +2,6 @@ import { Table, workflowsTable } from "./WorkspaceDB";
 import { TableBase } from "./TableBase";
 import { Media } from "../types/dbTypes";
 import { indexdb } from "./indexdb";
-import { getMetadataFromUrl } from "../gallery/utils.ts";
 
 export class MediaTable extends TableBase<Media> {
   static readonly TABLE_NAME: Table = "media";
@@ -25,20 +24,11 @@ export class MediaTable extends TableBase<Media> {
     const format = input.localPath.split(".").pop();
     if (format == null) return null;
 
-    const res = await getMetadataFromUrl(
-      `/workspace/view_media?filename=${input.localPath}`,
-    ).catch((e) => {
-      console.error("get meta error:", e);
-      return { prompt: "" };
-    });
-
     const md: Media = {
       id: input.localPath,
       localPath: input.localPath,
       workflowID: input.workflowID,
       createTime: Date.now(),
-      workflowJSON: JSON.stringify(res?.prompt),
-      format: format,
     };
     await workflowsTable?.updateMetaInfo(input.workflowID, {
       latestImage: md.localPath,

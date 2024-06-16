@@ -44,9 +44,8 @@ export class ChangelogsTable extends TableBase<Changelog> {
       createTime: Date.now(),
       isAutoSave: input.isAutoSave,
     };
-    await this.deleteLogsExceedLimit(input.workflowID);
     await indexdb.changelogs.add(change);
-    // this.saveDiskDB(); // its not that important to save to disk for changelog table
+    await this.deleteLogsExceedLimit(input.workflowID);
     return change;
   }
   async deleteLogsExceedLimit(workflowID: string) {

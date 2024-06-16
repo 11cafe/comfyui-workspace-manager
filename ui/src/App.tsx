@@ -157,7 +157,7 @@ export default function App() {
         if (id) {
           const flow = await workflowsTable?.get(id);
           flow && setCurFlowIDAndName(flow);
-          if (flow && flow.json != latestWf) {
+          if (!flow?.saveLock && flow && flow.json != latestWf) {
             setIsDirty(true);
           }
         }
