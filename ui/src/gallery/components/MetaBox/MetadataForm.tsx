@@ -63,18 +63,6 @@ export default function MetadataForm({ media }: { media: Media | null }) {
 
   const [topFields, setTopFields] = useState<TopFieldType[]>([]);
 
-  useEffect(() => {
-    (async () => {
-      if (curFlowID) {
-        const topFieldsConfig = (await workflowsTable?.get(curFlowID))
-          ?.topFieldsConfig;
-        if (topFieldsConfig) {
-          setTopFields(topFieldsConfig);
-          setShowAllInputs(false);
-        }
-      }
-    })();
-  }, [curFlowID]);
   const updateTopField = (field: TopFieldType) => {
     if (
       isInTopField(topFields, {
@@ -87,19 +75,9 @@ export default function MetadataForm({ media }: { media: Media | null }) {
         (v) => v.name !== field.name || v.promptKey !== field.promptKey,
       );
       setTopFields(topFieldsConfig);
-      if (curFlowID) {
-        workflowsTable?.updateTopFields(curFlowID, {
-          topFieldsConfig,
-        });
-      }
     } else {
       const topFieldsConfig = [...topFields, field];
       setTopFields(topFieldsConfig);
-      if (curFlowID) {
-        workflowsTable?.updateTopFields(curFlowID, {
-          topFieldsConfig,
-        });
-      }
     }
   };
 

@@ -13,6 +13,8 @@ from .service.media_service import *
 from .service.file_sync_service import *
 from .service.db_service import get_my_workflows_dir
 from .service.node_service import *
+from .service.setting_service import *
+from .service.model_manager.model_installer import *
 try:
     from send2trash import send2trash
 except ImportError:

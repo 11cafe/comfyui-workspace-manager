@@ -52,6 +52,9 @@ def file_handle(name, fileList, file_path, metaInfoOnly):
     createTime, updateTime = getFileCreateTime(file_path)
     workspace_info = json_data.get('extra', {}).get('workspace_info', {})   
     workflow_id = workspace_info.get('id', str(uuid.uuid4())) 
+    saveLock = workspace_info.get('saveLock', False) 
+    cloudID = workspace_info.get('cloudID', None) 
+    coverMediaPath = workspace_info.get('coverMediaPath', None) 
     # Update JSON data with new ID if needed and write back to file
     if 'id' not in workspace_info:
         if 'extra' not in json_data:
@@ -66,6 +69,9 @@ def file_handle(name, fileList, file_path, metaInfoOnly):
             'name': name,
             'type': "workflow",
             'id': workflow_id,
+            'saveLock': saveLock,
+            'cloudID': cloudID,
+            'coverMediaPath': coverMediaPath,
             'createTime': createTime,
             'updateTime': updateTime
         }

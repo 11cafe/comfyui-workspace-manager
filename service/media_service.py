@@ -6,10 +6,11 @@ from aiohttp import FormData, web, ClientSession
 import folder_paths
 import os
 from .model_manager.model_preview import get_thumbnail_for_image_file
+from .setting_service import get_settings
 
 image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
 video_extensions = ['.mp4', '.mov', '.avi', '.webm', '.mkv']
-API_URL = 'https://www.nodecafe.co/api/image/upload'
+
 def view_media(filename, isPreview = False, isInput = False):
     if not filename:
         return web.Response(status=404)
@@ -62,6 +63,9 @@ async def view_file(request):
 
 @server.PromptServer.instance.routes.post("/workspace/upload_image")  # Handle POST requests
 async def upload_image_handler(request):
+    settings = get_settings()
+    cloudHost = settings.get("cloudHost", 'https://www.nodecafe.co')
+    API_URL = cloudHost + '/api/image/upload'
     data = await request.json()
     image_paths = data.get("images")
     if not image_paths:
