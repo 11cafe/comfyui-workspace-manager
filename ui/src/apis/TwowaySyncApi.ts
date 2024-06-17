@@ -86,16 +86,6 @@ export namespace TwowaySyncAPI {
       console.error("Error deleting file:", error);
     }
   }
-
-  interface DuplicatesResponse {
-    duplicates: {
-      [id: string]: Array<{
-        path: string;
-        createTime: number;
-      }>;
-    };
-  }
-
   export async function saveWorkflow(workflow: Workflow) {
     const json = workflow.json;
     const flow = JSON.parse(json);
@@ -103,6 +93,11 @@ export namespace TwowaySyncAPI {
       flow.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {};
     }
     flow.extra[COMFYSPACE_TRACKING_FIELD_NAME].id = workflow.id;
+    flow.extra[COMFYSPACE_TRACKING_FIELD_NAME].saveLock = workflow.saveLock;
+    flow.extra[COMFYSPACE_TRACKING_FIELD_NAME].cloudID = workflow.cloudID;
+    flow.extra[COMFYSPACE_TRACKING_FIELD_NAME].coverMediaPath =
+      workflow.coverMediaPath;
+
     const response = await fetchApi("/workspace/file/save", {
       method: "POST",
       headers: {
@@ -143,12 +138,8 @@ export namespace TwowaySyncAPI {
       console.error("Error deleting file:", error);
     }
   }
-  export async function createWorkflow({
-    parentFolderID,
-    name,
-    json,
-    id,
-  }: Workflow) {
+  export async function createWorkflow(workflow: Workflow) {
+    const { parentFolderID, name, json, id } = workflow;
     let jsonObj: any = JSON.parse(json);
     if (jsonObj.extra == null) {
       jsonObj.extra = {};
@@ -157,6 +148,10 @@ export namespace TwowaySyncAPI {
       jsonObj.extra[COMFYSPACE_TRACKING_FIELD_NAME] = {};
     }
     jsonObj.extra[COMFYSPACE_TRACKING_FIELD_NAME].id = id; // to avoid overwriting deps
+    jsonObj.extra[COMFYSPACE_TRACKING_FIELD_NAME].saveLock = workflow.saveLock;
+    jsonObj.extra[COMFYSPACE_TRACKING_FIELD_NAME].cloudID = workflow.cloudID;
+    jsonObj.extra[COMFYSPACE_TRACKING_FIELD_NAME].coverMediaPath =
+      workflow.coverMediaPath;
     const input: { parentFolderPath: string; name: string; json: string } = {
       parentFolderPath: sanitizeRelPath(parentFolderID ?? ""),
       name: name,
@@ -196,7 +191,18 @@ export namespace TwowaySyncAPI {
     id: string;
     name: string;
   }): Promise<{
-    json?: Object;
+    json?: {
+      extra: {
+        [COMFYSPACE_TRACKING_FIELD_NAME]: {
+          id: string;
+          saveLock: boolean;
+          cloudID: string | null;
+          coverMediaPath: string | null;
+        };
+      };
+    };
+    createTime?: number;
+    updateTime?: number;
     error?: string;
   }> {
     const relPath = joinRelPath(parentFolderID ?? "", name + ".json");
@@ -236,6 +242,9 @@ export type ScanLocalFile = {
   name: string;
   id: string;
   json: string;
+  saveLock: boolean;
+  cloudID: string | null;
+  coverMediaPath: string | null;
   createTime: number;
   updateTime: number;
   lastOpenedTime?: number;

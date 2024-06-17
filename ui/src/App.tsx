@@ -337,7 +337,6 @@ export default function App() {
       json: workflow.json,
       name: newFlowName || workflow.name,
       parentFolderID: workflow.parentFolderID,
-      tags: workflow.tags,
     });
     flow && (await loadWorkflowID(flow.id));
   };
