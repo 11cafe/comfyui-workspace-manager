@@ -13,13 +13,18 @@ type LiteNode = {
   widgets_values?: Array<string | number>;
 };
 
-export type ModelFile = {
-  filename: string;
-  fileFolder: string | null;
-  fileHash: string | null;
-  downloadUrl: string | null;
+export type ModelDep = {
+  name: string;
+  folder: string | null;
+  hash: string | null;
+  url: string | null;
+  // TODO: will be deperecated
+  filename?: string;
+  fileFolder?: string | null;
+  fileHash?: string | null;
+  downloadUrl?: string | null;
   // optional info
-  infoUrl: string | null;
+  infoUrl?: string | null;
   nodeType?: string;
   inputName?: string;
 };
@@ -40,12 +45,12 @@ export type DepsResult = {
   nodeRepos: NodeRepo[];
 };
 
-export type DepsResultModel = ModelFile & {
+export type DepsResultModel = ModelDep & {
   length: number;
 };
 
 export type WorkspaceInfoDeps = {
-  models: Record<string, ModelFile>;
+  models: Record<string, ModelDep>;
   images: DepsResult["images"];
   nodeRepos: DepsResult["nodeRepos"];
 };
@@ -57,20 +62,18 @@ async function fetchModelData(
 ): Promise<DepsResultModel> {
   const res =
     (await indexdb.models.where("fileName").equals(filename).toArray()) ?? [];
+  console.log("fetch modeldata", res);
   const first = res.at(0);
   const modelFile: DepsResultModel = {
-    filename,
+    name: filename,
     nodeType,
-    fileHash: first?.fileHash ?? null,
-    fileFolder: first?.fileFolder ?? null,
-    downloadUrl: first?.civitModelVersionID
+    hash: first?.fileHash ?? null,
+    folder: first?.fileFolder ?? null,
+    url: first?.civitModelVersionID
       ? getCivitModelDownloadUrl(first.civitModelVersionID)
       : first?.downloadUrl ?? null,
     inputName: inputName,
     length: res.length,
-    infoUrl: first?.civitModelID
-      ? getCivitModelPageUrl(first.civitModelID, first.civitModelVersionID)
-      : getHgModelInfoUrlFromDownloadUrl(first?.downloadUrl ?? "") ?? null,
   };
   return modelFile;
 }
@@ -94,13 +97,9 @@ export async function extractAndFetchFileNames(
           if (typeof value != "string") return;
           // Check if it's a model file
           if (modelFileExtensions.some((ext) => value.endsWith(ext))) {
-            if (curDeps?.models?.[value]) {
-              modelPromises.push(Promise.resolve(curDeps.models[value]));
-            } else {
-              modelPromises.push(
-                fetchModelData(value, node.class_type, inputName),
-              );
-            }
+            modelPromises.push(
+              fetchModelData(value, node.class_type, inputName),
+            );
           }
           // Check if it's an image file
           if (imageFileExtensions.some((ext) => value.endsWith(ext))) {
@@ -134,10 +133,7 @@ export async function extractAndFetchFileNames(
   const models = await Promise.all(modelPromises);
   const modelsMap: Record<string, DepsResultModel> = {};
   models.forEach((model) => {
-    // if (model.nodeType) {
-    //   model.gitRepo = reposMapping[model.nodeType];
-    // }
-    modelsMap[model.filename] = model;
+    modelsMap[model.name] = model;
   });
   const nodeRepos: Record<string, NodeRepo> = {};
   Object.values(reposMapping).forEach((repo) => {

@@ -12,7 +12,7 @@ import {
 import { useCallback, useContext, useEffect, useState } from "react";
 import MissingModelItem from "./MissingModelItem";
 import { DRAWER_Z_INDEX } from "../../const";
-import type { ModelFile } from "../../spacejson/handleDownloadSpaceJson";
+import type { ModelDep } from "../../spacejson/handleDownloadSpaceJson";
 import { getAllFoldersList } from "../../Api";
 import { installModelsApi } from "../api/modelsApi";
 import { getCivitApiKey } from "../../utils/civitUtils";
@@ -40,7 +40,7 @@ export default function MissingModelsListDrawer({
       app.canvasEl.removeEventListener("click", onClose);
     };
   }, []);
-  const [selectedModelDeps, setSelectedModelDeps] = useState<ModelFile[]>([]);
+  const [selectedModelDeps, setSelectedModelDeps] = useState<ModelDep[]>([]);
   const [foldersList, setFoldersList] = useState<Record<string, string[]>>({});
   const { setRoute } = useContext(WorkspaceContext);
   const loadData = useCallback(async () => {
@@ -77,7 +77,7 @@ export default function MissingModelsListDrawer({
       }
       installModelsApi({
         file_hash: model.fileHash ?? undefined,
-        filename: model.filename,
+        filename: model.name,
         save_path: foldersList[model.fileFolder][0],
         url,
         force_filename: true,

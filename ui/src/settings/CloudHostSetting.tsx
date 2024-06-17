@@ -1,27 +1,29 @@
-import {
-  Input,
-  Stack,
-  useToast,
-  Text,
-  HStack,
-  Flex,
-  Button,
-} from "@chakra-ui/react";
-import { useEffect, useRef } from "react";
+import { Input, Stack, useToast, Text, Flex, Button } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 
 export default function CloudHostSetting() {
-  const inputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
+  const [text, setText] = useState("");
+
   const getSettings = () => {
     userSettingsTable?.getSetting("cloudHost").then((res) => {
-      inputRef.current?.setAttribute("value", res ?? "");
+      setText(res ?? "");
     });
   };
 
   useEffect(() => {
     getSettings();
   }, []);
+  const submitChange = async (text: string) => {
+    await userSettingsTable?.upsert({ cloudHost: text });
+    getSettings();
+    toast({
+      title: "Setting saved. Please refresh to see the changes.",
+      status: "success",
+      duration: 4000,
+    });
+  };
 
   return (
     <Stack>
@@ -30,26 +32,16 @@ export default function CloudHostSetting() {
       </Text>
       <Flex gap={2} alignItems={"center"}>
         <Input
-          ref={inputRef}
-          onBlur={() => {
-            console.log("onBlur", inputRef.current?.value);
-            userSettingsTable?.upsert({ cloudHost: inputRef.current?.value });
-            getSettings();
-            toast({
-              title: "Setting saved. Please refresh to see the changes.",
-              status: "success",
-              duration: 4000,
-            });
-          }}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onBlur={() => submitChange(text)}
         />
         <Button
           size={"sm"}
           onClick={() => {
-            inputRef.current?.setAttribute(
-              "value",
-              userSettingsTable?.defaultSettings.cloudHost!,
-            );
-            inputRef.current?.blur();
+            const cloudHost = userSettingsTable?.defaultSettings.cloudHost!;
+            setText(cloudHost);
+            submitChange(cloudHost);
           }}
         >
           Reset

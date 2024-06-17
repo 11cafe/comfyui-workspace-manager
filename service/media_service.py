@@ -9,7 +9,7 @@ from .model_manager.model_preview import get_thumbnail_for_image_file
 
 image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
 video_extensions = ['.mp4', '.mov', '.avi', '.webm', '.mkv']
-API_URL = 'https://www.nodecafe.org/api/image/upload'
+API_URL = 'https://www.nodecafe.co/api/image/upload'
 def view_media(filename, isPreview = False, isInput = False):
     if not filename:
         return web.Response(status=404)

@@ -157,7 +157,7 @@ export default function App() {
         if (id) {
           const flow = await workflowsTable?.get(id);
           flow && setCurFlowIDAndName(flow);
-          if (flow && flow.json != latestWf) {
+          if (!flow?.saveLock && flow && flow.json != latestWf) {
             setIsDirty(true);
           }
         }
@@ -167,47 +167,45 @@ export default function App() {
     }
     fetchApi("/workspace/deduplicate_workflow_ids");
     const twoway = await userSettingsTable?.getSetting("twoWaySync");
-    !twoway &&
-      indexdb.cache.get(UPGRADE_TO_2WAY_SYNC_KEY).then(async (value) => {
-        if (value?.value !== "true") {
-          const workflowsCount = await indexdb.workflows.count();
-          if (workflowsCount == 0) {
-            // empty workflows, enable 2way sync
-            await userSettingsTable?.upsert({ twoWaySync: true });
-            await indexdb.cache.put({
-              id: UPGRADE_TO_2WAY_SYNC_KEY,
-              value: "true",
-            });
-            return;
-          }
-          const myWorkflowsDir =
-            await userSettingsTable?.getSetting("myWorkflowsDir");
-          showDialog(
-            <EnableTwowaySyncConfirm
-              myWorkflowsDir={myWorkflowsDir ?? "undefined"}
-            />,
-            [
-              {
-                label: "I have downloaded all my workflows and ready to enable",
-                onClick: async () => {
-                  await userSettingsTable?.upsert({ twoWaySync: true });
-                  if (await userSettingsTable?.getSetting("twoWaySync")) {
-                    indexdb.cache.put({
-                      id: UPGRADE_TO_2WAY_SYNC_KEY,
-                      value: "true",
-                    });
-                    location.reload();
-                  }
-                },
-                colorScheme: "red",
-              },
-            ],
-            {
-              closeOnOverlayClick: false,
+
+    if (!twoway) {
+      const workflowsCount = await indexdb.workflows.count();
+      if (workflowsCount == 0) {
+        // empty workflows, enable 2way sync
+        await userSettingsTable?.upsert({ twoWaySync: true });
+        await indexdb.cache.put({
+          id: UPGRADE_TO_2WAY_SYNC_KEY,
+          value: "true",
+        });
+        return;
+      }
+      const myWorkflowsDir =
+        await userSettingsTable?.getSetting("myWorkflowsDir");
+      showDialog(
+        <EnableTwowaySyncConfirm
+          myWorkflowsDir={myWorkflowsDir ?? "undefined"}
+        />,
+        [
+          {
+            label: "I have downloaded all my workflows and ready to enable",
+            onClick: async () => {
+              await userSettingsTable?.upsert({ twoWaySync: true });
+              if (await userSettingsTable?.getSetting("twoWaySync")) {
+                indexdb.cache.put({
+                  id: UPGRADE_TO_2WAY_SYNC_KEY,
+                  value: "true",
+                });
+                location.reload();
+              }
             },
-          );
-        }
-      });
+            colorScheme: "red",
+          },
+        ],
+        {
+          closeOnOverlayClick: false,
+        },
+      );
+    }
   };
 
   const loadWorkflowIDImpl = async (id: string, versionID?: string | null) => {

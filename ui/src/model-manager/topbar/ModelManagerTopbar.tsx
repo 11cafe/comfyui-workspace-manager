@@ -13,10 +13,6 @@ import type { ModelsListRespItemFromApi } from "../types";
 import InatallModelsModal from "../install-models/InstallModelsModal";
 import { TOPBAR_BUTTON_HEIGHT } from "../../const";
 
-const AddMissingModelsButton = lazy(
-  () => import("./InstallMissingModelsButton"),
-);
-
 export default function ModelManagerTopbar() {
   const { setRoute, route } = useContext(WorkspaceContext);
 
@@ -75,11 +71,6 @@ export default function ModelManagerTopbar() {
       >
         Models
       </Button>
-      <div style={{ position: "absolute", top: "38px", left: "0px" }}>
-        <Suspense>
-          <AddMissingModelsButton />
-        </Suspense>
-      </div>
       {route === "modelList" && (
         <ModelsListDrawer onClose={() => setRoute("root")} />
       )}

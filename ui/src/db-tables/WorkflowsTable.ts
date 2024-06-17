@@ -8,10 +8,6 @@ import { sortFileItem } from "../utils";
 import { nanoid } from "nanoid";
 import { TableBase } from "./TableBase";
 import { indexdb } from "./indexdb";
-import {
-  deleteJsonFileMyWorkflows,
-  saveJsonFileMyWorkflows,
-} from "./DiskFileUtils";
 import { ESortTypes, ImportWorkflow } from "../RecentFilesDrawer/types";
 import { defaultGraph } from "../defaultGraph";
 import { scanMyWorkflowsDir } from "../utils/twowaySyncUtils";
@@ -51,11 +47,7 @@ export class WorkflowsTable extends TableBase<Workflow> {
   }
 
   /**
-   * Check whether the currently opened workflow is the latest version and is consistent with the DB.
-   * Through updateTime comparison, if it is inconsistent, it means that a newer version already exists in the DB.
-   * If the automatic save function is turned on at this time, the latest version in the DB will be overwritten.
-   * Therefore, the user needs to confirm whether to continue to enable automatic saving.
-   * @returns boolean
+   * Check whether the currently opened workflow is the latest version and is consistent with the DB
    */
   public async latestVersionCheck() {
     if (this._curWorkflow) {
@@ -146,8 +138,6 @@ export class WorkflowsTable extends TableBase<Workflow> {
     if (twoWaySyncEnabled) {
       await TwowaySyncAPI.createWorkflow(newWorkflow);
       return await this.get(newWorkflow.id);
-    } else {
-      saveJsonFileMyWorkflows(newWorkflow);
     }
     return newWorkflow;
   }
@@ -197,15 +187,6 @@ export class WorkflowsTable extends TableBase<Workflow> {
     }
     if (twoWaySyncEnabled) {
       await TwowaySyncAPI.moveWorkflow(oldWorkflow, change.parentFolderID!);
-    } else {
-      await saveJsonFileMyWorkflows(newWorkflow);
-      await deleteJsonFileMyWorkflows(oldWorkflow);
-      // update parent folder updateTime
-      if (newWorkflow?.parentFolderID != null) {
-        await indexdb.folders?.update(newWorkflow.parentFolderID, {
-          updateTime: Date.now(),
-        });
-      }
     }
   }
   public async genLastManualSavedJson(id: string) {
@@ -240,8 +221,6 @@ export class WorkflowsTable extends TableBase<Workflow> {
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
     if (twoWaySyncEnabled) {
       after && (await TwowaySyncAPI.saveWorkflow(after));
-    } else {
-      after && (await saveJsonFileMyWorkflows(after));
     }
   }
 
@@ -294,8 +273,6 @@ export class WorkflowsTable extends TableBase<Workflow> {
         } catch (e) {
           console.error("batchCreateFlows error", e);
         }
-      } else {
-        await saveJsonFileMyWorkflows(newWorkflow);
       }
     }
     try {
@@ -314,8 +291,6 @@ export class WorkflowsTable extends TableBase<Workflow> {
         await userSettingsTable?.getSetting("twoWaySync");
       if (twoWaySyncEnabled) {
         await TwowaySyncAPI.deleteWorkflow(workflow);
-      } else {
-        deleteJsonFileMyWorkflows({ ...workflow });
       }
     }
     //add to IndexDB
@@ -331,8 +306,6 @@ export class WorkflowsTable extends TableBase<Workflow> {
         await userSettingsTable?.getSetting("twoWaySync");
       if (twoWaySyncEnabled) {
         await TwowaySyncAPI.deleteWorkflow(flow);
-      } else {
-        deleteJsonFileMyWorkflows({ ...flow });
       }
     }
     await indexdb.workflows.bulkDelete(ids);
