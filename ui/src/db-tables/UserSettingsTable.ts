@@ -1,7 +1,7 @@
 import type { UserSettings } from "../types/dbTypes";
 import { TableBase } from "./TableBase";
 import { MODEL_TYPE_TO_FOLDER_MAPPING } from "../model-manager/install-models/util/modelTypes";
-import { fetchMyWorkflowsDir } from "../Api";
+import { fetchApi, fetchMyWorkflowsDir } from "../Api";
 
 export class UserSettingsTable extends TableBase<UserSettings> {
   public defaultSettings: UserSettings;
@@ -74,6 +74,13 @@ export class UserSettingsTable extends TableBase<UserSettings> {
       ...newPairs,
     };
     await this.put(newSettings);
+    await fetchApi("/workspace/save_settings", {
+      method: "POST",
+      body: JSON.stringify(this._settings),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
     this._settings = {
       ...this.defaultSettings,
       ...newSettings,
@@ -93,7 +100,10 @@ export class UserSettingsTable extends TableBase<UserSettings> {
         ...res,
       };
     });
-    if (instance.defaultSettings.cloudHost.includes("comfyspace.art")) {
+    if (
+      instance.defaultSettings.cloudHost.includes("nodecafe.org") ||
+      instance.defaultSettings.cloudHost.includes("comfyspace.art")
+    ) {
       // overwrite legacy comfyspace.art
       await instance.upsert({
         cloudHost: instance.defaultSettings.cloudHost,
