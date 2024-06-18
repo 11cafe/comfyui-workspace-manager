@@ -59,11 +59,8 @@ export default function InatallModelsModal({
   >(MODEL_TYPE_TO_FOLDER_MAPPING);
   const loadData = useCallback(async () => {
     setLoading(true);
-    // if (!searchQuery) {
-    //   const models = await getModelFromCivitAPi(modelType);
-    //   setModels(models);
-    // } else {
-    const models = await getModelFromSearch(searchQuery, modelType);
+    const models = await getModelFromCivitAPi(modelType, searchQuery);
+    // const models = await getModelFromSearch(searchQuery, modelType);
     setModels(models);
     const folders_list = await getAllFoldersList();
     folders_list && setFoldersList(folders_list);
