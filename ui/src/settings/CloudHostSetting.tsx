@@ -16,6 +16,8 @@ export default function CloudHostSetting() {
     getSettings();
   }, []);
   const submitChange = async (text: string) => {
+    text = text.trim();
+    if (text.endsWith("/")) text = text.slice(0, -1);
     await userSettingsTable?.upsert({ cloudHost: text });
     getSettings();
     toast({
