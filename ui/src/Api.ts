@@ -83,24 +83,6 @@ export async function deleteFile(file_path: string, deleteEmptyFolder = false) {
   }
 }
 
-export async function listBackup(dir: string) {
-  try {
-    const response = await fetchApi("/workspace/list_backup", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        dir: dir,
-      }),
-    });
-    const result = await response.text();
-    return result;
-  } catch (error) {
-    console.error("Error saving workspace:", error);
-  }
-}
-
 export async function getSystemDir(root?: string) {
   try {
     const response = await fetchApi("/workspace/get_system_dir", {
