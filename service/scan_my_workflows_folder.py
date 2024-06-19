@@ -10,6 +10,10 @@ import server
 import uuid
 from .db_service import get_my_workflows_dir
 
+@server.PromptServer.instance.routes.get('/workspace/get_os')
+async def scan_my_workflows_files(request):
+    return web.Response(text= json.dumps({'os': platform.system()}), content_type='application/json')
+
 @server.PromptServer.instance.routes.post('/workspace/file/scan_my_workflows_folder')
 async def scan_my_workflows_files(request):
     reqJson = await request.json()
@@ -34,6 +38,7 @@ def folder_handle(path, recursive, metaInfoOnly, fileList=None):
                 createTime, updateTime = getFileCreateTime(item_path)
                 fileList.append({
                     'name': item,
+                    'path': item_path,
                     'type': 'folder',
                     'createTime': createTime,
                     'updateTime': updateTime
@@ -69,6 +74,7 @@ def file_handle(name, fileList, file_path, metaInfoOnly):
             'name': name,
             'type': "workflow",
             'id': workflow_id,
+            'path': file_path,
             'saveLock': saveLock,
             'cloudID': cloudID,
             'coverMediaPath': coverMediaPath,

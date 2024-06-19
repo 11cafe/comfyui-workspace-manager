@@ -1,7 +1,17 @@
 import type { Workflow } from "../types/dbTypes";
 
+export const serverInfo: {
+  os: "Windows" | "Linux" | "Darwin" | "Java" | null;
+} = {
+  os: null,
+};
+
 export function joinRelPath(...segments: string[]) {
-  const rel = segments.filter((segment) => segment !== "").join("/");
+  let sep = "/";
+  if (serverInfo.os === "Windows") {
+    sep = "\\";
+  }
+  const rel = segments.filter((segment) => segment !== "").join(sep);
   return sanitizeRelPath(rel);
 }
 
