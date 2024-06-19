@@ -18,6 +18,7 @@ import FilesListFolderItemRightClickMenu from "./FilesListFolderItemRightClickMe
 import { ESortTypes, sortTypeLocalStorageKey } from "./types";
 import { Folder, Workflow } from "../types/dbTypes";
 import ItemsList from "./ItemsList";
+import { getPathSep } from "../utils/OsPathUtils";
 
 type Props = {
   folder: Folder;
@@ -82,8 +83,8 @@ export default memo(function FilesListFolderItem({ folder }: Props) {
   }, [isCollapsed]);
   useEffect(() => {
     const cur = workflowsTable?.curWorkflow;
-    const curWorkflowPath = cur?.parentFolderID + "/";
-    const folderPath = folder.id + "/";
+    const curWorkflowPath = cur?.parentFolderID + getPathSep();
+    const folderPath = folder.id + getPathSep();
     const childreHasCurworkflow = curWorkflowPath.startsWith(folderPath);
     if (childreHasCurworkflow) {
       setIsCollapsed(false);

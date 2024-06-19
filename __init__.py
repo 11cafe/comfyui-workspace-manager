@@ -23,9 +23,9 @@ except ImportError:
 WEB_DIRECTORY = "entry"
 NODE_CLASS_MAPPINGS = {}
 __all__ = ['NODE_CLASS_MAPPINGS']
-version = "V1.0.0"
+version = "V2.1.0"
 
-print(f"### Loading: Workspace Manager ({version})")
+print(f"🦄🦄Loading: Workspace Manager ({version})")
 workspace_path = os.path.join(os.path.dirname(__file__))
 comfy_path = os.path.dirname(folder_paths.__file__)
 db_dir_path = os.path.join(workspace_path, "db")
@@ -35,39 +35,8 @@ if os.path.exists(dist_path):
     server.PromptServer.instance.app.add_routes([
         web.static('/workspace_web/', dist_path),
     ])
-
-BACKUP_DIR = os.path.join(workspace_path, "backup")
-MAX_BACKUP_FILES = 20
-
-@server.PromptServer.instance.routes.post("/workspace/list_backup")
-async def list_backup(request):
-    try:
-        data = await request.json()
-        dir_path = os.path.join(BACKUP_DIR, data.get('dir'))
-        # List all files in the directory
-        files = os.listdir(dir_path)
-
-        # Filter out .json files and sort them by filename (which starts with Unix timestamp)
-        json_files = sorted(
-            [file for file in files if file.endswith('.json')],
-            key=lambda x: x,  # Assuming the format is 'timestamp_filename.json'
-            reverse=True
-        )
-
-        # Select the 10 most recent files
-        recent_json_files = json_files[:10]
-
-        # Read the contents of each JSON file
-        file_contents = []
-        for file in recent_json_files:
-            with open(os.path.join(dir_path, file), 'r') as f:
-                content = json.load(f)
-                file_contents.append({"fileName": file, "jsonStr": content})
-
-        return web.Response(text=json.dumps(file_contents), content_type='application/json')
-    except Exception as e:
-        return web.Response(text=json.dumps({"error": str(e)}), status=500)
-
+else:
+    print(f"🦄🦄🔴🔴Error: Web directory not found: {dist_path}")
 
 @server.PromptServer.instance.routes.post("/workspace/get_system_dir")
 async def get_system_dir(request):

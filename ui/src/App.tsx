@@ -37,6 +37,7 @@ import { indexdb } from "./db-tables/indexdb";
 import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
 import { api, app } from "./utils/comfyapp";
 import { fetchApi } from "./Api";
+import { serverInfo } from "./utils/OsPathUtils";
 
 export default function App() {
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
@@ -166,6 +167,13 @@ export default function App() {
       loadWorkflowIDImpl(urlWorkflowID);
     }
     fetchApi("/workspace/deduplicate_workflow_ids");
+    fetchApi("/workspace/get_os")
+      .then((resp) => resp.json())
+      .then((data) => {
+        if (data.os) {
+          serverInfo.os = data.os;
+        }
+      });
     const twoway = await userSettingsTable?.getSetting("twoWaySync");
 
     if (!twoway) {
