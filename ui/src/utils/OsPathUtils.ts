@@ -6,10 +6,10 @@ export const serverInfo: {
   os: null,
 };
 
-export const getPathSep = () => serverInfo.os === 'Windows' ? '\\' : '/';
+export const getPathSep = () => (serverInfo.os === "Windows" ? "\\" : "/");
 
 export function joinRelPath(...segments: string[]) {
-  const rel = segments.filter((segment) => segment !== "").join('/');
+  const rel = segments.filter((segment) => segment !== "").join("/");
   return sanitizeRelPath(rel);
 }
 

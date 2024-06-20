@@ -101,8 +101,8 @@ export class UserSettingsTable extends TableBase<UserSettings> {
       };
     });
     if (
-      instance.defaultSettings.cloudHost.includes("nodecafe.org") ||
-      instance.defaultSettings.cloudHost.includes("comfyspace.art")
+      instance._settings?.cloudHost?.includes("nodecafe.org") ||
+      instance._settings?.cloudHost?.includes("comfyspace.art")
     ) {
       // overwrite legacy comfyspace.art
       await instance.upsert({
