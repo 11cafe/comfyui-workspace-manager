@@ -8,8 +8,6 @@ If you have questions or suggestions, please [join our Discord](https://discord.
 
 ‼️ [3-23-2024]**search and install models from civitai is not working in previous versions**, because civitai changed something in their api. **Please update to the latest version** if you are seeing blank screen in Install Models dialog
 
-[5-7-2024] Author (me) is job hunting in Beijing 🥲 so recently maybe too busy to update this plugin. I will come back to updating this plugin as soon as I finish job hunting 🥲🫠
-
 <img width="610" alt="Screenshot 2024-03-08 at 6 41 18 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/30455eb1-3d12-4930-bb81-28b33148fbaa">
 
 ## Installation
@@ -26,7 +24,20 @@ Like any other custom node installation, in your ComfyUI root folder run command
 cd custom_nodes && git clone https://github.com/11cafe/comfyui-workspace-manager.git
 ```
 
-‼️ Be careful with Auto Save mode as it is constantly overwriting/saving your workflow, which can lead to unwanted overwriting of your precious work if not using carefully. If you disabled Auto Save, make sure you don't forget to Shift+S to save your workflows.
+
+Please upgrade to V2 asap, you should see an **unicorn🦄** here instead of ☕️ (V1). I will stop supporting V1 soon.
+
+<img width="136" alt="Screenshot 2024-05-31 at 5 39 58 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/f52a83f2-4679-4a40-95ed-e75584516ec5">
+
+Recommanded settings for V2 (Do not use these settings if you are on V1):
+ - Enable two way sync (‼️‼️ We will stop supporting non-two-way sync mode starting next version, and everyone should be using two way sync mode)
+ - Disable Auto save (‼️‼️ Auto save mode may cause loss of workflow changes, so I plan to stop supporting auto-save mode too. Everyone should be using manual save mode in future)
+ - Make sure My Workspace Save Directory is valid path
+
+<img width="202" alt="Screenshot 2024-05-30 at 6 34 39 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/67020966-c190-48cb-bffc-b715449d5c99">
+
+<img width="377" alt="Screenshot 2024-05-30 at 6 34 35 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/10002a3f-ea2f-4bd1-8597-0ae1443d9851">
+
 
 
 ## Features
@@ -62,13 +73,9 @@ Recommend using Chrome browser for the best experience. Safari doesn't work well
 [中文版教程](https://www.uisdc.com/workspace-manager) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Roadmap](https://github.com/orgs/11cafe/projects/1/views/1)
 
 ## Updates
-**🦩v2.1 New gallery! Inspect image metadata, search image by prompt, model/lora used**
+**🦩v2.1 New gallery! Inspect image metadata**
 
-<img width="700" alt="Screenshot 2024-03-23 at 12 58 38 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/5bac9793-7491-4131-b850-037094d03823">
-
-Control+P quick spotlight search (like VSCode)
-
-<img width="500" alt="Screenshot 2024-03-27 at 3 49 35 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/47c14904-180c-4c52-a644-223d0936c9fa">
+<img width="400" alt="Screenshot 2024-03-23 at 12 58 38 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/5bac9793-7491-4131-b850-037094d03823">
 
 **🦄v2.0 Two-way sync with local folder, models manager support external models path like Automatic1111, cloud sync workflows**
   
