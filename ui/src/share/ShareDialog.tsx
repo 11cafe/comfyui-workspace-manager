@@ -171,7 +171,7 @@ export default function ShareDialog({ onClose }: Props) {
       "Share Workflow",
       "width=800,height=800",
     );
-    for(let i=0; i<20; i++) {
+    for (let i = 0; i < 20; i++) {
       const curWorkflow = workflowsTable?.curWorkflow;
       // Send data to the new window after it loads
       sharePopup!.postMessage(
@@ -183,7 +183,7 @@ export default function ShareDialog({ onClose }: Props) {
         },
         host,
       );
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
   };
 
