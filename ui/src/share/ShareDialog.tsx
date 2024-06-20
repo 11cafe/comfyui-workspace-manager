@@ -171,23 +171,20 @@ export default function ShareDialog({ onClose }: Props) {
       "Share Workflow",
       "width=800,height=800",
     );
-    const handleChildReady = (event: MessageEvent) => {
-      if (event.origin === host && event.data === "child_ready") {
-        const curWorkflow = workflowsTable?.curWorkflow;
-        // Send data to the new window after it loads
-        sharePopup!.postMessage(
-          {
-            workflow: curWorkflow,
-            version: version,
-            nodeDefs: nodeDefs,
-            privacy: privacyRef.current,
-          },
-          host,
-        );
-        window.removeEventListener("message", handleChildReady);
-      }
-    };
-    window.addEventListener("message", handleChildReady);
+    for (let i = 0; i < 20; i++) {
+      const curWorkflow = workflowsTable?.curWorkflow;
+      // Send data to the new window after it loads
+      sharePopup!.postMessage(
+        {
+          workflow: curWorkflow,
+          version: version,
+          nodeDefs: nodeDefs,
+          privacy: privacyRef.current,
+        },
+        host,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
   };
 
   const onShare = async () => {
