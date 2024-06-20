@@ -1,7 +1,15 @@
 import type { Workflow } from "../types/dbTypes";
 
+export const serverInfo: {
+  os: "Windows" | "Linux" | "Darwin" | "Java" | null;
+} = {
+  os: null,
+};
+
+export const getPathSep = () => serverInfo.os === 'Windows' ? '\\' : '/';
+
 export function joinRelPath(...segments: string[]) {
-  const rel = segments.filter((segment) => segment !== "").join("/");
+  const rel = segments.filter((segment) => segment !== "").join('/');
   return sanitizeRelPath(rel);
 }
 
@@ -14,6 +22,10 @@ export function sanitizeRelPath(path: string) {
   let sanitizedPath = segments.replace(/\\/g, "/");
   // Remove leading slashes to ensure the path is treated as relative
   sanitizedPath = sanitizedPath.replace(/^\/+/, "");
+
+  if (serverInfo.os === "Windows") {
+    sanitizedPath = segments.replace(/\//g, "\\");
+  }
 
   return sanitizedPath;
 }

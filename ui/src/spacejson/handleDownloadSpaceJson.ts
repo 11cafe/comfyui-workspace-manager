@@ -62,7 +62,6 @@ async function fetchModelData(
 ): Promise<DepsResultModel> {
   const res =
     (await indexdb.models.where("fileName").equals(filename).toArray()) ?? [];
-  console.log("fetch modeldata", res);
   const first = res.at(0);
   const modelFile: DepsResultModel = {
     name: filename,

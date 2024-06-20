@@ -241,6 +241,7 @@ export type ScanLocalFile = {
   type: "workflow";
   name: string;
   id: string;
+  path: string;
   json: string;
   saveLock: boolean;
   cloudID: string | null;
@@ -253,6 +254,7 @@ export type ScanLocalFolder = {
   id: string;
   type: "folder";
   name: string;
+  path: string;
   parentFolderID: string;
 };
 export async function scanLocalFiles(
