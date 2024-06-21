@@ -2,11 +2,15 @@
 
 A ComfyUI workflow and model manager extension to **organize and manage all your workflows, models and generated images in one place**. Seamlessly switch between workflows, track version history and image generation history, 1 click install models from Civit ai, browse/update your installed models
 
-If you have questions or suggestions, please [join our Discord](https://discord.gg/HHvfEurv2Z)!
+If you have questions or suggestions, please [join our Discord](https://discord.gg/HHvfEurv2Z)! I'm building a new platform that lets you quickly make a runnable web app from your comfyui workflow. www.nodecafe.co if you are interested to make your comfyui workflow into an app or colaborate with me, please DM me!
+
+[6-21] please upgrade to V2 and enable twoway sync if you haven't already. I will stop supporting V1 soon and will forcefully turn on twoway sync later. (twoway sync means that your workflow are twoway synced with your disk files /my_workflows directly)
+
+[6-21] Auto-save mode will be removed comopoletely from next version. Because there are reports that autosave mode sometimes overwrite workflows mistakenly. Therefore, please **manual save** your workflows always.
 
 [New!] We provide 👭**team workspace** now! If you need to **share workflows, backup workflow versions for enterprise and teams**, please contact me about our team/enterprise product at weixuanfu01@gmail.com or join discord and DM me @briefpeach 
 
-‼️ [3-23-2024]**search and install models from civitai is not working in previous versions**, because civitai changed something in their api. **Please update to the latest version** if you are seeing blank screen in Install Models dialog
+[5-23-2024]**search and install models from civitai is not working in previous versions**, **Please update to the latest version** if you are seeing blank screen in Install Models dialog
 
 <img width="610" alt="Screenshot 2024-03-08 at 6 41 18 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/30455eb1-3d12-4930-bb81-28b33148fbaa">
 
