@@ -41,15 +41,15 @@ export default function WorkspaceSettingsModal({
                 <ShortcutSettings />
                 <TwoWaySyncSettings />
                 <FolderOnTopSettings />
-                <CommonCheckboxSettings
-                  settingKey="overwriteCurWorkflowWhenDroppingFileToCanvas"
-                  text="Overwrite current workflow when drag and drop workflow file to canvas"
-                />
                 <CommonNumberSetting
                   label={`Maximum number of save change history to store. This does not include
         versions that you created by "Create Version", which are always stored
         and has no limit.`}
                   settingKey="maximumChangelogNumber"
+                />
+                <CommonCheckboxSettings
+                  settingKey="disableUnsavedWarning"
+                  text={`Disable the "Save or Discard" warning when closing a workflow with unsaved changes. ⛔️Be careful, if you disable this reminder and forget to save your workflow, you will lose your changes.`}
                 />
                 <CommonCheckboxSettings
                   settingKey="hideCoverImage"
