@@ -97,7 +97,6 @@ export type UserSettings = {
   foldersOnTop?: boolean;
   showNsfwModelThumbnail?: boolean;
   cloudHost: string;
-  overwriteCurWorkflowWhenDroppingFileToCanvas: boolean;
   defaultFolders: Record<MODEL_TYPE, string>;
   maximumChangelogNumber: number;
   hideCoverImage: boolean;
