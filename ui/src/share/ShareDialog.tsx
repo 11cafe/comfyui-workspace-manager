@@ -199,18 +199,22 @@ export default function ShareDialog({ onClose }: Props) {
         // .filter((i) => !i.url)
         .map((i) => i.filename);
       if (imageDepsToUpload.length) {
-        const uploadResp = await fetchApi("/workspace/upload_image", {
-          method: "POST",
-          body: JSON.stringify({
-            images: imageDepsToUpload,
-          }),
-        });
-        const json = (await uploadResp.json()) as Record<string, string>;
-        Object.keys(json).forEach((key) => {
-          if (imageDeps?.[key]) {
-            imageDeps[key].url = json[key];
-          }
-        });
+        try {
+          const uploadResp = await fetchApi("/workspace/upload_image", {
+            method: "POST",
+            body: JSON.stringify({
+              images: imageDepsToUpload,
+            }),
+          });
+          const json = (await uploadResp.json()) as Record<string, string>;
+          Object.keys(json).forEach((key) => {
+            if (imageDeps?.[key]) {
+              imageDeps[key].url = json[key];
+            }
+          });
+        } catch (error) {
+          console.error("Error uploading images:", error);
+        }
       }
       setUploadingImage(false);
     }
