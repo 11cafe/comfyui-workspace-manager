@@ -4,9 +4,9 @@ A ComfyUI workflow and model manager extension to **organize and manage all your
 
 If you have questions or suggestions, please [join our Discord](https://discord.gg/HHvfEurv2Z)! I'm building a new platform that lets you quickly make a runnable web app from your comfyui workflow. www.nodecafe.co if you are interested to make your comfyui workflow into an app or colaborate with me, please DM me!
 
-[6-21] please upgrade to V2 and enable twoway sync if you haven't already. I will stop supporting V1 soon and will forcefully turn on twoway sync later. (twoway sync means that your workflow are twoway synced with your disk files /my_workflows directly)
+[6-21] ‼️please upgrade to V2 and enable twoway sync if you haven't already. I will stop supporting V1 soon and will forcefully turn on twoway sync later. (twoway sync means that your workflow are twoway synced with your disk files /my_workflows directly)
 
-[6-21] Auto-save mode will be removed comopoletely from next version. Because there are reports that autosave mode sometimes overwrite workflows mistakenly. Therefore, please **manual save** your workflows always.
+[6-21] ‼️‼️Auto-save mode will be removed comopoletely from next version. Because there are reports that autosave mode sometimes overwrite workflows mistakenly. Therefore, please **manual save** your workflows always.
 
 [New!] We provide 👭**team workspace** now! If you need to **share workflows, backup workflow versions for enterprise and teams**, please contact me about our team/enterprise product at weixuanfu01@gmail.com or join discord and DM me @briefpeach 
 
