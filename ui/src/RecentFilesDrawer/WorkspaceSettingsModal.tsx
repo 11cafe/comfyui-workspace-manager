@@ -15,7 +15,6 @@ import TwoWaySyncSettings from "../settings/TwoWaySyncSettings";
 import CommonCheckboxSettings from "../settings/CommonCheckboxSettings";
 import SelectMyWorkflowsDir from "../settings/SelectMyWorkflowsDir";
 import { CommonNumberSetting } from "../settings/CommonNumberSetting";
-import AutosaveSetting from "../settings/AutosaveSetting";
 import CloudHostSetting from "../settings/CloudHostSetting";
 
 export default function WorkspaceSettingsModal({
@@ -39,7 +38,6 @@ export default function WorkspaceSettingsModal({
                 w="100%"
               >
                 <SelectMyWorkflowsDir />
-                <AutosaveSetting />
                 <ShortcutSettings />
                 <TwoWaySyncSettings />
                 <FolderOnTopSettings />
