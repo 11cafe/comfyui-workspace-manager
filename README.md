@@ -4,6 +4,8 @@ A ComfyUI workflow and model manager extension to **organize and manage all your
 
 If you have questions or suggestions, please [join our Discord](https://discord.gg/HHvfEurv2Z)! I'm building a new platform that lets you quickly make a runnable web app from your comfyui workflow. www.nodecafe.co if you are interested to make your comfyui workflow into an app or colaborate with me, please DM me!
 
+[6-21] tags are deprecated, please use folders to organize your workflows.
+
 [6-21] ‼️please upgrade to V2 and enable twoway sync if you haven't already. I will stop supporting V1 soon and will forcefully turn on twoway sync later. (twoway sync means that your workflow are twoway synced with your disk files /my_workflows directly)
 
 [6-21] ‼️‼️Auto-save mode will be removed comopoletely from next version. Because there are reports that autosave mode sometimes overwrite workflows mistakenly. Therefore, please **manual save** your workflows always.
@@ -50,7 +52,7 @@ Recommanded settings for V2 (Do not use these settings if you are on V1):
 
 - 🔁Switch between different workflows easily. 1click open workflow in multiple browser tabs.
 - 🤏**Drag and drop** to insert subworkflows into current flow.
-- 🗂️Organize workflows with folders, tags.
+- 🗂️Organize workflows with folders
 - 📂Save and sync all your workflows in a local folder (by default under `/ComfyUI/my_workflows` customize in Settings)
   - **Save workflow by pressing the 💾 button, or ⌨Shift+S shortcut** (customize in Settings).
   - Every time you save, it will create a new record in **Version History**. You can easily revert to any version.
