@@ -41,10 +41,6 @@ export default function WorkspaceSettingsModal({
                 <ShortcutSettings />
                 <TwoWaySyncSettings />
                 <FolderOnTopSettings />
-                <CommonCheckboxSettings
-                  settingKey="overwriteCurWorkflowWhenDroppingFileToCanvas"
-                  text="Overwrite current workflow when drag and drop workflow file to canvas"
-                />
                 <CommonNumberSetting
                   label={`Maximum number of save change history to store. This does not include
         versions that you created by "Create Version", which are always stored

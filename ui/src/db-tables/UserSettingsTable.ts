@@ -34,7 +34,6 @@ export class UserSettingsTable extends TableBase<UserSettings> {
       twoWaySync: false,
       foldersOnTop: false,
       cloudHost: "https://www.nodecafe.co",
-      overwriteCurWorkflowWhenDroppingFileToCanvas: false,
       maximumChangelogNumber: 80,
       hideCoverImage: false,
       disableUnsavedWarning: false,

@@ -10,17 +10,17 @@ export interface SortableItem {
 export interface Workflow extends SortableItem {
   id: string;
   json: string;
+  lastSavedJson?: string; // TODO will be deprecated
   name: string;
-  coverMediaPath?: string | null;
-  saveLock?: boolean;
-  cloudID?: string | null;
   createTime: number;
-
-  // will be deprecated
+  filePath?: string; // TODO will be deprecated
   privacy?: WorkflowPrivacy;
   tags?: string[];
   parentFolderID?: string | null; //TODO remove undefined, use null only
+  coverMediaPath?: string;
+  cloudID?: string; // TODO will be deprecated
   cloudOrigin?: string;
+  saveLock?: boolean;
   latestImage?: string;
   topFieldsConfig?: TopFieldType[];
 }
@@ -67,7 +67,6 @@ export type WorkflowVersion = {
   workflowID: string;
   json: string;
   createTime: number;
-  api_prompt: string | null;
   cloudID?: string;
   cloudOrigin?: string;
   authorID?: string;
@@ -97,7 +96,6 @@ export type UserSettings = {
   foldersOnTop?: boolean;
   showNsfwModelThumbnail?: boolean;
   cloudHost: string;
-  overwriteCurWorkflowWhenDroppingFileToCanvas: boolean;
   defaultFolders: Record<MODEL_TYPE, string>;
   maximumChangelogNumber: number;
   hideCoverImage: boolean;
@@ -132,6 +130,7 @@ export type Media = {
   workflowJSON?: string;
   createTime: number;
   localPath: string;
+  format: string;
 };
 
 /**
