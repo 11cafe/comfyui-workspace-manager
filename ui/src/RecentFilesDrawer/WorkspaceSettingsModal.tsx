@@ -48,6 +48,10 @@ export default function WorkspaceSettingsModal({
                   settingKey="maximumChangelogNumber"
                 />
                 <CommonCheckboxSettings
+                  settingKey="disableUnsavedWarning"
+                  text={`Disable the "Save or Discard" warning when closing a workflow with unsaved changes. ⛔️Be careful, if you disable this reminder and forget to save your workflow, you will lose your changes.`}
+                />
+                <CommonCheckboxSettings
                   settingKey="hideCoverImage"
                   text="Hide thumbnail image in workflow list"
                 />

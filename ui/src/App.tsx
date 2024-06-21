@@ -248,7 +248,12 @@ export default function App() {
       app.graph.clear();
       return;
     }
-    if (!isDirty || forceLoad || workflowsTable?.curWorkflow == null) {
+    if (
+      !isDirty ||
+      forceLoad ||
+      workflowsTable?.curWorkflow == null ||
+      userSettingsTable?.settings?.disableUnsavedWarning
+    ) {
       loadWorkflowIDImpl(id, versionID);
       return;
     }
