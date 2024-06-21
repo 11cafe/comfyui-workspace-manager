@@ -75,22 +75,11 @@ export default function App() {
           isAutoSave: false,
         }),
       ]);
-      userSettingsTable?.settings?.autoSave &&
-        toast({
-          title: "Saved",
-          status: "success",
-          duration: 1000,
-          isClosable: true,
-        });
       setIsDirty(false);
     }
   }, []);
 
   const discardUnsavedChanges = async () => {
-    if (userSettingsTable?.settings?.autoSave) {
-      alert("You cannot discard unsaved changes when auto save is enabled");
-      return;
-    }
     const userInput = confirm(
       "Are you sure you want to discard unsaved changes? This will revert current workflow to your last saved version. You will lose all changes made since your last save.",
     );
@@ -259,12 +248,7 @@ export default function App() {
       app.graph.clear();
       return;
     }
-    if (
-      !isDirty ||
-      forceLoad ||
-      userSettingsTable?.settings?.autoSave ||
-      workflowsTable?.curWorkflow == null
-    ) {
+    if (!isDirty || forceLoad || workflowsTable?.curWorkflow == null) {
       loadWorkflowIDImpl(id, versionID);
       return;
     }
