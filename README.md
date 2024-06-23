@@ -36,13 +36,12 @@ Please upgrade to V2 asap, you should see an **unicorn🦄** here instead of ☕
 <img width="136" alt="Screenshot 2024-05-31 at 5 39 58 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/f52a83f2-4679-4a40-95ed-e75584516ec5">
 
 Recommanded settings for V2 (Do not use these settings if you are on V1):
- - Enable two way sync (‼️‼️ We will stop supporting non-two-way sync mode starting next version, and everyone should be using two way sync mode)
- - Disable Auto save (‼️‼️ Auto save mode may cause loss of workflow changes, so I plan to stop supporting auto-save mode too. Everyone should be using manual save mode in future)
+ - Enable two way sync (‼️ Will stop supporting non-two-way sync mode starting next version)
  - Make sure My Workspace Save Directory is valid path
 
 <img width="202" alt="Screenshot 2024-05-30 at 6 34 39 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/67020966-c190-48cb-bffc-b715449d5c99">
 
-<img width="377" alt="Screenshot 2024-05-30 at 6 34 35 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/10002a3f-ea2f-4bd1-8597-0ae1443d9851">
+<img width="377" alt="335530039-10002a3f-ea2f-4bd1-8597-0ae1443d9851" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/6001a7f1-93f2-48ef-86c6-95c9560030ef">
 
 
 
