@@ -1,7 +1,6 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { workflowsTable } from "../db-tables/WorkspaceDB";
-import { Tag, Tooltip } from "@chakra-ui/react";
 import { matchShortcut } from "../utils";
 import { EShortcutKeys } from "../types/dbTypes";
 import useDebounceFn from "../customHooks/useDebounceFn";
@@ -60,6 +59,23 @@ export default function AppIsDirtyEventListener() {
       }
     };
 
+    const restoreCurWorkflow = async () => {
+      const id = app.graph.extra?.[COMFYSPACE_TRACKING_FIELD_NAME]?.id;
+      if (id) {
+        const flow = await workflowsTable?.get(id);
+        flow && setCurFlowIDAndName(flow);
+
+        if (
+          !flow?.saveLock &&
+          flow &&
+          flow.json !== JSON.stringify(app.graph.serialize())
+        ) {
+          setIsDirty(true);
+        }
+      }
+    };
+
+    restoreCurWorkflow();
     const originalOnConfigure = app.graph.onConfigure;
     app.graph.onConfigure = function () {
       originalOnConfigure?.apply(this, arguments);
