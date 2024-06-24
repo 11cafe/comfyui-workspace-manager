@@ -67,7 +67,6 @@ export type WorkflowVersion = {
   workflowID: string;
   json: string;
   createTime: number;
-  api_prompt: string | null;
   cloudID?: string;
   cloudOrigin?: string;
   authorID?: string;

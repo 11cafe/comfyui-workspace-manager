@@ -13,8 +13,10 @@ import {
   Input,
 } from "@chakra-ui/react";
 import { workflowVersionsTable } from "../db-tables/WorkspaceDB";
-import { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent, useContext } from "react";
 import { app } from "../utils/comfyapp";
+import { WorkspaceContext } from "../WorkspaceContext";
+import CreateVersionLogin from "../versionHistory/CreateVresionLogin";
 
 interface Props {
   workflowId: string;
@@ -23,6 +25,7 @@ interface Props {
 export default function CreateVersionDialog({ workflowId, onClose }: Props) {
   const [newVersionName, setNewVersionName] = useState("");
   const [submitError, setSubmitError] = useState("");
+  const { session } = useContext(WorkspaceContext);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setNewVersionName(event.target.value);
@@ -49,10 +52,20 @@ export default function CreateVersionDialog({ workflowId, onClose }: Props) {
       onClose();
     }
   };
+  if (!session) {
+    return (
+      <Modal isOpen={true} onClose={onClose} size={"xl"}>
+        <ModalContent width={"90vw"}>
+          <ModalBody>
+            <CreateVersionLogin />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    );
+  }
 
   return (
     <Modal isOpen={true} onClose={onClose}>
-      <ModalOverlay />
       <ModalContent>
         <ModalHeader>Create Version</ModalHeader>
         <ModalCloseButton />

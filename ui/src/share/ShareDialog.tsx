@@ -158,7 +158,6 @@ export default function ShareDialog({ onClose }: Props) {
       workflowID: workflow!.id,
       name: versionNameRef.current,
       createTime: Date.now(),
-      api_prompt: JSON.stringify(apiPrompt),
       json: jsonToShare ?? JSON.stringify(app.graph.serialize()),
     };
     const protocol = window.location.protocol;

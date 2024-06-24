@@ -10,3 +10,8 @@ export type WorkspaceRoute =
   | "downloadSpaceJson"
   | "installModels"
   | "share";
+
+export type Session = {
+  username: string | null;
+  shareKey: string;
+};
