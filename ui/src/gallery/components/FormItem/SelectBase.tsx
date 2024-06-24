@@ -1,6 +1,5 @@
 import { FC } from "react";
 import { Flex, Select } from "@chakra-ui/react";
-import { FormItem } from "./types.ts";
 import { PromptNodeInputItem } from "../MetaBox/utils.ts";
 
 export const SelectBase: FC<

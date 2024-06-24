@@ -11,9 +11,7 @@ import {
   IconMoon,
   IconSettings,
   IconSun,
-  IconTag,
 } from "@tabler/icons-react";
-import ManageTagsModal from "./ManageTagsModal";
 import { useState } from "react";
 import WorkspaceSettingsModal from "./WorkspaceSettingsModal";
 const ICON_SIZE = 16;
@@ -21,7 +19,6 @@ type Props = {
   //   onclose: () => void;
 };
 export default function RecentFilesDrawerMenu({}: Props) {
-  const [isManageTagsOpen, setIsManageTagsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { colorMode, toggleColorMode } = useColorMode();
 
@@ -44,13 +41,6 @@ export default function RecentFilesDrawerMenu({}: Props) {
             Settings
           </MenuItem>
           <MenuItem
-            onClick={() => setIsManageTagsOpen(true)}
-            icon={<IconTag size={ICON_SIZE} />}
-            fontSize={16}
-          >
-            Manage Tags
-          </MenuItem>
-          <MenuItem
             onClick={toggleColorMode}
             icon={
               colorMode === "light" ? (
@@ -65,9 +55,6 @@ export default function RecentFilesDrawerMenu({}: Props) {
           </MenuItem>
         </MenuList>
       </Menu>
-      {isManageTagsOpen && (
-        <ManageTagsModal onclose={() => setIsManageTagsOpen(false)} />
-      )}
       {isSettingsOpen && (
         <WorkspaceSettingsModal onClose={() => setIsSettingsOpen(false)} />
       )}
