@@ -139,20 +139,7 @@ export default function App() {
     setLoadingDB(false);
 
     const urlWorkflowID = getWorkflowIdInUrlHash();
-    if (urlWorkflowID == null) {
-      const latestWf = localStorage.getItem("workflow");
-      if (latestWf) {
-        const workflow = JSON.parse(latestWf);
-        const id = workflow.extra?.[COMFYSPACE_TRACKING_FIELD_NAME]?.id;
-        if (id) {
-          const flow = await workflowsTable?.get(id);
-          flow && setCurFlowIDAndName(flow);
-          if (!flow?.saveLock && flow && flow.json != latestWf) {
-            setIsDirty(true);
-          }
-        }
-      }
-    } else {
+    if (urlWorkflowID != null) {
       loadWorkflowIDImpl(urlWorkflowID);
     }
     fetchApi("/workspace/deduplicate_workflow_ids");
