@@ -2,6 +2,7 @@ import { Button, Flex, Input, Stack } from "@chakra-ui/react";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { useContext } from "react";
 import { WorkspaceContext } from "../WorkspaceContext";
+import { encodeKey } from "../utils/encryptUtils";
 
 export default function CreateVersionLogin() {
   const cloudHost = userSettingsTable?.settings?.cloudHost;
@@ -38,7 +39,9 @@ export default function CreateVersionLogin() {
       <Input
         placeholder="Paste your share key here"
         onChange={(e) => {
-          localStorage.setItem("workspace_manager_shareKey", e.target.value);
+          if (!e.target.value || e.target.value === "") return;
+          const key = encodeKey(e.target.value);
+          localStorage.setItem("workspace_manager_shareKey", key);
           updateSession({
             shareKey: e.target.value,
             username: null,

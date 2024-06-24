@@ -11,8 +11,12 @@ import {
   FormLabel,
   FormErrorMessage,
   Input,
+  Stack,
 } from "@chakra-ui/react";
-import { workflowVersionsTable } from "../db-tables/WorkspaceDB";
+import {
+  userSettingsTable,
+  workflowVersionsTable,
+} from "../db-tables/WorkspaceDB";
 import { useState, ChangeEvent, useContext } from "react";
 import { app } from "../utils/comfyapp";
 import { WorkspaceContext } from "../WorkspaceContext";
@@ -52,7 +56,7 @@ export default function CreateVersionDialog({ workflowId, onClose }: Props) {
       onClose();
     }
   };
-  if (!session) {
+  if (!session?.shareKey) {
     return (
       <Modal isOpen={true} onClose={onClose} size={"xl"}>
         <ModalContent width={"90vw"}>
@@ -63,13 +67,19 @@ export default function CreateVersionDialog({ workflowId, onClose }: Props) {
       </Modal>
     );
   }
-
+  const domain = new URL(userSettingsTable!.settings!.cloudHost).hostname;
   return (
     <Modal isOpen={true} onClose={onClose}>
       <ModalContent>
-        <ModalHeader>Create Version</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
+          <Stack mb={5}>
+            <p style={{ fontSize: 20, fontWeight: "bold" }}>Create Version</p>
+            <p style={{ color: "GrayText" }}>
+              Saving to{" "}
+              <a href={userSettingsTable?.settings?.cloudHost}> {domain}</a>
+            </p>
+          </Stack>
           <FormControl isInvalid={!!submitError}>
             <FormLabel>Name</FormLabel>
             <Input
