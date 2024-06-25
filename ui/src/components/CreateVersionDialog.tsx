@@ -37,7 +37,6 @@ export default function CreateVersionDialog({ onClose }: Props) {
   };
 
   const onSubmit = async () => {
-    console.log("session, sharekey", session?.shareKey);
     const trimName = newVersionName.trim();
     setNewVersionName(trimName);
     if (!workflowsTable?.curWorkflow) {

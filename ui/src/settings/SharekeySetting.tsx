@@ -8,6 +8,7 @@ export default function SharekeySetting() {
   const toast = useToast();
   const { session, updateSession } = useContext(WorkspaceContext);
   const [text, setText] = useState("");
+  const cloudDomain = new URL(userSettingsTable?.settings?.cloudHost!).hostname;
 
   useEffect(() => {
     setText(session?.shareKey ?? "");
@@ -23,18 +24,26 @@ export default function SharekeySetting() {
   };
 
   return (
-    <Stack>
-      <a
-        href={userSettingsTable?.settings?.cloudHost + "/auth/shareKey"}
-        target="_blank"
-      >
-        Copy your share key here and paste it to below to start sharing
-        workflows
-      </a>
+    <Stack gap={3}>
+      <p style={{ fontWeight: "bold" }}>Cloud Backup [Beta]</p>
+      <p>
+        <a
+          href={userSettingsTable?.settings?.cloudHost + "/auth/shareKey"}
+          target="_blank"
+          style={{ textDecoration: "underline" }}
+        >
+          <Button size={"sm"}>👉Copy your share key from here</Button>
+        </a>{" "}
+        and paste it below to start saving workflow versions to cloud at{" "}
+        <a href={userSettingsTable?.settings?.cloudHost!} target="_blank">
+          {cloudDomain}
+        </a>
+      </p>
 
-      <Flex gap={2} alignItems={"center"}>
+      <Flex alignItems={"center"}>
         <Input
           value={text}
+          placeholder="Paste your share key here"
           onChange={(e) => setText(e.target.value)}
           onBlur={() => submitChange(text)}
           onKeyDown={(e) => {

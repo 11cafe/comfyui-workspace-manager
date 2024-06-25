@@ -27,19 +27,22 @@ import {
 } from "../db-tables/WorkspaceDB";
 import { useContext, useEffect, useState } from "react";
 import { WorkspaceContext } from "../WorkspaceContext";
-import { formatTimestamp } from "../utils";
 import { Changelog, WorkflowVersion } from "../types/dbTypes";
 import DeleteConfirm from "./DeleteConfirm";
 import { app } from "../utils/comfyapp";
 
 export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
-  const { curFlowID, isDirty, loadWorkflowID, curVersion, session } =
+  const { isDirty, loadWorkflowID, curVersion, session } =
     useContext(WorkspaceContext);
   const [active, setActive] = useState(0); // 0: version、1: changelog
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
   const [changelogs, setChangelogs] = useState<Changelog[]>([]);
-  const [versions, setVersions] = useState<WorkflowVersion[]>([]);
-
+  const [versions, setVersions] = useState<
+    (WorkflowVersion & { isCloud?: boolean })[]
+  >([]);
+  const curFlow = workflowsTable?.curWorkflow;
+  const cloudHost = userSettingsTable?.settings?.cloudHost;
+  const [loading, setLoading] = useState(false);
   const loadChangeLogs = async (flowId: string) => {
     const workflow = await workflowsTable?.get(flowId);
     const changelogs = await changelogsTable?.listByWorkflowID(flowId);
@@ -52,12 +55,14 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
   };
 
   const loadVersions = async () => {
-    const vers =
-      (await workflowVersionsTable?.listByWorkflowID(curFlowID!)) ?? [];
-    if (session?.shareKey) {
-      fetch(
+    let vers =
+      (await workflowVersionsTable?.listByWorkflowID(curFlow!.id)) ?? [];
+    if (session?.shareKey && curFlow?.cloudID) {
+      setLoading(true);
+      await fetch(
         userSettingsTable?.settings?.cloudHost! +
-          "/api/listWorkflowVersionsByWorkflowID",
+          "/api/listWorkflowVersionsByWorkflowID?workflowID=" +
+          curFlow?.cloudID,
         {
           headers: {
             authorization: `Bearer ${session?.shareKey}`,
@@ -66,11 +71,20 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
       )
         .then((resp) => resp.json())
         .then((data) => {
-          console.log("cloud versions", data);
-          if (data.data) {
-            setVersions(data.data);
+          if (data.items) {
+            const cloudVers = data.items.map((v: any) => {
+              return {
+                ...v,
+                isCloud: true,
+              };
+            });
+            vers = vers.concat(cloudVers as WorkflowVersion[]);
           }
+        })
+        .catch((e) => {
+          console.error(e);
         });
+      setLoading(false);
     }
 
     setVersions(vers);
@@ -88,7 +102,7 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
         loadVersions();
         break;
       case 1:
-        loadChangeLogs(curFlowID!);
+        loadChangeLogs(curFlow!.id);
         break;
     }
   }, [active]);
@@ -135,7 +149,16 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
           </TabList>
           <TabPanels>
             <TabPanel>
+              {session?.shareKey && (
+                <Text color="GrayText" mb={3}>
+                  Connected to{" "}
+                  <a href={cloudHost} target="_blank">
+                    {cloudHost}
+                  </a>
+                </Text>
+              )}
               <Stack divider={<StackDivider />} spacing={2}>
+                {loading && <Text>Loading...</Text>}
                 {versions?.map((version) => {
                   return (
                     <Flex
@@ -149,11 +172,27 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
                       borderRadius={4}
                     >
                       <Stack textAlign={"left"} gap={0}>
-                        <Text fontWeight={"500"}>
-                          {version.name ?? "untitled"}
-                        </Text>
+                        {version.isCloud ? (
+                          <a
+                            target="_blank"
+                            href={`${cloudHost}/workflow/${version.workflowID}/${version.id}`}
+                          >
+                            {version.name ?? "untitled"}
+                          </a>
+                        ) : (
+                          <Text fontWeight={"500"}>
+                            {version.name ?? "untitled"}
+                          </Text>
+                        )}
+
                         <Text color={"GrayText"} fontSize={"sm"}>
-                          Created: {formatTimestamp(version.createTime)}
+                          Created:{" "}
+                          {new Date(
+                            version.createTime ??
+                              version.createdAt ??
+                              version.created_at ??
+                              "",
+                          ).toLocaleString()}
                         </Text>
                       </Stack>
                       <Flex alignItems="center" gap={2}>
@@ -167,18 +206,20 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
                               return;
                             }
                             app.loadGraphData(JSON.parse(version.json));
-                            loadWorkflowID(curFlowID!, version.id);
+                            loadWorkflowID(curFlow!.id, version.id);
                             onClose();
                           }}
                         >
                           Load
                         </Button>
-                        <DeleteConfirm
-                          promptMessage="Are you sure you want to delete this version?"
-                          onDelete={() => {
-                            onDelete(version.id);
-                          }}
-                        />
+                        {!version.isCloud && (
+                          <DeleteConfirm
+                            promptMessage="Are you sure you want to delete this version?"
+                            onDelete={() => {
+                              onDelete(version.id);
+                            }}
+                          />
+                        )}
                       </Flex>
                     </Flex>
                   );
@@ -203,9 +244,6 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
                             return;
                           }
                           app.loadGraphData(JSON.parse(c.json));
-                          workflowsTable?.updateFlow(curFlowID!, {
-                            json: c.json,
-                          });
                           onClose();
                         }}
                         isActive={c.id === selectedVersion}

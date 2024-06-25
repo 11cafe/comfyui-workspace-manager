@@ -49,9 +49,8 @@ export default function TwoWaySyncSettings() {
   return (
     <Stack>
       <Text>
-        Only for legacy two way sync users to get back their data. Do not
-        disable two way sync if you have already enabled it. It may cause some
-        unexpected issues.
+        Only for legacy two way sync users to get back their data. [DO NOT
+        DISABLE]
       </Text>
       <Checkbox isChecked={checked} onChange={onTwoWaySyncChange}>
         Enable two way sync

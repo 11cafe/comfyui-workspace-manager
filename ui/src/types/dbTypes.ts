@@ -66,9 +66,9 @@ export type WorkflowVersion = {
   name: string;
   workflowID: string;
   json: string;
-  createTime: number;
-  cloudID?: string;
-  cloudOrigin?: string;
+  createTime?: number;
+  createdAt?: string;
+  created_at?: string;
   authorID?: string;
   nodeDefs?: string; //for cloud workflow version
 };

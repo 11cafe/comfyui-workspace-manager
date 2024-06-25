@@ -2,7 +2,6 @@ import { Button, Flex, Input, Stack } from "@chakra-ui/react";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { useContext } from "react";
 import { WorkspaceContext } from "../WorkspaceContext";
-import { encodeKey } from "../utils/encryptUtils";
 import { saveShareKey } from "../utils/saveShareKey";
 
 export default function CreateVersionLogin() {
@@ -40,7 +39,13 @@ export default function CreateVersionLogin() {
       <Input
         placeholder="Paste your share key here"
         onChange={(e) => {
-          if (!e.target.value || e.target.value === "") return;
+          if (
+            !e.target.value ||
+            e.target.value === "" ||
+            e.target.value.length < 20
+          )
+            return;
+
           saveShareKey(e.target.value);
           updateSession({
             shareKey: e.target.value,
