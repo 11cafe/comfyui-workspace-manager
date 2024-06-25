@@ -2,9 +2,11 @@
 
 A ComfyUI workflow and model manager extension to **organize and manage all your workflows, models and generated images in one place**. Seamlessly switch between workflows, track version history and image generation history, 1 click install models from Civit ai, browse/update your installed models
 
-If you have questions or suggestions, please [join our Discord](https://discord.gg/HHvfEurv2Z)! I'm building a new platform that lets you quickly make a runnable web app from your comfyui workflow. www.nodecafe.co if you are interested to make your comfyui workflow into an app or colaborate with me, please DM me!
+If you have questions or suggestions, please [join our Discord](https://discord.gg/HHvfEurv2Z)! 
 
-[6-21] tags are deprecated, please use folders to organize your workflows.
+🦄 We have a new platform to turn your comfyui workflow to runnable web app: www.nodecafe.co please check it out! 🥳
+
+[6-25] ⚠️ if workspace manage is not showing up for you after updating ComfyUI, please update it! cause: https://github.com/comfyanonymous/ComfyUI/commit/90aebb6c868d713c3e6457d1474c53808cb5f6a2
 
 [6-21] ‼️please upgrade to V2 and enable twoway sync if you haven't already. I will stop supporting V1 soon and will forcefully turn on twoway sync later. (twoway sync means that your workflow are twoway synced with your disk files /my_workflows directly)
 
@@ -51,7 +53,7 @@ Recommanded settings for V2 (Do not use these settings if you are on V1):
 
 - 🔁Switch between different workflows easily. 1click open workflow in multiple browser tabs.
 - 🤏**Drag and drop** to insert subworkflows into current flow.
-- 🗂️Organize workflows with folders
+- 🗂️Organize workflows with folders (tags are deprecated, please use folders to organize)
 - 📂Save and sync all your workflows in a local folder (by default under `/ComfyUI/my_workflows` customize in Settings)
   - **Save workflow by pressing the 💾 button, or ⌨Shift+S shortcut** (customize in Settings).
   - Every time you save, it will create a new record in **Version History**. You can easily revert to any version.
