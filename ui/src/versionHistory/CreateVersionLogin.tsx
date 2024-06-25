@@ -3,6 +3,7 @@ import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { useContext } from "react";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { encodeKey } from "../utils/encryptUtils";
+import { saveShareKey } from "../utils/saveShareKey";
 
 export default function CreateVersionLogin() {
   const cloudHost = userSettingsTable?.settings?.cloudHost;
@@ -40,8 +41,7 @@ export default function CreateVersionLogin() {
         placeholder="Paste your share key here"
         onChange={(e) => {
           if (!e.target.value || e.target.value === "") return;
-          const key = encodeKey(e.target.value);
-          localStorage.setItem("workspace_manager_shareKey", key);
+          saveShareKey(e.target.value);
           updateSession({
             shareKey: e.target.value,
             username: null,

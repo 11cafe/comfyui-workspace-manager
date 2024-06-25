@@ -1,25 +1,20 @@
 import { Input, Stack, useToast, Text, Flex, Button } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
+import { WorkspaceContext } from "../WorkspaceContext";
+import { saveShareKey } from "../utils/saveShareKey";
 
-export default function CloudHostSetting() {
+export default function SharekeySetting() {
   const toast = useToast();
+  const { session, updateSession } = useContext(WorkspaceContext);
   const [text, setText] = useState("");
 
-  const getSettings = () => {
-    userSettingsTable?.getSetting("cloudHost").then((res) => {
-      setText(res ?? "");
-    });
-  };
-
   useEffect(() => {
-    getSettings();
-  }, []);
+    setText(session?.shareKey ?? "");
+  }, [session]);
   const submitChange = async (text: string) => {
-    text = text.trim();
-    if (text.endsWith("/")) text = text.slice(0, -1);
-    await userSettingsTable?.upsert({ cloudHost: text });
-    getSettings();
+    saveShareKey(text);
+    updateSession({ username: session?.username ?? null, shareKey: text });
     toast({
       title: "Setting saved. Please refresh to see the changes.",
       status: "success",
@@ -29,9 +24,14 @@ export default function CloudHostSetting() {
 
   return (
     <Stack>
-      <Text>
-        For enterprise paid user only. Hosting site of the shared workflow.
-      </Text>
+      <a
+        href={userSettingsTable?.settings?.cloudHost + "/auth/shareKey"}
+        target="_blank"
+      >
+        Copy your share key here and paste it to below to start sharing
+        workflows
+      </a>
+
       <Flex gap={2} alignItems={"center"}>
         <Input
           value={text}
@@ -43,16 +43,6 @@ export default function CloudHostSetting() {
             }
           }}
         />
-        <Button
-          size={"sm"}
-          onClick={() => {
-            const cloudHost = userSettingsTable?.defaultSettings.cloudHost!;
-            setText(cloudHost);
-            submitChange(cloudHost);
-          }}
-        >
-          Reset
-        </Button>
       </Flex>
     </Stack>
   );

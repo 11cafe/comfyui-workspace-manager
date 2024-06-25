@@ -21,6 +21,7 @@ import {
 import { IconX } from "@tabler/icons-react";
 import {
   changelogsTable,
+  userSettingsTable,
   workflowsTable,
   workflowVersionsTable,
 } from "../db-tables/WorkspaceDB";
@@ -32,8 +33,7 @@ import DeleteConfirm from "./DeleteConfirm";
 import { app } from "../utils/comfyapp";
 
 export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
-  const toast = useToast();
-  const { curFlowID, isDirty, loadWorkflowID, curVersion } =
+  const { curFlowID, isDirty, loadWorkflowID, curVersion, session } =
     useContext(WorkspaceContext);
   const [active, setActive] = useState(0); // 0: version、1: changelog
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
@@ -54,6 +54,25 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
   const loadVersions = async () => {
     const vers =
       (await workflowVersionsTable?.listByWorkflowID(curFlowID!)) ?? [];
+    if (session?.shareKey) {
+      fetch(
+        userSettingsTable?.settings?.cloudHost! +
+          "/api/listWorkflowVersionsByWorkflowID",
+        {
+          headers: {
+            authorization: `Bearer ${session?.shareKey}`,
+          },
+        },
+      )
+        .then((resp) => resp.json())
+        .then((data) => {
+          console.log("cloud versions", data);
+          if (data.data) {
+            setVersions(data.data);
+          }
+        });
+    }
+
     setVersions(vers);
   };
 

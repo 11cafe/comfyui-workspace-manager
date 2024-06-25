@@ -1,9 +1,7 @@
 import {
   Button,
   Modal,
-  ModalOverlay,
   ModalContent,
-  ModalHeader,
   ModalCloseButton,
   ModalBody,
   ModalFooter,
@@ -12,49 +10,81 @@ import {
   FormErrorMessage,
   Input,
   Stack,
+  useToast,
 } from "@chakra-ui/react";
-import {
-  userSettingsTable,
-  workflowVersionsTable,
-} from "../db-tables/WorkspaceDB";
+import { userSettingsTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import { useState, ChangeEvent, useContext } from "react";
-import { app } from "../utils/comfyapp";
 import { WorkspaceContext } from "../WorkspaceContext";
-import CreateVersionLogin from "../versionHistory/CreateVresionLogin";
+import CreateVersionLogin from "../versionHistory/CreateVersionLogin";
+import { ShareWorkflowData } from "../types/types";
+import { app } from "../utils/comfyapp";
+import { EWorkflowPrivacy } from "../types/dbTypes";
+import { getNodeDefs } from "../share/shareUtils";
 
 interface Props {
   workflowId: string;
   onClose: () => void;
 }
-export default function CreateVersionDialog({ workflowId, onClose }: Props) {
+export default function CreateVersionDialog({ onClose }: Props) {
   const [newVersionName, setNewVersionName] = useState("");
   const [submitError, setSubmitError] = useState("");
   const { session } = useContext(WorkspaceContext);
-
+  const toast = useToast();
+  const [submitting, setSubmitting] = useState(false);
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setNewVersionName(event.target.value);
     submitError && setSubmitError("");
   };
 
   const onSubmit = async () => {
+    console.log("session, sharekey", session?.shareKey);
     const trimName = newVersionName.trim();
     setNewVersionName(trimName);
-    const versionList =
-      (await workflowVersionsTable?.listByWorkflowID(workflowId)) ?? [];
-    if (versionList.some((version) => version.name === trimName)) {
-      setSubmitError(
-        "The name is duplicated, please modify it and submit again.",
-      );
-    } else {
-      const graphJson = JSON.stringify(app.graph.serialize());
-      await workflowVersionsTable?.add({
-        name: newVersionName,
-        workflowID: workflowId,
-        createTime: Date.now(),
-        json: graphJson,
-      });
-      onClose();
+    if (!workflowsTable?.curWorkflow) {
+      throw new Error("No workflow selected");
     }
+    setSubmitting(true);
+    const input: ShareWorkflowData = {
+      workflow: {
+        name: workflowsTable?.curWorkflow?.name,
+        cloudID: workflowsTable?.curWorkflow?.cloudID,
+      },
+      version: {
+        name: trimName,
+        json: JSON.stringify(app.graph.serialize()),
+      },
+      nodeDefs: getNodeDefs(),
+      privacy: EWorkflowPrivacy.PRIVATE,
+    };
+    const data = await fetch(
+      userSettingsTable?.settings?.cloudHost + "/api/createCloudflow",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.shareKey}`,
+        },
+        body: JSON.stringify(input),
+      },
+    )
+      .then((resp) => resp.json())
+      .then((data) => {
+        if (data?.data) {
+          toast({
+            title: "Version created",
+            status: "success",
+            duration: 3000,
+          });
+          onClose();
+        } else {
+          setSubmitError("Failed to create version. " + (data?.error ?? ""));
+        }
+      })
+      .catch((e) => {
+        setSubmitError("Failed to create version");
+        return null;
+      });
+    setSubmitting(false);
   };
   if (!session?.shareKey) {
     return (
@@ -101,7 +131,8 @@ export default function CreateVersionDialog({ workflowId, onClose }: Props) {
             colorScheme="teal"
             mr={3}
             onClick={onSubmit}
-            isDisabled={!newVersionName || !!submitError}
+            isDisabled={!newVersionName}
+            isLoading={submitting}
           >
             Create
           </Button>
