@@ -4,13 +4,13 @@ A ComfyUI workflow and model manager extension to **organize and manage all your
 
 If you have questions or suggestions, please [join our Discord](https://discord.gg/HHvfEurv2Z)! 
 
-🦄 We have a new platform to turn your comfyui workflow to runnable web app: www.nodecafe.co please check it out! 🥳
+✨We have a new platform to turn your comfyui workflow to runnable web app: www.nodecafe.co please check it out! 🥳
 
-[6-25] ⚠️ if workspace manage is not showing up for you after updating ComfyUI, please update it! cause: https://github.com/comfyanonymous/ComfyUI/commit/90aebb6c868d713c3e6457d1474c53808cb5f6a2
+[6-25] ⚠️ Please update workspace manager to latest version if it's not showing up for you after updating ComfyUI
 
 [6-21] ‼️please upgrade to V2 and enable twoway sync if you haven't already. I will stop supporting V1 soon and will forcefully turn on twoway sync later. (twoway sync means that your workflow are twoway synced with your disk files /my_workflows directly)
 
-[6-21] ‼️‼️Auto-save mode will be removed comopoletely from next version. Because there are reports that autosave mode sometimes overwrite workflows mistakenly. Therefore, please **manual save** your workflows always.
+[6-21] ‼️ Auto-save mode will be removed comopoletely from next version. Because there are reports that autosave mode sometimes overwrite workflows mistakenly. Therefore, please **manual save** your workflows always.
 
 [New!] We provide 👭**team workspace** now! If you need to **share workflows, backup workflow versions for enterprise and teams**, please contact me about our team/enterprise product at weixuanfu01@gmail.com or join discord and DM me @briefpeach 
 
@@ -80,9 +80,6 @@ Recommend using Chrome browser for the best experience. Safari doesn't work well
 [中文版教程](https://www.uisdc.com/workspace-manager) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Roadmap](https://github.com/orgs/11cafe/projects/1/views/1)
 
 ## Updates
-**🦩v2.1 New gallery! Inspect image metadata**
-
-<img width="400" alt="Screenshot 2024-03-23 at 12 58 38 AM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/5bac9793-7491-4131-b850-037094d03823">
 
 **🦄v2.0 Two-way sync with local folder, models manager support external models path like Automatic1111, cloud sync workflows**
   
