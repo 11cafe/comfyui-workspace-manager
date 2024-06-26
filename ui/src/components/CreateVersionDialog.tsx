@@ -69,6 +69,10 @@ export default function CreateVersionDialog({ onClose }: Props) {
       .then((resp) => resp.json())
       .then((data) => {
         if (data?.data) {
+          const cloudID = data.data.workflowID;
+          workflowsTable?.updateMetaInfo(workflowsTable?.curWorkflow?.id!, {
+            cloudID,
+          });
           toast({
             title: "Version created",
             status: "success",
