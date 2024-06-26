@@ -1,0 +1,1 @@
+import{r}from"./input.js";function a(u,c){const e=r.useRef(0),t=r.useCallback(()=>{e.current!==null&&(clearTimeout(e.current),e.current=0)},[]),n=r.useCallback((...o)=>{t(),e.current=setTimeout(()=>u(...o),c)},[u,c,t]);return r.useEffect(()=>()=>{t()},[]),[n,t]}export{a as u};
