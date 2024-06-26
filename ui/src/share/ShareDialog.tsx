@@ -32,6 +32,7 @@ import {
   PrivacyLabel,
   fetchCloudWorkflowPrivacy,
   generateRandomKey,
+  getCurDateString,
   getNodeDefs,
   privacyOptions,
 } from "./shareUtils";
@@ -351,13 +352,4 @@ export default function ShareDialog({ onClose }: Props) {
       </ModalContent>
     </Modal>
   );
-}
-
-function getCurDateString() {
-  const currentDate = new Date();
-  const year = currentDate.getFullYear();
-  const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Months are 0-based in JS
-  const day = String(currentDate.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
 }

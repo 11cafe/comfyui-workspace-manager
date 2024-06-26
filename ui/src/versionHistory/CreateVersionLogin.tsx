@@ -1,4 +1,4 @@
-import { Button, Flex, Input, Stack } from "@chakra-ui/react";
+import { Button, Flex, Input, Stack, useToast } from "@chakra-ui/react";
 import { userSettingsTable } from "../db-tables/WorkspaceDB";
 import { useContext } from "react";
 import { WorkspaceContext } from "../WorkspaceContext";
@@ -6,6 +6,7 @@ import { saveShareKey } from "../utils/saveShareKey";
 
 export default function CreateVersionLogin() {
   const cloudHost = userSettingsTable?.settings?.cloudHost;
+  const toast = useToast();
   const { updateSession } = useContext(WorkspaceContext);
   return (
     <Stack p={"10px 10px"} gap={3}>
@@ -19,7 +20,7 @@ export default function CreateVersionLogin() {
       </h2>
       <p>
         We have a new version control experience. Now your versions will be
-        stored securely in cloud at{" "}
+        stored <b>privately</b> and securely in cloud at{" "}
         <a href="www.nodecafe.co">www.nodecafe.co</a>
       </p>
       <h3 style={{ fontWeight: "bold" }}>Why cloud?</h3>
@@ -43,13 +44,19 @@ export default function CreateVersionLogin() {
             !e.target.value ||
             e.target.value === "" ||
             e.target.value.length < 20
-          )
+          ) {
             return;
+          }
 
           saveShareKey(e.target.value);
           updateSession({
             shareKey: e.target.value,
             username: null,
+          });
+          toast({
+            title: "Share key saved. You can create versions now.",
+            status: "success",
+            duration: 5000,
           });
         }}
       />
