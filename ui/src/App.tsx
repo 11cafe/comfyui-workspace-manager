@@ -25,19 +25,16 @@ const RecentFilesDrawer = React.lazy(
 );
 const GalleryModal = React.lazy(() => import("./gallery/GalleryModal"));
 import { IconExternalLink } from "@tabler/icons-react";
-import {
-  COMFYSPACE_TRACKING_FIELD_NAME,
-  DRAWER_Z_INDEX,
-  UPGRADE_TO_2WAY_SYNC_KEY,
-} from "./const";
+import { DRAWER_Z_INDEX, UPGRADE_TO_2WAY_SYNC_KEY } from "./const";
 import ServerEventListener from "./model-manager/hooks/ServerEventListener";
-import { WorkspaceRoute } from "./types/types";
+import { Session, WorkspaceRoute } from "./types/types";
 import { useStateRef } from "./customHooks/useStateRef";
 import { indexdb } from "./db-tables/indexdb";
 import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
 import { api, app } from "./utils/comfyapp";
 import { fetchApi } from "./Api";
 import { serverInfo } from "./utils/OsPathUtils";
+import { decodeKey } from "./utils/encryptUtils";
 
 export default function App() {
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
@@ -45,7 +42,7 @@ export default function App() {
   const [loadingDB, setLoadingDB] = useState(true);
   const [flowID, setFlowID] = useState<string | null>(null);
   const curFlowID = useRef<string | null>(null);
-
+  const [session, setSession] = useState<Session | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const workspaceContainerRef = useRef(null);
   const { showDialog } = useDialog();
@@ -189,6 +186,15 @@ export default function App() {
           closeOnOverlayClick: false,
         },
       );
+    }
+    const encodedKey = localStorage.getItem("workspace_manager_shareKey");
+    if (encodedKey) {
+      const shareKey = decodeKey(encodedKey);
+      shareKey &&
+        setSession({
+          shareKey: shareKey,
+          username: null,
+        });
     }
   };
 
@@ -402,6 +408,8 @@ export default function App() {
         curVersion: curVersion,
         setCurVersion: setCurVersion,
         setCurFlowIDAndName: setCurFlowIDAndName,
+        session: session,
+        updateSession: setSession,
       }}
     >
       <div ref={workspaceContainerRef} className="workspace_manager">

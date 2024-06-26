@@ -60,6 +60,12 @@ export default function AppIsDirtyEventListener() {
     };
 
     const restoreCurWorkflow = async () => {
+      if (!app?.graph) {
+        console.error(
+          "🦄 Error in workspace manager! app.graph is not available in restoreCurWorkflow()",
+        );
+        return;
+      }
       const id = app.graph.extra?.[COMFYSPACE_TRACKING_FIELD_NAME]?.id;
       if (id) {
         const flow = await workflowsTable?.get(id);
@@ -75,7 +81,6 @@ export default function AppIsDirtyEventListener() {
       }
     };
 
-    restoreCurWorkflow();
     const originalOnConfigure = app.graph.onConfigure;
     app.graph.onConfigure = function () {
       originalOnConfigure?.apply(this, arguments);
@@ -100,6 +105,7 @@ export default function AppIsDirtyEventListener() {
     });
     document.addEventListener("keydown", keydownListener);
 
+    restoreCurWorkflow();
     return () => {
       document.removeEventListener("keydown", keydownListener);
     };

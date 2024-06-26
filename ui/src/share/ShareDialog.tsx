@@ -17,7 +17,11 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react";
-import { WorkflowPrivacy, WorkflowVersion } from "../types/dbTypes";
+import {
+  EWorkflowPrivacy,
+  WorkflowPrivacy,
+  WorkflowVersion,
+} from "../types/dbTypes";
 import { useContext, useEffect, useState } from "react";
 import CustomSelector from "../components/CustomSelector";
 import { IconCopy, IconExternalLink } from "@tabler/icons-react";
@@ -35,7 +39,6 @@ import {
 import ResourceDepsForm from "../spacejson/ResourceDepsForm";
 import { app } from "../utils/comfyapp";
 import { useStateRef } from "../customHooks/useStateRef";
-import { nanoid } from "nanoid";
 import { WorkspaceContext } from "../WorkspaceContext";
 import {
   DepsResult,
@@ -44,6 +47,7 @@ import {
 } from "../spacejson/handleDownloadSpaceJson";
 import { fetchApi } from "../Api";
 import { COMFYSPACE_TRACKING_FIELD_NAME } from "../const";
+import { ShareWorkflowData } from "../types/types";
 
 interface Props {
   onClose: () => void;
@@ -70,20 +74,18 @@ export default function ShareDialog({ onClose }: Props) {
     const detail = event.data;
     if (
       // event.origin !== cloudHostRef.current ||
-      detail.type !== "share_workflow_success"
+      detail.type !== "share_workflow_success" ||
+      !workflow
     ) {
       return;
     }
 
-    const localID = detail.localWorkflowID;
     const cloudVersionID = detail.version.id;
     const cloudID = detail.version.workflowID;
 
     cloudID &&
-      localID &&
-      (await workflowsTable?.updateMetaInfo(localID, {
+      (await workflowsTable?.updateMetaInfo(workflow.id, {
         cloudID: cloudID,
-        privacy: privacyRef.current,
       }));
 
     loadData();
@@ -138,7 +140,7 @@ export default function ShareDialog({ onClose }: Props) {
 
     await saveCurWorkflow();
 
-    const apiPrompt = await app
+    await app
       .graphToPrompt(app.graph)
       .then((data: { output: any; workflow: any }) => {
         graph.extra[COMFYSPACE_TRACKING_FIELD_NAME].apiPrompt = data.output;
@@ -153,12 +155,8 @@ export default function ShareDialog({ onClose }: Props) {
         : "http://localhost:3000";
     let nodeDefs: Object;
     nodeDefs = getNodeDefs();
-    const version: WorkflowVersion = {
-      id: nanoid(),
-      workflowID: workflow!.id,
+    const version: Omit<WorkflowVersion, "id" | "workflowID" | "createTime"> = {
       name: versionNameRef.current,
-      createTime: Date.now(),
-      api_prompt: JSON.stringify(apiPrompt),
       json: jsonToShare ?? JSON.stringify(app.graph.serialize()),
     };
     const protocol = window.location.protocol;
@@ -174,16 +172,23 @@ export default function ShareDialog({ onClose }: Props) {
     const handleChildReady = (event: MessageEvent) => {
       if (event.origin === host && event.data === "child_ready") {
         const curWorkflow = workflowsTable?.curWorkflow;
-        // Send data to the new window after it loads
-        sharePopup!.postMessage(
-          {
-            workflow: curWorkflow,
-            version: version,
-            nodeDefs: nodeDefs,
-            privacy: privacyRef.current,
+        if (!curWorkflow) {
+          return;
+        }
+        const input: ShareWorkflowData = {
+          workflow: {
+            name: curWorkflow.name,
+            cloudID: curWorkflow.cloudID,
           },
-          host,
-        );
+          version: {
+            name: versionNameRef.current,
+            json: jsonToShare,
+          },
+          nodeDefs: nodeDefs,
+          privacy: privacyRef.current as EWorkflowPrivacy,
+        };
+        // Send data to the new window after it loads
+        sharePopup!.postMessage(input, host);
         window.removeEventListener("message", handleChildReady);
       }
     };

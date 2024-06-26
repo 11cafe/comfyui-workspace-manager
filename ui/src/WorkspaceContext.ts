@@ -1,6 +1,6 @@
 import { createContext } from "react";
 import { Folder, Workflow, WorkflowVersion } from "./types/dbTypes";
-import { WorkspaceRoute } from "./types/types";
+import { Session, WorkspaceRoute } from "./types/types";
 export type JsonDiff = {
   old: Object;
   new: Object;
@@ -25,6 +25,8 @@ export const WorkspaceContext = createContext<{
   curVersion: WorkflowVersion | null;
   setCurVersion: (version: WorkflowVersion | null) => void;
   setCurFlowIDAndName: (workflow: Workflow | null) => void;
+  session: Session | null;
+  updateSession: (session: Session) => void;
 }>({
   curFlowID: null,
   loadWorkflowID: () => {},
@@ -39,6 +41,8 @@ export const WorkspaceContext = createContext<{
   setIsDirty: () => {},
   setCurVersion: () => {},
   setCurFlowIDAndName: () => {},
+  session: null,
+  updateSession: () => {},
 });
 
 export const RecentFilesContext = createContext<{

@@ -16,6 +16,7 @@ import CommonCheckboxSettings from "../settings/CommonCheckboxSettings";
 import SelectMyWorkflowsDir from "../settings/SelectMyWorkflowsDir";
 import { CommonNumberSetting } from "../settings/CommonNumberSetting";
 import CloudHostSetting from "../settings/CloudHostSetting";
+import SharekeySetting from "../settings/SharekeySetting";
 
 export default function WorkspaceSettingsModal({
   onClose,
@@ -40,6 +41,7 @@ export default function WorkspaceSettingsModal({
                 <SelectMyWorkflowsDir />
                 <ShortcutSettings />
                 <TwoWaySyncSettings />
+                <SharekeySetting />
                 <FolderOnTopSettings />
                 <CommonNumberSetting
                   label={`Maximum number of save change history to store. This does not include
@@ -51,6 +53,7 @@ export default function WorkspaceSettingsModal({
                   settingKey="disableUnsavedWarning"
                   text={`Disable the "Save or Discard" warning when closing a workflow with unsaved changes. ⛔️Be careful, if you disable this reminder and forget to save your workflow, you will lose your changes.`}
                 />
+
                 <CommonCheckboxSettings
                   settingKey="hideCoverImage"
                   text="Hide thumbnail image in workflow list"

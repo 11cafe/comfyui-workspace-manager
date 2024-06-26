@@ -32,7 +32,6 @@ export default function ServerEventListener() {
           name: version.name,
           authorID: version.authorID,
           json: version.json,
-          api_prompt: null,
         });
         newversion && loadWorkflowID(existingWorkflow.id, newversion.id);
       }
@@ -57,7 +56,6 @@ export default function ServerEventListener() {
         name: version.name,
         json: version.json,
         authorID: version.authorID,
-        api_prompt: null,
         createTime: Date.now(),
       });
       await loadWorkflowID(newWorkflow.id, newverison?.id);

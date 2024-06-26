@@ -37,6 +37,11 @@ export default function CloudHostSetting() {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onBlur={() => submitChange(text)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              submitChange(text);
+            }
+          }}
         />
         <Button
           size={"sm"}
