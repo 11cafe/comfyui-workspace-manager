@@ -206,7 +206,6 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
                               return;
                             }
                             app.loadGraphData(JSON.parse(version.json));
-                            loadWorkflowID(curFlow!.id, version.id);
                             onClose();
                           }}
                         >
