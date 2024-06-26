@@ -19,14 +19,16 @@ import CreateVersionLogin from "../versionHistory/CreateVersionLogin";
 import { ShareWorkflowData } from "../types/types";
 import { app } from "../utils/comfyapp";
 import { EWorkflowPrivacy } from "../types/dbTypes";
-import { getNodeDefs } from "../share/shareUtils";
+import { getCurDateString, getNodeDefs } from "../share/shareUtils";
 
 interface Props {
   workflowId: string;
   onClose: () => void;
 }
 export default function CreateVersionDialog({ onClose }: Props) {
-  const [newVersionName, setNewVersionName] = useState("");
+  const [newVersionName, setNewVersionName] = useState(
+    "v" + getCurDateString(),
+  );
   const [submitError, setSubmitError] = useState("");
   const { session } = useContext(WorkspaceContext);
   const toast = useToast();

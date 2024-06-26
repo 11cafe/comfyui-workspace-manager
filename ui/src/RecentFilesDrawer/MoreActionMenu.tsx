@@ -12,13 +12,17 @@ import {
   IconCopy,
   IconDotsVertical,
   IconExternalLink,
+  IconLink,
   IconLock,
   IconLockOpen,
   IconUpload,
 } from "@tabler/icons-react";
-import AddTagToWorkflowPopover from "./AddTagToWorkflowPopover";
 import { Workflow } from "../types/dbTypes";
-import { mediaTable, workflowsTable } from "../db-tables/WorkspaceDB";
+import {
+  mediaTable,
+  userSettingsTable,
+  workflowsTable,
+} from "../db-tables/WorkspaceDB";
 import { WorkspaceContext } from "../WorkspaceContext";
 import { openWorkflowInNewTab } from "../utils";
 import { fetchApi } from "../Api";
@@ -115,6 +119,23 @@ export default function MoreActionMenu({ workflow }: Props) {
               {isLocked ? "Unlock" : "Lock"}
             </MenuItem>
           </Tooltip>
+          {workflow.cloudID && (
+            <MenuItem
+              icon={<IconLink />}
+              onClick={() => {
+                navigator.clipboard.writeText(
+                  `${userSettingsTable?.settings?.cloudHost}/workflow/${workflow.cloudID}`,
+                );
+                toast({
+                  title: "Cloud link copied",
+                  status: "success",
+                  duration: 3000,
+                });
+              }}
+            >
+              Copy cloud share link
+            </MenuItem>
+          )}
           <MenuItem
             icon={<IconUpload />}
             onClick={() => {
