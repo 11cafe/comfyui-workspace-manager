@@ -26,6 +26,7 @@ import {
   DarkMode,
   Tag,
   HStack,
+  useToast,
 } from "@chakra-ui/react";
 import {
   IconArrowBackUpDouble,
@@ -33,6 +34,7 @@ import {
   IconDeviceFloppy,
   IconDownload,
   IconHistory,
+  IconLink,
   IconShare2,
   IconVersions,
 } from "@tabler/icons-react";
@@ -83,7 +85,7 @@ export default function DropdownTitle() {
     setNewFlowName(event.target.value);
     submitError && setSubmitError("");
   };
-
+  const toast = useToast();
   const onSubmit = async () => {
     if (!curFlowID) {
       alert("Flow ID is required");
@@ -192,6 +194,31 @@ export default function DropdownTitle() {
                 <HStack>
                   <p>Share</p> <Tag size={"sm"}>🧪beta</Tag>
                   <SharedTopbarButton />
+                </HStack>
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  const cloudHost = userSettingsTable?.settings?.cloudHost!;
+
+                  if (workflow?.cloudID) {
+                    navigator.clipboard.writeText(
+                      `${cloudHost}/workflow/${workflow.cloudID}`,
+                    );
+                    toast({
+                      title: "Link copied",
+                      status: "success",
+                      duration: 2000,
+                    });
+                  } else {
+                    setIsOpenNewVersion(true);
+                  }
+                }}
+                icon={<IconLink size={20} />}
+                iconSpacing={1}
+                alignItems={"center"}
+              >
+                <HStack>
+                  <p>Copy share link</p>
                 </HStack>
               </MenuItem>
             </MenuList>
