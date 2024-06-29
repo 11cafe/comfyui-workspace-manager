@@ -20,6 +20,12 @@ export async function copySharelink(
       link,
     };
   }
+  const prompt = await app.graphToPrompt();
+  const graph = app.graph.serialize();
+  if (!graph.extra) {
+    graph.extra = {};
+  }
+  graph.extra.apiPrompt = prompt.output ?? null;
   const input: ShareWorkflowData = {
     workflow: {
       name: curWorkflow?.name ?? "Untitled",
@@ -27,7 +33,7 @@ export async function copySharelink(
     },
     version: {
       name: "v1",
-      json: JSON.stringify(app.graph.serialize()),
+      json: JSON.stringify(graph),
     },
     nodeDefs: getNodeDefs(),
     privacy: EWorkflowPrivacy.PRIVATE,
