@@ -131,8 +131,6 @@ export class WorkflowsTable extends TableBase<Workflow> {
     };
     //add to IndexDB
     await indexdb.workflows.add(newWorkflow);
-    // add to disk file db
-    this.saveDiskDB();
     // add to my_workflows/
     const twoWaySyncEnabled = await userSettingsTable?.getSetting("twoWaySync");
     if (twoWaySyncEnabled) {
@@ -174,7 +172,6 @@ export class WorkflowsTable extends TableBase<Workflow> {
     if (this._curWorkflow && this._curWorkflow.id === id) {
       this._curWorkflow = newWorkflow;
     }
-    this.saveDiskDB();
     return newWorkflow;
   }
 
@@ -277,7 +274,6 @@ export class WorkflowsTable extends TableBase<Workflow> {
     }
     try {
       await indexdb.workflows.bulkAdd(newWorkflows);
-      this.saveDiskDB();
     } catch (e) {
       console.error("batchCreateFlows error", e);
     }
@@ -295,7 +291,6 @@ export class WorkflowsTable extends TableBase<Workflow> {
     }
     //add to IndexDB
     await indexdb.workflows.delete(id);
-    this.saveDiskDB();
   }
 
   public async batchDeleteFlow(ids: string[]) {
@@ -309,7 +304,6 @@ export class WorkflowsTable extends TableBase<Workflow> {
       }
     }
     await indexdb.workflows.bulkDelete(ids);
-    this.saveDiskDB();
   }
 
   public async listFolderContent(

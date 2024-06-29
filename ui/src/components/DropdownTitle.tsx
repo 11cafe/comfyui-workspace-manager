@@ -34,7 +34,6 @@ import {
   IconDeviceFloppy,
   IconDownload,
   IconHistory,
-  IconLink,
   IconShare2,
   IconVersions,
 } from "@tabler/icons-react";
@@ -49,6 +48,7 @@ import { TOPBAR_BUTTON_HEIGHT } from "../const";
 import { downloadJsonFile } from "../utils/downloadJsonFile";
 import { SharedTopbarButton } from "../share/SharedTopbarButton";
 import { app } from "../utils/comfyapp";
+import CopyShareLinkMenuItem from "./CopyShareLinkMenuItem";
 
 export default function DropdownTitle() {
   const {
@@ -58,6 +58,7 @@ export default function DropdownTitle() {
     saveCurWorkflow,
     setRoute,
     route,
+    session,
   } = useContext(WorkspaceContext);
 
   const [isOpenNewVersion, setIsOpenNewVersion] = useState(false);
@@ -196,31 +197,9 @@ export default function DropdownTitle() {
                   <SharedTopbarButton />
                 </HStack>
               </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  const cloudHost = userSettingsTable?.settings?.cloudHost!;
-
-                  if (workflow?.cloudID) {
-                    navigator.clipboard.writeText(
-                      `${cloudHost}/workflow/${workflow.cloudID}`,
-                    );
-                    toast({
-                      title: "Link copied",
-                      status: "success",
-                      duration: 2000,
-                    });
-                  } else {
-                    setIsOpenNewVersion(true);
-                  }
-                }}
-                icon={<IconLink size={20} />}
-                iconSpacing={1}
-                alignItems={"center"}
-              >
-                <HStack>
-                  <p>Copy share link</p>
-                </HStack>
-              </MenuItem>
+              {workflowsTable?.curWorkflow && (
+                <CopyShareLinkMenuItem curFlow={workflowsTable?.curWorkflow} />
+              )}
             </MenuList>
           </Menu>
         }

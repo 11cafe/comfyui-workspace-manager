@@ -69,12 +69,15 @@ export default function CreateVersionDialog({ onClose }: Props) {
       },
     )
       .then((resp) => resp.json())
-      .then((data) => {
+      .then(async (data) => {
         if (data?.data) {
           const cloudID = data.data.workflowID;
-          workflowsTable?.updateMetaInfo(workflowsTable?.curWorkflow?.id!, {
-            cloudID,
-          });
+          await workflowsTable?.updateMetaInfo(
+            workflowsTable?.curWorkflow?.id!,
+            {
+              cloudID,
+            },
+          );
           toast({
             title: "Version created",
             status: "success",
@@ -92,15 +95,7 @@ export default function CreateVersionDialog({ onClose }: Props) {
     setSubmitting(false);
   };
   if (!session?.shareKey) {
-    return (
-      <Modal isOpen={true} onClose={onClose} size={"xl"}>
-        <ModalContent width={"90vw"}>
-          <ModalBody>
-            <CreateVersionLogin />
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-    );
+    return <CreateVersionLogin onClose={onClose} />;
   }
   const domain = new URL(userSettingsTable!.settings!.cloudHost).hostname;
   return (
