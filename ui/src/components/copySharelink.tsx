@@ -36,7 +36,7 @@ export async function copySharelink(
       json: JSON.stringify(graph),
     },
     nodeDefs: getNodeDefs(),
-    privacy: EWorkflowPrivacy.PRIVATE,
+    privacy: EWorkflowPrivacy.UNLISTED,
   };
   return await fetch(
     userSettingsTable?.settings?.cloudHost + "/api/createCloudflow",
