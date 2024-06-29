@@ -1,9 +1,9 @@
-import { MetaData, getMetadataFromUrl } from "../../utils.ts";
+import { getMetadataFromUrl } from "../../utils.ts";
 import { Flex, HStack, Switch } from "@chakra-ui/react";
 import { Media } from "../../../types/dbTypes.ts";
 import TopForm from "../TopForm/TopForm.tsx";
 import AllPromptForm from "../AllPromptForm/AllPromptForm.tsx";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FormItem } from "../FormItem/types.ts";
 import {
   calcInputListRecursive,
@@ -11,8 +11,6 @@ import {
   PromptNodeInputItem,
 } from "./utils.ts";
 import { MetaBoxContext } from "./metaBoxContext.ts";
-import { workflowsTable } from "../../../db-tables/WorkspaceDB.ts";
-import { WorkspaceContext } from "../../../WorkspaceContext.ts";
 import { app } from "../../../utils/comfyapp.ts";
 export type TopFieldType = {
   promptKey: string | number;
@@ -34,7 +32,6 @@ export const isInTopField = (
 
 export default function MetadataForm({ media }: { media: Media | null }) {
   const [calcInputList, setCalcInputList] = useState<PromptNodeInputItem[]>([]);
-  const { curFlowID } = useContext(WorkspaceContext);
   const [imagePrompt, setImagePrompt] = useState<ImagePrompt>();
   const [showAllInputs, setShowAllInputs] = useState(true);
   const [showNodeName, setShowNodeName] = useState(true);
