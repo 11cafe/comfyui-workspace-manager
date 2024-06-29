@@ -12,6 +12,8 @@ export class TableBase<T extends TableBaseModel> {
     this.tableName = tableName;
   }
   protected async saveDiskDB() {
+    // diable save diskdb
+    return;
     const objs = (await indexdb[this.tableName].toArray()) as TableBaseModel[];
     const backup: Record<string, TableBaseModel> = {};
     objs.forEach((f) => {
@@ -43,23 +45,19 @@ export class TableBase<T extends TableBaseModel> {
       newItem.createTime = Date.now();
     }
     await indexdb[this.tableName].add(newItem as any);
-    await this.saveDiskDB();
     return newItem as T;
   }
 
   public async put(newItem: T): Promise<T> {
     await indexdb[this.tableName].put(newItem as any);
-    await this.saveDiskDB();
     return newItem;
   }
   public async bulkPut(newItems: T[]): Promise<void> {
     // @ts-ignore
     await indexdb[this.tableName].bulkPut(newItems as any);
-    this.saveDiskDB();
   }
   public async update(id: string, changes: Partial<T>): Promise<T | null> {
     await indexdb[this.tableName].update(id, changes);
-    this.saveDiskDB();
     return (await this.get(id)) ?? null;
   }
 
@@ -106,7 +104,6 @@ export class TableBase<T extends TableBaseModel> {
 
   public async delete(id: string) {
     await indexdb[this.tableName].delete(id);
-    this.saveDiskDB();
   }
   public async listByIndex(index: keyof T, value: string): Promise<T[]> {
     const list = await indexdb[this.tableName]

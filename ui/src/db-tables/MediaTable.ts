@@ -35,8 +35,6 @@ export class MediaTable extends TableBase<Media> {
     });
     // save indexdb
     indexdb.media.put(md);
-    // save disk file db
-    this.saveDiskDB();
     return md;
   }
 

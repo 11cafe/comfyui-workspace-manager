@@ -26,6 +26,7 @@ import {
   DarkMode,
   Tag,
   HStack,
+  useToast,
 } from "@chakra-ui/react";
 import {
   IconArrowBackUpDouble,
@@ -47,6 +48,7 @@ import { TOPBAR_BUTTON_HEIGHT } from "../const";
 import { downloadJsonFile } from "../utils/downloadJsonFile";
 import { SharedTopbarButton } from "../share/SharedTopbarButton";
 import { app } from "../utils/comfyapp";
+import CopyShareLinkMenuItem from "./CopyShareLinkMenuItem";
 
 export default function DropdownTitle() {
   const {
@@ -56,6 +58,7 @@ export default function DropdownTitle() {
     saveCurWorkflow,
     setRoute,
     route,
+    session,
   } = useContext(WorkspaceContext);
 
   const [isOpenNewVersion, setIsOpenNewVersion] = useState(false);
@@ -83,7 +86,7 @@ export default function DropdownTitle() {
     setNewFlowName(event.target.value);
     submitError && setSubmitError("");
   };
-
+  const toast = useToast();
   const onSubmit = async () => {
     if (!curFlowID) {
       alert("Flow ID is required");
@@ -194,6 +197,9 @@ export default function DropdownTitle() {
                   <SharedTopbarButton />
                 </HStack>
               </MenuItem>
+              {workflowsTable?.curWorkflow && (
+                <CopyShareLinkMenuItem curFlow={workflowsTable?.curWorkflow} />
+              )}
             </MenuList>
           </Menu>
         }

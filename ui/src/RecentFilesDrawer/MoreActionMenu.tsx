@@ -26,6 +26,7 @@ import {
 import { WorkspaceContext } from "../WorkspaceContext";
 import { openWorkflowInNewTab } from "../utils";
 import { fetchApi } from "../Api";
+import CopyShareLinkMenuItem from "../components/CopyShareLinkMenuItem";
 
 type Props = {
   workflow: Workflow;
@@ -119,23 +120,7 @@ export default function MoreActionMenu({ workflow }: Props) {
               {isLocked ? "Unlock" : "Lock"}
             </MenuItem>
           </Tooltip>
-          {workflow.cloudID && (
-            <MenuItem
-              icon={<IconLink />}
-              onClick={() => {
-                navigator.clipboard.writeText(
-                  `${userSettingsTable?.settings?.cloudHost}/workflow/${workflow.cloudID}`,
-                );
-                toast({
-                  title: "Cloud link copied",
-                  status: "success",
-                  duration: 3000,
-                });
-              }}
-            >
-              Copy cloud share link
-            </MenuItem>
-          )}
+          <CopyShareLinkMenuItem curFlow={workflow} />
           <MenuItem
             icon={<IconUpload />}
             onClick={() => {
