@@ -55,7 +55,7 @@ async def get_workspace(request):
 def get_my_workflows_dir():
     data = read_table('userSettings')
     if (data):
-        records = json.loads(data)
+        records = data
 
         if DEFAULT_USER in records and 'myWorkflowsDir' in records[DEFAULT_USER]:  
             curDir = records[DEFAULT_USER]['myWorkflowsDir']  

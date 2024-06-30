@@ -27,7 +27,7 @@ def get_settings():
 async def save_settings(request):
     data = await request.json()
     json_data = data
-    file_name = f'{db_dir_path}/settings.json'
+    file_name = f'{db_dir_path}/userSettings.json'
     # Offload file writing to a separate thread
     def write_json_string_to_db(file_name, json_data):
         if not os.path.exists(db_dir_path):
