@@ -10,7 +10,6 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { ShortcutSettings } from "../settings/ShortcutSettings";
-import FolderOnTopSettings from "../settings/FolderOnTopSettings";
 import TwoWaySyncSettings from "../settings/TwoWaySyncSettings";
 import CommonCheckboxSettings from "../settings/CommonCheckboxSettings";
 import SelectMyWorkflowsDir from "../settings/SelectMyWorkflowsDir";
@@ -42,7 +41,10 @@ export default function WorkspaceSettingsModal({
                 <ShortcutSettings />
                 <TwoWaySyncSettings />
                 <SharekeySetting />
-                <FolderOnTopSettings />
+                <CommonCheckboxSettings
+                  settingKey="foldersOnTop"
+                  text={`Folders always on top`}
+                />
                 <CommonNumberSetting
                   label={`Maximum number of save change history to store. This does not include
         versions that you created by "Create Version", which are always stored

@@ -54,6 +54,14 @@ export class UserSettingsTable extends TableBase<UserSettings> {
     }
     return currentUserSettings?.[key] ?? this.defaultSettings[key];
   }
+  public async get(_id: string): Promise<UserSettings | undefined> {
+    const obj = await fetchApi("/workspace/get_settings", {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }).then((res) => res.json());
+    return obj as any;
+  }
 
   public async upsert(newPairs: Partial<UserSettings>) {
     const oldSettings =
@@ -62,10 +70,9 @@ export class UserSettingsTable extends TableBase<UserSettings> {
       ...oldSettings,
       ...newPairs,
     };
-    await this.put(newSettings);
     await fetchApi("/workspace/save_settings", {
       method: "POST",
-      body: JSON.stringify(this._settings),
+      body: JSON.stringify(newSettings),
       headers: {
         "Content-Type": "application/json",
       },

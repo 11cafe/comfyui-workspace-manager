@@ -32,6 +32,7 @@ export default function CommonCheckboxSettings({
       <Checkbox
         isChecked={checked}
         onChange={async (e) => {
+          setChecked(e.target.checked);
           await userSettingsTable?.upsert({ [settingKey]: e.target.checked });
           getSetting();
           toast({
