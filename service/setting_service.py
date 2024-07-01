@@ -7,15 +7,20 @@ import asyncio
 from aiohttp import web
 from .db_service import DEFAULT_USER, read_table, db_dir_path
 
+comfy_path = os.path.dirname(folder_paths.__file__)
+
 @server.PromptServer.instance.routes.get("/workspace/get_settings")
 def get_settings_endpoint(request):
     settings = get_settings()
     return web.json_response(text=json.dumps(settings), content_type='application/json')
 
 def get_settings():
-    # if os.path.exists(f'{db_dir_path}/settings.json'):
-    #     with open(f'{db_dir_path}/settings.json', 'r') as file:
-    #         return json.load(file)
+    if os.path.exists(f'{db_dir_path}/settings.json'):
+        # to deprecate and remove legacy settings file
+        # if os.path.exists(f'{db_dir_path}/useSettings.json'):
+        #     os.remove(f'{db_dir_path}/useSettings.json')
+        with open(f'{db_dir_path}/settings.json', 'r') as file:
+            return json.load(file)
     data = read_table('userSettings')
     if (data):
         records = json.loads(data)
@@ -37,3 +42,18 @@ async def save_settings(request):
             file.write(json.dumps(json_data, indent=4))
     await asyncio.to_thread(write_json_string_to_db, file_name, json_data)
     return web.Response(text=f"JSON saved to {file_name}")
+
+def get_my_workflows_dir():
+    data = get_settings()
+    if (data):
+        if 'myWorkflowsDir' in data:  
+            curDir = data['myWorkflowsDir']  
+        
+        # this is to be compatible of a bug that a dict is stored in userSettings.myWorkflowsDir
+        # should not be needed once all users refresh their settings
+        if not isinstance(curDir, str):
+            curDir = curDir.get('path', None)
+
+        if curDir and os.path.exists(curDir):
+            return curDir
+    return os.path.join(comfy_path, 'my_workflows')

@@ -51,22 +51,3 @@ async def get_workspace(request):
     table = request.query.get('table')
     data = await asyncio.to_thread(read_table, table)
     return web.json_response(data)
-
-def get_my_workflows_dir():
-    data = read_table('userSettings')
-    if (data):
-        records = json.loads(data)
-
-        if DEFAULT_USER in records and 'myWorkflowsDir' in records[DEFAULT_USER]:  
-            curDir = records[DEFAULT_USER]['myWorkflowsDir']  
-        elif 'myWorkflowsDir' in records:  
-            curDir = records['myWorkflowsDir']
-        
-        # this is to be compatible of a bug that a dict is stored in userSettings.myWorkflowsDir
-        # should not be needed once all users refresh their settings
-        if not isinstance(curDir, str):
-            curDir = curDir.get('path', None)
-
-        if curDir and os.path.exists(curDir):
-            return curDir
-    return os.path.join(comfy_path, 'my_workflows')
