@@ -15,11 +15,12 @@ def get_settings_endpoint(request):
     return web.json_response(text=json.dumps(settings), content_type='application/json')
 
 def get_settings():
-    if os.path.exists(f'{db_dir_path}/settings.json'):
+    new_settings_path = os.path.join(db_dir_path, 'settings.json')
+    if os.path.exists(new_settings_path):
         # to deprecate and remove legacy settings file
         # if os.path.exists(f'{db_dir_path}/useSettings.json'):
         #     os.remove(f'{db_dir_path}/useSettings.json')
-        with open(f'{db_dir_path}/settings.json', 'r') as file:
+        with open(new_settings_path, 'r') as file:
             return json.load(file)
     data = read_table('userSettings')
     if (data):
