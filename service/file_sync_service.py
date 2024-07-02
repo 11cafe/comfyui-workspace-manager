@@ -1,8 +1,6 @@
 import asyncio
 import folder_paths
 from datetime import datetime
-import platform
-import tempfile
 import server
 import os
 from aiohttp import web

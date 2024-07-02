@@ -8,7 +8,7 @@ import logging
 from threading import Lock
 import server
 import uuid
-from .db_service import get_my_workflows_dir
+from .setting_service import get_my_workflows_dir
 
 @server.PromptServer.instance.routes.get('/workspace/get_os')
 async def scan_my_workflows_files(request):

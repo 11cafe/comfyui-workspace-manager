@@ -108,6 +108,13 @@ export default function SelectMyWorkflowsDir() {
     setCurrentDirectory(getNewPath);
     isManualEntry && setNoPermission(false);
     onCloseEditDirectory();
+    toast({
+      title: "Directory saved successfully. Please refresh the page.",
+      status: "success",
+      duration: 4000,
+      position: "top",
+      isClosable: true,
+    });
   };
 
   const onSubmit = async (manualEntry?: string) => {
