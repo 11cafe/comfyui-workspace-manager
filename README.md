@@ -6,7 +6,7 @@ If you have questions or suggestions, please [join our Discord](https://discord.
 
 ✨We have a new platform to turn your comfyui workflow to runnable web app: www.nodecafe.co please check it out! 🥳
 
-[6-25] ⚠️ Please update workspace manager to latest version if it's not showing up for you after updating ComfyUI
+[6-25] ⚠️ Please update workspace manager to latest version if it's not showing up for you after updating ComfyUI (不要用秋叶启动器更新，请使用ComfyUI Manager管理器更新，秋叶没法更新到最新版)
 
 [6-21] ‼️please upgrade to V2 and enable twoway sync if you haven't already. I will stop supporting V1 soon and will forcefully turn on twoway sync later. (twoway sync means that your workflow are twoway synced with your disk files /my_workflows directly)
 
