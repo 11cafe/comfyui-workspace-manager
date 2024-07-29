@@ -34,7 +34,7 @@ import EnableTwowaySyncConfirm from "./settings/EnableTwowaySyncConfirm";
 import { api, app } from "./utils/comfyapp";
 import { fetchApi } from "./Api";
 import { serverInfo } from "./utils/OsPathUtils";
-import { decodeKey } from "./utils/encryptUtils";
+// import { decodeKey } from "./utils/encryptUtils";
 
 export default function App() {
   const [curFlowName, setCurFlowName] = useState<string | null>(null);
@@ -187,15 +187,15 @@ export default function App() {
         },
       );
     }
-    const encodedKey = localStorage.getItem("workspace_manager_shareKey");
-    if (encodedKey) {
-      const shareKey = decodeKey(encodedKey);
-      shareKey &&
-        setSession({
-          shareKey: shareKey,
-          username: null,
-        });
-    }
+    // const encodedKey = localStorage.getItem("workspace_manager_shareKey");
+    // if (encodedKey) {
+    //   const shareKey = decodeKey(encodedKey);
+    //   shareKey &&
+    //     setSession({
+    //       shareKey: shareKey,
+    //       username: null,
+    //     });
+    // }
   };
 
   const loadWorkflowIDImpl = async (id: string, versionID?: string | null) => {

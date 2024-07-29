@@ -1,167 +1,139 @@
-import { Button, HStack, IconButton, Tooltip } from "@chakra-ui/react";
-import Draggable from "../components/Draggable";
-import {
-  IconDeviceFloppy,
-  IconFolder,
-  IconGripVertical,
-  IconPhoto,
-  IconTriangleInvertedFilled,
-  IconLock,
-} from "@tabler/icons-react";
-import DropdownTitle from "../components/DropdownTitle";
-import {
-  Suspense,
-  lazy,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
-import EditFlowName from "../components/EditFlowName";
-import { WorkspaceContext } from "../WorkspaceContext";
-import { PanelPosition } from "../types/dbTypes";
+import { HStack, useDisclosure, useToast } from "@chakra-ui/react";
+
+import { Suspense, lazy, useEffect, useState } from "react";
+
 import "./Topbar.css";
-import VersionNameTopbar from "./VersionNameTopbar";
-import { userSettingsTable, workflowsTable } from "../db-tables/WorkspaceDB";
-import { TOPBAR_BUTTON_HEIGHT } from "../const";
-import TopbarNewWorkflowButton from "./TopbarNewWorkflowButton";
-const AppIsDirtyEventListener = lazy(() => import("./AppIsDirtyEventListener"));
+import ModelsListDrawer from "../model-manager/models-list-drawer/ModelsListDrawer";
+import InatallModelsModal from "../model-manager/install-models/InstallModelsModal";
+import ChooseFolder from "../model-manager/install-models/ChooseFolder";
+import { useStateRef } from "../customHooks/useStateRef";
+import { FileEssential } from "../model-manager/install-models/util/modelTypes";
+import { getCivitApiKey } from "../utils/civitUtils";
+import { installModelsApi } from "../model-manager/api/modelsApi";
+
 const ModelManagerTopbar = lazy(
   () => import("../model-manager/topbar/ModelManagerTopbar"),
 );
-const SpotlightSearch = lazy(() => import("../components/SpotlightSearch"));
 
-interface Props {
-  curFlowName: string | null;
-  setCurFlowName: (newName: string) => void;
-}
-export function Topbar({ curFlowName, setCurFlowName }: Props) {
-  const { isDirty, saveCurWorkflow, setRoute, curFlowID, route } =
-    useContext(WorkspaceContext);
-  const [positionStyle, setPositionStyle] = useState<PanelPosition>();
-  const updatePanelPosition: (
-    position?: PanelPosition,
-    needUpdateDB?: boolean,
-  ) => void = useCallback(
-    (position?: PanelPosition, needUpdateDB: boolean = false) => {
-      const { top: curTop = 0, left: curLeft = 0 } = positionStyle || {};
-      let { top = 0, left = 0 } = position ?? {};
-      top += curTop;
-      left += curLeft;
-      const clientWidth = document.documentElement.clientWidth;
-      const clientHeight = document.documentElement.clientHeight;
-      const panelElement = document.getElementById("workspaceManagerPanel");
-      const offsetWidth = panelElement?.offsetWidth || 392;
+export function Topbar() {
+  const [showDrawer, setShowDrawer] = useState(false);
+  const [fileState, setFile, file] = useStateRef<FileEssential>();
+  const [showInstallModal, setShowInstallModal] = useState(false);
+  const toast = useToast();
+  const [installing, setInstalling] = useState<string[]>([]);
+  const { onClose: onCloseChooseFolderModal } = useDisclosure();
 
-      if (top + 36 > clientHeight) top = clientHeight - 36;
-      if (left + offsetWidth >= clientWidth) left = clientWidth - offsetWidth;
-
-      setPositionStyle({ top: Math.max(0, top), left: Math.max(0, left) });
-
-      needUpdateDB &&
-        userSettingsTable?.upsert({
-          topBarStyle: { top, left },
-        });
-    },
-    [positionStyle],
-  );
   useEffect(() => {
-    userSettingsTable?.getSetting("topBarStyle").then((res) => {
-      updatePanelPosition(res, false);
-    });
+    const injectButton = () => {
+      const menu = document.querySelector(".comfy-menu");
+      const separator = document.createElement("hr");
+      if (menu) {
+        if (
+          !menu.querySelector(".civitai-button") &&
+          !menu.querySelector(".custom-models-button")
+        ) {
+          separator.style.margin = "20px 0";
+          separator.style.width = "100%";
+          menu.append(separator);
+          const civitAiButton = document.createElement("button");
+          civitAiButton.textContent = "CivitAI Models";
+          civitAiButton.className =
+            "comfyui-button comfyui-menu-mobile-collapse primary civitai-button";
+          civitAiButton.style.marginTop = "10px";
+          civitAiButton.style.display = "flex";
+          civitAiButton.style.justifyContent = "center";
+          civitAiButton.style.alignItems = "center";
+          civitAiButton.onclick = () => {
+            setShowDrawer(true);
+          };
+
+          menu.append(civitAiButton);
+
+          const customModelsButton = document.createElement("button");
+          customModelsButton.textContent = "Custom Models";
+          customModelsButton.className =
+            "comfyui-button comfyui-menu-mobile-collapse primary custom-models-button";
+          customModelsButton.style.margin = "10px";
+          customModelsButton.style.display = "flex";
+          customModelsButton.style.justifyContent = "center";
+          customModelsButton.style.alignItems = "center";
+
+          customModelsButton.onclick = () => {
+            setShowInstallModal(true);
+          };
+
+          menu.append(customModelsButton);
+        }
+      }
+    };
+
+    injectButton();
   }, []);
-  if (!positionStyle) {
-    return null;
-  }
+
+  const downloadModels = (folderPath: string, downloadUrl?: string) => {
+    if (!file.current?.id && !downloadUrl) {
+      console.error("no url to download");
+      return;
+    }
+    let url =
+      downloadUrl ??
+      `https://civitai.com/api/download/models/${file.current?.id}`;
+    let version = file.current?.name;
+    if (!version) {
+      version = url.split("/").pop();
+      if (!version) {
+        console.error("downloadUrl is malformed");
+        return;
+      }
+    }
+    toast({
+      title: "Installing...",
+      description: version,
+      status: "info",
+      duration: 4000,
+      isClosable: true,
+    });
+    version != null && setInstalling((cur) => [...cur, version ?? ""]);
+    const apiKey = getCivitApiKey();
+    if (apiKey) {
+      url += `?token=${apiKey}`;
+    }
+    installModelsApi({
+      file_hash: file.current?.SHA256,
+      filename: version,
+      save_path: folderPath,
+      url,
+    });
+    setFile(undefined);
+    onCloseChooseFolderModal();
+  };
+
   return (
-    <Draggable
-      onDragEnd={(position: { x: number; y: number }) => {
-        updatePanelPosition({ top: position.y, left: position.x }, true);
-      }}
-      dragIconId="dragPanelIcon"
+    <HStack
+      justifyContent={"space-between"}
+      alignItems={"center"}
+      gap={2}
+      id="workspaceManagerPanel"
+      className="workspaceManagerPanel"
     >
-      <HStack
-        style={{
-          padding: 2,
-          position: "fixed",
-          ...positionStyle,
-        }}
-        justifyContent={"space-between"}
-        alignItems={"center"}
-        gap={2}
-        draggable={false}
-        id="workspaceManagerPanel"
-        className="workspaceManagerPanel"
-      >
-        <Button
-          size={"sm"}
-          aria-label="workspace folder"
-          height={TOPBAR_BUTTON_HEIGHT + "px"}
-          // backgroundColor={colorMode === "dark" ? "#333547" : undefined}
-          onClick={() => setRoute("recentFlows")}
-          px={2}
-        >
-          <HStack gap={1}>
-            <IconFolder size={21} />
-            <IconTriangleInvertedFilled size={8} />
-          </HStack>
-        </Button>
-        <Suspense fallback={<div style={{ width: "60px" }} />}>
-          <ModelManagerTopbar />
-        </Suspense>
-        <TopbarNewWorkflowButton />
-        <EditFlowName
-          isDirty={isDirty}
-          displayName={curFlowName ?? ""}
-          updateFlowName={(newName) => {
-            setCurFlowName(newName);
-            requestAnimationFrame(() => {
-              updatePanelPosition();
-            });
-          }}
-        />
-        {workflowsTable?.curWorkflow?.saveLock && (
-          <IconLock color="#FFF" size={20} />
+      <Suspense fallback={<div style={{ width: "60px" }} />}>
+        {showDrawer && (
+          <InatallModelsModal
+            modelType="Checkpoint"
+            onclose={() => setShowDrawer(false)}
+          />
         )}
-        {curFlowID && (
-          <HStack gap={"4px"}>
-            <Tooltip label="Open gallery">
-              <IconButton
-                onClick={() => setRoute("gallery")}
-                icon={<IconPhoto size={22} color="white" />}
-                size={"sm"}
-                aria-label="open gallery"
-                variant={"ghost"}
-              />
-            </Tooltip>
-            <DropdownTitle />
-          </HStack>
+        {showInstallModal && (
+          <ChooseFolder
+            fileSelected={!!fileState}
+            isOpen={showInstallModal}
+            onClose={() => setShowInstallModal(false)}
+            selectFolder={(folderPath: string, customUrl?: string) => {
+              downloadModels(folderPath, file.current ? undefined : customUrl);
+            }}
+          />
         )}
-        {curFlowID && isDirty ? (
-          <Tooltip label="Save workflow">
-            <IconButton
-              onClick={() => saveCurWorkflow()}
-              icon={<IconDeviceFloppy size={23} color="white" />}
-              size={"xs"}
-              paddingY={4}
-              aria-label="save workspace"
-              variant={"ghost"}
-            />
-          </Tooltip>
-        ) : (
-          <div style={{ width: 1 }} />
-        )}
-        <VersionNameTopbar />
-        <AppIsDirtyEventListener />
-        <IconGripVertical
-          id="dragPanelIcon"
-          className="dragPanelIcon"
-          cursor="move"
-          size={15}
-          color="#FFF"
-        />
-        {route === "spotlightSearch" && <SpotlightSearch />}
-      </HStack>
-    </Draggable>
+      </Suspense>
+    </HStack>
   );
 }

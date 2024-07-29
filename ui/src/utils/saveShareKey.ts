@@ -1,6 +1,4 @@
-import { encodeKey } from "./encryptUtils";
-
 export function saveShareKey(sharekey: string) {
-  const key = encodeKey(sharekey);
+  const key = "";
   localStorage.setItem("workspace_manager_shareKey", key);
 }
