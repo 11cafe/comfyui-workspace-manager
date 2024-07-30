@@ -16,7 +16,7 @@ const ModelManagerTopbar = lazy(
 );
 
 export function Topbar() {
-  const [showDrawer, setShowDrawer] = useState(false);
+  const [showDrawer, setShowDrawer] = useState(true);
   const [fileState, setFile, file] = useStateRef<FileEssential>();
   const [showInstallModal, setShowInstallModal] = useState(false);
   const toast = useToast();
@@ -36,9 +36,10 @@ export function Topbar() {
           separator.style.width = "100%";
           menu.append(separator);
           const civitAiButton = document.createElement("button");
-          civitAiButton.textContent = "CivitAI Models";
+          civitAiButton.textContent = "FlowScale";
+          civitAiButton.style.fontSize = "16px";
           civitAiButton.className =
-            "comfyui-button comfyui-menu-mobile-collapse primary civitai-button";
+            "comfyui-button comfyui-menu-mobile-collapse civitai-button";
           civitAiButton.style.marginTop = "10px";
           civitAiButton.style.display = "flex";
           civitAiButton.style.justifyContent = "center";
@@ -52,7 +53,7 @@ export function Topbar() {
           const customModelsButton = document.createElement("button");
           customModelsButton.textContent = "Custom Models";
           customModelsButton.className =
-            "comfyui-button comfyui-menu-mobile-collapse primary custom-models-button";
+            "comfyui-button comfyui-menu-mobile-collapse custom-models-button";
           customModelsButton.style.margin = "10px";
           customModelsButton.style.display = "flex";
           customModelsButton.style.justifyContent = "center";

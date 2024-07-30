@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@chakra-ui/react": "^2.8.2",
+    "@primer/react": "^36.19.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@tabler/icons-react": "^2.42.0",
