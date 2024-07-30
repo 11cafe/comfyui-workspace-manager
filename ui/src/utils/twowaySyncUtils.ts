@@ -1,4 +1,4 @@
-import { ESortTypes } from "../RecentFilesDrawer/types";
+import { ESortTypes } from "../types";
 import {
   ScanLocalFile,
   ScanLocalFolder,

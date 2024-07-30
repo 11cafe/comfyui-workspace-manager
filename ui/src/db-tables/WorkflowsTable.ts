@@ -8,7 +8,7 @@ import { sortFileItem } from "../utils";
 import { nanoid } from "nanoid";
 import { TableBase } from "./TableBase";
 import { indexdb } from "./indexdb";
-import { ESortTypes, ImportWorkflow } from "../RecentFilesDrawer/types";
+import { ESortTypes, ImportWorkflow } from "../types";
 import { defaultGraph } from "../defaultGraph";
 import { scanMyWorkflowsDir } from "../utils/twowaySyncUtils";
 import {

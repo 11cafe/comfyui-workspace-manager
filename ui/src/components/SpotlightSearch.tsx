@@ -25,7 +25,7 @@ import { WorkspaceContext } from "../WorkspaceContext";
 import { userSettingsTable, workflowsTable } from "../db-tables/WorkspaceDB";
 import useDebounceFn from "../customHooks/useDebounceFn";
 import { useStateRef } from "../customHooks/useStateRef";
-import { ESortTypes } from "../RecentFilesDrawer/types";
+import { ESortTypes } from "../types";
 
 export default function SpotlightSearch() {
   const { colorMode } = useColorMode();
