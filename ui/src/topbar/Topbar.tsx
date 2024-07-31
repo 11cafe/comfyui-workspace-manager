@@ -116,7 +116,11 @@ export function Topbar() {
             onclose={() => setShowDrawer(false)}
           />
         )} */}
-        <FlowscaleModal isOpen={showDrawer} isClose={() => setShowDrawer(false)} />
+        <FlowscaleModal
+          isOpen={showDrawer}
+          isClose={() => setShowDrawer(false)}
+          modelType="Checkpoint"
+        />
         {/* {showInstallModal && (
           <ChooseFolder
             fileSelected={!!fileState}

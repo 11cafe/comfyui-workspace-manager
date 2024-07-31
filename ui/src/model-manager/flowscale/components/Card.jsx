@@ -17,22 +17,25 @@ export const Card = ({
   return (
     <Box
       sx={{
-        borderRadius: "24px",
+        borderRadius: "14px",
         border: "2px solid #343B45",
         boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
         overflow: "hidden",
         width: "300px",
         display: "flex",
         flexDirection: "column",
-        backgroundColor: "#16191D",
-        padding: "16px",
+        backgroundColor: "#22272F",
+        padding: "0px",
         gap: "12px",
       }}
     >
       {imageSrc && (
         <Box
           sx={{
-            borderRadius: "16px",
+            borderTopLeftRadius: "16px",
+            borderTopRightRadius: "16px",
+            borderBottomRightRadius: 0,
+            borderBottomLeftRadius: 0,
             boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
             backgroundColor: "#16191D",
           }}
@@ -42,20 +45,22 @@ export const Card = ({
             alt={title}
             style={{
               width: "100%",
-              height: "150px",
+              height: "200px",
               objectFit: "cover",
-              borderRadius: "8px",
             }}
           />
         </Box>
       )}
+      {/* 
+        TODO: Add a URL icon to visit the model page. 
+       */}
       <Box
         sx={{
           display: "flex",
           flexDirection: "column",
           flex: 1,
           gap: "12px",
-          padding: "5px 5px",
+          padding: "5px 20px 20px",
           justifyContent: "space-between",
         }}
       >
@@ -121,6 +126,7 @@ export const Card = ({
           }}
         >
           <Button
+            variant="primary"
             onClick={onInstallClick}
             leadingVisual={DownloadSimple}
             sx={{
