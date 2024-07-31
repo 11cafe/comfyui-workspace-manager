@@ -1,5 +1,10 @@
 import type { MODEL_TYPE } from "../model-manager/install-models/util/modelTypes";
-import { TopFieldType } from "../gallery/components/MetaBox/MetadataForm.tsx";
+
+type TopFieldType = {
+  promptKey: string | number;
+  class_type?: string;
+  name: string;
+};
 
 export interface SortableItem {
   name: string;

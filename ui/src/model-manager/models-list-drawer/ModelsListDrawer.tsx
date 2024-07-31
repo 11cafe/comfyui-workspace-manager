@@ -17,7 +17,6 @@ import InstallModelsButton from "../install-models/InstallModelsButton";
 import { type ModelsListRespItem } from "../types";
 import { useUpdateModels } from "../hooks/useUpdateModels";
 import { DRAWER_Z_INDEX } from "../../const";
-import ShowNsfwModelThumbnailSettings from "../../settings/ShowNsfwModelThumbnailSettings";
 import { indexdb } from "../../db-tables/indexdb";
 import { type Model } from "../../types/dbTypes";
 import ModelDropEventListener from "../topbar/ModelDropEventListener";
@@ -136,7 +135,6 @@ export default function ModelsListDrawer({ onClose }: Props) {
                 </Select>
               </HStack>
             )}
-            <ShowNsfwModelThumbnailSettings />
           </Flex>
           {!searchQuery.length && (
             <ModelsTags

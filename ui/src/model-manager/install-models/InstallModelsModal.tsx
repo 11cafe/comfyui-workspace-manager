@@ -152,6 +152,9 @@ export default function InatallModelsModal({
                 setSearchQuery={setSearchQuery}
                 onSearch={loadData}
               />
+              <Button size={"sm"} py={1} mr={8} onClick={onOpen}>
+                Custom URL Install
+              </Button>
               <AddApiKeyPopover />
             </HStack>
             <HStack gap={2} wrap={"wrap"}>

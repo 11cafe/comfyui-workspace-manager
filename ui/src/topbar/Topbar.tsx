@@ -16,7 +16,7 @@ const ModelManagerTopbar = lazy(
 );
 
 export function Topbar() {
-  const [showDrawer, setShowDrawer] = useState(true);
+  const [showDrawer, setShowDrawer] = useState(false);
   const [fileState, setFile, file] = useStateRef<FileEssential>();
   const [showInstallModal, setShowInstallModal] = useState(false);
   const toast = useToast();
@@ -50,20 +50,20 @@ export function Topbar() {
 
           menu.append(civitAiButton);
 
-          const customModelsButton = document.createElement("button");
-          customModelsButton.textContent = "Custom Models";
-          customModelsButton.className =
-            "comfyui-button comfyui-menu-mobile-collapse custom-models-button";
-          customModelsButton.style.margin = "10px";
-          customModelsButton.style.display = "flex";
-          customModelsButton.style.justifyContent = "center";
-          customModelsButton.style.alignItems = "center";
+          // const customModelsButton = document.createElement("button");
+          // customModelsButton.textContent = "Custom Models";
+          // customModelsButton.className =
+          //   "comfyui-button comfyui-menu-mobile-collapse custom-models-button";
+          // customModelsButton.style.margin = "10px";
+          // customModelsButton.style.display = "flex";
+          // customModelsButton.style.justifyContent = "center";
+          // customModelsButton.style.alignItems = "center";
 
-          customModelsButton.onclick = () => {
-            setShowInstallModal(true);
-          };
+          // customModelsButton.onclick = () => {
+          //   setShowInstallModal(true);
+          // };
 
-          menu.append(customModelsButton);
+          // menu.append(customModelsButton);
         }
       }
     };
@@ -71,43 +71,43 @@ export function Topbar() {
     injectButton();
   }, []);
 
-  const downloadModels = (folderPath: string, downloadUrl?: string) => {
-    if (!file.current?.id && !downloadUrl) {
-      console.error("no url to download");
-      return;
-    }
-    let url =
-      downloadUrl ??
-      `https://civitai.com/api/download/models/${file.current?.id}`;
-    let version = file.current?.name;
-    if (!version) {
-      version = url.split("/").pop();
-      if (!version) {
-        console.error("downloadUrl is malformed");
-        return;
-      }
-    }
-    toast({
-      title: "Installing...",
-      description: version,
-      status: "info",
-      duration: 4000,
-      isClosable: true,
-    });
-    version != null && setInstalling((cur) => [...cur, version ?? ""]);
-    const apiKey = getCivitApiKey();
-    if (apiKey) {
-      url += `?token=${apiKey}`;
-    }
-    installModelsApi({
-      file_hash: file.current?.SHA256,
-      filename: version,
-      save_path: folderPath,
-      url,
-    });
-    setFile(undefined);
-    onCloseChooseFolderModal();
-  };
+  // const downloadModels = (folderPath: string, downloadUrl?: string) => {
+  //   if (!file.current?.id && !downloadUrl) {
+  //     console.error("no url to download");
+  //     return;
+  //   }
+  //   let url =
+  //     downloadUrl ??
+  //     `https://civitai.com/api/download/models/${file.current?.id}`;
+  //   let version = file.current?.name;
+  //   if (!version) {
+  //     version = url.split("/").pop();
+  //     if (!version) {
+  //       console.error("downloadUrl is malformed");
+  //       return;
+  //     }
+  //   }
+  //   toast({
+  //     title: "Installing...",
+  //     description: version,
+  //     status: "info",
+  //     duration: 4000,
+  //     isClosable: true,
+  //   });
+  //   version != null && setInstalling((cur) => [...cur, version ?? ""]);
+  //   const apiKey = getCivitApiKey();
+  //   if (apiKey) {
+  //     url += `?token=${apiKey}`;
+  //   }
+  //   installModelsApi({
+  //     file_hash: file.current?.SHA256,
+  //     filename: version,
+  //     save_path: folderPath,
+  //     url,
+  //   });
+  //   setFile(undefined);
+  //   onCloseChooseFolderModal();
+  // };
 
   return (
     <HStack
@@ -124,7 +124,7 @@ export function Topbar() {
             onclose={() => setShowDrawer(false)}
           />
         )}
-        {showInstallModal && (
+        {/* {showInstallModal && (
           <ChooseFolder
             fileSelected={!!fileState}
             isOpen={showInstallModal}
@@ -133,7 +133,7 @@ export function Topbar() {
               downloadModels(folderPath, file.current ? undefined : customUrl);
             }}
           />
-        )}
+        )} */}
       </Suspense>
     </HStack>
   );
