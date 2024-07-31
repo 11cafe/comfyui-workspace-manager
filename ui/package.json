@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@chakra-ui/react": "^2.8.2",
+    "@primer/react": "^36.27.0",
+    "phosphor-react": "^1.4.1",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@tabler/icons-react": "^2.42.0",

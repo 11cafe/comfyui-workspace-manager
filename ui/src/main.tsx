@@ -4,8 +4,12 @@ import { ColorModeScript, type StyleFunctionProps } from "@chakra-ui/react";
 import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import { AlertDialogProvider } from "./components/AlertDialogProvider.tsx";
 import CSSReset from "./MyCSSReset.tsx";
+import { BaseStyles, ThemeProvider, theme } from "@primer/react";
+import deepmerge from "deepmerge";
 
 const topbar = document.createElement("div");
+topbar.style.position = "absolute";
+topbar.style.zIndex = "1000 !important";
 document.body.append(topbar);
 const App = React.lazy(() =>
   import("./App.tsx").then(({ default: App }) => ({
@@ -34,34 +38,51 @@ const zIndices = {
   tooltip: 18000000,
 };
 
-const theme = extendTheme({
-  config: {
-    initialColorMode: "dark",
-    useSystemColorMode: false,
+// const theme = extendTheme({
+//   config: {
+//     initialColorMode: "dark",
+//     useSystemColorMode: false,
+//   },
+//   zIndices,
+//   components: {
+//     Card: {
+//       baseStyle: (props: StyleFunctionProps) => ({
+//         container: {
+//           backgroundColor: props.colorMode === "dark" ? "#171B21" : "#F6F8FA",
+//         },
+//       }),
+//     },
+//   },
+// });
+const customTheme = deepmerge(theme, {
+  fonts: {
+    normal: "avenir, sans-serif",
   },
   zIndices,
-  components: {
-    Card: {
-      baseStyle: (props: StyleFunctionProps) => ({
-        container: {
-          backgroundColor: props.colorMode === "dark" ? "#171B21" : "#F6F8FA",
-        },
-      }),
-    },
-  },
 });
 
 ReactDOM.createRoot(topbar).render(
   <React.StrictMode>
-    <ChakraProvider resetCSS={false} disableGlobalStyle={true} theme={theme}>
+    <div style={{ position: "absolute", zIndex: 100 }}>
+      <ThemeProvider
+        colorMode="night"
+        nightScheme="dark_dimmed"
+        theme={customTheme}
+      >
+        <BaseStyles>
+          <App />
+        </BaseStyles>
+      </ThemeProvider>
+    </div>
+    {/* <ChakraProvider resetCSS={false} disableGlobalStyle={true} theme={theme}>
       <CSSReset scope=".workspace_manager" />
       <ColorModeScript initialColorMode="dark" />
       <AlertDialogProvider>
-        <Suspense>
-          <App />
-        </Suspense>
+      <Suspense>
+      <App />
+      </Suspense>
       </AlertDialogProvider>
-    </ChakraProvider>
+      </ChakraProvider> */}
   </React.StrictMode>,
 );
 

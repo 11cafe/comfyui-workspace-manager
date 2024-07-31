@@ -3,25 +3,17 @@ import { HStack, useDisclosure, useToast } from "@chakra-ui/react";
 import { Suspense, lazy, useEffect, useState } from "react";
 
 import "./Topbar.css";
-import ModelsListDrawer from "../model-manager/models-list-drawer/ModelsListDrawer";
 import InatallModelsModal from "../model-manager/install-models/InstallModelsModal";
-import ChooseFolder from "../model-manager/install-models/ChooseFolder";
-import { useStateRef } from "../customHooks/useStateRef";
-import { FileEssential } from "../model-manager/install-models/util/modelTypes";
-import { getCivitApiKey } from "../utils/civitUtils";
-import { installModelsApi } from "../model-manager/api/modelsApi";
+// import { useStateRef } from "../customHooks/useStateRef";
+// import { FileEssential } from "../model-manager/install-models/util/modelTypes";
+import { FlowscaleModal } from "../model-manager/flowscale/modal/FlowscaleModal";
 
-const ModelManagerTopbar = lazy(
-  () => import("../model-manager/topbar/ModelManagerTopbar"),
-);
+// const ModelManagerTopbar = lazy(
+//   () => import("../model-manager/topbar/ModelManagerTopbar"),
+// );
 
 export function Topbar() {
   const [showDrawer, setShowDrawer] = useState(false);
-  const [fileState, setFile, file] = useStateRef<FileEssential>();
-  const [showInstallModal, setShowInstallModal] = useState(false);
-  const toast = useToast();
-  const [installing, setInstalling] = useState<string[]>([]);
-  const { onClose: onCloseChooseFolderModal } = useDisclosure();
 
   useEffect(() => {
     const injectButton = () => {
@@ -118,12 +110,13 @@ export function Topbar() {
       className="workspaceManagerPanel"
     >
       <Suspense fallback={<div style={{ width: "60px" }} />}>
-        {showDrawer && (
+        {/* {showDrawer && (
           <InatallModelsModal
             modelType="Checkpoint"
             onclose={() => setShowDrawer(false)}
           />
-        )}
+        )} */}
+        <FlowscaleModal isOpen={showDrawer} isClose={() => setShowDrawer(false)} />
         {/* {showInstallModal && (
           <ChooseFolder
             fileSelected={!!fileState}
