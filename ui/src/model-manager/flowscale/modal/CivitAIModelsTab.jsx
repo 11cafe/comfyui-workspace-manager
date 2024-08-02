@@ -19,7 +19,7 @@ export const CivitAIModelsTab = ({
   dropdownOptions,
   modelType: modelTypeProp,
 }) => {
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedFolderOption, setSelectedFolderOption] = useState("");
   const [loading, setLoading] = useState(false);
   const [models, setModels] = useState([]);
   const [modelType, setModelType] = useState(modelTypeProp);
@@ -27,6 +27,7 @@ export const CivitAIModelsTab = ({
   const [installing, setInstalling] = useState([]);
   const [fileState, setFile, file] = useStateRef();
   const [foldersList, setFoldersList] = useState({});
+  const [folderOptions, setFolderOptions] = useState([]);
   const [defaultFolders, setDefaultFolders] = useState(
     MODEL_TYPE_TO_FOLDER_MAPPING,
   );
@@ -40,7 +41,9 @@ export const CivitAIModelsTab = ({
     // const models = await getModelFromSearch(searchQuery, modelType);
     setModels(models);
     const folders_list = await getAllFoldersList();
-    folders_list && setFoldersList(folders_list);
+    if (folders_list) {
+      setFoldersList(folders_list);
+    }
     const defaultFolders =
       await userSettingsTable?.getSetting("defaultFolders");
     defaultFolders && setDefaultFolders(defaultFolders);
@@ -99,17 +102,17 @@ export const CivitAIModelsTab = ({
     loadData();
   }, [modelType]);
 
-  // useEffect(() => {
-  //   setModels(CivitaiSchema?.items);
-  // }, []);
-
-  // const handleInstallClick = () => {
-  //   alert("Install button clicked");
-  // };
-
-  // const onSeachButtonClick = (searchCivitAiProjects) => {
-  //   alert(`Search button clicked with value: ${searchCivitAiProjects}`);
-  // };
+  useEffect(() => {
+    if (modelType && foldersList[MODEL_TYPE_TO_FOLDER_MAPPING[modelType]]) {
+      let folderArr = foldersList[MODEL_TYPE_TO_FOLDER_MAPPING[modelType]];
+      setFolderOptions(
+        folderArr.map((item) => ({
+          name: item.split("/").slice(-2).join("/"),
+          value: item,
+        })),
+      );
+    }
+  }, [modelType, foldersList]);
 
   return (
     <Box
@@ -161,10 +164,6 @@ export const CivitAIModelsTab = ({
           <Button onClick={loadData}>Search</Button>
         </Box>
         {/* 
-            TODO: Use the ALL_MODEL_TYPES to list all the model types in the category dropdown.
-            TODO: Based on the category, foldersList[MODEL_TYPE_TO_FOLDER_MAPPING[modelType]],
-            find the folders for the selected category and apply it.
-            TODO: Add a spinner to show loading state of APIs.
             TODO: Add something to show the installation progress.
             TODO: Empty state for the modal.
          */}
@@ -177,16 +176,6 @@ export const CivitAIModelsTab = ({
             margin: "8px 0px",
           }}
         >
-          {/* {modelType &&
-            foldersList[MODEL_TYPE_TO_FOLDER_MAPPING[modelType]] && (
-              <pre>
-                {JSON.stringify(
-                  foldersList[MODEL_TYPE_TO_FOLDER_MAPPING[modelType]],
-                  null,
-                  4,
-                )}
-              </pre>
-            )} */}
           <Dropdown
             options={ALL_MODEL_TYPES}
             selectedIndex={ALL_MODEL_TYPES.findIndex(
@@ -200,14 +189,24 @@ export const CivitAIModelsTab = ({
             overlayWidth="auto"
           />
 
-          <Dropdown
-            options={dropdownOptions}
-            selectedIndex={selectedIndex}
-            onSelect={setSelectedIndex}
-            label="Path"
-            labelDirection="horizontal"
-            overlayWidth="auto"
-          />
+          {modelType && foldersList[MODEL_TYPE_TO_FOLDER_MAPPING[modelType]] ? (
+            <Dropdown
+              options={folderOptions}
+              selectedIndex={folderOptions.findIndex(
+                (option) => option.value === selectedFolderOption,
+              )}
+              onSelect={(index) => {
+                setSelectedFolderOption(folderOptions[index].value);
+                updateDefaultFolders(modelType, folderOptions[index].value);
+              }}
+              label="Folder"
+              placeholder="Select download folder"
+              labelDirection="horizontal"
+              overlayWidth="medium"
+            />
+          ) : (
+            <></>
+          )}
         </Box>
       </Box>
       {loading ? (
@@ -230,7 +229,7 @@ export const CivitAIModelsTab = ({
             gap: "12px",
           }}
         >
-          {/* <pre>{JSON.stringify(foldersList, null, 4)}</pre> */}
+          {/* <pre>{JSON.stringify(folderOptions, null, 4)}</pre> */}
 
           {models?.map((model) => (
             <Card

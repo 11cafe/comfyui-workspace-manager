@@ -11,6 +11,7 @@ export const Dropdown = ({
   borderColor = "#636C76",
   overlayWidth = "medium",
   labelDirection = "vertical",
+  placeholder = "Select an option",
 }) => {
   const selectedOption = options[selectedIndex];
 
@@ -32,10 +33,11 @@ export const Dropdown = ({
             fontSize: "14px",
             fontWeight: "600",
             display: "inline-block",
+            marginRight: "5px",
             ...labelClassName,
           }}
         >
-          {label}
+          {label}:
         </Box>
       )}
       <ActionMenu>
@@ -47,7 +49,7 @@ export const Dropdown = ({
             backgroundColor: "transparent",
           }}
         >
-          {selectedOption?.name || "Select an option"}
+          {selectedOption?.name || placeholder}
         </ActionMenu.Button>
         <ActionMenu.Overlay width={overlayWidth}>
           <ActionList selectionVariant="single">
