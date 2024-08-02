@@ -115,10 +115,7 @@ export const FlowscaleModal = ({ isOpen, isClose, modelType }) => {
           activeTab={activeTab}
           setActiveTab={setActiveTab}
         >
-          <CivitAIModelsTab
-            dropdownOptions={dropdownOptions}
-            modelType={modelType}
-          />
+          <CivitAIModelsTab modelType={modelType} />
           <OthersModelsTab />
           <CustomModelsTab dropdownOptions={dropdownOptions} />
         </Tabs>

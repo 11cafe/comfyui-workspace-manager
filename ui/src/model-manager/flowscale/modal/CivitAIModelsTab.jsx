@@ -1,9 +1,17 @@
-import { Box, Button, FormControl, Spinner, TextInput } from "@primer/react";
-import { MagnifyingGlass, XCircle } from "phosphor-react";
+import {
+  Box,
+  Button,
+  FormControl,
+  Spinner,
+  Text,
+  TextInput,
+} from "@primer/react";
+import { File, MagnifyingGlass, XCircle } from "phosphor-react";
 import React, { useCallback, useEffect, useState } from "react";
-import { Card, Dropdown } from "../components";
-import CivitaiSchema from "./DUMMY_DATA/civitai-schema.json";
+import { CivitCard, Dropdown } from "../components";
 import { useStateRef } from "../../../customHooks/useStateRef";
+import { useDisclosure } from "@chakra-ui/react";
+import ChooseFolder from "../../install-models/ChooseFolder";
 import {
   MODEL_TYPE_TO_FOLDER_MAPPING,
   ALL_MODEL_TYPES,
@@ -13,12 +21,10 @@ import { getCivitApiKey } from "../../../utils/civitUtils";
 import { userSettingsTable } from "../../../db-tables/WorkspaceDB";
 import { installModelsApi } from "../../api/modelsApi";
 import { getAllFoldersList } from "../../../Api";
-import { findSfwImageFromModel } from "../../../utils/findSfwImage";
+import ChooseDownloadFolder from "../components/ChooseDownloadFolder";
+import InstallModelProgress from "./InstallModelProgress";
 
-export const CivitAIModelsTab = ({
-  dropdownOptions,
-  modelType: modelTypeProp,
-}) => {
+export const CivitAIModelsTab = ({ modelType: modelTypeProp }) => {
   const [selectedFolderOption, setSelectedFolderOption] = useState("");
   const [loading, setLoading] = useState(false);
   const [models, setModels] = useState([]);
@@ -26,6 +32,7 @@ export const CivitAIModelsTab = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [installing, setInstalling] = useState([]);
   const [fileState, setFile, file] = useStateRef();
+  const { isOpen, onOpen, onClose: onCloseChooseFolderModal } = useDisclosure();
   const [foldersList, setFoldersList] = useState({});
   const [folderOptions, setFolderOptions] = useState([]);
   const [defaultFolders, setDefaultFolders] = useState(
@@ -51,7 +58,7 @@ export const CivitAIModelsTab = ({
     setLoading(false);
   }, [searchQuery, modelType]);
 
-  const downloadModels = (folderPath, downloadUrl = "") => {
+  const downloadModels = (folderPath, downloadUrl = null) => {
     if (!file.current?.id && !downloadUrl) {
       console.error("no url to download");
       return;
@@ -80,13 +87,13 @@ export const CivitAIModelsTab = ({
       url,
     });
     setFile(undefined);
-    // onCloseChooseFolderModal();
+    onCloseChooseFolderModal();
   };
   const onClickInstallModel = async (_file, model) => {
     const folderPath = defaultFolders[model.type];
     setFile(_file);
     if (folderPath == null) {
-      // onOpen();
+      onOpen();
     } else {
       downloadModels(folderPath);
     }
@@ -164,8 +171,7 @@ export const CivitAIModelsTab = ({
           <Button onClick={loadData}>Search</Button>
         </Box>
         {/* 
-            TODO: Add something to show the installation progress.
-            TODO: Empty state for the modal.
+            TODO: Add a text field to take input of civit ai key.
          */}
         <Box
           sx={{
@@ -229,21 +235,53 @@ export const CivitAIModelsTab = ({
             gap: "12px",
           }}
         >
+          <InstallModelProgress />
           {/* <pre>{JSON.stringify(folderOptions, null, 4)}</pre> */}
 
-          {models?.map((model) => (
-            <Card
-              key={model.id}
-              imageSrc={findSfwImageFromModel(model, 280, true)}
-              title={model.name}
-              label={model.type}
-              size="1.2 GB"
-              dropdownOptions={dropdownOptions}
-              onInstallClick={() => handleInstallClick()}
-            />
-          ))}
+          {models.length === 0 ? (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "60vh",
+                width: "100%",
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <File size="large" width={50} />
+                <h2>No models found</h2>
+              </Box>
+            </Box>
+          ) : (
+            <>
+              {models?.map((model) => (
+                <CivitCard
+                  key={model.id}
+                  model={model}
+                  installing={installing}
+                  onClickInstallModel={onClickInstallModel}
+                />
+              ))}
+            </>
+          )}
         </Box>
       )}
+      <ChooseDownloadFolder
+        fileSelected={!!fileState}
+        isOpen={isOpen}
+        onClose={onCloseChooseFolderModal}
+        selectFolder={(folderPath, customUrl) => {
+          downloadModels(folderPath, file.current ? undefined : customUrl);
+        }}
+      />
     </Box>
   );
 };

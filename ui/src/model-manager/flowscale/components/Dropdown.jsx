@@ -51,7 +51,10 @@ export const Dropdown = ({
         >
           {selectedOption?.name || placeholder}
         </ActionMenu.Button>
-        <ActionMenu.Overlay width={overlayWidth}>
+        <ActionMenu.Overlay
+          width={overlayWidth}
+          sx={{ maxHeight: "500px", overflow: "auto" }}
+        >
           <ActionList selectionVariant="single">
             {options.length === 0 ? (
               <ActionList.Item disabled>No options available</ActionList.Item>
