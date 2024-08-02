@@ -10,7 +10,7 @@ export const Dropdown = ({
   labelClassName,
   borderColor = "#636C76",
   overlayWidth = "medium",
-  labelDricetion = "vertical",
+  labelDirection = "vertical",
 }) => {
   const selectedOption = options[selectedIndex];
 
@@ -18,8 +18,8 @@ export const Dropdown = ({
     <Box
       sx={{
         display: "flex",
-        flexDirection: labelDricetion === "horizontal" ? "row" : "column",
-        alignItems: labelDricetion === "horizontal" ? "center" : "start",
+        flexDirection: labelDirection === "horizontal" ? "row" : "column",
+        alignItems: labelDirection === "horizontal" ? "center" : "start",
         gap: "4px",
         width: "100%",
         ...wrapperClassName,

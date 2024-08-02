@@ -14,7 +14,7 @@ export async function getModelFromCivitAPi(
 ): Promise<CivitiModel[]> {
   const params: CivitModelQueryParams = {
     limit: "30",
-    types,
+    ...(types && { types }),
   };
   if (query) {
     params.query = query;

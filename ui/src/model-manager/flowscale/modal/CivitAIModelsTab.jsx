@@ -1,10 +1,13 @@
-import { Box, Button, FormControl, TextInput } from "@primer/react";
+import { Box, Button, FormControl, Spinner, TextInput } from "@primer/react";
 import { MagnifyingGlass, XCircle } from "phosphor-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { Card, Dropdown } from "../components";
 import CivitaiSchema from "./DUMMY_DATA/civitai-schema.json";
 import { useStateRef } from "../../../customHooks/useStateRef";
-import { MODEL_TYPE_TO_FOLDER_MAPPING } from "../../install-models/util/modelTypes";
+import {
+  MODEL_TYPE_TO_FOLDER_MAPPING,
+  ALL_MODEL_TYPES,
+} from "../../install-models/util/modelTypes";
 import { getModelFromCivitAPi } from "../../install-models/util/getModelFromCivitAPI";
 import { getCivitApiKey } from "../../../utils/civitUtils";
 import { userSettingsTable } from "../../../db-tables/WorkspaceDB";
@@ -30,7 +33,10 @@ export const CivitAIModelsTab = ({
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    const models = await getModelFromCivitAPi(modelType, searchQuery);
+    const models = await getModelFromCivitAPi(
+      modelType === "All" ? null : modelType,
+      searchQuery,
+    );
     // const models = await getModelFromSearch(searchQuery, modelType);
     setModels(models);
     const folders_list = await getAllFoldersList();
@@ -123,6 +129,7 @@ export const CivitAIModelsTab = ({
           sx={{
             display: "flex",
             gap: "12px",
+            margin: "8px 0px",
           }}
         >
           <FormControl>
@@ -130,7 +137,7 @@ export const CivitAIModelsTab = ({
             <TextInput
               leadingVisual={MagnifyingGlass}
               placeholder="Search CivitAI models"
-              sx={{ width: "320px" }}
+              sx={{ width: "350px" }}
               size="medium"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -159,21 +166,37 @@ export const CivitAIModelsTab = ({
             find the folders for the selected category and apply it.
             TODO: Add a spinner to show loading state of APIs.
             TODO: Add something to show the installation progress.
+            TODO: Empty state for the modal.
          */}
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
-            gap: "12px",
-            width: "40%",
+            gap: "30px",
+            width: "50%",
+            margin: "8px 0px",
           }}
         >
+          {/* {modelType &&
+            foldersList[MODEL_TYPE_TO_FOLDER_MAPPING[modelType]] && (
+              <pre>
+                {JSON.stringify(
+                  foldersList[MODEL_TYPE_TO_FOLDER_MAPPING[modelType]],
+                  null,
+                  4,
+                )}
+              </pre>
+            )} */}
           <Dropdown
-            options={dropdownOptions}
-            selectedIndex={selectedIndex}
-            onSelect={setSelectedIndex}
+            options={ALL_MODEL_TYPES}
+            selectedIndex={ALL_MODEL_TYPES.findIndex(
+              (type) => type.name === modelType,
+            )}
+            onSelect={(index) => {
+              setModelType(ALL_MODEL_TYPES[index].name);
+            }}
             label="Category"
-            labelDricetion="horizontal"
+            labelDirection="horizontal"
             overlayWidth="auto"
           />
 
@@ -182,30 +205,46 @@ export const CivitAIModelsTab = ({
             selectedIndex={selectedIndex}
             onSelect={setSelectedIndex}
             label="Path"
-            labelDricetion="horizontal"
+            labelDirection="horizontal"
             overlayWidth="auto"
           />
         </Box>
       </Box>
-      <Box
-        sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "12px",
-        }}
-      >
-        {models.map((model) => (
-          <Card
-            key={model.id}
-            imageSrc={findSfwImageFromModel(model, 280, true)}
-            title={model.name}
-            label={model.type}
-            size="1.2 GB"
-            dropdownOptions={dropdownOptions}
-            onInstallClick={() => handleInstallClick()}
-          />
-        ))}
-      </Box>
+      {loading ? (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "60vh",
+            width: "100%",
+          }}
+        >
+          <Spinner size="large" />
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "12px",
+          }}
+        >
+          {/* <pre>{JSON.stringify(foldersList, null, 4)}</pre> */}
+
+          {models?.map((model) => (
+            <Card
+              key={model.id}
+              imageSrc={findSfwImageFromModel(model, 280, true)}
+              title={model.name}
+              label={model.type}
+              size="1.2 GB"
+              dropdownOptions={dropdownOptions}
+              onInstallClick={() => handleInstallClick()}
+            />
+          ))}
+        </Box>
+      )}
     </Box>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Modal, Tabs } from "../components";
-import { Box, IconButton, Spinner } from "@primer/react";
+import { Box, IconButton, Label, Spinner } from "@primer/react";
 import { X } from "phosphor-react";
 import { CivitAIModelsTab } from "./CivitAIModelsTab";
 import { OthersModelsTab } from "./OthersModelsTab";
@@ -19,15 +19,15 @@ export const FlowscaleModal = ({ isOpen, isClose, modelType }) => {
   const [activeTab, setActiveTab] = useState(1);
 
   const tabNames = [
-    { id: 1, name: "CivitAi", enabled: true },
+    { id: 1, name: "CivitAI Models", enabled: true },
     {
       id: 2,
-      name: "Other",
+      name: "Other Models",
       enabled: true,
     },
     {
       id: 3,
-      name: "Custom",
+      name: "Install Custom URL",
       enabled: true,
     },
   ];
@@ -50,9 +50,13 @@ export const FlowscaleModal = ({ isOpen, isClose, modelType }) => {
             gap: "8px",
           }}
         >
-          <h3 style={{ fontSize: "16px", fontWeight: "600" }}>
-            FlowScale Models
-          </h3>
+          <img
+            style={{
+              marginLeft: "10px",
+            }}
+            height={30}
+            src="https://hub.flowscale.ai/assets/logo-with-fullname-B69rI_hH.svg"
+          />
         </Box>
         <IconButton
           aria-label=""

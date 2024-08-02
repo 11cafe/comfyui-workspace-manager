@@ -28,8 +28,14 @@ export function Topbar() {
           separator.style.width = "100%";
           menu.append(separator);
           const civitAiButton = document.createElement("button");
-          civitAiButton.textContent = "FlowScale";
-          civitAiButton.style.fontSize = "16px";
+          // civitAiButton.textContent = "FlowScale";
+          // civitAiButton.style.fontSize = "16px";
+          const civitAiImage = document.createElement("img");
+          civitAiImage.height = 22;
+          civitAiImage.src =
+            "https://hub.flowscale.ai/assets/logo-with-fullname-B69rI_hH.svg";
+          civitAiImage.alt = "FlowScale";
+          civitAiButton.appendChild(civitAiImage);
           civitAiButton.className =
             "comfyui-button comfyui-menu-mobile-collapse civitai-button";
           civitAiButton.style.marginTop = "10px";

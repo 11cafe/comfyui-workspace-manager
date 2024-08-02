@@ -32,6 +32,7 @@ export const Card = ({
       {imageSrc && (
         <Box
           sx={{
+            height: "200px",
             borderTopLeftRadius: "16px",
             borderTopRightRadius: "16px",
             borderBottomRightRadius: 0,
@@ -45,7 +46,7 @@ export const Card = ({
             alt={title}
             style={{
               width: "100%",
-              height: "200px",
+              height: "100%",
               objectFit: "cover",
             }}
           />
@@ -86,6 +87,7 @@ export const Card = ({
               fontSize: "18px",
               fontWeight: "600",
               color: "#C4C4CA",
+              margin: "8px 0px",
             }}
           >
             {title}

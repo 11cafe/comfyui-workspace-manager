@@ -2,13 +2,14 @@ import { SearchHit, SearchModelVersion } from "../../civitSearchTypes";
 import { CivitiModel, CivitiModelVersion } from "../../types";
 
 export const ALL_MODEL_TYPES = [
-  "Checkpoint",
-  "TextualInversion",
-  "Hypernetwork",
-  "LORA",
-  "Controlnet",
-  "Upscaler",
-  "VAE",
+  { name: "All" },
+  { name: "Checkpoint" },
+  { name: "TextualInversion" },
+  { name: "Hypernetwork" },
+  { name: "LORA" },
+  { name: "Controlnet" },
+  { name: "Upscaler" },
+  { name: "VAE" },
   // "Poses",
   // "MotionModule",
   // "LoCon",
