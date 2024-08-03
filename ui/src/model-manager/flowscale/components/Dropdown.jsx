@@ -26,7 +26,7 @@ export const Dropdown = ({
         ...wrapperClassName,
       }}
     >
-      {label && (
+      {/* {label && (
         <Box
           sx={{
             color: "#ADBAC7",
@@ -39,7 +39,7 @@ export const Dropdown = ({
         >
           {label}:
         </Box>
-      )}
+      )} */}
       <ActionMenu>
         <ActionMenu.Button
           alignContent="start"
@@ -49,6 +49,9 @@ export const Dropdown = ({
             backgroundColor: "transparent",
           }}
         >
+          {label && (
+            <span style={{ fontWeight: 600, marginRight: 10 }}>{label}:</span>
+          )}
           {selectedOption?.name || placeholder}
         </ActionMenu.Button>
         <ActionMenu.Overlay

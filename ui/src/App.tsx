@@ -7,6 +7,7 @@ import { Session, WorkspaceRoute } from "./types/types";
 import { useStateRef } from "./customHooks/useStateRef";
 import { fetchApi } from "./Api";
 import { serverInfo } from "./utils/OsPathUtils";
+import { Toaster } from "react-hot-toast";
 
 export default function App() {
   const [route, setRoute] = useState<WorkspaceRoute>("root");
@@ -70,6 +71,7 @@ export default function App() {
       }}
     >
       <Topbar />
+      <Toaster />
     </WorkspaceContext.Provider>
   );
 }

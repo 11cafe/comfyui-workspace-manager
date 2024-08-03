@@ -4,15 +4,16 @@ import {
   ProgressBar,
   Text,
   useTheme,
-  //   useToasts,
+  IconButton,
 } from "@primer/react";
 import { useState, useEffect } from "react";
 import { cancelDownload } from "../../../Api";
 import { api } from "../../../utils/comfyapp";
+import toast from "react-hot-toast";
+import { X } from "phosphor-react";
 
 export default function InstallModelProgress() {
   const { theme } = useTheme();
-  //   const { addToast } = useToasts();
   const [queue, setQueue] = useState([]);
 
   useEffect(() => {
@@ -20,12 +21,37 @@ export default function InstallModelProgress() {
       setQueue(e.detail);
     });
     api.addEventListener("download_error", (e) => {
-      console.log({
-        title: "Download Error",
-        description: e.detail,
-        variant: "danger",
-        duration: 4000,
-      });
+      console.log("[DOWNLOAD ERROR]: ", e.detail);
+      toast(
+        (t) => (
+          <span
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              maxWidth: "370px",
+            }}
+          >
+            <span>Download Error: {e.detail.slice(0, 150)}</span>
+            <IconButton
+              onClick={() => {
+                toast.remove(t.id);
+                api.removeEventListener("download_error");
+              }}
+              icon={X}
+              style={{ marginLeft: "auto" }}
+            ></IconButton>
+          </span>
+        ),
+        {
+          duration: 4000,
+          position: "bottom-left",
+          style: {
+            maxWidth: "420px",
+          },
+        },
+      );
+      api.removeEventListener("download_error");
     });
   }, []);
 

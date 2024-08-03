@@ -9,6 +9,7 @@ import {
   getFileEssential,
   isCivitModel,
 } from "../../install-models/util/modelTypes";
+import { getCivitApiKey } from "../../../utils/civitUtils";
 
 const IMAGE_SIZE = 280;
 
@@ -80,9 +81,6 @@ export const CivitCard = ({ model, onClickInstallModel, installing }) => {
           />
         </Box>
       )}
-      {/* 
-        TODO: Add a URL icon to visit the model page. 
-       */}
       <Box
         sx={{
           display: "flex",
@@ -163,9 +161,15 @@ export const CivitCard = ({ model, onClickInstallModel, installing }) => {
           <Button
             variant="primary"
             onClick={() => installHandler()}
-            isDisabled={Boolean(
-              selectedFile && installing.includes(selectedFile),
+            disabled={Boolean(
+              (selectedFile && installing.includes(selectedFile)) ||
+                !getCivitApiKey(),
             )}
+            title={
+              !getCivitApiKey()
+                ? "Please add Civit API key"
+                : `Install ${selectedFile}`
+            }
             leadingVisual={DownloadSimple}
             sx={{
               color: "#fff",

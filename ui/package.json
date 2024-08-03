@@ -12,10 +12,9 @@
   },
   "dependencies": {
     "@chakra-ui/react": "^2.8.2",
-    "@primer/react": "^36.27.0",
-    "phosphor-react": "^1.4.1",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
+    "@primer/react": "^36.27.0",
     "@tabler/icons-react": "^2.42.0",
     "chakra-react-select": "^4.7.6",
     "dexie": "^3.2.4",
@@ -23,8 +22,10 @@
     "fuse.js": "^7.0.0",
     "jszip": "^3.10.1",
     "nanoid": "^5.0.6",
+    "phosphor-react": "^1.4.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.4.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.37",

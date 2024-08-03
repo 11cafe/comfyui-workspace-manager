@@ -1,17 +1,9 @@
-import {
-  Box,
-  Button,
-  FormControl,
-  Spinner,
-  Text,
-  TextInput,
-} from "@primer/react";
-import { File, MagnifyingGlass, XCircle } from "phosphor-react";
+import { Box, Button, FormControl, Spinner, TextInput } from "@primer/react";
+import { File, Key, MagnifyingGlass, XCircle } from "phosphor-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { CivitCard, Dropdown } from "../components";
 import { useStateRef } from "../../../customHooks/useStateRef";
 import { useDisclosure } from "@chakra-ui/react";
-import ChooseFolder from "../../install-models/ChooseFolder";
 import {
   MODEL_TYPE_TO_FOLDER_MAPPING,
   ALL_MODEL_TYPES,
@@ -23,6 +15,8 @@ import { installModelsApi } from "../../api/modelsApi";
 import { getAllFoldersList } from "../../../Api";
 import ChooseDownloadFolder from "../components/ChooseDownloadFolder";
 import InstallModelProgress from "./InstallModelProgress";
+import toast from "react-hot-toast";
+import CivitAIKeyModal from "./CivitAIKeyModal";
 
 export const CivitAIModelsTab = ({ modelType: modelTypeProp }) => {
   const [selectedFolderOption, setSelectedFolderOption] = useState("");
@@ -38,6 +32,7 @@ export const CivitAIModelsTab = ({ modelType: modelTypeProp }) => {
   const [defaultFolders, setDefaultFolders] = useState(
     MODEL_TYPE_TO_FOLDER_MAPPING,
   );
+  const [isCivitAIKeyModalOpen, setIsCivitAIKeyModalOpen] = useState(false);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -74,7 +69,9 @@ export const CivitAIModelsTab = ({ modelType: modelTypeProp }) => {
         return;
       }
     }
-    console.log("Installing......");
+    toast.loading("Installing...", {
+      duration: 4000,
+    });
     version != null && setInstalling((cur) => [...cur, version ?? ""]);
     const apiKey = getCivitApiKey();
     if (apiKey) {
@@ -132,7 +129,7 @@ export const CivitAIModelsTab = ({ modelType: modelTypeProp }) => {
       <Box
         sx={{
           display: "flex",
-          justifyContent: "space-between",
+          gap: "20px",
         }}
       >
         <Box
@@ -170,16 +167,12 @@ export const CivitAIModelsTab = ({ modelType: modelTypeProp }) => {
           </FormControl>
           <Button onClick={loadData}>Search</Button>
         </Box>
-        {/* 
-            TODO: Add a text field to take input of civit ai key.
-         */}
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
-            gap: "30px",
-            width: "50%",
-            margin: "8px 0px",
+            gap: "10px",
+            margin: "8px 0px 8px auto",
           }}
         >
           <Dropdown
@@ -213,6 +206,22 @@ export const CivitAIModelsTab = ({ modelType: modelTypeProp }) => {
           ) : (
             <></>
           )}
+
+          <Button
+            onClick={() => {
+              setIsCivitAIKeyModalOpen(true);
+            }}
+          >
+            <span
+              style={{
+                display: "flex",
+                gap: 4,
+                alignItems: "center",
+              }}
+            >
+              <Key /> API Key
+            </span>
+          </Button>
         </Box>
       </Box>
       {loading ? (
@@ -274,6 +283,10 @@ export const CivitAIModelsTab = ({ modelType: modelTypeProp }) => {
           )}
         </Box>
       )}
+      <CivitAIKeyModal
+        isOpen={isCivitAIKeyModalOpen}
+        onClose={() => setIsCivitAIKeyModalOpen(false)}
+      />
       <ChooseDownloadFolder
         fileSelected={!!fileState}
         isOpen={isOpen}

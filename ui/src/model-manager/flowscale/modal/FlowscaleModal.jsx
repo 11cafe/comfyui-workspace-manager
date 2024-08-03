@@ -78,12 +78,12 @@ export const FlowscaleModal = ({ isOpen, isClose, modelType }) => {
 
   return (
     <Modal
-      isOpen={true}
+      isOpen={isOpen}
       onDismiss={isClose}
       customHeader={CustomHeader}
       showButtons={false}
       sx={{
-        width: "70%",
+        width: "75%",
         height: "90%",
         maxHeight: "95%",
         overflow: "hidden",
