@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Modal, Tabs } from "../components";
-import { Box, IconButton, Label, Spinner } from "@primer/react";
+import { Box, IconButton, Spinner } from "@primer/react";
 import { X } from "phosphor-react";
 import { CivitAIModelsTab } from "./CivitAIModelsTab";
 import { OthersModelsTab } from "./OthersModelsTab";
