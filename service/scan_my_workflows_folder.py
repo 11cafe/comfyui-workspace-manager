@@ -53,6 +53,10 @@ def folder_handle(path, recursive, metaInfoOnly, fileList=None):
 def file_handle(name, fileList, file_path, metaInfoOnly):
     with open(file_path, 'r', encoding='utf-8') as f:
         json_data = json.load(f)
+
+    if not isinstance(json_data, (dict,)):
+        logging.error(f"{file_path} not in proper ComfyUI workflow format")
+        return
     
     createTime, updateTime = getFileCreateTime(file_path)
     workspace_info = json_data.get('extra', {}).get('workspace_info', {})   
