@@ -4,9 +4,8 @@ import { ColorModeScript, type StyleFunctionProps } from "@chakra-ui/react";
 import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import { AlertDialogProvider } from "./components/AlertDialogProvider.tsx";
 import CSSReset from "./MyCSSReset.tsx";
+import { waitForApp } from "./utils/comfyapp.ts";
 
-const topbar = document.createElement("div");
-document.body.append(topbar);
 const App = React.lazy(() =>
   import("./App.tsx").then(({ default: App }) => ({
     default: App,
@@ -51,20 +50,6 @@ const theme = extendTheme({
   },
 });
 
-ReactDOM.createRoot(topbar).render(
-  <React.StrictMode>
-    <ChakraProvider resetCSS={false} disableGlobalStyle={true} theme={theme}>
-      <CSSReset scope=".workspace_manager" />
-      <ColorModeScript initialColorMode="dark" />
-      <AlertDialogProvider>
-        <Suspense>
-          <App />
-        </Suspense>
-      </AlertDialogProvider>
-    </ChakraProvider>
-  </React.StrictMode>,
-);
-
 // hacky fix for chakra add extra className (chakra-ui-light) into body
 // and resulted in user unable to copy new nodes into clipboard, because of this check: e.target.className === "litegraph"
 // (https://github.com/comfyanonymous/ComfyUI/blob/57926635e8d84ae9eea4a0416cc75e363f5ede45/web/scripts/app.js#L861)
@@ -96,3 +81,40 @@ const callback = function (
 };
 const observer = new MutationObserver(callback);
 observer.observe(targetNode, observerConfig);
+
+function waitForDocumentBody() {
+  return new Promise((resolve) => {
+    if (document.body) {
+      return resolve(document.body);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      resolve(document.body);
+    });
+  });
+}
+
+// wait for document.body to load so that the top menu is loaded and my react component has a place to mount
+waitForDocumentBody()
+  .then(() => waitForApp())
+  .then(() => {
+    const topbar = document.createElement("div");
+    document.body.append(topbar);
+    ReactDOM.createRoot(topbar).render(
+      <React.StrictMode>
+        <ChakraProvider
+          resetCSS={false}
+          disableGlobalStyle={true}
+          theme={theme}
+        >
+          <CSSReset scope=".workspace_manager" />
+          <ColorModeScript initialColorMode="dark" />
+          <AlertDialogProvider>
+            <Suspense>
+              <App />
+            </Suspense>
+          </AlertDialogProvider>
+        </ChakraProvider>
+      </React.StrictMode>,
+    );
+  });

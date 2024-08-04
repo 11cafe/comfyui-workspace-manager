@@ -131,7 +131,7 @@ export default function App() {
     try {
       await loadDBs();
     } catch (error) {
-      console.error("error loading db", error);
+      console.error("🦄Workspace Manager - Error loading db", error);
     }
     setLoadingDB(false);
 

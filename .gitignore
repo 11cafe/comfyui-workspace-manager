@@ -11,7 +11,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 ui/node_modules
-ui/src/utils/encryptUtils.ts
+# ui/src/utils/encryptUtils.ts
 db
 dist-ssr
 *.local
