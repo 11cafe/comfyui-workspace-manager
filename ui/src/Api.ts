@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { Table } from "./db-tables/WorkspaceDB";
 import type { ModelsListRespItem } from "./model-manager/types";
 import { api } from "./utils/comfyapp";
@@ -41,6 +42,72 @@ export async function saveDB(table: Table, jsonData: string) {
     return result;
   } catch (error) {
     console.error("Error saving workspace:", error);
+  }
+}
+
+export async function updateUserModelsJsonGithub(
+  username: string,
+  repo_name: string,
+  modelJson,
+  access_token: string,
+) {
+  if (!access_token) {
+    return;
+  }
+
+  try {
+    // Get existing content
+    const response1 = await fetch(
+      `https://api.github.com/repos/${username}/${repo_name}/contents/user_models.json`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      },
+    );
+
+    if (!response1.ok) {
+      throw new Error(`HTTP error! status: ${response1.status}`);
+    }
+
+    const data = await response1.json();
+
+    const existingContent = JSON.parse(atob(data?.content));
+
+    // TODO: Check if modelJson's name is same as any existing model object in the above
+    // array, then don't add it again.
+
+    const sha = data?.sha;
+    console.log("Github debugging: ", modelJson, [
+      ...existingContent,
+      modelJson,
+    ]);
+
+    // Merge existing content with new content
+    // const updatedContent = [...existingContent, ...modelJson];
+
+    // const content = btoa(JSON.stringify(updatedContent, null, 2));
+
+    // Update file in GitHub
+    // const response2 = await fetchApi(
+    //   `https://api.github.com/repos/${username}/${repo_name}/contents/user_models.json`,
+    //   {
+    //     method: "PUT",
+    //     headers: {
+    //       authorization: access_token,
+    //     },
+    //     body: JSON.stringify({
+    //       message: "Update user models",
+    //       content,
+    //       sha,
+    //     }),
+    //   },
+    // );
+    // return response2;
+  } catch (error) {
+    toast.error("Error while updating models.json on your GitHub repo");
+    throw error;
   }
 }
 

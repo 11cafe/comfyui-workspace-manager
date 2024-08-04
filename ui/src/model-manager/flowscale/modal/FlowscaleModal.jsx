@@ -78,7 +78,7 @@ export const FlowscaleModal = ({ isOpen, isClose, modelType }) => {
 
   return (
     <Modal
-      isOpen={isOpen}
+      isOpen={true}
       onDismiss={isClose}
       customHeader={CustomHeader}
       showButtons={false}

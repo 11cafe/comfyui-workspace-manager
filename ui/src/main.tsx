@@ -1,9 +1,5 @@
 import React, { Suspense } from "react";
 import ReactDOM from "react-dom/client";
-import { ColorModeScript, type StyleFunctionProps } from "@chakra-ui/react";
-import { ChakraProvider, extendTheme } from "@chakra-ui/react";
-import { AlertDialogProvider } from "./components/AlertDialogProvider.tsx";
-import CSSReset from "./MyCSSReset.tsx";
 import { BaseStyles, ThemeProvider, theme } from "@primer/react";
 import deepmerge from "deepmerge";
 
@@ -63,7 +59,7 @@ const customTheme = deepmerge(theme, {
 
 ReactDOM.createRoot(topbar).render(
   <React.StrictMode>
-    <div style={{ position: "absolute", zIndex: 100 }}>
+    <div id="flowscale-container" style={{ position: "absolute", zIndex: 100 }}>
       <ThemeProvider
         colorMode="night"
         nightScheme="dark_dimmed"

@@ -1,6 +1,8 @@
 // @ts-ignore
 export let app: any | null = null;
-const api_base = location.pathname.split("/").slice(0, -1).join("/");
+const api_base =
+  location.pathname.split("/").slice(0, -1).join("/") ||
+  "http://localhost:8188";
 
 export let api: any | null = null;
 
