@@ -83,9 +83,9 @@ export const CustomModelsTab = () => {
       path: folderPath.split("/").slice(-2).join("/"),
       fetch_type: "download",
     };
-    if (ghUser && repoName && flowscaleToken) {
-      updateUserModelsJsonGithub(ghUser, repoName, _file, flowscaleToken);
-    }
+    // if (ghUser && repoName && flowscaleToken) {
+    //   updateUserModelsJsonGithub(ghUser, repoName, _file, flowscaleToken);
+    // }
     // const folderPath = defaultFolders[model.type];
     setFile(_file);
     if (folderPath == null) {

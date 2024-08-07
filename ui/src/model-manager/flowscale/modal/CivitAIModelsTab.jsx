@@ -90,19 +90,19 @@ export const CivitAIModelsTab = ({ modelType: modelTypeProp }) => {
     setIsOpen(false);
   };
   const onClickInstallModel = async (_file, model) => {
-    if (ghUser && repoName && flowscaleToken) {
-      updateUserModelsJsonGithub(
-        ghUser,
-        repoName,
-        {
-          name: _file?.name,
-          url: `https://civitai.com/api/download/models/${_file?.id}`,
-          path: selectedFolderOption.split("/").slice(-2).join("/"),
-          fetch_type: "download",
-        },
-        flowscaleToken,
-      );
-    }
+    // if (ghUser && repoName && flowscaleToken) {
+    //   updateUserModelsJsonGithub(
+    //     ghUser,
+    //     repoName,
+    //     {
+    //       name: _file?.name,
+    //       url: `https://civitai.com/api/download/models/${_file?.id}`,
+    //       path: selectedFolderOption.split("/").slice(-2).join("/"),
+    //       fetch_type: "download",
+    //     },
+    //     flowscaleToken,
+    //   );
+    // }
     const folderPath = defaultFolders[model.type];
     setFile(_file);
     if (folderPath == null) {
