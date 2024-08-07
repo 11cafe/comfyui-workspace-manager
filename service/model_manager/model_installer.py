@@ -16,16 +16,24 @@ comfy_path = os.path.dirname(folder_paths.__file__)
 
 
 def download_url_with_wget(url, save_path):
-    print(f"Downloading {url} to {save_path} ...")
+    print(f"Downloading {url} to {save_path} with wget...")
     if not is_wget_installed():
         print(
             "wget is not installed. Please install wget or use a different download method."
         )
         return False
 
+    if os.path.isdir(save_path):
+        filename = os.path.basename(url)
+        save_path = os.path.join(save_path, filename)
+        
+    print(f"Final save path: {save_path}")
+
     try:
-        # url="https://github.com/Weixuanf/cdn-test/blob/main/workspace-manager-5YgCydJJ.js"
         command = f"wget -c '{url}' -O '{save_path}' --show-progress"
+
+        print(f"Executing command: {command}")
+
         process = subprocess.Popen(command, shell=True, stderr=subprocess.PIPE)
 
         while True:
@@ -90,13 +98,17 @@ def download_worker():
                 task = download_tasks.pop(0)
         if task is not None:
             # Execute the download task and update the download progress
-            download_url_with_agent(
-                url=task["url"],
-                save_path=task["save_path"],
-                file_name=task["filename"],
-                file_hash=task.get("file_hash"),
-                force_filename=task.get("force_filename", False),
-            )
+            url = task["url"]
+            if "civitai.com" in url:
+                download_url_with_agent(
+                    url=task["url"],
+                    save_path=task["save_path"],
+                    file_name=task["filename"],
+                    file_hash=task.get("file_hash"),
+                    force_filename=task.get("force_filename", False),
+                )
+            else:
+                download_url_with_wget(url, task["save_path"])
             # calculate newly downloaded models' hash
             start_populate_file_hash_dict()
 
