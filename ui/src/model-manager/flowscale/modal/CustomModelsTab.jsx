@@ -14,6 +14,7 @@ import { useStateRef } from "../../../customHooks/useStateRef";
 import { updateUserModelsJsonGithub, getAllFoldersList } from "../../../Api";
 import ChooseDownloadFolder from "../components/ChooseDownloadFolder";
 import { DownloadSimple } from "phosphor-react";
+import InstallModelProgress from "./InstallModelProgress";
 
 export const CustomModelsTab = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -122,7 +123,11 @@ export const CustomModelsTab = () => {
         <TextInput
           placeholder="https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors"
           value={modelDownloadUrl}
-          onChange={(e) => setModelDownloadUrl(e.target.value)}
+          onChange={(e) => {
+            setModelDownloadUrl(e.target.value);
+            if (!modelFilename)
+              setModelFilename(e.target.value.split("/").pop());
+          }}
           sx={{
             backgroundColor: "transparent",
             border: "1px solid #636C76",
@@ -151,7 +156,12 @@ export const CustomModelsTab = () => {
       <Button
         variant="primary"
         onClick={() => onClickInstallModel()}
-        disabled={Boolean(!modelDownloadUrl || !modelFilename || !folderPath)}
+        disabled={Boolean(
+          !modelDownloadUrl ||
+            !modelFilename ||
+            !folderPath ||
+            installing.includes(modelFilename),
+        )}
         leadingVisual={DownloadSimple}
         sx={{
           color: "#fff",
@@ -170,6 +180,7 @@ export const CustomModelsTab = () => {
           downloadModels(folderPath, file.current ? undefined : customUrl);
         }}
       />
+      <InstallModelProgress />
     </Box>
   );
 };

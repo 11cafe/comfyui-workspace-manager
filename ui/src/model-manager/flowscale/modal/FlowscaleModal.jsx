@@ -16,7 +16,7 @@ const dropdownOptions = [
 
 export const FlowscaleModal = ({ isOpen, isClose, modelType }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState(2);
+  const [activeTab, setActiveTab] = useState(1);
 
   const tabNames = [
     { id: 1, name: "CivitAI Models", enabled: true },
@@ -78,7 +78,7 @@ export const FlowscaleModal = ({ isOpen, isClose, modelType }) => {
 
   return (
     <Modal
-      isOpen={true}
+      isOpen={isOpen}
       onDismiss={isClose}
       customHeader={CustomHeader}
       showButtons={false}
