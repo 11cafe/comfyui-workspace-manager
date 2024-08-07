@@ -69,7 +69,7 @@ export const CustomModelsTab = () => {
       file_hash: file.current?.SHA256,
       filename: modelFilename,
       save_path: folderPath,
-      downloadUrl,
+      url: downloadUrl,
     });
     setFile(undefined);
   };
