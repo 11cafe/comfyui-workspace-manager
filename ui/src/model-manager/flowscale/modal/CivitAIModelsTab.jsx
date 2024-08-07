@@ -3,7 +3,6 @@ import { File, Key, MagnifyingGlass, XCircle } from "phosphor-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { CivitCard, Dropdown } from "../components";
 import { useStateRef } from "../../../customHooks/useStateRef";
-import { useDisclosure } from "@chakra-ui/react";
 import {
   MODEL_TYPE_TO_FOLDER_MAPPING,
   ALL_MODEL_TYPES,
@@ -25,8 +24,8 @@ export const CivitAIModelsTab = ({ modelType: modelTypeProp }) => {
   const [modelType, setModelType] = useState(modelTypeProp);
   const [searchQuery, setSearchQuery] = useState("");
   const [installing, setInstalling] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
   const [fileState, setFile, file] = useStateRef();
-  const { isOpen, onOpen, onClose: onCloseChooseFolderModal } = useDisclosure();
   const [foldersList, setFoldersList] = useState({});
   const [folderOptions, setFolderOptions] = useState([]);
   const [defaultFolders, setDefaultFolders] = useState(
@@ -88,7 +87,7 @@ export const CivitAIModelsTab = ({ modelType: modelTypeProp }) => {
       url,
     });
     setFile(undefined);
-    onCloseChooseFolderModal();
+    setIsOpen(false);
   };
   const onClickInstallModel = async (_file, model) => {
     if (ghUser && repoName && flowscaleToken) {
@@ -107,7 +106,7 @@ export const CivitAIModelsTab = ({ modelType: modelTypeProp }) => {
     const folderPath = defaultFolders[model.type];
     setFile(_file);
     if (folderPath == null) {
-      onOpen();
+      setIsOpen(true);
     } else {
       downloadModels(folderPath);
     }
@@ -323,7 +322,7 @@ export const CivitAIModelsTab = ({ modelType: modelTypeProp }) => {
       <ChooseDownloadFolder
         fileSelected={!!fileState}
         isOpen={isOpen}
-        onClose={onCloseChooseFolderModal}
+        onClose={() => setIsOpen(false)}
         selectFolder={(folderPath, customUrl) => {
           downloadModels(folderPath, file.current ? undefined : customUrl);
         }}
