@@ -14,7 +14,6 @@ import {
   TabPanels,
   Tab,
   TabPanel,
-  useToast,
   HStack,
   Tag,
 } from "@chakra-ui/react";
@@ -30,10 +29,10 @@ import { WorkspaceContext } from "../WorkspaceContext";
 import { Changelog, WorkflowVersion } from "../types/dbTypes";
 import DeleteConfirm from "./DeleteConfirm";
 import { app } from "../utils/comfyapp";
+import Paginator from "./Paginator";
 
 export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
-  const { isDirty, loadWorkflowID, curVersion, session } =
-    useContext(WorkspaceContext);
+  const { isDirty, curVersion, session } = useContext(WorkspaceContext);
   const [active, setActive] = useState(0); // 0: version、1: changelog
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
   const [changelogs, setChangelogs] = useState<Changelog[]>([]);
@@ -43,6 +42,7 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
   const curFlow = workflowsTable?.curWorkflow;
   const cloudHost = userSettingsTable?.settings?.cloudHost;
   const [loading, setLoading] = useState(false);
+  const [pageNumber, setPageNumber] = useState(1);
   const loadChangeLogs = async (flowId: string) => {
     const workflow = await workflowsTable?.get(flowId);
     const changelogs = await changelogsTable?.listByWorkflowID(flowId);
@@ -54,15 +54,13 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
     selectedChangelogID && setSelectedVersion(selectedChangelogID);
   };
 
-  const loadVersions = async () => {
+  const loadVersions = async (pageNum: number) => {
     let vers =
       (await workflowVersionsTable?.listByWorkflowID(curFlow!.id)) ?? [];
     if (session?.shareKey && curFlow?.cloudID) {
       setLoading(true);
       await fetch(
-        userSettingsTable?.settings?.cloudHost! +
-          "/api/listWorkflowVersionsByWorkflowID?workflowID=" +
-          curFlow?.cloudID,
+        `${userSettingsTable?.settings?.cloudHost}/api/listWorkflowVersionsByWorkflowID?workflowID=${curFlow?.cloudID}&pageNumber=${pageNum}`,
         {
           headers: {
             authorization: `Bearer ${session?.shareKey}`,
@@ -90,16 +88,22 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
     setVersions(vers);
   };
 
+  const onVersionsPageChange = (num: number) => {
+    setPageNumber(num);
+    loadVersions(num);
+  };
+
   const onDelete = (id: string) => {
     workflowVersionsTable?.delete(id).then(() => {
-      loadVersions();
+      loadVersions(pageNumber);
     });
   };
 
   useEffect(() => {
     switch (active) {
       case 0:
-        loadVersions();
+        setPageNumber(1);
+        loadVersions(1);
         break;
       case 1:
         loadChangeLogs(curFlow!.id);
@@ -158,7 +162,6 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
                 </Text>
               )}
               <Stack divider={<StackDivider />} spacing={2}>
-                {loading && <Text>Loading...</Text>}
                 {versions?.map((version) => {
                   return (
                     <Flex
@@ -223,6 +226,12 @@ export function VersionHistoryDrawer({ onClose }: { onClose: () => void }) {
                     </Flex>
                   );
                 })}
+                <Paginator
+                  onPageChange={onVersionsPageChange}
+                  pageNumber={pageNumber}
+                  loading={loading}
+                  noMoreData={versions.length === 0}
+                />
               </Stack>
             </TabPanel>
             <TabPanel>
