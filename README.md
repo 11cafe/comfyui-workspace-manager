@@ -6,6 +6,8 @@ If you have questions or suggestions, please [join our Discord](https://discord.
 
 ✨We have a new platform to turn your comfyui workflow to runnable web app: www.nodecafe.co please check it out! 🥳
 
+[8-23] 📣Hi since the ComfyUI frontend has built-in workspace management feature, and they are adding model management too, this plugin will go into maintainance mode. In future, I may pivot this plugin to focus more on version controls, or cloud sync & backups, or team collaboration workspace. But right now, I'm focusing on building www.nodecafe.co which is the cloud comfyui and workflow deploy service platform (workflow app & api).
+
 [6-25] ⚠️ Please update workspace manager to latest version if it's not showing up for you after updating ComfyUI (不要用秋叶启动器更新，请使用ComfyUI Manager管理器更新，秋叶没法更新到最新版)
 
 [6-21] ‼️please upgrade to V2 and enable twoway sync if you haven't already. I will stop supporting V1 soon and will forcefully turn on twoway sync later. (twoway sync means that your workflow are twoway synced with your disk files /my_workflows directly)
