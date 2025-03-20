@@ -18,12 +18,19 @@ const MODEL_TYPE_TO_NODE_MAPPING: Record<string, string> = {
   upscale_models: "UpscaleModelLoader",
 };
 
+// Helper function to check if URL is a video
+const isVideoUrl = (url: string): boolean => {
+  const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
+  return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
+};
+
 export function ModelItem({ data }: Props) {
   const [url, setUrl] = useState(
     "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/27fd7433-cb0a-4a87-88c1-21ccb2b1a842/width=450/00060-881622046.jpeg",
   );
   const [hashing, setHashing] = useState(!data.file_hash);
   const [model, setModel] = useState<Model>();
+  const [isVideo, setIsVideo] = useState(false);
 
   useEffect(() => {
     setHashing(!data.file_hash);
@@ -36,13 +43,19 @@ export function ModelItem({ data }: Props) {
     );
     if (model != null) {
       setModel(model);
-      model.imageUrl?.length && setUrl(model.imageUrl);
+      if (model.imageUrl?.length) {
+        setUrl(model.imageUrl);
+        setIsVideo(isVideoUrl(model.imageUrl));
+      }
     }
     if (!model?.imageUrl && data.file_hash != null) {
       try {
         const json = await fetchCivitModelFromHashKey(data.file_hash);
         const image_url = json.imageUrl;
-        image_url && setUrl(image_url);
+        if (image_url) {
+          setUrl(image_url);
+          setIsVideo(isVideoUrl(image_url));
+        }
 
         const newModel: Model = {
           id: data.model_name + "@" + data.model_type,
@@ -58,7 +71,10 @@ export function ModelItem({ data }: Props) {
         setModel(newModel);
       } catch (e) {}
     }
-    if (data.preview) setUrl(data.preview);
+    if (data.preview) {
+      setUrl(data.preview);
+      setIsVideo(isVideoUrl(data.preview));
+    }
   };
 
   const handleDragStart = (e: DragEvent<HTMLDivElement>) => {
@@ -74,6 +90,52 @@ export function ModelItem({ data }: Props) {
     e.dataTransfer.setData("nodeType", nodeType);
   };
 
+  const renderMedia = () => {
+    if (hashing) {
+      return (
+        <Flex
+          bg="rgba(0, 0, 0, 0.5)"
+          height={178}
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Spinner />
+        </Flex>
+      );
+    }
+
+    const mediaProps = {
+      draggable: false,
+      boxSize: "100%",
+      height: 150,
+      objectFit: "cover" as const,
+      borderRadius: 4,
+      cursor: model?.civitModelID != null ? "pointer" : "auto",
+      onClick: () => {
+        if (
+          model?.civitModelID == null ||
+          model?.civitModelVersionID == null
+        ) {
+          return;
+        }
+        window.open(
+          `https://civitai.com/models/${model?.civitModelID}?modelVersionId=${model?.civitModelVersionID}`,
+        );
+      }
+    };
+
+    if (isVideo) {
+      return (
+        <Box {...mediaProps} as="video" autoPlay muted loop>
+          <source src={url} />
+          Your browser does not support the video tag.
+        </Box>
+      );
+    } else {
+      return <Image src={url} {...mediaProps} />;
+    }
+  };
+
   return (
     <Box>
       <Box
@@ -82,37 +144,7 @@ export function ModelItem({ data }: Props) {
         draggable
         onDragStart={handleDragStart}
       >
-        {hashing ? (
-          <Flex
-            bg="rgba(0, 0, 0, 0.5)"
-            height={178}
-            justifyContent="center"
-            alignItems="center"
-          >
-            <Spinner />
-          </Flex>
-        ) : (
-          <Image
-            src={url}
-            draggable={false}
-            boxSize="100%"
-            height={150}
-            objectFit="cover"
-            borderRadius={4}
-            cursor={model?.civitModelID != null ? "pointer" : "auto"}
-            onClick={() => {
-              if (
-                model?.civitModelID == null ||
-                model?.civitModelVersionID == null
-              ) {
-                return;
-              }
-              window.open(
-                `https://civitai.com/models/${model?.civitModelID}?modelVersionId=${model?.civitModelVersionID}`,
-              );
-            }}
-          />
-        )}
+        {renderMedia()}
         <Text
           position="absolute"
           bottom="0"
