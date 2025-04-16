@@ -1,22 +1,10 @@
 # ☕️ ComfyUI Workspace Manager - Comfyspace
 
+
+**[2025-4-16] 📣Hi since ComfyUI frontend has built-in workspace management feature now, this plugin becomes obsolte and will not be maintained anymore. Thanks everyone for supporting comfyui-workspace-manager! Sorry that this cannot continue anymore.**
+
 A ComfyUI workflow and model manager extension to **organize and manage all your workflows, models and generated images in one place**. Seamlessly switch between workflows, track version history and image generation history, 1 click install models from Civit ai, browse/update your installed models
 
-If you have questions or suggestions, please [join our Discord](https://discord.gg/HHvfEurv2Z)! 
-
-✨We have a new platform to turn your comfyui workflow to runnable web app: www.nodecafe.co please check it out! 🥳
-
-[8-23] 📣Hi since the ComfyUI frontend has built-in workspace management feature, and they are adding model management too, this plugin will go into maintainance mode. In future, I may pivot this plugin to focus more on version controls, or cloud sync & backups, or team collaboration workspace. But right now, I'm focusing on building www.nodecafe.co which is the cloud comfyui and workflow deploy service platform (workflow app & api).
-
-[6-25] ⚠️ Please update workspace manager to latest version if it's not showing up for you after updating ComfyUI (不要用秋叶启动器更新，请使用ComfyUI Manager管理器更新，秋叶没法更新到最新版)
-
-[6-21] ‼️please upgrade to V2 and enable twoway sync if you haven't already. I will stop supporting V1 soon and will forcefully turn on twoway sync later. (twoway sync means that your workflow are twoway synced with your disk files /my_workflows directly)
-
-[6-21] ‼️ Auto-save mode will be removed comopoletely from next version. Because there are reports that autosave mode sometimes overwrite workflows mistakenly. Therefore, please **manual save** your workflows always.
-
-[New!] We provide 👭**team workspace** now! If you need to **share workflows, backup workflow versions for enterprise and teams**, please contact me about our team/enterprise product at weixuanfu01@gmail.com or join discord and DM me @briefpeach 
-
-[5-23-2024]**search and install models from civitai is not working in previous versions**, **Please update to the latest version** if you are seeing blank screen in Install Models dialog
 
 <img width="610" alt="Screenshot 2024-03-08 at 6 41 18 PM" src="https://github.com/11cafe/comfyui-workspace-manager/assets/18367033/30455eb1-3d12-4930-bb81-28b33148fbaa">
 
