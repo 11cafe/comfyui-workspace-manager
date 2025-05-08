@@ -67,8 +67,13 @@ export default function AppIsDirtyEventListener() {
         return;
       }
       const id = app.graph.extra?.[COMFYSPACE_TRACKING_FIELD_NAME]?.id;
+      console.log("🦄 Restoring workflow... id=", id);
       if (id) {
         const flow = await workflowsTable?.get(id);
+        console.log(
+          "🦄 Restored workflow",
+          flow?.parentFolderID + "/" + flow?.name,
+        );
         flow && setCurFlowIDAndName(flow);
 
         if (
